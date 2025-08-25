@@ -1,0 +1,40 @@
+{
+  "name": "create-ginko-project",
+  "version": "1.0.0",
+  "description": "Interactive installer for Ginko AI context management",
+  "type": "module",
+  "main": "bin/create-ginko-project.js",
+  "bin": {
+    "create-ginko-project": "bin/create-ginko-project.js"
+  },
+  "scripts": {
+    "build": "chmod +x bin/create-ginko-project.js",
+    "test": "node bin/create-ginko-project.js test-project --dry-run"
+  },
+  "keywords": [
+    "ai",
+    "context",
+    "mcp",
+    "claude",
+    "development",
+    "installer",
+    "ginko"
+  ],
+  "author": "Chris Norton <chris@ginko.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ginko-ai/ginko.git",
+    "directory": "packages/create-ginko-project"
+  },
+  "homepage": "https://ginko.ai",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.15",
+    "ora": "^8.0.1",
+    "fs-extra": "^11.2.0"
+  }
+}
