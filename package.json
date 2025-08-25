@@ -22,6 +22,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "ginko-mcp-client": "file:mcp-client/ginko-mcp-client-0.5.0.tgz"
+    "ginko-mcp-client": "file:mcp-client/ginkoai-mcp-client-0.6.1.tgz"
   }
 }
