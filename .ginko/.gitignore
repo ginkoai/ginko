@@ -1,0 +1,58 @@
+# WatchHill Git-Native Handoffs - Security Protection
+# This file prevents accidental commit of sensitive information
+
+# Test directories
+test/
+
+# Temporary and draft files
+*.draft.md
+*.tmp
+*.temp
+*~
+.DS_Store
+
+# Secrets and credentials (CRITICAL)
+*.key
+*.pem
+*.cert
+*.crt
+*_secret*
+*_private*
+.env
+.env.*
+secrets.yml
+credentials.json
+auth.json
+token.txt
+
+# API Keys and tokens
+*api_key*
+*apikey*
+*token*
+*password*
+*passwd*
+
+# Database credentials
+*.db
+*.sqlite
+*.sql
+database.yml
+db_config.*
+
+# SSH keys
+id_rsa*
+id_dsa*
+*.ppk
+
+# AWS/Cloud credentials  
+*.aws
+*.azure
+*gcp*
+credentials
+config.json
+
+# But allow our config file
+!config.yml
+
+# Archive old sessions after X days (configured)
+# archive/*/*

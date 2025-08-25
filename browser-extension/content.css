@@ -1,0 +1,158 @@
+/**
+ * Ginko Content Script Styles
+ * Minimal, non-intrusive styling for Claude.ai integration
+ * ToS Compliant - No UI modifications to Claude.ai interface
+ */
+
+/* Ginko notification styles - only for our own notifications */
+.ginko-notification {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    background: #10b981 !important;
+    color: white !important;
+    padding: 16px 20px !important;
+    border-radius: 8px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    z-index: 10000 !important;
+    max-width: 300px !important;
+    animation: ginkoSlideIn 0.3s ease-out !important;
+}
+
+.ginko-notification-title {
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+
+.ginko-notification-message {
+    opacity: 0.9 !important;
+    font-size: 13px !important;
+}
+
+/* Animation keyframes for notifications */
+@keyframes ginkoSlideIn {
+    from { 
+        transform: translateX(100%) !important; 
+        opacity: 0 !important; 
+    }
+    to { 
+        transform: translateX(0) !important; 
+        opacity: 1 !important; 
+    }
+}
+
+@keyframes ginkoSlideOut {
+    from { 
+        transform: translateX(0) !important; 
+        opacity: 1 !important; 
+    }
+    to { 
+        transform: translateX(100%) !important; 
+        opacity: 0 !important; 
+    }
+}
+
+/* Ginko status indicator - subtle, non-intrusive */
+.ginko-status-indicator {
+    position: fixed !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    background: #dc2626 !important;
+    z-index: 9999 !important;
+    opacity: 0.6 !important;
+    transition: all 0.3s ease !important;
+    pointer-events: none !important;
+}
+
+.ginko-status-indicator.active {
+    background: #10b981 !important;
+    opacity: 0.8 !important;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.4) !important;
+}
+
+/* Ensure we don't interfere with Claude.ai's existing styles */
+.ginko-hidden {
+    display: none !important;
+}
+
+.ginko-invisible {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Minimal loading indicator for Ginko operations */
+.ginko-loading {
+    display: inline-block !important;
+    width: 16px !important;
+    height: 16px !important;
+    border: 2px solid #f3f4f6 !important;
+    border-radius: 50% !important;
+    border-top-color: #3b82f6 !important;
+    animation: ginkoSpin 1s ease-in-out infinite !important;
+}
+
+@keyframes ginkoSpin {
+    to { 
+        transform: rotate(360deg) !important; 
+    }
+}
+
+/* Utility classes for Ginko content script functionality */
+.ginko-highlight {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-radius: 4px !important;
+    padding: 0 2px !important;
+}
+
+.ginko-success {
+    color: #10b981 !important;
+}
+
+.ginko-error {
+    color: #dc2626 !important;
+}
+
+.ginko-warning {
+    color: #f59e0b !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ginko-notification {
+        right: 10px !important;
+        left: 10px !important;
+        max-width: none !important;
+    }
+    
+    .ginko-status-indicator {
+        bottom: 10px !important;
+        right: 10px !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .ginko-notification {
+        border: 2px solid white !important;
+    }
+    
+    .ginko-status-indicator {
+        border: 1px solid white !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .ginko-notification,
+    .ginko-loading,
+    .ginko-status-indicator {
+        animation: none !important;
+        transition: none !important;
+    }
+}

@@ -1,0 +1,25 @@
+# Ginko Local Configuration
+# Generated: 2025-08-17
+
+user:
+  email: chris@ginko.ai
+  directory: chris-at-ginko-ai
+  name: Chris Norton
+
+paths:
+  sessions: .ginko/sessions/
+  templates: .ginko/templates/
+  bin: .ginko/bin/
+  
+settings:
+  auto_commit: false
+  max_handoff_size_kb: 50
+  archive_after_days: 30
+  
+templates:
+  default: standard
+  available:
+    - standard
+    - bug-fix
+    - feature
+    - refactor
