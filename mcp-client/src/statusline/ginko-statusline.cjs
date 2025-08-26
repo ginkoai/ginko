@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * WatchHill Status Line Coaching System
+ * Ginko Status Line Coaching System
  * 
  * Provides real-time collaboration coaching through Claude Code's status line
  * Features progressive skill development, achievement tracking, and vibecheck detection
@@ -27,7 +27,7 @@ process.stdin.on('end', async () => {
     process.stdout.write(statusMessage);
   } catch (error) {
     // Fallback status on error
-    process.stdout.write('🚀 WatchHill Ready');
+    process.stdout.write('🚀 Ginko Ready');
   }
 });
 
@@ -384,9 +384,9 @@ function generateCoachingHint(context, profile) {
     };
   }
   
-  // Default message - Watchhill session capture active
+  // Default message - Ginko session capture active
   return {
-    message: "Watchhill session capture active",
+    message: "Ginko session capture active",
     icon: '🎯',
     type: 'default'
   };
@@ -413,44 +413,44 @@ function formatStatusLine(hint, context, profile) {
   switch (profile.gamificationMode) {
     case 'full-gamer':
       if (hint.type === 'achievement') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.yellow}ACHIEVEMENT! ${hint.message} +${hint.xp}XP${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.yellow}ACHIEVEMENT! ${hint.message} +${hint.xp}XP${colors.reset}`;
       }
-      return `${colors.brightBlue}WatchHill:${colors.reset} Lvl ${profile.level} ${profile.title} | ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+      return `${colors.brightBlue}Ginko:${colors.reset} Lvl ${profile.level} ${profile.title} | ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
       
     case 'professional':
       if (hint.type === 'vibecheck') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${colors.yellow}⚠ Alignment check suggested${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${colors.yellow}⚠ Alignment check suggested${colors.reset}`;
       }
-      return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${hint.message}`;
+      return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${hint.message}`;
       
     case 'minimal':
       if (hint.type === 'vibecheck') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} Vibecheck?`;
+        return `${colors.brightBlue}Ginko:${colors.reset} Vibecheck?`;
       }
-      return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.message}`;
+      return `${colors.brightBlue}Ginko:${colors.reset} ${hint.message}`;
       
     default: // balanced
       if (hint.type === 'achievement') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'vibecheck') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.bold}${colors.yellow}${hint.message}${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.bold}${colors.yellow}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'vibecheck-active') {
         // Animated dots for active vibecheck
         const dots = '.'.repeat(1 + (Date.now() % 3000) / 1000);
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.yellow}${hint.message}${dots}${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.yellow}${hint.message}${dots}${colors.reset}`;
       }
       if (hint.type === 'vibecheck-complete') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'flow') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'agent-activity') {
-        return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
       }
-      return `${colors.brightBlue}WatchHill:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+      return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
   }
 }
 
@@ -572,7 +572,7 @@ async function getVibecheckDecision(input) {
  * Format rapport status from SessionAgent
  */
 function formatRapportStatus(status) {
-  const brandPrefix = '\x1b[38;5;141m\x1b[1mWatchHill:\x1b[0m'; // Periwinkle blue + bold
+  const brandPrefix = '\x1b[38;5;141m\x1b[1mGinko:\x1b[0m'; // Periwinkle blue + bold
   
   // Special handling for achievements (already has emoji in message)
   if (status.phase === 'achievement' && status.message.includes('🏆')) {

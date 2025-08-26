@@ -1,5 +1,5 @@
 /**
- * Configuration Manager for WatchHill Status Line
+ * Configuration Manager for Ginko Status Line
  * 
  * Handles user profiles, preferences, and gamification settings
  */
