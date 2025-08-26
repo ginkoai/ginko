@@ -20,7 +20,7 @@ The Ginko AI platform migration from WatchHill is **fully complete**. All infras
 | Website | https://ginkoai.com | ✅ Live | Marketing site |
 | Dashboard | https://app.ginkoai.com | ✅ Live | OAuth working |
 | MCP API | https://mcp.ginkoai.com | ✅ Live | Auth required |
-| NPM Package | @ginkoai/mcp-client@0.6.1 | ✅ Published | On NPM |
+| NPM Package | @ginkoai/mcp-client@0.6.2 | ⚠️ Ready | Needs publishing |
 | Browser Extension | /browser-extension/ | ✅ Branded | Needs API integration |
 | Statusline | mcp-client/src/statusline/ | ✅ Migrated | Now says "Ginko" |
 | Claude Hooks | /hooks/ | ✅ Ready | Using ~/.ginko dir |
@@ -49,6 +49,25 @@ mcp-client/src/statusline/ginko-statusline.cjs
 mcp-client/src/statusline/config-manager.cjs
 - Changed: "WatchHill Status Line" → "Ginko Status Line"
 ```
+
+## Immediate Action Required: NPM Package Publishing
+
+### Publish Updated Package (v0.6.2)
+```bash
+# The package is built and ready at:
+# ginkoai-mcp-client-0.6.2.tgz
+
+# To publish:
+cd /Users/cnorton/Development/ginko/mcp-client
+npm publish --access public --otp=YOUR_OTP_CODE
+
+# Or use the built tarball:
+npm publish ginkoai-mcp-client-0.6.2.tgz --access public --otp=YOUR_OTP_CODE
+```
+
+**Changes in v0.6.2**:
+- Fixed statusline branding: "WatchHill" → "Ginko"
+- Now displays: "Ginko: 🎯 Ginko session capture active"
 
 ## Critical Remaining Task: API Key Generation
 
