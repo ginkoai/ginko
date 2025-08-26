@@ -21,7 +21,7 @@ export interface DatabaseConfig {
   host: string;
   port: number;
   database: string;
-  username: string;
+  user: string;
   password: string;
   ssl?: boolean;
 }
@@ -85,7 +85,7 @@ export class DatabaseManager {
       host: config.host,
       port: config.port,
       database: config.database,
-      user: config.username,
+      user: config.user,
       password: config.password,
       ssl: config.ssl ? { 
         rejectUnauthorized: false,

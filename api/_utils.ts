@@ -53,7 +53,7 @@ export async function initializeDatabase(): Promise<DatabaseManager> {
         host: url.hostname,
         port: parseInt(url.port) || 5432,
         database: url.pathname.slice(1), // Remove leading slash
-        username: url.username,
+        user: url.username,
         password: url.password,
         ssl: true // DatabaseManager will handle the SSL config
       };
@@ -62,7 +62,7 @@ export async function initializeDatabase(): Promise<DatabaseManager> {
         host: config.host,
         port: config.port,
         database: config.database,
-        username: config.username,
+        user: config.user,
         password: config.password ? `${config.password.substring(0, 4)}...` : 'MISSING',
         ssl: config.ssl
       });
@@ -92,24 +92,24 @@ export async function initializeDatabase(): Promise<DatabaseManager> {
           host,
           port: 5432,
           database: 'postgres',
-          username: 'postgres',
+          user: 'postgres',
           password: password || 'dev_password',
           ssl: true
         };
         
-        console.log('[DB] Using Supabase config:', { host, database: config.database, username: config.username });
+        console.log('[DB] Using Supabase config:', { host, database: config.database, user: config.user });
       } else {
         // Fallback to direct PostgreSQL config
         config = {
           host: process.env.POSTGRES_HOST || 'localhost',
           port: parseInt(process.env.POSTGRES_PORT || '5432'),
           database: process.env.POSTGRES_DATABASE || process.env.POSTGRES_DB || 'contextmcp',
-          username: process.env.POSTGRES_USER || 'contextmcp',
+          user: process.env.POSTGRES_USER || 'contextmcp',
           password: process.env.POSTGRES_PASSWORD || 'dev_password',
           ssl: process.env.NODE_ENV === 'production'
         };
         
-        console.log('[DB] Using PostgreSQL config:', { host: config.host, database: config.database, username: config.username });
+        console.log('[DB] Using PostgreSQL config:', { host: config.host, database: config.database, user: config.user });
       }
     }
 
