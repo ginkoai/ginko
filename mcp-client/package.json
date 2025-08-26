@@ -1,6 +1,6 @@
 {
   "name": "@ginkoai/mcp-client",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "MCP client for Ginko session capture and resume functionality",
   "main": "dist/index.js",
   "type": "module",
