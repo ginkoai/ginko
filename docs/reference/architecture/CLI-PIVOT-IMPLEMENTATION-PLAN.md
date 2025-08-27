@@ -1,8 +1,16 @@
-# CLI Pivot Implementation Plan
+# CLI Pivot Implementation Plan (Privacy-First Edition)
 
 ## Executive Summary
 
-We're pivoting Ginko from an MCP-specific tool to a universal CLI that works with any AI. Since we're pre-launch with only friendly alpha users, we can move aggressively without backward compatibility concerns.
+We're pivoting Ginko from an MCP-specific tool to a universal CLI that works with any AI. **Critical update**: All session data stays local in git. No proprietary code ever leaves the machine. Only anonymous metrics sync to servers (opt-in).
+
+## Core Principles
+
+1. **Privacy First** - No code, files, or proprietary data leaves the machine
+2. **Git Native** - All data stored in `.ginko/` directory, tracked by git  
+3. **Offline First** - Full functionality without internet connection
+4. **Optional Analytics** - Anonymous metrics only, explicit opt-in
+5. **Zero Trust** - No API keys required for core functionality
 
 ## Timeline: 5 Days Total
 
@@ -28,48 +36,58 @@ touch src/index.js
 touch src/commands/{start,handoff,context,compact}.js
 ```
 
-### Day 2: Core Implementation
+### Day 2: Core Implementation (Privacy-First)
 
-#### Morning: Essential Commands
+#### Morning: Essential Commands (Local-Only)
 ```javascript
-// Just the essentials for alpha
-- [ ] ginko init     - Set up .ginko/ structure
-- [ ] ginko start    - Load last handoff
-- [ ] ginko handoff  - Save session
-- [ ] ginko status   - Show context state
+// Everything stays on machine
+- [ ] ginko init     - Create .ginko/ structure (git-tracked)
+- [ ] ginko start    - Load from .ginko/sessions/ (local file)
+- [ ] ginko handoff  - Save to .ginko/sessions/ (local file)
+- [ ] ginko status   - Analyze local git state only
+- [ ] ginko context  - Read local files only (no server)
 ```
 
-#### Afternoon: Git Integration
+#### Afternoon: Git-Native Storage
 ```javascript
-// Git-native from day one
-- [ ] Direct file operations (no database)
-- [ ] .ginko/sessions/ management
-- [ ] Git commit integration
-- [ ] Simple, reliable, fast
+// Pure git operations, zero network
+- [ ] Session storage in .ginko/sessions/
+- [ ] Pattern library in .ginko/patterns/
+- [ ] Best practices in .ginko/best-practices/
+- [ ] All git-tracked and versioned
+- [ ] No database, no API, just files
 ```
 
-### Day 3: Convert MCP to REST
+### Day 3: Optional Analytics API (Privacy-Preserving)
 
-#### Morning: API Transformation
+#### Morning: Anonymous Metrics Only
 ```javascript
-// Current MCP tools → REST endpoints
-- [ ] /api/context    - Get/set context
-- [ ] /api/handoffs   - Store/retrieve handoffs
-- [ ] /api/analytics  - Session metrics
-- [ ] /api/coaching   - AI insights
+// NO CODE SENT TO SERVER - Only anonymous metrics
+- [ ] /api/metrics    - Session duration, command usage (anonymous)
+- [ ] /api/patterns   - Aggregated patterns (no code)
+- [ ] /api/coaching   - Insights based on metrics only
+- [ ] /api/health     - Service status check
 
-// Simple Express server
-- [ ] Vercel serverless functions
-- [ ] Same database, new interface
-- [ ] API key authentication
+// Privacy-first design
+- [ ] No file paths sent
+- [ ] No code snippets sent
+- [ ] No commit messages sent
+- [ ] Only statistical data
 ```
 
-#### Afternoon: CLI-API Integration
+#### Afternoon: Opt-in Configuration
 ```javascript
-// Optional enhancement
-if (config.api.enabled) {
-  await postToAPI('/handoffs', handoffContent);
-  console.log('✅ Synced to cloud');
+// Explicit user consent required
+ginko config set analytics.enabled false  // Default: disabled
+ginko config set analytics.anonymous true // Always anonymous
+
+// When enabled, sends only:
+{
+  "duration": 45,
+  "commands": ["start", "handoff"],
+  "context_size": 40,
+  "pattern": "debugging"
+  // NO identifying information
 }
 ```
 
@@ -123,60 +141,73 @@ npm publish @ginkoai/cli@0.1.0-alpha
 4. ✅ **AI adaptability** - Different output formats
 5. ✅ **Free/paid model** - CLI free, API premium
 
-## New File Structure (Simplified)
+## New File Structure (Privacy-First)
 
 ```
 ginko/
 ├── packages/
 │   ├── cli/                    # The new CLI package
 │   │   ├── src/
-│   │   │   ├── commands/       # CLI commands
-│   │   │   ├── git/           # Git operations
-│   │   │   └── api/           # Optional API client
+│   │   │   ├── commands/       # CLI commands (all local)
+│   │   │   ├── git/           # Git operations (local only)
+│   │   │   ├── analytics/    # Optional metrics (anonymous)
+│   │   │   └── patterns/     # Local pattern detection
 │   │   └── package.json
-│   └── api/                    # REST API (was MCP)
+│   └── api/                    # Analytics API (optional)
 │       ├── routes/
+│       │   ├── metrics.ts    # Anonymous metrics only
+│       │   └── health.ts     # Service status
 │       └── package.json
-├── .ginko/                     # Git-native storage
-│   └── sessions/
-└── docs/
-    └── CLI.md                  # New documentation
+└── .ginko/                     # Git-native storage (ALL LOCAL)
+    ├── sessions/               # Session handoffs (git-tracked)
+    ├── patterns/               # Discovered patterns (local)
+    ├── best-practices/         # Team standards (git-shared)
+    ├── context/                # Context rules (local)
+    └── config.json             # User preferences (local)
 ```
 
 ## Alpha User Communication
 
 ```markdown
-Subject: Ginko Evolution - Big Improvements Coming!
+Subject: Ginko Evolution - Privacy-First CLI Coming!
 
 Hi Alpha Testers,
 
-TL;DR: We're pivoting from MCP to CLI. Service disruption Monday-Tuesday.
-New install will be: npm install -g @ginkoai/cli
+TL;DR: Pivoting to privacy-first CLI. NO code ever leaves your machine.
+New install: npm install -g @ginkoai/cli
 
-Why the change:
-- Works with ANY AI (not just Claude)
-- Simpler, faster, more reliable
-- No complex configuration
-- Still git-native (your handoffs are safe)
+BIG NEWS - Complete Privacy:
+- Your code NEVER leaves your machine
+- All handoffs stay in local git
+- No proprietary data sent to servers
+- Optional anonymous metrics only (opt-in)
+- Works 100% offline
+
+Why this matters:
+- Enterprise ready (no compliance issues)
+- Zero trust required
+- Works with ANY AI (Claude, GPT, Gemini, etc.)
+- Faster (no network latency)
+- Your IP stays yours
 
 What's changing:
-- Installation method (npm global package)
-- Commands (ginko start instead of MCP tools)
-- Universal compatibility
+- CLI instead of MCP (simpler, universal)
+- Local-first storage (git-native)
+- Optional analytics (you control)
 
 What's NOT changing:
-- Git-native handoffs
+- Git-native philosophy
 - Core workflow
-- Your data (all preserved)
+- Your existing handoffs (all preserved)
 
 Timeline:
-- Monday: Taking down MCP server
-- Tuesday: CLI alpha release
-- Wednesday: Back online, better than ever
+- Monday: Begin implementation
+- Tuesday: Core CLI ready
+- Wednesday: Alpha release
+- Privacy-first from day one!
 
-Thanks for your patience. This positions Ginko for massive adoption.
-
-Questions? Hit reply.
+This positions Ginko for massive enterprise adoption.
+No security questionnaires will block us!
 
 Chris
 ```
@@ -197,7 +228,30 @@ Chris
 
 ## CLI Command Examples
 
-### Core Commands (work offline)
+## Privacy Guarantees
+
+### What NEVER Leaves Your Machine
+- ❌ Source code files
+- ❌ File contents
+- ❌ File paths or names
+- ❌ Commit messages
+- ❌ Variable/function names  
+- ❌ API keys or secrets
+- ❌ Session handoff content
+- ❌ Error messages with code
+- ❌ Any proprietary information
+
+### What Can Be Shared (Opt-in Only)
+- ✅ Command usage frequency
+- ✅ Session duration
+- ✅ Context size percentage
+- ✅ Pattern types (not content)
+- ✅ Anonymous metrics
+- ✅ Performance statistics
+- ✅ Success/failure rates
+- ✅ Language detection (generic)
+
+### Core Commands (work 100% offline)
 ```bash
 ginko init                          # Initialize project
 ginko start [session-id]            # Start/resume session
