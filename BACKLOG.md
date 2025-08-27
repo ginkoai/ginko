@@ -2,6 +2,272 @@
 
 This document contains planned features and architectural designs for future implementation.
 
+## 🔴 CRITICAL PRIORITY
+
+### FEATURE-017: Persistent Context Module System
+**Priority**: CRITICAL  
+**Status**: PROPOSED  
+**Created**: 2025-08-27  
+**Effort**: Large (3-4 days)  
+**Dependencies**: Context command, frontmatter parsing, git integration  
+
+**Problem Statement**:
+AI loses all context between sessions and must re-learn architecture, decisions, and patterns from scratch. This wastes valuable tokens and time on re-explanation. Current handoffs are monolithic and don't enable selective knowledge loading.
+
+**Solution Design**:
+
+**Core Concept**: Persistent, modular context files that act as "memory cards" for AI sessions.
+
+**Architecture**:
+```
+.ginko/context/
+├── modules/
+│   ├── arch-authentication.md      # Architecture knowledge
+│   ├── config-database.md          # Configuration details
+│   ├── decision-no-typescript.md   # Team decisions
+│   ├── pattern-error-handling.md   # Code patterns
+│   └── gotcha-async-hooks.md       # Learned gotchas
+├── index.json                       # Searchable catalog
+└── usage-stats.json                # Track frequently needed context
+```
+
+**Key Features**:
+1. **Modular Context**: Each learning/decision/pattern as separate file
+2. **Tagged & Indexed**: Frontmatter tags enable intelligent discovery
+3. **Progressive Loading**: Start minimal, load relevant modules as needed
+4. **Organic Creation**: Capture context during development, not as separate docs
+5. **Git-Tracked Evolution**: Context updates with codebase changes
+6. **Auto-Pruning**: Remove stale context based on usage and relevance
+
+**Commands**:
+```bash
+ginko context load auth              # Load auth-related modules
+ginko context capture "Gotcha found" # Create context from current work
+ginko context auto                    # Auto-suggest based on directory
+ginko context prune                   # Remove outdated modules
+```
+
+**Workflow Integration**:
+- During `ginko start`: Auto-suggest relevant context modules
+- During `ginko handoff`: Extract reusable learnings into modules
+- After `git commit`: Prompt to update affected context modules
+- During debug/fix: Capture gotchas as permanent context
+
+**Success Metrics**:
+- 80% reduction in context re-explanation
+- New developers productive in first session
+- Average token usage reduced by 50%
+- Zero re-learning of documented patterns
+
+**Implementation Reference**: 
+- ADR-022-persistent-context-modules.md
+- /packages/cli/src/commands/context-new.ts (proposed)
+
+---
+
+### FEATURE-016: Progressive Context Loading
+**Priority**: HIGH  
+**Status**: NOT STARTED  
+**Created**: 2025-08-27  
+**Effort**: Medium (1-2 days)  
+**Dependencies**: CLI context command, file analysis  
+
+**Problem Statement**:
+Current `ginko context` command is a basic static file list manager. Violates Core Principle #4: "Progressive Context Loading - Just-in-time information delivery". Users must manually manage context instead of having intelligent, proximity-based loading.
+
+**Solution Design**:
+
+**Core Features**:
+1. **Lazy Loading**: Start with minimal context (entry points only)
+2. **Proximity Principle**: Auto-detect related files based on current work
+3. **Depth on Demand**: Surface overview → deep dive when needed
+4. **Context Decay**: Auto-deprioritize older context
+5. **Smart Defaults**: 80% of cases need only 20% of context
+
+**Command Structure**:
+```bash
+ginko context core              # Load only entry points
+ginko context expand            # Add files related to current work
+ginko context deep <module>     # Deep dive into specific area
+ginko context surface           # Return to overview level
+ginko context refresh           # Rebalance based on recency
+ginko context auto              # Let Ginko decide (smart mode)
+```
+
+**Implementation**:
+- File proximity detection using import/require analysis
+- Recency tracking in `.ginko/context/usage.json`
+- Module boundary detection from project structure
+- Intelligent defaults based on git changes
+- Progressive loading states: core → expanded → deep
+
+**Success Metrics**:
+- Context loads in <1 second
+- 80% reduction in manual context management
+- Automatic related file discovery
+- Context size stays under optimal threshold
+
+---
+
+### FEATURE-015: Slash Command Handoff System
+**Priority**: CRITICAL  
+**Status**: NOT STARTED  
+**Created**: 2025-08-26  
+**Effort**: Large (2-3 days)  
+**Dependencies**: MCP server, Git integration, Claude Code extension API  
+
+**Problem Statement**:
+Current handoff process requires multiple MCP tool calls and manual template filling. Users from WatchHill project report the slash command workflow (`/handoff` and `/start`) provided superior UX with seamless session continuity.
+
+**Solution Design**:
+
+**1. `/handoff` Command**
+- **Syntax**: `/handoff [comment] [mode]`
+- **Modes**: Architecture | Planning | Building | Debugging | Testing | Shipping
+- **Actions**:
+  - Capture current session state and context
+  - Auto-detect mode if not specified (based on recent activity patterns)
+  - Clean up temp files and caches
+  - Update project documentation if changes detected
+  - Create git commit if uncommitted changes exist
+  - Generate handoff file in `.ginko/sessions/[user]/YYYY-MM-DD-HHMMSS-handoff.md`
+  - Store handoff in git (add + commit)
+  - Return confirmation with session ID
+
+**2. `/start` Command**
+- **Syntax**: `/start [sessionId]`
+- **Actions**:
+  - Load most recent handoff (or specific session if ID provided)
+  - Pull project overview from MCP server
+  - Pull team best practices from MCP server
+  - Generate personalized greeting (time-aware, progress-aware, context-aware)
+  - Present comprehensive recap:
+    - Work completed in last session
+    - Tasks pending
+    - Known blockers
+    - Current branch/environment state
+  - Offer choices:
+    - "Continue where we left off"
+    - "Start something new"
+    - "Review and plan"
+    - "Address blockers first"
+
+**Technical Implementation**:
+
+**File Structure**:
+```
+.ginko/
+└── sessions/
+    └── [user-email]/
+        ├── 2025-08-26-143022-handoff.md
+        ├── 2025-08-26-203045-handoff.md
+        └── session-index.json
+```
+
+**Handoff File Format**:
+```yaml
+---
+session_id: uuid
+user: email
+timestamp: ISO8601
+mode: Building
+branch: feature/name
+commit: sha
+---
+# Markdown content with progress, decisions, blockers
+```
+
+**Integration Points**:
+1. Claude Code Extension: Register slash commands via extension API
+2. MCP Server: New tools for slash command handling
+3. Git Integration: Native git operations for storage
+4. Context Detection: Pattern matching for mode auto-detection
+5. Natural Language: LLM-powered greeting generation
+
+**Success Metrics**:
+- Single command to end session (< 2 seconds)
+- Single command to resume (< 3 seconds)  
+- 100% context restoration accuracy
+- Natural, personalized greetings (not templated)
+- Git-tracked handoff history
+
+**Implementation Steps**:
+1. [ ] Research Claude Code slash command API
+2. [ ] Create MCP tools for `/handoff` and `/start`
+3. [ ] Implement mode detection algorithm
+4. [ ] Build git-native storage system
+5. [ ] Create greeting generation system
+6. [ ] Add cleanup and commit automation
+7. [ ] Test end-to-end workflow
+8. [ ] Document slash command usage
+9. [ ] **Cold-start review** - Test handoff readability with no prior context
+
+---
+
+### FEATURE-016: Cold-Start Handoff Enhancement
+**Priority**: HIGH  
+**Status**: NOT STARTED  
+**Created**: 2025-08-26  
+**Effort**: Small (2-4 hours)  
+**Dependencies**: Slash command system (FEATURE-015)  
+
+**Problem Statement**:
+Current handoffs assume continuation of work but lack critical context for cold starts. Reading a handoff with no prior knowledge reveals missing project overview, architecture context, and access credentials.
+
+**Discovery**:
+- Identified during review of `2025-08-26-context-advisor-deployment.md`
+- Missing: What is Ginko? What is WatchHill? What problem does this solve?
+- Missing: Architecture overview, access credentials, directory structure
+- Confusing: Technical references without context (e.g., "color 155", "MCP")
+
+**Solution Design**:
+
+**1. Handoff Template Enhancement**
+```markdown
+## 📦 Project Context (Auto-generated)
+**Project**: [Name and one-line description]
+**Architecture**: [Key components and how they connect]
+**Access**: [Credentials, URLs, project IDs]
+**Directory Structure**: [Key paths and their purposes]
+**Glossary**: [Project-specific terms]
+```
+
+**2. Cold-Start Detection**
+- Check if this is first handoff in project
+- Check time since last session (>7 days = cold)
+- Check if different user loading handoff
+- Flag: `--cold-start` option for `/start`
+
+**3. Progressive Context Loading**
+- **Warm start**: Load recent handoff only
+- **Cool start** (>24h): Add brief project reminder
+- **Cold start** (>7d or new user): Full project context
+- **First time**: Complete onboarding flow
+
+**Success Metrics**:
+- New developer can understand handoff without prior knowledge
+- Cold-start adds <5 seconds to load time
+- 100% of critical context included (measured by checklist)
+- No redundant information in warm starts
+
+**Implementation Steps**:
+1. [ ] Define cold-start context requirements checklist
+2. [ ] Create project context template
+3. [ ] Implement cold-start detection logic
+4. [ ] Add progressive context loading
+5. [ ] Create context extraction from existing project files
+6. [ ] Test with users who have no prior knowledge
+7. [ ] Document cold-start scenarios
+
+**Testing Protocol**:
+1. Give handoff to someone unfamiliar with project
+2. Ask them to answer:
+   - What is this project?
+   - What was accomplished?
+   - What needs to be done next?
+   - How would I continue this work?
+3. Success = All questions answered without additional help
+
 ## ✅ COMPLETED: Statusline + Hooks Integration
 
 ### FEATURE-014: Intelligent Statusline via Hook Integration

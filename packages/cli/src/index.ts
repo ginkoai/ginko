@@ -17,6 +17,9 @@ import { handoffCommand } from './commands/handoff.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
+import { vibecheckCommand } from './commands/vibecheck.js';
+import { compactCommand } from './commands/compact.js';
+import { shipCommand } from './commands/ship.js';
 
 const program = new Command();
 
@@ -73,10 +76,33 @@ program
   .option('--list', 'List all configuration')
   .action(configCommand);
 
-// Privacy notice on first run
-program.hook('preAction', () => {
-  if (!process.env.GINKO_HIDE_PRIVACY) {
-    console.log(chalk.dim('🔐 Privacy: No code leaves your machine. Analytics disabled by default.'));
+program
+  .command('vibecheck [concern]')
+  .description('Quick recalibration when feeling lost or stuck')
+  .action(vibecheckCommand);
+
+program
+  .command('compact')
+  .description('Reduce context size by removing stale information')
+  .option('-p, --preserve <files...>', 'Files to preserve during compaction')
+  .option('-a, --aggressive', 'Aggressive compaction mode')
+  .action(compactCommand);
+
+program
+  .command('ship [message]')
+  .description('Create and push PR-ready branch with changes')
+  .option('-b, --branch <name>', 'Specify branch name')
+  .option('--no-push', 'Skip pushing to remote')
+  .option('--no-tests', 'Skip running tests')
+  .action(shipCommand);
+
+// Privacy notice only for help command
+program.hook('preAction', (thisCommand) => {
+  // Only show privacy notice for help or when no command is given
+  if (process.argv.length === 2 || process.argv.includes('--help') || process.argv.includes('-h')) {
+    if (!process.env.GINKO_HIDE_PRIVACY && thisCommand.name() === 'ginko') {
+      console.log(chalk.dim('🔐 Privacy: No code leaves your machine. Analytics disabled by default.\n'));
+    }
   }
 });
 

@@ -118,10 +118,47 @@ Generated at ${new Date().toLocaleString()}
     // Archive existing handoff if it exists
     if (await fs.pathExists(currentHandoff)) {
       const existing = await fs.readFile(currentHandoff, 'utf8');
-      const existingMatch = existing.match(/session_id: (\d+)/);
-      if (existingMatch) {
-        const archiveFile = path.join(sessionDir, 'archive', `${existingMatch[1]}.md`);
-        await fs.move(currentHandoff, archiveFile, { overwrite: true });
+      const timestampMatch = existing.match(/timestamp: ([^\n]+)/);
+      const summaryMatch = existing.match(/## 📊 Session Summary\n([^\n]+)/);
+      
+      if (timestampMatch) {
+        // Create human-readable filename: YYYY-MM-DD-description.md
+        const timestamp = new Date(timestampMatch[1]);
+        const year = timestamp.getFullYear();
+        const month = String(timestamp.getMonth() + 1).padStart(2, '0');
+        const day = String(timestamp.getDate()).padStart(2, '0');
+        
+        // Get a short description from the summary
+        let description = 'handoff';
+        if (summaryMatch && summaryMatch[1]) {
+          // Clean and shorten the description
+          description = summaryMatch[1]
+            .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special chars
+            .trim()
+            .split(' ')
+            .slice(0, 3) // Take first 3 words
+            .join('-')
+            .replace(/\s+/g, '-')
+            .toLowerCase();
+          if (!description) description = 'handoff';
+        }
+        
+        const archiveFilename = `${year}-${month}-${day}-${description}.md`;
+        const archiveFile = path.join(sessionDir, 'archive', archiveFilename);
+        
+        // If file exists, add timestamp to make unique
+        let finalArchiveFile = archiveFile;
+        if (await fs.pathExists(archiveFile)) {
+          const hours = String(timestamp.getHours()).padStart(2, '0');
+          const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+          finalArchiveFile = path.join(
+            sessionDir, 
+            'archive', 
+            `${year}-${month}-${day}-${hours}${minutes}-${description}.md`
+          );
+        }
+        
+        await fs.move(currentHandoff, finalArchiveFile, { overwrite: true });
         spinner.text = 'Archived previous handoff';
       }
     }
@@ -142,7 +179,6 @@ Generated at ${new Date().toLocaleString()}
     console.log(chalk.green('\n✅ Session saved'));
     console.log(chalk.cyan(`📁 Location: .ginko/sessions/${userSlug}/current.md`));
     console.log(chalk.dim(`🎯 Mode detected: ${mode}`));
-    console.log(chalk.dim('🔐 Privacy: All data stored locally'));
     
     if (!config.git?.autoCommit) {
       console.log(chalk.yellow('\n💡 Tip: Add handoff to git with:'));

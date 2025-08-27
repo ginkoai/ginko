@@ -121,9 +121,8 @@ Session initialized at ${timestamp}.
       console.log(chalk.green('✅ Created initial session handoff'));
     }
     
-    // Show privacy reminder
-    console.log(chalk.dim('\n🔐 Privacy: All data stored locally in git'));
-    console.log(chalk.dim('💡 Tip: Run `ginko handoff` to save progress'));
+    // Show tip
+    console.log(chalk.dim('\n💡 Tip: Run `ginko handoff` to save progress'));
     
   } catch (error) {
     spinner.fail('Failed to start session');
