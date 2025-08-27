@@ -124,3 +124,6 @@ test-client.js
 test-projects/
 .env*.local
 api/_lib/
+
+# Ginko local config (contains preferences)
+.ginko/config.json
