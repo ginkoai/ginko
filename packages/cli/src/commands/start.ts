@@ -12,6 +12,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import ora from 'ora';
 import { getUserEmail, getGinkoDir, formatTimeAgo } from '../utils/helpers.js';
+import { getAdapter } from '../adapters/index.js';
 
 export async function startCommand(sessionId?: string) {
   const spinner = ora('Loading session...').start();
