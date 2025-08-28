@@ -12,12 +12,13 @@ import fs from 'fs-extra';
 import path from 'path';
 import ora from 'ora';
 import { execSync } from 'child_process';
-import { ProjectAnalyzer } from '../analysis/project-analyzer';
-import { AiInstructionsTemplate, TemplateVariables, ProjectContext } from '../templates/ai-instructions-template';
-import { AiAdapter } from '../adapters/ai-adapter';
-import { ClaudeAdapter } from '../adapters/claude-adapter';
-import { OpenAIAdapter } from '../adapters/openai-adapter';
-import { GenericAdapter } from '../adapters/generic-adapter';
+import { ProjectAnalyzer } from '../analysis/project-analyzer.js';
+import { AiInstructionsTemplate, TemplateVariables, ProjectContext } from '../templates/ai-instructions-template.js';
+import { AiAdapter } from '../adapters/ai-adapter.js';
+import { ClaudeAdapter } from '../adapters/claude-adapter.js';
+import { OpenAIAdapter } from '../adapters/openai-adapter.js';
+import { GenericAdapter } from '../adapters/generic-adapter.js';
+import { findGinkoRoot } from '../utils/ginko-root.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();
@@ -26,9 +27,17 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     const projectRoot = process.cwd();
     const ginkoDir = path.join(projectRoot, '.ginko');
     
-    // Check if already initialized
+    // Check if already initialized in current directory
     if (await fs.pathExists(ginkoDir)) {
-      spinner.warn('Ginko already initialized in this project');
+      spinner.warn('Ginko already initialized in this directory');
+      return;
+    }
+    
+    // Check if already initialized in a parent directory
+    const existingRoot = await findGinkoRoot();
+    if (existingRoot && existingRoot !== projectRoot) {
+      spinner.warn(`Ginko already initialized in parent directory: ${existingRoot}`);
+      console.log(chalk.yellow('\nTip: Run ginko commands from any subdirectory - they will use the parent .ginko'));
       return;
     }
     

@@ -1,8 +1,9 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-08-27
+ * @updated: 2025-08-28
  * @tags: [cli, utils, helpers, git]
+ * @related: [ginko-root.ts]
  * @priority: medium
  * @complexity: low
  */
@@ -10,16 +11,11 @@
 import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
+import { requireGinkoRoot, getGinkoPath } from './ginko-root.js';
 
 export async function getGinkoDir(): Promise<string> {
-  const projectRoot = process.cwd();
-  const ginkoDir = path.join(projectRoot, '.ginko');
-  
-  if (!await fs.pathExists(ginkoDir)) {
-    throw new Error('Ginko not initialized. Run `ginko init` first.');
-  }
-  
-  return ginkoDir;
+  const root = await requireGinkoRoot();
+  return path.join(root, '.ginko');
 }
 
 export async function getUserEmail(): Promise<string> {
@@ -81,7 +77,13 @@ export async function getProjectInfo(): Promise<{
   type: string;
   language: string;
 }> {
-  const projectRoot = process.cwd();
+  // Use ginko root if available, otherwise current directory
+  let projectRoot = process.cwd();
+  try {
+    projectRoot = await requireGinkoRoot();
+  } catch (e) {
+    // Not in a ginko project, use current directory
+  }
   
   // Check for package.json (Node project)
   if (await fs.pathExists(path.join(projectRoot, 'package.json'))) {

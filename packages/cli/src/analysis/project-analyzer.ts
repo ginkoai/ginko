@@ -12,7 +12,7 @@
 import fs from 'fs-extra';
 import path from 'path';
 import glob from 'glob';
-import { ProjectContext } from '../templates/ai-instructions-template';
+import { ProjectContext } from '../templates/ai-instructions-template.js';
 
 export class ProjectAnalyzer {
   private projectRoot: string;

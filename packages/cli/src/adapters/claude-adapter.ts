@@ -9,7 +9,7 @@
  * @dependencies: []
  */
 
-import { BaseAiAdapter } from './ai-adapter';
+import { BaseAiAdapter } from './ai-adapter.js';
 
 export class ClaudeAdapter extends BaseAiAdapter {
   name = 'Claude';
