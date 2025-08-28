@@ -22,6 +22,7 @@ import { findGinkoRoot } from '../utils/ginko-root.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();
+  let deepAnalysis: any = null; // Track deep analysis results for output
   
   try {
     const projectRoot = process.cwd();
@@ -98,7 +99,27 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     if (!options.quick) {
       spinner.text = 'Analyzing project structure...';
       
-      const projectContext = await ProjectAnalyzer.quickAnalyze(projectRoot);
+      let projectContext;
+      
+      if (options.analyze) {
+        // Deep analysis mode
+        spinner.text = '🔬 Performing deep project analysis...';
+        const { DeepAnalyzer } = await import('../analysis/deep-analyzer.js');
+        const analyzer = new DeepAnalyzer(projectRoot);
+        
+        // Try to load cache first
+        deepAnalysis = await analyzer.loadCache();
+        
+        if (!deepAnalysis) {
+          deepAnalysis = await analyzer.analyze();
+          await analyzer.cacheResults(deepAnalysis);
+        }
+        
+        projectContext = deepAnalysis;
+      } else {
+        // Quick analysis mode
+        projectContext = await ProjectAnalyzer.quickAnalyze(projectRoot);
+      }
       
       // Select AI adapter based on model or auto-detect
       const adapter = selectAiAdapter(options.model);
@@ -184,6 +205,36 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       console.log(chalk.green('  ✓') + ` ${adapter.fileExtension} - ${adapter.name} collaboration guide with project-specific instructions`);
       console.log(chalk.green('  ✓') + ' .ginko/context/modules/ - Context modules for your tech stack');
       console.log(chalk.green('  ✓') + ' Frontmatter templates configured');
+      
+      // Show deep analysis results if available
+      if (options.analyze && deepAnalysis) {
+        console.log('\n' + chalk.bold('🔬 Deep Analysis Results:'));
+        
+        if (deepAnalysis.patterns && deepAnalysis.patterns.length > 0) {
+          console.log(chalk.cyan('\n  Patterns Detected:'));
+          for (const pattern of deepAnalysis.patterns.slice(0, 5)) {
+            console.log(`    • ${pattern.pattern}: ${pattern.description}`);
+          }
+        }
+        
+        if (deepAnalysis.suggestions && deepAnalysis.suggestions.length > 0) {
+          console.log(chalk.yellow('\n  Suggestions:'));
+          for (const suggestion of deepAnalysis.suggestions) {
+            console.log(`    💡 ${suggestion}`);
+          }
+        }
+        
+        if (deepAnalysis.codeMetrics) {
+          console.log(chalk.blue('\n  Code Metrics:'));
+          console.log(`    • Total files: ${deepAnalysis.codeMetrics.totalFiles}`);
+          console.log(`    • Complexity: ${deepAnalysis.codeMetrics.complexity}`);
+          if (deepAnalysis.codeMetrics.componentCount) {
+            console.log(`    • Components: ${deepAnalysis.codeMetrics.componentCount}`);
+          }
+        }
+        
+        console.log(chalk.dim('\n  📦 Analysis cached in .ginko/.cache/'));
+      }
     }
     
     console.log('\n' + chalk.bold('Next steps:'));
