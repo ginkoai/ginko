@@ -1,8 +1,8 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-08-27
- * @tags: [cli, status, session, info]
+ * @updated: 2025-08-28
+ * @tags: [cli, status, session, info, progressive-learning]
  * @priority: medium
  * @complexity: low
  */
@@ -12,6 +12,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import simpleGit from 'simple-git';
 import { getUserEmail, getGinkoDir, formatTimeAgo, getProjectInfo } from '../utils/helpers.js';
+import { ProgressiveLearning } from '../utils/progressive-learning.js';
 
 export async function statusCommand() {
   try {
@@ -33,8 +34,10 @@ export async function statusCommand() {
     
     // Session info
     console.log(chalk.cyan('\n📝 Session'));
+    let lastHandoffTime: Date | null = null;
     if (await fs.pathExists(currentHandoff)) {
       const stats = await fs.stat(currentHandoff);
+      lastHandoffTime = stats.mtime;
       const content = await fs.readFile(currentHandoff, 'utf8');
       const modeMatch = content.match(/mode: (.*)/);
       const mode = modeMatch ? modeMatch[1] : 'Unknown';
@@ -67,13 +70,34 @@ export async function statusCommand() {
     
     // Archive stats
     const archiveDir = path.join(sessionDir, 'archive');
+    let archiveCount = 0;
     if (await fs.pathExists(archiveDir)) {
       const archives = await fs.readdir(archiveDir);
+      archiveCount = archives.length;
       console.log(chalk.cyan('\n📚 Archives'));
       console.log(`  Sessions: ${archives.length}`);
       if (archives.length > 0) {
         console.log(chalk.dim(`  View with: ls .ginko/sessions/${userSlug}/archive/`));
       }
+    }
+    
+    // Progressive learning hints
+    await ProgressiveLearning.updateProgress('status');
+    
+    const sessionAge = lastHandoffTime ? 
+      Math.floor((Date.now() - lastHandoffTime.getTime()) / 60000) : 0;
+    
+    await ProgressiveLearning.showHint({
+      command: 'status',
+      gitStatus,
+      sessionAge,
+      fileCount: archiveCount,
+    });
+    
+    // Show smart suggestions
+    const suggestions = await ProgressiveLearning.getSmartSuggestions(gitStatus);
+    if (suggestions.length > 0) {
+      console.log(ProgressiveLearning.formatSuggestions(suggestions));
     }
     
   } catch (error) {

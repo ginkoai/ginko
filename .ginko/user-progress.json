@@ -1,0 +1,15 @@
+{
+  "commandsUsed": {
+    "status": 1
+  },
+  "firstSeen": "2025-08-28T18:12:47.734Z",
+  "lastSeen": "2025-08-28T18:12:47.735Z",
+  "totalSessions": 0,
+  "hintsShown": [
+    "first-handoff"
+  ],
+  "preferences": {
+    "showHints": true,
+    "verbosity": "normal"
+  }
+}
