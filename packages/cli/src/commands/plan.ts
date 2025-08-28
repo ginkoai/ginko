@@ -35,8 +35,8 @@ export async function planCommand(feature: string | undefined, options: PlanOpti
 
     // Phase 1 requires feature/ADR reference
     if (!feature) {
-      console.error(chalk.red('error: feature or ADR reference required'));
-      console.error(chalk.dim('usage: ginko plan "implement ADR-023" --days 5'));
+      process.stdout.write(chalk.red('error: feature or ADR reference required') + '\n');
+      process.stdout.write(chalk.dim('usage: ginko plan "implement ADR-023" --days 5') + '\n');
       process.exit(1);
     }
 
@@ -88,7 +88,7 @@ export async function planCommand(feature: string | undefined, options: PlanOpti
     process.exit(45);
     
   } catch (error) {
-    console.error(chalk.red('error:'), error instanceof Error ? error.message : String(error));
+    process.stdout.write(chalk.red('error: ') + (error instanceof Error ? error.message : String(error)) + '\n');
     process.exit(1);
   }
 }
@@ -238,6 +238,17 @@ async function storeSprintPlan(planId: string, content: string) {
   
   console.log(chalk.green(`✅ Sprint plan created: ${path.relative(projectRoot, sprintPath)}`));
   console.log(chalk.dim(`   Current sprint: ${path.relative(projectRoot, currentPath)}`));
+  
+  // Provide phase transition options
+  console.log();
+  console.log(chalk.dim('─'.repeat(60)));
+  console.log(chalk.bold('Planning phase complete. Next steps:'));
+  console.log();
+  console.log(chalk.cyan('  ginko start') + chalk.dim(' - Begin implementation'));
+  console.log(chalk.cyan('  ginko capture') + chalk.dim(' - Document implementation decisions'));
+  console.log(chalk.cyan('  ginko ship') + chalk.dim(' - Commit and push your work'));
+  console.log();
+  console.log(chalk.dim('Note: Sprint plan is now active and ready for execution.'));
   
   // Clean up temp file
   const tempPath = path.join(ginkoDir, '.temp', `${planId}.json`);

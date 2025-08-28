@@ -35,8 +35,8 @@ export async function architectureCommand(decision: string | undefined, options:
 
     // Phase 1 requires decision topic
     if (!decision) {
-      console.error(chalk.red('error: architecture decision required'));
-      console.error(chalk.dim('usage: ginko architecture "migrate to event-driven architecture"'));
+      process.stdout.write(chalk.red('error: architecture decision required') + '\n');
+      process.stdout.write(chalk.dim('usage: ginko architecture "migrate to event-driven architecture"') + '\n');
       process.exit(1);
     }
 
@@ -81,7 +81,7 @@ export async function architectureCommand(decision: string | undefined, options:
     process.exit(44);
     
   } catch (error) {
-    console.error(chalk.red('error:'), error instanceof Error ? error.message : String(error));
+    process.stdout.write(chalk.red('error: ') + (error instanceof Error ? error.message : String(error)) + '\n');
     process.exit(1);
   }
 }
@@ -159,7 +159,9 @@ ginko architecture --store --id=${archId} --number=${adrNumber} --content="[comp
 
 The ADR will be stored in: docs/reference/architecture/ADR-${adrNumber}-[title].md
 
-Remember: ADRs are immutable once accepted. Be thorough.`);
+Remember: ADRs are immutable once accepted. Be thorough.
+
+This is a natural breakpoint - architecture can be reviewed before planning implementation.`);
 }
 
 async function storeADR(archId: string, content: string, adrNumber?: string) {
@@ -222,6 +224,17 @@ async function storeADR(archId: string, content: string, adrNumber?: string) {
   }
   
   console.log(chalk.green(`✅ ADR created: ${path.relative(projectRoot, adrPath)}`));
+  
+  // Provide phase transition options
+  console.log();
+  console.log(chalk.dim('─'.repeat(60)));
+  console.log(chalk.bold('Architecture phase complete. Next steps:'));
+  console.log();
+  console.log(chalk.cyan('  ginko plan') + chalk.dim(' - Create sprint plan for implementation'));
+  console.log(chalk.cyan('  ginko explore') + chalk.dim(' - Continue exploring related areas'));
+  console.log(chalk.cyan('  ginko handoff') + chalk.dim(' - Save your architectural decisions'));
+  console.log();
+  console.log(chalk.dim('Note: Implementation timing will be determined during planning.'));
   
   // Clean up temp file
   const tempPath = path.join(ginkoDir, '.temp', `${archId}.json`);

@@ -83,5 +83,22 @@
       "chalk",
       "fs-extra"
     ]
+  },
+  "gotcha-bug-ginko-architecture-command.md": {
+    "type": "gotcha",
+    "tags": [
+      "bug",
+      "stderr",
+      "cli",
+      "architecture"
+    ],
+    "area": "packages/cli/src/commands",
+    "created": "2025-08-28",
+    "updated": "2025-08-28",
+    "relevance": "high",
+    "dependencies": [
+      "chalk",
+      "process.stdout"
+    ]
   }
 }

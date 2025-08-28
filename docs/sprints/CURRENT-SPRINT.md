@@ -1,1 +1,1 @@
-/Users/cnorton/Development/ginko/docs/SPRINTS/SPRINT-2025-08-27-implement-context-preservation-system-from-adr-025.md
+/Users/cnorton/Development/ginko/docs/SPRINTS/SPRINT-2025-08-28-untitled-sprint.md

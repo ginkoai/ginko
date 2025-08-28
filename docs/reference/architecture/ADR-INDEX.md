@@ -116,3 +116,5 @@ ADRs are never deleted, only deprecated or superseded. This maintains a complete
 **Next Available Number:** ADR-019  
 **Maintainer:** Architecture Team
 - [ADR-025: Context Preservation System Architecture](./ADR-025-context-preservation-system-architecture.md)
+
+- [ADR-026: Enhanced ginko init with intelligent project optimization for AI collaboration](./ADR-026-enhanced-ginko-init-with-intelligent-project-optimization-for-ai-collaboration.md)

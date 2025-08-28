@@ -1,0 +1,1 @@
+Sprint plan stored in docs/SPRINTS/SPRINT-2025-08-28-enhanced-ginko-init.md

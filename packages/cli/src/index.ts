@@ -47,8 +47,11 @@ program
 // Core commands
 program
   .command('init')
-  .description('Initialize Ginko in your project')
-  .action(initCommand);
+  .description('Initialize Ginko in your project with AI-optimized setup')
+  .option('--quick', 'Quick initialization without project analysis')
+  .option('--analyze', 'Deep analysis mode for comprehensive setup')
+  .option('--model <model>', 'Specify AI model (claude, gpt, generic)')
+  .action((options) => initCommand(options));
 
 program
   .command('start [sessionId]')

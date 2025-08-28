@@ -35,8 +35,8 @@ export async function exploreCommand(topic: string | undefined, options: Explore
 
     // Phase 1 requires topic
     if (!topic) {
-      console.error(chalk.red('error: exploration topic required'));
-      console.error(chalk.dim('usage: ginko explore "how might we improve onboarding"'));
+      process.stdout.write(chalk.red('error: exploration topic required') + '\n');
+      process.stdout.write(chalk.dim('usage: ginko explore "how might we improve onboarding"') + '\n');
       process.exit(1);
     }
 
@@ -80,7 +80,7 @@ export async function exploreCommand(topic: string | undefined, options: Explore
     process.exit(43);
     
   } catch (error) {
-    console.error(chalk.red('error:'), error instanceof Error ? error.message : String(error));
+    process.stdout.write(chalk.red('error: ') + (error instanceof Error ? error.message : String(error)) + '\n');
     process.exit(1);
   }
 }
@@ -180,6 +180,17 @@ async function storeExploration(exploreId: string, content: string, type: 'prd' 
     await fs.writeFile(prdPath, content);
     
     console.log(chalk.green(`✅ PRD created: ${path.relative(projectRoot, prdPath)}`));
+    
+    // Provide phase transition options
+    console.log();
+    console.log(chalk.dim('─'.repeat(60)));
+    console.log(chalk.bold('Exploration phase complete. Next steps:'));
+    console.log();
+    console.log(chalk.cyan('  ginko architecture') + chalk.dim(' - Design technical implementation'));
+    console.log(chalk.cyan('  ginko capture') + chalk.dim(' - Save key insights from exploration'));
+    console.log(chalk.cyan('  ginko handoff') + chalk.dim(' - Document exploration for team review'));
+    console.log();
+    console.log(chalk.dim('Note: Architecture phase will define the technical approach.'));
   } else {
     // Append to BACKLOG.md
     const backlogPath = path.join(projectRoot, 'BACKLOG.md');
