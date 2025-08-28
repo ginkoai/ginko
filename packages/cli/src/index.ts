@@ -12,7 +12,7 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { initCommand } from './commands/init.js';
-import { startCommand } from './commands/start.js';
+import { startCommand } from './commands/start-enhanced.js';
 import { handoffCommand } from './commands/handoff.js';
 import { handoffAiCommand } from './commands/handoff-ai.js';
 import { statusCommand } from './commands/status.js';
@@ -52,7 +52,9 @@ program
 
 program
   .command('start [sessionId]')
-  .description('Start or resume a session')
+  .description('Start or resume a session (fully git-native)')
+  .option('-v, --verbose', 'Show full context and handoff')
+  .option('-m, --minimal', 'Minimal output for quick start')
   .action(startCommand);
 
 program
