@@ -14,12 +14,17 @@ import chalk from 'chalk';
 import { initCommand } from './commands/init.js';
 import { startCommand } from './commands/start.js';
 import { handoffCommand } from './commands/handoff.js';
+import { handoffAiCommand } from './commands/handoff-ai.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
 import { vibecheckCommand } from './commands/vibecheck.js';
 import { compactCommand } from './commands/compact.js';
 import { shipCommand } from './commands/ship.js';
+import { captureCommand } from './commands/capture.js';
+import { exploreCommand } from './commands/explore.js';
+import { architectureCommand } from './commands/architecture.js';
+import { planCommand } from './commands/plan.js';
 
 const program = new Command();
 
@@ -50,8 +55,25 @@ program
 
 program
   .command('handoff [message]')
-  .description('Create a session handoff')
-  .action(handoffCommand);
+  .description('Create a session handoff with optional AI enhancement')
+  .option('--store', 'Store AI-enriched content (internal use)')
+  .option('--id <id>', 'Handoff ID for storing enriched content')
+  .option('--content <content>', 'Enriched content to store')
+  .option('--no-ai', 'Disable AI enhancement')
+  .option('--quick', 'Quick handoff without AI')
+  .option('-r, --review', 'Review template before AI processing')
+  .option('-v, --verbose', 'Show detailed output')
+  .action((message, options) => {
+    // Use AI-enhanced version if any AI-related options are present
+    const useAiVersion = options.store || options.id || options.content || 
+                         options.ai !== false || options.quick || options.review;
+    
+    if (useAiVersion) {
+      return handoffAiCommand({ message, ...options });
+    } else {
+      return handoffCommand(message);
+    }
+  });
 
 program
   .command('status')
@@ -95,6 +117,54 @@ program
   .option('--no-push', 'Skip pushing to remote')
   .option('--no-tests', 'Skip running tests')
   .action(shipCommand);
+
+// Hero command: capture - for effortless context capture
+program
+  .command('capture [description]')
+  .description('Capture a learning, discovery, or important context')
+  .option('--store', 'Store AI-enriched content (internal use)')
+  .option('--id <id>', 'Capture ID for storing enriched content')
+  .option('--content <content>', 'Enriched content to store')
+  .option('-r, --review', 'Review before saving')
+  .option('-v, --verbose', 'Show detailed output')
+  .option('-q, --quiet', 'Suppress all output')
+  .option('--quick', 'Quick capture without AI enhancement')
+  .option('-e, --edit', 'Open in editor after creation')
+  .action(captureCommand);
+
+// Development workflow commands: explore -> architecture -> plan -> build
+program
+  .command('explore [topic]')
+  .description('Collaborative thinking mode for exploring problems and solutions')
+  .option('--store', 'Store generated PRD or backlog item (internal use)')
+  .option('--id <id>', 'Exploration ID')
+  .option('--content <content>', 'Content to store')
+  .option('--type <type>', 'Output type: prd or backlog', 'backlog')
+  .option('-r, --review', 'Review before saving')
+  .option('-v, --verbose', 'Show detailed output')
+  .action(exploreCommand);
+
+program
+  .command('architecture [decision]')
+  .description('Design mode for crafting Architecture Decision Records (ADRs)')
+  .option('--store', 'Store generated ADR (internal use)')
+  .option('--id <id>', 'Architecture ID')
+  .option('--content <content>', 'ADR content to store')
+  .option('--number <number>', 'ADR number')
+  .option('-r, --review', 'Review before saving')
+  .option('-v, --verbose', 'Show detailed output')
+  .action(architectureCommand);
+
+program
+  .command('plan [feature]')
+  .description('Create phased implementation plan with acceptance criteria')
+  .option('--store', 'Store sprint plan (internal use)')
+  .option('--id <id>', 'Plan ID')
+  .option('--content <content>', 'Sprint plan content')
+  .option('-d, --days <number>', 'Sprint duration in days', '5')
+  .option('-r, --review', 'Review before saving')
+  .option('-v, --verbose', 'Show detailed output')
+  .action(planCommand);
 
 // Privacy notice only for help command
 program.hook('preAction', (thisCommand) => {

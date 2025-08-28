@@ -1,0 +1,87 @@
+{
+  "gotcha-react-hooks-must-follow.md": {
+    "type": "gotcha",
+    "tags": [
+      "react",
+      "hook",
+      "gotcha"
+    ],
+    "area": "/",
+    "created": "2025-08-27",
+    "updated": "2025-08-27",
+    "relevance": "high",
+    "dependencies": [
+      ""
+    ]
+  },
+  "module-usestate-cant-be-called.md": {
+    "type": "gotcha",
+    "tags": [
+      "react",
+      "state",
+      "hooks",
+      "useState"
+    ],
+    "area": "/",
+    "created": "2025-08-27",
+    "updated": "2025-08-27",
+    "relevance": "high",
+    "dependencies": [
+      "gotcha-react-hooks-must-follow"
+    ]
+  },
+  "pattern-todo-implement-ginko-commands.md": {
+    "type": "pattern",
+    "tags": [
+      "unix",
+      "architecture",
+      "cli",
+      "semantic",
+      "backlog",
+      "todo"
+    ],
+    "area": "/packages/cli/src/commands",
+    "created": "2025-08-27",
+    "updated": "2025-08-27",
+    "relevance": "high",
+    "dependencies": [
+      "gotcha-explore-architecture-plan-modes-need-better"
+    ]
+  },
+  "module-todo-implement-recommendations.md": {
+    "type": "pattern",
+    "tags": [
+      "improvement",
+      "ai-context",
+      "templates",
+      "explore",
+      "architecture",
+      "plan",
+      "todo"
+    ],
+    "area": "/packages/cli/src/commands",
+    "created": "2025-08-27",
+    "updated": "2025-08-27",
+    "relevance": "critical",
+    "dependencies": [
+      "pattern-todo-implement-ginko-commands-as"
+    ]
+  },
+  "pattern-ai-enhancement-pattern-use.md": {
+    "type": "pattern",
+    "tags": [
+      "ai-enhancement",
+      "cli",
+      "two-phase",
+      "stdout"
+    ],
+    "area": "packages/cli/src/commands",
+    "created": "2025-08-28",
+    "updated": "2025-08-28",
+    "relevance": "high",
+    "dependencies": [
+      "chalk",
+      "fs-extra"
+    ]
+  }
+}

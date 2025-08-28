@@ -56,57 +56,6 @@ export default function SettingsPage() {
     loadUserData()
   }, [supabase])
 
-  const [newApiKey, setNewApiKey] = useState<string | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
-
-  const generateApiKey = async () => {
-    try {
-      setIsGenerating(true)
-      const response = await fetch('/api/generate-api-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        // Store the actual key temporarily for display
-        setNewApiKey(data.api_key)
-        // Update profile with hash info (actual key is never stored in profile)
-        setProfile(prev => ({
-          ...prev,
-          api_key_hash: 'stored', // Just indicate it exists
-          api_key_prefix: data.api_key.substring(0, 20) + '...', // Show prefix only
-          api_key_created_at: data.created_at
-        }))
-        // Reload profile data after a delay to get the actual DB state
-        setTimeout(async () => {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) {
-            const { data: updatedProfile } = await supabase
-              .from('user_profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single()
-            setProfile(updatedProfile)
-          }
-        }, 1000)
-      } else {
-        alert('Failed to generate API key. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error generating API key:', error)
-      alert('Failed to generate API key. Please try again.')
-    } finally {
-      setIsGenerating(false)
-    }
-  }
-
-  const copyApiKey = async () => {
-    if (newApiKey) {
-      await navigator.clipboard.writeText(newApiKey)
-      alert('✅ API key copied to clipboard!')
-    }
-  }
 
   if (loading) {
     return (
@@ -132,169 +81,32 @@ export default function SettingsPage() {
         </p>
       </div>
       
-      {/* API Key Section */}
+      {/* API Key Section - Redirect to dedicated page */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-            🔑 API Key
+            🔑 API Key Management
           </h2>
           <p className="text-gray-600 mt-1">
-            Use this API key to connect your development environment to Ginko
+            Manage your Ginko API keys for development environment integration
           </p>
         </div>
-        <div className="p-6 space-y-4">
-          {newApiKey ? (
-            // Show the newly generated API key with security warning
-            <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h3 className="font-semibold text-green-900 mb-2">🎉 New API Key Generated!</h3>
-                <p className="text-sm text-green-800 mb-3">
-                  <strong>⚠️ Important:</strong> Copy this key now. It won't be shown again for security reasons.
-                </p>
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-green-900">Your New API Key</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newApiKey}
-                      readOnly
-                      className="flex-1 font-mono text-sm px-3 py-2 border border-green-300 rounded-md bg-white"
-                    />
-                    <button
-                      onClick={copyApiKey}
-                      className="px-4 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700"
-                    >
-                      📋 Copy Key
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">🚀 Using Your API Key</h4>
-                <div className="space-y-3 text-sm text-blue-800">
-                  <div>
-                    <p className="font-medium mb-1">In your project's .mcp.json:</p>
-                    <pre className="bg-blue-100 p-3 rounded text-xs font-mono overflow-x-auto">
-{`{
-  "mcpServers": {
-    "ginko-mcp": {
-      "command": "npx",
-      "args": ["ginko-mcp-client"],
-      "env": {
-        "GINKO_MCP_SERVER_URL": "https://mcp.ginko.ai",
-        "GINKO_API_KEY": "YOUR_GINKO_API_KEY",
-        "GINKO_USER_ID": "${user?.id || 'YOUR_USER_ID'}",
-        "GINKO_TEAM_ID": "auto",
-        "GINKO_PROJECT_ID": "auto"
-      }
-    }
-  }
-}`}
-                    </pre>
-                  </div>
-                  <div>
-                    <p className="font-medium mb-1">Or as environment variable:</p>
-                    <pre className="bg-blue-100 p-3 rounded text-xs font-mono overflow-x-auto">
-export GINKO_API_KEY="YOUR_GINKO_API_KEY"
-export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
-                    </pre>
-                  </div>
-                </div>
-              </div>
-              
+        <div className="p-6">
+          <div className="text-center py-8">
+            <div className="text-4xl mb-4">🔑</div>
+            <h3 className="font-medium text-gray-900 mb-2">API Key Management</h3>
+            <p className="text-gray-500 mb-6">
+              Generate, view, and manage your API keys in the dedicated API keys section
+            </p>
+            <div className="space-x-3">
               <button
-                onClick={() => setNewApiKey(null)}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                onClick={() => window.location.href = '/dashboard/settings/api-keys'}
+                className="inline-flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
-                Dismiss this message
+                🔑 Manage API Keys
               </button>
             </div>
-          ) : profile?.api_key_hash ? (
-            <>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">API Key Status</label>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-mono text-sm text-gray-600">
-                        🔐 Active API Key (prefix: {profile.api_key_prefix || 'wmcp_sk_test_...'})
-                      </p>
-                      {profile.api_key_created_at && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Created: {new Date(profile.api_key_created_at).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={generateApiKey}
-                      disabled={isGenerating}
-                      className="px-4 py-2 text-sm bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isGenerating ? '⏳ Generating...' : '🔄 Regenerate'}
-                    </button>
-                  </div>
-                </div>
-                {profile.api_key_prefix?.startsWith('cmcp_') && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3">
-                    <p className="text-sm text-yellow-800">
-                      ⚠️ <strong>Legacy API Key Detected</strong> - Your key uses the old format. Click "🔄 Regenerate" to get an updated key with better security.
-                    </p>
-                  </div>
-                )}
-              </div>
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">🚀 Using Your API Key</h4>
-                <div className="space-y-3 text-sm text-blue-800">
-                  <div>
-                    <p className="font-medium mb-1">In your project's .mcp.json:</p>
-                    <pre className="bg-blue-100 p-3 rounded text-xs font-mono overflow-x-auto">
-{`{
-  "mcpServers": {
-    "ginko-mcp": {
-      "command": "npx",
-      "args": ["ginko-mcp-client"],
-      "env": {
-        "GINKO_MCP_SERVER_URL": "https://mcp.ginko.ai",
-        "GINKO_API_KEY": "YOUR_GINKO_API_KEY",
-        "GINKO_USER_ID": "${user?.id || 'YOUR_USER_ID'}",
-        "GINKO_TEAM_ID": "auto",
-        "GINKO_PROJECT_ID": "auto"
-      }
-    }
-  }
-}`}
-                    </pre>
-                  </div>
-                  <div>
-                    <p className="font-medium mb-1">Or as environment variable:</p>
-                    <pre className="bg-blue-100 p-3 rounded text-xs font-mono overflow-x-auto">
-export GINKO_API_KEY="YOUR_GINKO_API_KEY"
-export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
-                    </pre>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <div className="text-4xl mb-4">🔑</div>
-              <h3 className="font-medium text-gray-900 mb-2">No API Key Found</h3>
-              <p className="text-gray-500 mb-4">
-                Generate an API key to connect your development environment to Ginko
-              </p>
-              <div className="space-x-3">
-                <button 
-                  onClick={generateApiKey}
-                  disabled={isGenerating}
-                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isGenerating ? '⏳ Generating...' : '🔑 Generate API Key'}
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
       

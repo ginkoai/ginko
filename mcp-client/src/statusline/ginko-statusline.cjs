@@ -13,6 +13,7 @@ const os = require('os');
 const ConfigManager = require('./config-manager.cjs');
 const SessionTracker = require('./session-tracker.cjs');
 const PatternDetector = require('./pattern-detector.cjs');
+const ContextAdvisor = require('./context-advisor.cjs');
 
 // Read input from stdin (Claude Code provides session data as JSON)
 let input = '';
@@ -32,9 +33,101 @@ process.stdin.on('end', async () => {
 });
 
 /**
+ * Check if Ginko is installed in the current project or parent directories
+ */
+async function isGinkoInstalled(currentDir) {
+  try {
+    let dir = currentDir;
+    let depth = 0;
+    const maxDepth = 5; // Only check up to 5 parent directories
+    
+    while (depth < maxDepth) {
+      // Check for package.json with ginko dependencies
+      const packageJsonPath = path.join(dir, 'package.json');
+      if (fs.existsSync(packageJsonPath)) {
+        try {
+          const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+          
+          // Check for Ginko in dependencies or devDependencies
+          const hasGinkoDep = 
+            (packageJson.dependencies && (
+              packageJson.dependencies['@ginkoai/mcp-client'] ||
+              packageJson.dependencies['ginko-mcp-client'] ||
+              packageJson.dependencies['@ginko/mcp-server']
+            )) ||
+            (packageJson.devDependencies && (
+              packageJson.devDependencies['@ginkoai/mcp-client'] ||
+              packageJson.devDependencies['ginko-mcp-client'] ||
+              packageJson.devDependencies['@ginko/mcp-server']
+            ));
+          
+          // Check if this is a Ginko project itself
+          const isGinkoProject = packageJson.name && (
+            packageJson.name.includes('ginko') ||
+            packageJson.name.includes('@ginkoai')
+          );
+          
+          if (hasGinkoDep || isGinkoProject) {
+            return true;
+          }
+        } catch (e) {
+          // Failed to parse package.json, continue searching
+        }
+      }
+      
+      // Check for .mcp.json with Ginko configuration
+      const mcpConfigPath = path.join(dir, '.mcp.json');
+      if (fs.existsSync(mcpConfigPath)) {
+        try {
+          const mcpConfig = JSON.parse(fs.readFileSync(mcpConfigPath, 'utf8'));
+          if (mcpConfig.mcpServers && (
+            mcpConfig.mcpServers['ginko'] ||
+            mcpConfig.mcpServers['ginko-mcp'] ||
+            Object.keys(mcpConfig.mcpServers).some(key => key.includes('ginko'))
+          )) {
+            return true;
+          }
+        } catch (e) {
+          // Failed to parse .mcp.json, continue searching
+        }
+      }
+      
+      // Check for .ginko directory
+      const ginkoDirPath = path.join(dir, '.ginko');
+      if (fs.existsSync(ginkoDirPath) && fs.statSync(ginkoDirPath).isDirectory()) {
+        return true;
+      }
+      
+      // Move to parent directory
+      const parent = path.dirname(dir);
+      if (parent === dir) {
+        // Reached root directory
+        break;
+      }
+      dir = parent;
+      depth++;
+    }
+    
+    return false;
+  } catch (e) {
+    // On any error, default to not showing statusline
+    return false;
+  }
+}
+
+/**
  * Main status line generation
  */
 async function generateStatusLine(input) {
+  // Check if Ginko is installed in the current project
+  const context = await analyzeContext(input);
+  
+  // Only show Ginko statusline if Ginko is installed in the project
+  if (!context.hasGinko) {
+    // Return empty string to not show statusline
+    return '';
+  }
+  
   // Check for rapport status from SessionAgent first
   const rapportStatus = await checkRapportStatus();
   if (rapportStatus) {
@@ -42,7 +135,6 @@ async function generateStatusLine(input) {
   }
   
   // Fallback to regular coaching hints
-  const context = await analyzeContext(input);
   const userProfile = await loadUserProfile(input.sessionId);
   const hint = generateCoachingHint(context, userProfile);
   
@@ -67,8 +159,27 @@ async function analyzeContext(input) {
     inFlow: false,
     pattern: null,
     sessionResumed: false,
-    agentActivity: null  // Track agent MCP calls
+    agentActivity: null,  // Track agent MCP calls
+    hasGinko: false,  // Track if Ginko is installed
+    // Context advisor fields
+    contextAdvice: null,
+    toolCount: 0,
+    fileReads: 0,
+    fileWrites: 0,
+    searchCount: 0,
+    velocity: 0,
+    sessionStart: Date.now(),
+    lastContextCheck: 0,
+    toolHistory: [],
+    activeFiles: [],
+    timeSinceProgress: 0,
+    repetitionCount: 0,
+    blockedTime: 0,
+    currentTask: null
   };
+  
+  // Check if Ginko is installed in the current project
+  context.hasGinko = await isGinkoInstalled(context.currentDir);
   
   // Check for recent session start to detect fresh Claude Code launch
   try {
@@ -100,6 +211,46 @@ async function analyzeContext(input) {
   context.vibecheckActive = await detectActiveVibecheck(input);
   context.vibecheckDecision = await getVibecheckDecision(input);
   
+  // Load tool history for context advisor
+  try {
+    const historyFile = path.join(os.homedir(), '.ginko', 'tool_history.jsonl');
+    if (fs.existsSync(historyFile)) {
+      const lines = fs.readFileSync(historyFile, 'utf8').split('\n').filter(Boolean);
+      const recentHistory = lines.slice(-50); // Last 50 tools
+      
+      context.toolCount = recentHistory.length;
+      context.toolHistory = recentHistory.map(line => {
+        try {
+          const entry = JSON.parse(line);
+          const tool = entry.tool || 'unknown';
+          
+          // Track specific tool types
+          if (['Read', 'Glob'].includes(tool)) context.fileReads++;
+          if (['Write', 'Edit', 'MultiEdit'].includes(tool)) context.fileWrites++;
+          if (['Grep', 'WebSearch'].includes(tool)) context.searchCount++;
+          
+          return tool;
+        } catch (e) {
+          return 'unknown';
+        }
+      });
+      
+      // Calculate velocity (tools per minute in last 5 minutes)
+      const fiveMinAgo = Date.now() / 1000 - 300;
+      const recentTools = recentHistory.filter(line => {
+        try {
+          const entry = JSON.parse(line);
+          return entry.timestamp > fiveMinAgo;
+        } catch (e) {
+          return false;
+        }
+      });
+      context.velocity = recentTools.length / 5;
+    }
+  } catch (e) {
+    // Silent fail for history loading
+  }
+  
   // Load session state if exists
   const stateFile = getStateFilePath(input.sessionId);
   if (fs.existsSync(stateFile)) {
@@ -122,10 +273,20 @@ async function analyzeContext(input) {
       // Check for agent activity
       context.agentActivity = checkAgentActivity(state);
       
+      // Load additional state for context advisor
+      context.currentTask = state.currentTask || null;
+      context.activeFiles = state.activeFiles || [];
+      context.timeSinceProgress = state.timeSinceProgress || 0;
+      context.repetitionCount = state.repetitionCount || 0;
+      context.blockedTime = state.blockedTime || 0;
+      
     } catch (e) {
       // Silent fail - use defaults
     }
   }
+  
+  // Get context advice based on current state
+  context.contextAdvice = ContextAdvisor.getContextAdvice(context);
   
   // Check for recent agent activity
   const agentActivityFile = path.join(os.homedir(), '.watchhill', 'agent-activity.json');
@@ -246,7 +407,7 @@ function checkAchievements(state) {
     firstVibecheck: {
       condition: state.vibecheckCount === 1,
       name: 'First Vibecheck',
-      icon: '🎯',
+      icon: '✏️',
       xp: 50
     },
     patternSpotter: {
@@ -350,11 +511,23 @@ function generateCoachingHint(context, profile) {
     };
   }
   
+  // Context advice (highest priority)
+  if (context.contextAdvice) {
+    const advice = context.contextAdvice;
+    const helperNote = advice.helper ? ' (see ~/.ginko/compact-helper.txt)' : '';
+    return {
+      message: advice.message + helperNote,
+      icon: advice.icon || '📊',
+      type: 'context-advice',
+      priority: 'high'
+    };
+  }
+  
   // Vibecheck suggestion
   if (context.vibecheckNeeded) {
     return {
       message: "Vibecheck suggested - feeling stuck?",
-      icon: '🎯',
+      icon: '✏️',
       type: 'vibecheck'
     };
   }
@@ -387,7 +560,7 @@ function generateCoachingHint(context, profile) {
   // Default message - Ginko session capture active
   return {
     message: "Ginko session capture active",
-    icon: '🎯',
+    icon: '✏️',
     type: 'default'
   };
 }
@@ -403,7 +576,7 @@ function formatStatusLine(hint, context, profile) {
     blue: '\x1b[34m',
     magenta: '\x1b[35m',
     cyan: '\x1b[36m',
-    brightBlue: '\x1b[1m\x1b[38;5;147m',  // Bold periwinkle blue (256-color)
+    brightGreen: '\x1b[1m\x1b[38;5;155m',  // Bold yellow-green like Ginkgo leaves (256-color)
     brightCyan: '\x1b[38;5;159m',  // Light blue for messages
     bold: '\x1b[1m',
     reset: '\x1b[0m'
@@ -413,44 +586,44 @@ function formatStatusLine(hint, context, profile) {
   switch (profile.gamificationMode) {
     case 'full-gamer':
       if (hint.type === 'achievement') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.yellow}ACHIEVEMENT! ${hint.message} +${hint.xp}XP${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.yellow}ACHIEVEMENT! ${hint.message} +${hint.xp}XP${colors.reset}`;
       }
-      return `${colors.brightBlue}Ginko:${colors.reset} Lvl ${profile.level} ${profile.title} | ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+      return `${colors.brightGreen}Ginko:${colors.reset} Lvl ${profile.level} ${profile.title} | ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
       
     case 'professional':
       if (hint.type === 'vibecheck') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${colors.yellow}⚠ Alignment check suggested${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${colors.yellow}⚠ Alignment check suggested${colors.reset}`;
       }
-      return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${hint.message}`;
+      return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${hint.message}`;
       
     case 'minimal':
       if (hint.type === 'vibecheck') {
-        return `${colors.brightBlue}Ginko:${colors.reset} Vibecheck?`;
+        return `${colors.brightGreen}Ginko:${colors.reset} Vibecheck?`;
       }
-      return `${colors.brightBlue}Ginko:${colors.reset} ${hint.message}`;
+      return `${colors.brightGreen}Ginko:${colors.reset} ${hint.message}`;
       
     default: // balanced
       if (hint.type === 'achievement') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'vibecheck') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.bold}${colors.yellow}${hint.message}${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.bold}${colors.yellow}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'vibecheck-active') {
         // Animated dots for active vibecheck
         const dots = '.'.repeat(1 + (Date.now() % 3000) / 1000);
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.yellow}${hint.message}${dots}${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.yellow}${hint.message}${dots}${colors.reset}`;
       }
       if (hint.type === 'vibecheck-complete') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.green}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'flow') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
       }
       if (hint.type === 'agent-activity') {
-        return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+        return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
       }
-      return `${colors.brightBlue}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
+      return `${colors.brightGreen}Ginko:${colors.reset} ${hint.icon} ${colors.brightCyan}${hint.message}${colors.reset}`;
   }
 }
 
@@ -572,7 +745,7 @@ async function getVibecheckDecision(input) {
  * Format rapport status from SessionAgent
  */
 function formatRapportStatus(status) {
-  const brandPrefix = '\x1b[38;5;141m\x1b[1mGinko:\x1b[0m'; // Periwinkle blue + bold
+  const brandPrefix = '\x1b[38;5;155m\x1b[1mGinko:\x1b[0m'; // Yellow-green like Ginkgo leaves + bold
   
   // Special handling for achievements (already has emoji in message)
   if (status.phase === 'achievement' && status.message.includes('🏆')) {

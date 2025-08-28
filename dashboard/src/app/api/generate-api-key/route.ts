@@ -27,17 +27,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Generate a new API key matching MCP server format: wmcp_sk_{environment}_{base64url}
-    // Force test environment to match MCP server expectation
-    const environment = 'test' // process.env.NODE_ENV === 'production' ? 'live' : 'test'
-    const keySecret = randomBytes(32).toString('base64url')
-    const apiKey = `wmcp_sk_${environment}_${keySecret}`
+    // Generate a new API key with Ginko format: gk_{hex}
+    const keySecret = randomBytes(32).toString('hex')
+    const apiKey = `gk_${keySecret}`
     
     // Hash the API key for secure storage (12 rounds like AuthManager)
     const apiKeyHash = await bcrypt.hash(apiKey, 12)
     
-    // Extract prefix for display (first 8 chars of the secret)
-    const apiKeyPrefix = keySecret.substring(0, 8)
+    // Extract prefix for display (gk_ + first 8 chars of the secret)
+    const apiKeyPrefix = `gk_${keySecret.substring(0, 8)}`
     
     // Check if user profile exists
     const { data: existingProfile } = await supabase

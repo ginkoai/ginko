@@ -115,3 +115,4 @@ ADRs are never deleted, only deprecated or superseded. This maintains a complete
 **Last Updated:** 2025-08-12  
 **Next Available Number:** ADR-019  
 **Maintainer:** Architecture Team
+- [ADR-025: Context Preservation System Architecture](./ADR-025-context-preservation-system-architecture.md)

@@ -54,7 +54,23 @@ export async function GET(request: NextRequest) {
       console.error('Failed to fetch scorecards from Supabase:', error)
       console.error('Query details:', { teamId, dateLimit: dateLimit.toISOString(), limit })
       
-      // Return error with more detail  
+      // If table doesn't exist, return empty data instead of error
+      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+        return NextResponse.json({
+          scorecards: [],
+          summary: {
+            totalSessions: 0,
+            avgCollaborationScore: 0,
+            avgTaskCompletion: 0,
+            avgHandoffQuality: 0,
+            totalSessionTime: 0,
+            periodDays: days
+          },
+          message: 'No sessions recorded yet'
+        })
+      }
+      
+      // Return error with more detail for other errors
       return NextResponse.json({
         error: 'Database query failed',
         details: error.message,
