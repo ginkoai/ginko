@@ -18,7 +18,7 @@ import { handoffAiCommand } from './commands/handoff-ai.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
-import { vibecheckCommand } from './commands/vibecheck.js';
+import vibecheckCommand from './commands/vibecheck-final.js';
 import { vibecheckAiCommand } from './commands/vibecheck-ai.js';
 import { compactCommand } from './commands/compact.js';
 import { shipCommand } from './commands/ship.js';
@@ -102,22 +102,19 @@ program
 
 program
   .command('vibecheck [concern]')
-  .description('AI-enhanced recalibration when feeling lost or stuck')
+  .description('Pause moment for recalibration - conversational check-in')
+  .option('-v, --verbose', 'Show additional context')
+  .option('--analyze', 'Full AI analysis mode (generates detailed report)')
   .option('--store', 'Store AI analysis (internal use)')
   .option('--id <id>', 'Vibecheck ID for storing analysis')
   .option('--content <content>', 'Enriched analysis to store')
-  .option('--no-ai', 'Disable AI enhancement')
-  .option('--quick', 'Quick vibecheck without AI')
-  .option('-v, --verbose', 'Show detailed output')
   .action((concern, options) => {
-    // Use AI version if any AI-related options present
-    const useAiVersion = options.store || options.id || options.content ||
-                         options.ai !== false || !options.quick;
-    
-    if (useAiVersion) {
+    // Only use AI version if explicitly requested or in store phase
+    if (options.analyze || options.store || options.id || options.content) {
       return vibecheckAiCommand(concern, options);
     } else {
-      return vibecheckCommand(concern);
+      // Default to simple conversational vibecheck
+      return vibecheckCommand(concern, options);
     }
   });
 
