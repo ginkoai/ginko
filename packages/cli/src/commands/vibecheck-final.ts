@@ -47,6 +47,7 @@ export async function vibecheckCommand(concern?: string, options: VibecheckOptio
     
     // Show the concern
     console.log(concern);
+    console.log(); // Add spacing for natural pause
     
     // In verbose mode, show additional context
     if (options.verbose) {
@@ -79,8 +80,8 @@ export async function vibecheckCommand(concern?: string, options: VibecheckOptio
     // Log the vibecheck
     await logVibecheck(ginkoDir, concern);
     
-    // That's it - no special exit codes, no templates
-    // The AI should just respond naturally to the concern
+    // That's it - clean output, no indicators
+    // The empty line after the concern is enough spacing for natural conversation
     
   } catch (error) {
     // Even errors should be calm
