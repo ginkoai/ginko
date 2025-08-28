@@ -27,9 +27,18 @@ export interface AiEnhancementContext {
 }
 
 /**
- * Special exit code to signal AI processing needed (ADR-024)
+ * Special exit codes to signal AI processing needed (ADR-024)
  */
-export const AI_PROCESSING_EXIT_CODE = 42;
+export const AI_PROCESSING_EXIT_CODE = 42;  // General AI enhancement
+export const AI_EXIT_CODES = {
+  CAPTURE: 42,      // Capture enhancement
+  HANDOFF: 42,      // Handoff enhancement (same as general)
+  EXPLORE: 43,      // Exploration mode
+  ARCHITECTURE: 44, // Architecture decision mode
+  PLAN: 45,         // Sprint planning mode
+  VIBECHECK: 46,    // Vibecheck analysis
+  SHIP: 47          // Ship with smart commits
+} as const;
 
 /**
  * AI instruction markers in templates

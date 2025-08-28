@@ -19,8 +19,10 @@ import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
 import { vibecheckCommand } from './commands/vibecheck.js';
+import { vibecheckAiCommand } from './commands/vibecheck-ai.js';
 import { compactCommand } from './commands/compact.js';
 import { shipCommand } from './commands/ship.js';
+import { shipAiCommand } from './commands/ship-ai.js';
 import { captureCommand } from './commands/capture.js';
 import { exploreCommand } from './commands/explore.js';
 import { architectureCommand } from './commands/architecture.js';
@@ -100,8 +102,24 @@ program
 
 program
   .command('vibecheck [concern]')
-  .description('Quick recalibration when feeling lost or stuck')
-  .action(vibecheckCommand);
+  .description('AI-enhanced recalibration when feeling lost or stuck')
+  .option('--store', 'Store AI analysis (internal use)')
+  .option('--id <id>', 'Vibecheck ID for storing analysis')
+  .option('--content <content>', 'Enriched analysis to store')
+  .option('--no-ai', 'Disable AI enhancement')
+  .option('--quick', 'Quick vibecheck without AI')
+  .option('-v, --verbose', 'Show detailed output')
+  .action((concern, options) => {
+    // Use AI version if any AI-related options present
+    const useAiVersion = options.store || options.id || options.content ||
+                         options.ai !== false || !options.quick;
+    
+    if (useAiVersion) {
+      return vibecheckAiCommand(concern, options);
+    } else {
+      return vibecheckCommand(concern);
+    }
+  });
 
 program
   .command('compact')
@@ -112,11 +130,27 @@ program
 
 program
   .command('ship [message]')
-  .description('Create and push PR-ready branch with changes')
+  .description('AI-enhanced shipping with smart commit messages and PR descriptions')
   .option('-b, --branch <name>', 'Specify branch name')
   .option('--no-push', 'Skip pushing to remote')
   .option('--no-tests', 'Skip running tests')
-  .action(shipCommand);
+  .option('--store', 'Execute ship with AI content (internal use)')
+  .option('--id <id>', 'Ship ID for AI content')
+  .option('--content <content>', 'AI-generated ship content')
+  .option('--no-ai', 'Disable AI enhancement')
+  .option('--quick', 'Quick ship without AI')
+  .option('-v, --verbose', 'Show detailed output')
+  .action((message, options) => {
+    // Use AI version if any AI-related options present
+    const useAiVersion = options.store || options.id || options.content ||
+                         (options.ai !== false && !options.quick);
+    
+    if (useAiVersion) {
+      return shipAiCommand(message, options);
+    } else {
+      return shipCommand(message, options);
+    }
+  });
 
 // Hero command: capture - for effortless context capture
 program
