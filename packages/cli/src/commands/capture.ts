@@ -107,16 +107,13 @@ export async function captureCommand(description: string | undefined, options: C
       console.log(chalk.dim(`ID: ${captureId}`));
     }
 
-    // Output template and AI instructions (to stdout to avoid stderr)
-    process.stdout.write(template + '\n');
-    process.stdout.write(chalk.dim('---') + '\n');
-    process.stdout.write(generateAIPrompt(description, captureId, type) + '\n');
-
-    // Ensure stdout is flushed before exit
-    await new Promise(resolve => process.stdout.write('', resolve));
-
-    // Exit with code 42 to signal AI enhancement needed
-    process.exit(42);
+    // Output template and AI instructions to stdout
+    console.log(template);
+    console.log(chalk.dim('---'));
+    console.log(generateAIPrompt(description, captureId, type));
+    
+    // Exit with code 0 (success) - the AI prompt is informational, not an error
+    process.exit(0);
     
   } catch (error) {
     if (!options.quiet) {
