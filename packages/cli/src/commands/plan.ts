@@ -74,12 +74,15 @@ export async function planCommand(feature: string | undefined, options: PlanOpti
       }
     }
 
-    // Output plan framework
-    console.log(chalk.magenta('\n📋 Sprint Planning Mode'));
-    console.log(chalk.dim('─'.repeat(60)));
-    console.log(framework);
-    console.log(chalk.dim('─'.repeat(60)));
-    console.log(generatePlanInstructions(planId, sprintDays));
+    // Output plan framework (to stdout to avoid stderr)
+    process.stdout.write(chalk.magenta('\n📋 Sprint Planning Mode') + '\n');
+    process.stdout.write(chalk.dim('─'.repeat(60)) + '\n');
+    process.stdout.write(framework + '\n');
+    process.stdout.write(chalk.dim('─'.repeat(60)) + '\n');
+    process.stdout.write(generatePlanInstructions(planId, sprintDays) + '\n');
+
+    // Ensure stdout is flushed before exit
+    await new Promise(resolve => process.stdout.write('', resolve));
 
     // Exit with code 45 to signal planning mode
     process.exit(45);

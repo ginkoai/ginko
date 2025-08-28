@@ -66,12 +66,15 @@ export async function exploreCommand(topic: string | undefined, options: Explore
       console.log(chalk.dim(`ID: ${exploreId}`));
     }
 
-    // Output exploration framework
-    console.log(chalk.cyan('\n🔮 Exploration Mode: ' + chalk.bold(topic)));
-    console.log(chalk.dim('─'.repeat(60)));
-    console.log(prompt);
-    console.log(chalk.dim('─'.repeat(60)));
-    console.log(generateAIInstructions(exploreId, explorationSize));
+    // Output exploration framework (to stdout to avoid stderr)
+    process.stdout.write(chalk.cyan('\n🔮 Exploration Mode: ' + chalk.bold(topic)) + '\n');
+    process.stdout.write(chalk.dim('─'.repeat(60)) + '\n');
+    process.stdout.write(prompt + '\n');
+    process.stdout.write(chalk.dim('─'.repeat(60)) + '\n');
+    process.stdout.write(generateAIInstructions(exploreId, explorationSize) + '\n');
+
+    // Ensure stdout is flushed before exit
+    await new Promise(resolve => process.stdout.write('', resolve));
 
     // Exit with code 43 to signal exploration mode
     process.exit(43);

@@ -67,12 +67,15 @@ export async function architectureCommand(decision: string | undefined, options:
       console.log(chalk.dim(`ID: ${archId}`));
     }
 
-    // Output ADR framework
-    console.log(chalk.blue('\n🏛️  Architecture Decision Mode'));
-    console.log(chalk.dim('─'.repeat(60)));
-    console.log(framework);
-    console.log(chalk.dim('─'.repeat(60)));
-    console.log(generateArchInstructions(archId, adrNumber));
+    // Output ADR framework (to stdout to avoid stderr)
+    process.stdout.write(chalk.blue('\n🏛️  Architecture Decision Mode') + '\n');
+    process.stdout.write(chalk.dim('─'.repeat(60)) + '\n');
+    process.stdout.write(framework + '\n');
+    process.stdout.write(chalk.dim('─'.repeat(60)) + '\n');
+    process.stdout.write(generateArchInstructions(archId, adrNumber) + '\n');
+
+    // Ensure stdout is flushed before exit
+    await new Promise(resolve => process.stdout.write('', resolve));
 
     // Exit with code 44 to signal architecture mode
     process.exit(44);
