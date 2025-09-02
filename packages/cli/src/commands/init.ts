@@ -18,6 +18,7 @@ import { AiAdapter } from '../adapters/ai-adapter.js';
 import { ClaudeAdapter } from '../adapters/claude-adapter.js';
 import { OpenAIAdapter } from '../adapters/openai-adapter.js';
 import { GenericAdapter } from '../adapters/generic-adapter.js';
+import { CursorAdapter } from '../adapters/cursor-adapter.js';
 import { findGinkoRoot } from '../utils/ginko-root.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
@@ -133,8 +134,17 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
         aiModel: adapter.name,
       };
       
-      const modelContent = adapter.getModelSpecificSections() + adapter.getQuickReferenceCommands();
-      const aiInstructions = AiInstructionsTemplate.generate(templateVars, modelContent);
+      // Special handling for Cursor adapter which has its own concise format
+      let aiInstructions: string;
+      if (adapter instanceof CursorAdapter) {
+        // Use Cursor's custom generate method for concise .cursorrules
+        aiInstructions = await adapter.generate(templateVars);
+      } else {
+        // Use standard template generation for other adapters
+        const modelContent = adapter.getModelSpecificSections() + adapter.getQuickReferenceCommands();
+        aiInstructions = AiInstructionsTemplate.generate(templateVars, modelContent);
+      }
+      
       await fs.writeFile(path.join(projectRoot, adapter.fileExtension), aiInstructions);
       
       // Generate initial context modules based on detected patterns
@@ -347,6 +357,8 @@ function selectAiAdapter(model?: string): AiAdapter {
     case 'gpt-4':
     case 'gpt-3.5':
       return new OpenAIAdapter();
+    case 'cursor':
+      return new CursorAdapter();
     default:
       // Default to Claude for backward compatibility,
       // but could be made configurable
@@ -356,12 +368,24 @@ function selectAiAdapter(model?: string): AiAdapter {
 
 // Auto-detect AI model from environment or config
 function detectAiModel(): string {
+  // Check for Cursor IDE
+  if (process.env.CURSOR_IDE || process.env.IS_CURSOR) return 'cursor';
+  
   // Check common environment variables
   if (process.env.ANTHROPIC_API_KEY) return 'claude';
   if (process.env.OPENAI_API_KEY) return 'gpt';
   
   // Check for Claude Code environment
   if (process.env.CLAUDE_CODE || process.env.CLAUDE_PROJECT_ID) return 'claude';
+  
+  // Check if .cursorrules exists in parent directories
+  try {
+    const { execSync } = require('child_process');
+    execSync('find . -maxdepth 3 -name ".cursorrules" 2>/dev/null | head -1', { encoding: 'utf8' });
+    return 'cursor';
+  } catch {
+    // Not in a Cursor project
+  }
   
   // Default to generic if no model detected
   return 'generic';

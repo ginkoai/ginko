@@ -1,0 +1,24 @@
+{
+  "name": "@ginkoai/cursor-agent",
+  "version": "1.0.0",
+  "description": "Ginko Agent for Cursor - AI context management",
+  "main": "index.js",
+  "type": "commonjs",
+  "keywords": [
+    "cursor",
+    "agent",
+    "ai",
+    "context",
+    "ginko"
+  ],
+  "author": "ginkoai",
+  "license": "MIT",
+  "cursor": {
+    "agent": true,
+    "manifest": "agent.json"
+  },
+  "dependencies": {},
+  "scripts": {
+    "install-agent": "cursor --install-agent ."
+  }
+}

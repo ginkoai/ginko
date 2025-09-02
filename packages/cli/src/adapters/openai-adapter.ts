@@ -17,6 +17,28 @@ export class OpenAIAdapter extends BaseAiAdapter {
   
   getModelSpecificSections(): string {
     return `
+## How to Use This Guide with GPT
+
+### Starting a Session
+1. **Run in terminal**: \`ginko start\`
+2. **Upload this file** (GPT.md) to ChatGPT
+3. **For context**, also upload: \`.ginko/sessions/*/current.md\`
+4. **Begin with**: "I've uploaded my project context. Let's continue working on [task]"
+
+### During Development
+- **Save progress**: Run \`ginko handoff\` in terminal periodically
+- **Load handoff**: Upload \`.ginko/sessions/*/current.md\` to GPT
+- **Context modules**: Upload relevant \`.ginko/context/modules/*.md\` files
+
+### Creating a Custom GPT
+For repeated use, create a Custom GPT with:
+- **Instructions**: Copy contents of this GPT.md file
+- **Knowledge**: Upload \`.ginko/context/modules/\` directory
+- **Conversation starters**: 
+  - "Load my ginko handoff"
+  - "Start new feature with ginko context"
+  - "Review my code using ginko standards"
+
 ## GPT-Specific Features
 
 ### Code Interpreter
@@ -40,6 +62,8 @@ export class OpenAIAdapter extends BaseAiAdapter {
 ### GPT Quick Reference
 - **Code execution**: Ask to "run this code" for Python
 - **Structured output**: Request JSON format for data
-- **Step-by-step**: Break complex tasks into steps`;
+- **Step-by-step**: Break complex tasks into steps
+- **File context**: Say "I've uploaded [filename]" when sharing files
+- **Save state**: Ask GPT to "summarize our progress" before ending session`;
   }
 }
