@@ -88,18 +88,56 @@ A collaborative SaaS platform for intelligent context management in Claude Code 
 
 ## 🚀 Getting Started
 
-### **Quick Start with Cursor IDE**
+### **Quick Start - Choose Your AI Assistant**
+
+#### **Option 1: Cursor IDE Integration**
 ```bash
 # Install ginko CLI
 npm install -g @ginkoai/cli
 
-# Initialize in your project
-ginko init --model=cursor
+# Set up Cursor integration
+ginko init-cursor --apply
 
-# Start using in Cursor
-# 1. Enable Custom Modes in Settings → Chat → Custom Modes (Beta)
-# 2. Add Ginko mode following docs/CURSOR-INTEGRATION.md
-# 3. Start with: @ginko in chat
+# Remove when done
+ginko uninstall-cursor
+```
+
+#### **Option 2: GitHub Copilot Integration**
+```bash
+# Install ginko CLI
+npm install -g @ginkoai/cli
+
+# Set up GitHub Copilot
+ginko init-copilot --apply
+
+# Remove when done
+ginko uninstall-copilot
+```
+
+#### **Option 3: Claude Code (Native)**
+```bash
+# Install ginko CLI
+npm install -g @ginkoai/cli
+
+# Initialize project
+ginko init
+
+# Start session
+ginko start
+```
+
+### **Seamless AI Switching**
+Switch between AI assistants while maintaining context:
+```bash
+# Save your work
+ginko handoff
+
+# Switch to different AI
+ginko uninstall-cursor
+ginko init-copilot --apply
+
+# Continue where you left off
+ginko start
 ```
 
 ### **Local Development**
