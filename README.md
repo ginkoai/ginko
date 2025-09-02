@@ -88,6 +88,20 @@ A collaborative SaaS platform for intelligent context management in Claude Code 
 
 ## 🚀 Getting Started
 
+### **Quick Start with Cursor IDE**
+```bash
+# Install ginko CLI
+npm install -g @ginkoai/cli
+
+# Initialize in your project
+ginko init --model=cursor
+
+# Start using in Cursor
+# 1. Enable Custom Modes in Settings → Chat → Custom Modes (Beta)
+# 2. Add Ginko mode following docs/CURSOR-INTEGRATION.md
+# 3. Start with: @ginko in chat
+```
+
 ### **Local Development**
 ```bash
 # Install dependencies
