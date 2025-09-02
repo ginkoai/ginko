@@ -26,21 +26,19 @@ Seek clarification if necessary.
    - Include co-author: Chris Norton <chris@ginko.ai>
 
 4. **Generate session handoff**:
-   - Run prepare_handoff to generate template with temp file preview
-   - **PAUSE**: Show user the temp file path for review
-   - Wait for user approval before proceeding  
-   - Fill out template completely with actual session details
-   - Use store_handoff to save the completed handoff
-   - Clean up temp file after successful save
+   - Run `ginko handoff "$ARGUMENTS"` to create handoff
+   - The handoff will be saved to `.ginko/sessions/*/current.md`
+   - Previous handoff automatically archived with date and description
+   - AI will self-identify model, version, and provider in frontmatter
    - Include current branch state and next steps
 
-5. **Score collaboration session**:
+5. **Optional: Score collaboration session** (if MCP tools available):
    - Use score_collaboration_session to analyze current session
    - Evaluate task completion, context efficiency, session momentum
    - Generate scoring data for dashboard analytics
    - Store comprehensive scorecard in database
 
-6. **Generate coaching insights**:
+6. **Optional: Generate coaching insights** (if MCP tools available):
    - Use generate_coaching_insights to analyze session patterns
    - Identify collaboration strengths and improvement areas  
    - Provide personalized workflow recommendations
