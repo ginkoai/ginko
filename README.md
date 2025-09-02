@@ -1,6 +1,8 @@
 # Ginko
 
-A collaborative SaaS platform for intelligent context management in Claude Code sessions. Transforms individual development into team-wide context intelligence.
+**"Nothing special, just quicker."** 🌿
+
+A collaborative SaaS platform for intelligent context management in AI-assisted development. Transforms individual development into team-wide context intelligence.
 
 **🌐 Live Production**: https://app.ginko.ai
 

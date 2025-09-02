@@ -67,7 +67,7 @@ export async function handoffAiCommand(options: HandoffOptions) {
     
     // Quick mode: basic template without AI
     if (options.quick) {
-      const basicHandoff = generateBasicHandoff({
+      const basicHandoff = await generateBasicHandoff({
         userEmail,
         currentBranch,
         mode,
@@ -76,7 +76,7 @@ export async function handoffAiCommand(options: HandoffOptions) {
         commits: log.all
       });
       
-      await saveHandoff(sessionDir, basicHandoff);
+      await saveHandoff(sessionDir, basicHandoff, options.message);
       
       if (spinner) spinner.succeed('Handoff created (quick mode)');
       console.log(chalk.dim('done'));
@@ -84,7 +84,7 @@ export async function handoffAiCommand(options: HandoffOptions) {
     }
     
     // Generate AI-enhanced template
-    const template = generateAiHandoffTemplate({
+    const template = await generateAiHandoffTemplate({
       handoffId,
       userEmail,
       currentBranch,
@@ -126,7 +126,7 @@ export async function handoffAiCommand(options: HandoffOptions) {
     }
     
     // No AI mode: save basic template
-    await saveHandoff(sessionDir, template.content);
+    await saveHandoff(sessionDir, template.content, options.message);
     console.log(chalk.dim('done'));
     
   } catch (error) {
@@ -161,8 +161,12 @@ async function storeEnrichedHandoff(id: string, content: string): Promise<void> 
       throw new Error(`Content validation failed: ${validation.issues.join(', ')}`);
     }
     
+    // Extract summary for archive naming
+    const summaryMatch = content.match(/## 📊 Session Summary\n([^\n]+)/);
+    const summary = summaryMatch?.[1] || 'session handoff';
+    
     // Archive existing handoff if present
-    await archiveExistingHandoff(sessionDir);
+    await archiveExistingHandoff(sessionDir, summary);
     
     // Save enriched content
     const currentHandoff = path.join(sessionDir, 'current.md');
@@ -192,11 +196,41 @@ async function storeEnrichedHandoff(id: string, content: string): Promise<void> 
 }
 
 /**
+ * Get the most recent handoff for context
+ */
+async function getMostRecentHandoff(sessionDir: string): Promise<string | null> {
+  // Check current.md first
+  const currentPath = path.join(sessionDir, 'current.md');
+  if (await fs.pathExists(currentPath)) {
+    return fs.readFile(currentPath, 'utf8');
+  }
+  
+  // Otherwise check archive
+  const archiveDir = path.join(sessionDir, 'archive');
+  if (await fs.pathExists(archiveDir)) {
+    const files = await fs.readdir(archiveDir);
+    const handoffs = files
+      .filter(f => f.endsWith('.md'))
+      .sort()
+      .reverse(); // Most recent first by date prefix
+    
+    if (handoffs.length > 0) {
+      return fs.readFile(path.join(archiveDir, handoffs[0]), 'utf8');
+    }
+  }
+  
+  return null;
+}
+
+/**
  * Generate AI-enhanced handoff template with placeholders
  */
-function generateAiHandoffTemplate(context: any) {
+async function generateAiHandoffTemplate(context: any) {
   const timestamp = new Date().toISOString();
   const sessionId = Date.now();
+  
+  // Read previous handoff for context
+  const previousHandoff = await getMostRecentHandoff(context.sessionDir);
   
   const content = `---
 session_id: ${sessionId}
@@ -205,6 +239,9 @@ timestamp: ${timestamp}
 mode: ${context.mode}
 branch: ${context.currentBranch}
 ai_enhanced: true
+ai_model: [AI: Please identify your model name, e.g., claude-3.5-sonnet, gpt-4-turbo, cursor-fast]
+ai_version: [AI: Please identify your version/date, e.g., 20241022, 2024-04-09, latest]
+ai_provider: [AI: Please identify your provider, e.g., anthropic, openai, cursor, github]
 ---
 
 # Session Handoff
@@ -276,11 +313,30 @@ AI-Enhanced with ADR-024 pattern`;
       status: context.status,
       branch: context.currentBranch,
       mode: context.mode,
-      files: [...context.status.modified, ...context.status.staged, ...context.status.not_added]
+      files: [...context.status.modified, ...context.status.staged, ...context.status.not_added],
+      previousHandoff: previousHandoff ? previousHandoff.substring(0, 2000) : null // Include first 2000 chars for context
     }
   };
 
-  const prompt = generateCompletionPrompt(enhancementContext, content);
+  // Enhanced prompt with model identification and previous context
+  const basePrompt = generateCompletionPrompt(enhancementContext, content);
+  const prompt = `${basePrompt}
+
+IMPORTANT: AI Model Identification
+In the frontmatter, replace the [AI: ...] placeholders with your actual model information:
+- ai_model: Your model name (e.g., claude-3.5-sonnet, gpt-4-turbo, cursor-fast, copilot-chat)
+- ai_version: Your version/date (e.g., 20241022, 2024-04-09, latest)
+- ai_provider: Your provider (e.g., anthropic, openai, cursor, github)
+
+If you're unsure, use "unknown" for any field.
+
+${previousHandoff ? `Previous Handoff for Context:
+---
+${previousHandoff}
+---
+Use this previous handoff to maintain continuity and understand what was worked on before.` : 'This is the first handoff for this session.'}
+
+Ginko Philosophy: "Nothing special, just quicker" - You're simply filling out what a developer would write manually, just faster.`;
 
   return { content, prompt };
 }
@@ -288,7 +344,7 @@ AI-Enhanced with ADR-024 pattern`;
 /**
  * Generate basic handoff without AI enhancement
  */
-function generateBasicHandoff(context: any): string {
+async function generateBasicHandoff(context: any): Promise<string> {
   const timestamp = new Date().toISOString();
   const sessionId = Date.now();
   
@@ -338,8 +394,12 @@ Generated at ${new Date().toLocaleString()}`;
 /**
  * Save handoff to filesystem
  */
-async function saveHandoff(sessionDir: string, content: string): Promise<void> {
-  await archiveExistingHandoff(sessionDir);
+async function saveHandoff(sessionDir: string, content: string, message?: string): Promise<void> {
+  // Extract summary from content for archive naming
+  const summaryMatch = content.match(/## 📊 Session Summary\n([^\n]+)/);
+  const summary = message || summaryMatch?.[1] || 'session handoff';
+  
+  await archiveExistingHandoff(sessionDir, summary);
   const currentHandoff = path.join(sessionDir, 'current.md');
   await fs.writeFile(currentHandoff, content);
 }
@@ -347,24 +407,65 @@ async function saveHandoff(sessionDir: string, content: string): Promise<void> {
 /**
  * Archive existing handoff if present
  */
-async function archiveExistingHandoff(sessionDir: string): Promise<void> {
+// Common words to filter out when generating descriptions
+const COMMON_WORDS = new Set([
+  'the', 'and', 'for', 'with', 'from', 'into', 'this', 'that', 'was', 'are',
+  'been', 'have', 'has', 'had', 'were', 'will', 'would', 'could', 'should'
+]);
+
+/**
+ * Generate a 3-word description from text for archive naming
+ */
+function generateThreeWordDesc(text: string): string {
+  // Remove common words and punctuation, extract meaningful words
+  const words = text.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(w => w.length > 2 && !COMMON_WORDS.has(w));
+  
+  // Take first 3 meaningful words
+  const desc = words.slice(0, 3).join('-');
+  
+  // Fallback if not enough words
+  return desc || 'session-handoff-archive';
+}
+
+/**
+ * Archive existing handoff with descriptive naming
+ */
+async function archiveExistingHandoff(sessionDir: string, message?: string): Promise<void> {
   const currentHandoff = path.join(sessionDir, 'current.md');
   
   if (await fs.pathExists(currentHandoff)) {
     const existing = await fs.readFile(currentHandoff, 'utf8');
     const timestampMatch = existing.match(/timestamp: ([^\n]+)/);
+    const summaryMatch = existing.match(/## 📊 Session Summary\n([^\n]+)/);
     
     if (timestampMatch) {
       const timestamp = new Date(timestampMatch[1]);
+      const date = timestamp.toISOString().split('T')[0];
+      
+      // Generate 3-word description from message or summary
+      const description = generateThreeWordDesc(
+        message || summaryMatch?.[1] || 'session handoff complete'
+      );
+      
       const archiveDir = path.join(sessionDir, 'archive');
       await fs.ensureDir(archiveDir);
       
-      const archiveFile = path.join(
-        archiveDir,
-        `${timestamp.toISOString().split('T')[0]}-handoff.md`
-      );
+      // Create unique filename with counter if needed
+      let counter = 0;
+      let archiveFile;
+      do {
+        const suffix = counter > 0 ? `-${counter}` : '';
+        archiveFile = path.join(
+          archiveDir,
+          `${date}-${description}${suffix}.md`
+        );
+        counter++;
+      } while (await fs.pathExists(archiveFile));
       
-      await fs.move(currentHandoff, archiveFile, { overwrite: false });
+      await fs.move(currentHandoff, archiveFile);
     }
   }
 }
