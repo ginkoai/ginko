@@ -29,6 +29,8 @@ import { architectureCommand } from './commands/architecture.js';
 import { planCommand } from './commands/plan.js';
 import { initCursorCommand } from './commands/init-cursor.js';
 import { uninstallCursorCommand } from './commands/uninstall-cursor.js';
+import { initCopilotCommand } from './commands/init-copilot.js';
+import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
 
 const program = new Command();
 
@@ -217,6 +219,21 @@ program
   .option('--force', 'Skip confirmation prompt')
   .option('--revert-commit', 'Revert the Cursor integration git commit')
   .action((options) => uninstallCursorCommand(options));
+
+program
+  .command('init-copilot')
+  .description('Generate GitHub Copilot setup preview or apply to repository')
+  .option('--preview', 'Preview mode (default). Writes to .ginko/generated only', true)
+  .option('--apply', 'Apply setup permanently and commit changes')
+  .option('--workspace', 'Apply workspace settings only')
+  .action((options) => initCopilotCommand(options));
+
+program
+  .command('uninstall-copilot')
+  .description('Remove GitHub Copilot integration')
+  .option('--force', 'Skip confirmation prompt')
+  .option('--revert-commit', 'Revert the Copilot integration git commit')
+  .action((options) => uninstallCopilotCommand(options));
 
 // Privacy notice only for help command
 program.hook('preAction', (thisCommand) => {

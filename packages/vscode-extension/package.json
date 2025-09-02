@@ -26,7 +26,8 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:ginko.initializeCursor"
+    "onCommand:ginko.initializeCursor",
+    "onCommand:ginko.initializeCopilot"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -80,6 +81,16 @@
       {
         "command": "ginko.uninstallCursor",
         "title": "Ginko: Uninstall Cursor",
+        "category": "Ginko"
+      },
+      {
+        "command": "ginko.initializeCopilot",
+        "title": "Ginko: Initialize GitHub Copilot",
+        "category": "Ginko"
+      },
+      {
+        "command": "ginko.uninstallCopilot",
+        "title": "Ginko: Uninstall GitHub Copilot",
         "category": "Ginko"
       }
     ],

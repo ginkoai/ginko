@@ -45,9 +45,9 @@ export async function uninstallCursorCommand(options: {
 
     // Prompt for confirmation unless --force
     if (!options.force) {
+      const { createInterface } = await import('readline');
       const answer = await new Promise<string>((resolve) => {
-        const readline = require('readline');
-        const rl = readline.createInterface({
+        const rl = createInterface({
           input: process.stdin,
           output: process.stdout
         });

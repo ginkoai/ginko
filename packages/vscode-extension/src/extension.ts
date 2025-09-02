@@ -64,6 +64,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('ginko.vibecheck', vibecheck),
     vscode.commands.registerCommand('ginko.initializeCursor', initializeCursor),
     vscode.commands.registerCommand('ginko.uninstallCursor', uninstallCursor),
+    vscode.commands.registerCommand('ginko.initializeCopilot', initializeCopilot),
+    vscode.commands.registerCommand('ginko.uninstallCopilot', uninstallCopilot),
     participant
   );
 
@@ -143,6 +145,106 @@ async function uninstallCursor() {
     }
   } catch (error: any) {
     vscode.window.showErrorMessage(`Ginko uninstall failed: ${error?.message || error}`);
+  }
+}
+
+async function initializeCopilot() {
+  try {
+    // Show options to user
+    const selection = await vscode.window.showQuickPick([
+      { label: '👁️ Preview Mode', description: 'Generate files without applying', value: 'preview' },
+      { label: '✅ Apply to Repository', description: 'Create .github/copilot-instructions.md and commit', value: 'apply' },
+      { label: '⚙️ Workspace Settings Only', description: 'Update VS Code settings locally', value: 'workspace' }
+    ], {
+      placeHolder: 'How would you like to set up GitHub Copilot?'
+    });
+
+    if (!selection) return;
+
+    const cli = ginkoCLI || 'ginko';
+    let command = 'init-copilot';
+    
+    if (selection.value === 'apply') {
+      command += ' --apply';
+    } else if (selection.value === 'workspace') {
+      command += ' --workspace';
+    } else {
+      command += ' --preview';
+    }
+
+    try {
+      await execAsync(`${cli} ${command}`);
+    } catch (e) {
+      // Fallback to dev path
+      const devCli = path.join(__dirname, '../../cli/dist/index.js');
+      await execAsync(`node ${devCli} ${command}`);
+    }
+
+    // Show appropriate next steps based on selection
+    if (selection.value === 'preview') {
+      const docSelection = await vscode.window.showInformationMessage(
+        'Ginko: GitHub Copilot preview generated in .ginko/generated/',
+        'View Instructions',
+        'View Copilot Instructions',
+        'Dismiss'
+      );
+
+      if (docSelection === 'View Instructions') {
+        const guidePath = path.join(vscode.workspace.rootPath || process.cwd(), '.ginko', 'generated', 'COPILOT-SETUP-GUIDE.md');
+        const doc = await vscode.workspace.openTextDocument(guidePath);
+        await vscode.window.showTextDocument(doc, { preview: false });
+      } else if (docSelection === 'View Copilot Instructions') {
+        const instructionsPath = path.join(vscode.workspace.rootPath || process.cwd(), '.ginko', 'generated', 'copilot-instructions.md');
+        const doc = await vscode.workspace.openTextDocument(instructionsPath);
+        await vscode.window.showTextDocument(doc, { preview: false });
+      }
+    } else if (selection.value === 'apply') {
+      vscode.window.showInformationMessage(
+        'Ginko: GitHub Copilot configured successfully! Files created in .github/ and .vscode/'
+      );
+    } else if (selection.value === 'workspace') {
+      vscode.window.showInformationMessage(
+        'Ginko: Workspace settings updated for GitHub Copilot!'
+      );
+    }
+  } catch (error: any) {
+    vscode.window.showErrorMessage(`Ginko Copilot initialization failed: ${error?.message || error}`);
+  }
+}
+
+async function uninstallCopilot() {
+  try {
+    const selection = await vscode.window.showWarningMessage(
+      'Ginko: Remove GitHub Copilot integration?',
+      'Remove Files Only',
+      'Remove + Revert Git',
+      'Cancel'
+    );
+
+    if (selection === 'Cancel') return;
+
+    const cli = ginkoCLI || 'ginko';
+    const revertCommit = selection === 'Remove + Revert Git';
+    
+    try {
+      const command = revertCommit ? 'uninstall-copilot --revert-commit' : 'uninstall-copilot --force';
+      await execAsync(`${cli} ${command}`);
+      
+      vscode.window.showInformationMessage(
+        'Ginko: GitHub Copilot integration removed successfully!'
+      );
+    } catch (e) {
+      // Fallback to dev path
+      const devCli = path.join(__dirname, '../../cli/dist/index.js');
+      const command = revertCommit ? 'uninstall-copilot --revert-commit' : 'uninstall-copilot --force';
+      await execAsync(`node ${devCli} ${command}`);
+      
+      vscode.window.showInformationMessage(
+        'Ginko: GitHub Copilot integration removed successfully!'
+      );
+    }
+  } catch (error: any) {
+    vscode.window.showErrorMessage(`Ginko Copilot uninstall failed: ${error?.message || error}`);
   }
 }
 
