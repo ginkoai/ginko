@@ -62,6 +62,8 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('ginko.start', startSession),
     vscode.commands.registerCommand('ginko.handoff', createHandoff),
     vscode.commands.registerCommand('ginko.vibecheck', vibecheck),
+    vscode.commands.registerCommand('ginko.initializeCursor', initializeCursor),
+    vscode.commands.registerCommand('ginko.uninstallCursor', uninstallCursor),
     participant
   );
 
@@ -71,6 +73,77 @@ export async function activate(context: vscode.ExtensionContext) {
   }
   
   console.log('Ginko extension activated successfully');
+}
+
+async function initializeCursor() {
+  try {
+    // 1) Run CLI preview (non-destructive)
+    const cli = ginkoCLI || 'ginko';
+    try {
+      await execAsync(`${cli} init-cursor --preview`);
+    } catch (e) {
+      // Fallback to dev path run via node if CLI not found
+      console.warn('Falling back: running bundled CLI dev path');
+      const devCli = path.join(__dirname, '../../cli/dist/index.js');
+      await execAsync(`node ${devCli} init-cursor --preview`);
+    }
+
+    // 2) Read generated .cursorrules and copy to clipboard
+    const cursorrulesPath = path.join(vscode.workspace.rootPath || process.cwd(), '.ginko', 'generated', '.cursorrules');
+    const content = await fs.readFile(cursorrulesPath, 'utf8');
+    await vscode.env.clipboard.writeText(content);
+
+    // 3) Show next steps with action buttons
+    const selection = await vscode.window.showInformationMessage(
+      'Ginko: Cursor setup preview ready. Rules copied to clipboard. Open Custom Modes settings to paste?',
+      'Open Instructions',
+      'Dismiss'
+    );
+
+    if (selection === 'Open Instructions') {
+      const guidePath = path.join(vscode.workspace.rootPath || process.cwd(), '.ginko', 'generated', 'CURSOR-SETUP-STEPS.md');
+      const doc = await vscode.workspace.openTextDocument(guidePath);
+      await vscode.window.showTextDocument(doc, { preview: false });
+    }
+  } catch (error: any) {
+    vscode.window.showErrorMessage(`Ginko initialization failed: ${error?.message || error}`);
+  }
+}
+
+async function uninstallCursor() {
+  try {
+    const selection = await vscode.window.showWarningMessage(
+      'Ginko: Remove Cursor integration? This will delete .cursorrules and .ginko/generated/',
+      'Remove Files Only',
+      'Remove + Revert Git',
+      'Cancel'
+    );
+
+    if (selection === 'Cancel') return;
+
+    const cli = ginkoCLI || 'ginko';
+    const revertCommit = selection === 'Remove + Revert Git';
+    
+    try {
+      const command = revertCommit ? 'uninstall-cursor --revert-commit' : 'uninstall-cursor --force';
+      await execAsync(`${cli} ${command}`);
+      
+      vscode.window.showInformationMessage(
+        'Ginko: Cursor integration removed successfully!'
+      );
+    } catch (e) {
+      // Fallback to dev path
+      const devCli = path.join(__dirname, '../../cli/dist/index.js');
+      const command = revertCommit ? 'uninstall-cursor --revert-commit' : 'uninstall-cursor --force';
+      await execAsync(`node ${devCli} ${command}`);
+      
+      vscode.window.showInformationMessage(
+        'Ginko: Cursor integration removed successfully!'
+      );
+    }
+  } catch (error: any) {
+    vscode.window.showErrorMessage(`Ginko uninstall failed: ${error?.message || error}`);
+  }
 }
 
 /**

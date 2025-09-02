@@ -25,7 +25,8 @@
     "session"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCommand:ginko.initializeCursor"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -69,6 +70,16 @@
       {
         "command": "ginko.vibecheck",
         "title": "Ginko: Vibecheck",
+        "category": "Ginko"
+      },
+      {
+        "command": "ginko.initializeCursor",
+        "title": "Ginko: Initialize Cursor",
+        "category": "Ginko"
+      },
+      {
+        "command": "ginko.uninstallCursor",
+        "title": "Ginko: Uninstall Cursor",
         "category": "Ginko"
       }
     ],

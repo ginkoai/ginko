@@ -27,6 +27,8 @@ import { captureCommand } from './commands/capture.js';
 import { exploreCommand } from './commands/explore.js';
 import { architectureCommand } from './commands/architecture.js';
 import { planCommand } from './commands/plan.js';
+import { initCursorCommand } from './commands/init-cursor.js';
+import { uninstallCursorCommand } from './commands/uninstall-cursor.js';
 
 const program = new Command();
 
@@ -201,6 +203,20 @@ program
   .option('-r, --review', 'Review before saving')
   .option('-v, --verbose', 'Show detailed output')
   .action(planCommand);
+
+program
+  .command('init-cursor')
+  .description('Generate a Cursor setup preview or apply it to the repository')
+  .option('--preview', 'Preview mode (default). Writes to .ginko/generated only', true)
+  .option('--apply', 'Apply setup permanently to repository root and commit changes')
+  .action((options) => initCursorCommand(options));
+
+program
+  .command('uninstall-cursor')
+  .description('Remove Cursor integration and optionally revert git commit')
+  .option('--force', 'Skip confirmation prompt')
+  .option('--revert-commit', 'Revert the Cursor integration git commit')
+  .action((options) => uninstallCursorCommand(options));
 
 // Privacy notice only for help command
 program.hook('preAction', (thisCommand) => {
