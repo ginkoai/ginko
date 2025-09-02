@@ -76,8 +76,9 @@ export async function exploreCommand(topic: string | undefined, options: Explore
     // Ensure stdout is flushed before exit
     await new Promise(resolve => process.stdout.write('', resolve));
 
-    // Exit with code 43 to signal exploration mode
-    process.exit(43);
+    // Exit with code 0 to avoid stderr interpretation
+    // The AI prompt is expected behavior, not an error
+    process.exit(0);
     
   } catch (error) {
     process.stdout.write(chalk.red('error: ') + (error instanceof Error ? error.message : String(error)) + '\n');

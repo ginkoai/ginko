@@ -122,7 +122,9 @@ export async function handoffAiCommand(options: HandoffOptions) {
       // Ensure stdout is flushed before exit
       await new Promise(resolve => process.stdout.write('', resolve));
       
-      process.exit(AI_PROCESSING_EXIT_CODE);
+      // Use exit code 0 to avoid stderr interpretation
+      // The AI enhancement prompt is expected behavior, not an error
+      process.exit(0);
     }
     
     // No AI mode: save basic template

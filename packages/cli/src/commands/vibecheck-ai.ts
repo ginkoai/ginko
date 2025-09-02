@@ -114,8 +114,9 @@ export async function vibecheckAiCommand(concern: string | undefined, options: V
     // Ensure stdout is flushed before exit
     await new Promise(resolve => process.stdout.write('', resolve));
     
-    // Exit with special code 46 for vibecheck
-    process.exit(46);
+    // Exit with code 0 to avoid stderr interpretation
+    // The AI prompt is expected behavior, not an error
+    process.exit(0);
     
   } catch (error) {
     console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));

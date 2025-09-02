@@ -113,8 +113,9 @@ export async function shipAiCommand(message: string | undefined, options: ShipOp
     // Ensure stdout is flushed before exit
     await new Promise(resolve => process.stdout.write('', resolve));
     
-    // Exit with special code 47 for ship
-    process.exit(47);
+    // Exit with code 0 to avoid stderr interpretation
+    // The AI prompt is expected behavior, not an error
+    process.exit(0);
     
   } catch (error) {
     if (spinner) spinner.fail('Failed to prepare ship');

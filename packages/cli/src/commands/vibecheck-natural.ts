@@ -64,8 +64,9 @@ Respond naturally to the vibecheck concern above. Be a thoughtful pair programme
 Don't use templates or formal structure. Just respond naturally.
 `));
     
-    // Exit with code 48 to signal natural vibecheck response needed
-    process.exit(48);
+    // Exit with code 0 to avoid stderr interpretation
+    // The vibecheck prompt is expected behavior, not an error
+    process.exit(0);
     
   } catch (error) {
     console.log(chalk.yellow('\n🎯 Vibecheck\n'));

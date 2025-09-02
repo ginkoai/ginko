@@ -27,17 +27,20 @@ export interface AiEnhancementContext {
 }
 
 /**
- * Special exit codes to signal AI processing needed (ADR-024)
+ * DEPRECATED: Special exit codes originally used to signal AI processing
+ * These caused stderr output issues as non-zero exit codes are interpreted as errors
+ * Now all AI-enhanced commands use exit code 0 for success
+ * Keeping for reference only - DO NOT USE
  */
-export const AI_PROCESSING_EXIT_CODE = 42;  // General AI enhancement
+export const AI_PROCESSING_EXIT_CODE = 42;  // DEPRECATED - use 0 instead
 export const AI_EXIT_CODES = {
-  CAPTURE: 42,      // Capture enhancement
-  HANDOFF: 42,      // Handoff enhancement (same as general)
-  EXPLORE: 43,      // Exploration mode
-  ARCHITECTURE: 44, // Architecture decision mode
-  PLAN: 45,         // Sprint planning mode
-  VIBECHECK: 46,    // Vibecheck analysis
-  SHIP: 47          // Ship with smart commits
+  CAPTURE: 42,      // DEPRECATED
+  HANDOFF: 42,      // DEPRECATED
+  EXPLORE: 43,      // DEPRECATED
+  ARCHITECTURE: 44, // DEPRECATED
+  PLAN: 45,         // DEPRECATED
+  VIBECHECK: 46,    // DEPRECATED
+  SHIP: 47          // DEPRECATED
 } as const;
 
 /**

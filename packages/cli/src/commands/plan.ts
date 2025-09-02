@@ -84,8 +84,9 @@ export async function planCommand(feature: string | undefined, options: PlanOpti
     // Ensure stdout is flushed before exit
     await new Promise(resolve => process.stdout.write('', resolve));
 
-    // Exit with code 45 to signal planning mode
-    process.exit(45);
+    // Exit with code 0 to avoid stderr interpretation
+    // The AI prompt is expected behavior, not an error
+    process.exit(0);
     
   } catch (error) {
     process.stdout.write(chalk.red('error: ') + (error instanceof Error ? error.message : String(error)) + '\n');

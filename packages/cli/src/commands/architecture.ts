@@ -77,8 +77,9 @@ export async function architectureCommand(decision: string | undefined, options:
     // Ensure stdout is flushed before exit
     await new Promise(resolve => process.stdout.write('', resolve));
 
-    // Exit with code 44 to signal architecture mode
-    process.exit(44);
+    // Exit with code 0 to avoid stderr interpretation
+    // The AI prompt is expected behavior, not an error
+    process.exit(0);
     
   } catch (error) {
     process.stdout.write(chalk.red('error: ') + (error instanceof Error ? error.message : String(error)) + '\n');
