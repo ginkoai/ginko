@@ -17,16 +17,24 @@ import {
   ModuleMetadata,
   InsightType 
 } from '../types/session.js';
+import { 
+  InsightQualityController,
+  QualityAssessment,
+  SimilarityResult,
+  CreationDecision
+} from './insight-quality-controller.js';
 
 /**
- * Service for generating context modules from insights
+ * Service for generating context modules from insights with quality control
  */
 export class ModuleGenerator {
   private modulesDir: string;
   private existingModules: Set<string> = new Set();
+  private qualityController: InsightQualityController;
   
   constructor(ginkoDir: string) {
     this.modulesDir = path.join(ginkoDir, 'context', 'modules');
+    this.qualityController = new InsightQualityController();
   }
   
   /**
@@ -35,43 +43,90 @@ export class ModuleGenerator {
   async initialize(): Promise<void> {
     await fs.ensureDir(this.modulesDir);
     await this.loadExistingModules();
+    await this.qualityController.loadExistingModules(this.modulesDir);
   }
   
   /**
-   * Generate context modules from insights
+   * Generate context modules from insights with quality control
    */
-  async generateModules(insights: SessionInsight[]): Promise<ContextModule[]> {
+  async generateModules(insights: SessionInsight[]): Promise<GenerationResult> {
     const modules: ContextModule[] = [];
+    const skipped: SkippedInsight[] = [];
+    const created: CreatedModule[] = [];
     
     for (const insight of insights) {
-      // Check for duplicates
-      if (this.isDuplicate(insight)) {
+      // Step 1: Quality assessment
+      const quality = this.qualityController.assessInsightQuality(insight);
+      
+      if (!quality.shouldCreate) {
+        skipped.push({
+          insight,
+          reason: quality.recommendation,
+          issues: quality.issues
+        });
         continue;
       }
       
-      // Generate module
-      const module = await this.generateModule(insight);
+      // Step 2: Similarity check
+      const similar = this.qualityController.findSimilarModules(insight);
+      const decision = this.qualityController.shouldCreateDespiteSimilarity(insight, similar);
+      
+      if (!decision.shouldCreate) {
+        skipped.push({
+          insight,
+          reason: decision.reason,
+          existingModule: decision.existingModule
+        });
+        continue;
+      }
+      
+      // Step 3: Generate module with enhancements
+      const module = await this.generateModule(insight, decision);
       modules.push(module);
       
-      // Write to filesystem
+      // Step 4: Write to filesystem
       await this.writeModule(module);
+      
+      // Step 5: Track creation details
+      created.push({
+        module,
+        quality: quality.score,
+        action: decision.action,
+        relatedModule: decision.relatedModule
+      });
       
       // Track for deduplication
       this.existingModules.add(this.getModuleSignature(insight));
     }
     
     // Update module index
-    await this.updateModuleIndex(modules);
+    if (modules.length > 0) {
+      await this.updateModuleIndex(modules);
+    }
     
-    return modules;
+    return {
+      created: modules,
+      skipped,
+      createdDetails: created,
+      summary: this.generateSummary(modules, skipped, insights)
+    };
   }
   
   /**
-   * Generate a single context module from an insight
+   * Generate a single context module from an insight with decision context
    */
-  private async generateModule(insight: SessionInsight): Promise<ContextModule> {
+  private async generateModule(
+    insight: SessionInsight, 
+    decision?: CreationDecision
+  ): Promise<ContextModule> {
     const filename = this.generateFilename(insight);
-    const content = this.generateContent(insight);
+    let content = this.generateContent(insight);
+    
+    // Add relationship information if applicable
+    if (decision?.relatedModule) {
+      content = this.addRelationshipInfo(content, decision);
+    }
+    
     const metadata = this.generateMetadata(insight);
     
     return {
@@ -79,6 +134,77 @@ export class ModuleGenerator {
       content,
       metadata
     };
+  }
+  
+  /**
+   * Add relationship information to module content
+   */
+  private addRelationshipInfo(content: string, decision: CreationDecision): string {
+    let relationshipSection = '\n## Related Modules\n\n';
+    
+    switch (decision.action) {
+      case 'create-variant':
+        relationshipSection += `- **Variant of**: \`${decision.relatedModule}\`\n`;
+        relationshipSection += `  - ${decision.reason}\n`;
+        break;
+      case 'create-alternative':
+        relationshipSection += `- **Alternative to**: \`${decision.relatedModule}\`\n`;
+        relationshipSection += `  - Different approach to similar problem\n`;
+        break;
+      case 'create-evolution':
+        relationshipSection += `- **Evolves**: \`${decision.relatedModule}\`\n`;
+        relationshipSection += `  - Refinement with improved solution\n`;
+        break;
+      case 'create-contextual':
+        relationshipSection += `- **Related pattern**: \`${decision.relatedModule}\`\n`;
+        relationshipSection += `  - Similar concept in different context\n`;
+        break;
+    }
+    
+    if (decision.suggestion) {
+      relationshipSection += `\n💡 ${decision.suggestion}\n`;
+    }
+    
+    // Insert before the closing separator
+    const closingIndex = content.lastIndexOf('\n---');
+    if (closingIndex > 0) {
+      content = content.slice(0, closingIndex) + relationshipSection + content.slice(closingIndex);
+    } else {
+      content += relationshipSection;
+    }
+    
+    return content;
+  }
+  
+  /**
+   * Generate summary of module generation results
+   */
+  private generateSummary(
+    created: ContextModule[],
+    skipped: SkippedInsight[],
+    total: SessionInsight[]
+  ): string {
+    const qualitySkipped = skipped.filter(s => s.issues?.length > 0).length;
+    const duplicateSkipped = skipped.filter(s => s.existingModule).length;
+    
+    const lines = [
+      `Processed ${total.length} insights:`,
+      `  ✅ Created ${created.length} modules`,
+    ];
+    
+    if (qualitySkipped > 0) {
+      lines.push(`  ⚠️  ${qualitySkipped} skipped (quality issues)`);
+    }
+    
+    if (duplicateSkipped > 0) {
+      lines.push(`  🔄 ${duplicateSkipped} skipped (similar exists)`);
+    }
+    
+    if (created.length === 0 && total.length > 0) {
+      lines.push(`\n💡 No modules created - insights didn't meet quality thresholds or were duplicates`);
+    }
+    
+    return lines.join('\n');
   }
   
   /**
@@ -510,3 +636,27 @@ insightId: ${module.metadata.insightId}
     await fs.writeJSON(indexPath, index, { spaces: 2 });
   }
 }
+
+// Type definitions for generation results
+interface GenerationResult {
+  created: ContextModule[];
+  skipped: SkippedInsight[];
+  createdDetails: CreatedModule[];
+  summary: string;
+}
+
+interface SkippedInsight {
+  insight: SessionInsight;
+  reason: string;
+  issues?: string[];
+  existingModule?: string;
+}
+
+interface CreatedModule {
+  module: ContextModule;
+  quality: number;
+  action: string;
+  relatedModule?: string;
+}
+
+export { GenerationResult, SkippedInsight, CreatedModule };

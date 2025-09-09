@@ -109,19 +109,39 @@ export async function enhancedHandoffCommand(options: EnhancedHandoffOptions = {
         if (spinner) spinner.start('Generating context modules...');
       }
       
-      // Step 4: Generate context modules
+      // Step 4: Generate context modules with quality control
       if (insights.length > 0) {
         if (spinner) spinner.text = 'Creating context modules...';
         
         const generator = new ModuleGenerator(ginkoDir);
         await generator.initialize();
-        modules = await generator.generateModules(insights);
+        const generationResult = await generator.generateModules(insights);
+        modules = generationResult.created;
         
         if (options.verbose) {
-          console.log(chalk.green(`\n✅ Created ${modules.length} context modules`));
-          modules.forEach(module => {
-            console.log(chalk.dim(`  - ${module.filename}`));
-          });
+          console.log(chalk.cyan('\n📊 Module Generation Results:'));
+          console.log(chalk.dim(generationResult.summary));
+          
+          if (modules.length > 0) {
+            console.log(chalk.green(`\n✅ Created modules:`));
+            generationResult.createdDetails.forEach(detail => {
+              console.log(chalk.dim(`  - ${detail.module.filename} (quality: ${Math.round(detail.quality * 100)}%)`));
+              if (detail.relatedModule) {
+                console.log(chalk.dim(`    → ${detail.action}: ${detail.relatedModule}`));
+              }
+            });
+          }
+          
+          if (generationResult.skipped.length > 0) {
+            console.log(chalk.yellow(`\n⚠️  Skipped insights:`));
+            generationResult.skipped.forEach(skip => {
+              console.log(chalk.dim(`  - ${skip.insight.title}`));
+              console.log(chalk.dim(`    Reason: ${skip.reason}`));
+            });
+          }
+        } else if (insights.length > 0 && modules.length === 0) {
+          // Inform user why no modules were created
+          console.log(chalk.yellow('\n💡 No modules created - insights didn\'t meet quality thresholds'));
         }
       }
     }
