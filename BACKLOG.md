@@ -4,6 +4,57 @@ This document contains planned features and architectural designs for future imp
 
 ## 🔴 CRITICAL PRIORITY
 
+### FEATURE-018: Enhanced Handoff with Automatic Context Capture
+**Priority**: CRITICAL  
+**Status**: PROPOSED  
+**Created**: 2025-09-09  
+**Effort**: Medium (2-3 days)  
+**Dependencies**: Handoff command, AI analysis, context module system  
+
+**Problem Statement**:
+Every development session contains 3-6 pivotal learning moments that are lost 90% of the time because capturing them interrupts flow. This forces both humans and AI to repeatedly rediscover the same insights, wasting hours per week. The `ginko capture` command exists but goes unused due to friction.
+
+**Solution Design**:
+
+**Core Concept**: Embed automatic context capture directly into the `ginko handoff` command, making learning preservation zero-friction.
+
+**Enhanced Flow**:
+```bash
+ginko handoff
+# → AI analyzes session for insights
+# → Creates context cards automatically  
+# → Generates handoff with card references
+# → User reviews and commits
+# → Next session has full context
+```
+
+**Key Features**:
+1. **Zero Friction**: Happens during natural handoff pause
+2. **Automatic Analysis**: AI identifies pivotal moments
+3. **Smart Filtering**: Only captures insights with lasting value
+4. **Context Integration**: References cards in handoff
+5. **Compound Learning**: Each session builds on previous
+
+**What Gets Captured**:
+- Problem-solution pairs discovered
+- Architecture decisions made
+- Performance optimizations found
+- Gotchas and workarounds
+- Pattern recognitions
+- Tool/library discoveries
+
+**Success Metrics**:
+- 90% knowledge capture rate (vs 10% current)
+- 2-4 hours saved per developer per week
+- 3x improvement in AI assistance effectiveness
+- Zero additional time required from developer
+
+**Implementation Reference**: 
+- [Enhanced Handoff PRD](docs/PRD/enhanced-handoff-with-auto-capture.md)
+- [Automatic Learning Capture Context](/.ginko/context/modules/automatic-learning-capture.md)
+
+---
+
 ### FEATURE-017: Persistent Context Module System
 **Priority**: CRITICAL  
 **Status**: PROPOSED  

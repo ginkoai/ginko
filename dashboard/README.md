@@ -2,6 +2,50 @@
 
 A modern Next.js 14 dashboard application for ContextMCP - intelligent context management for Claude Code sessions.
 
+## 🚀 Monetization Roadmap
+
+### Current Status: Pre-Monetization (70% Infrastructure Complete)
+The dashboard infrastructure is production-ready with authentication, database, and core features implemented. Monetization features are planned for Q1 2025.
+
+### Monetization Timeline
+
+#### Phase 1: MVP (Weeks 1-2) - January 2025
+- [ ] **Stripe Integration**: Activate billing infrastructure
+- [ ] **Public Session Viewer**: Shareable session URLs at `/session/[id]`
+- [ ] **Coaching Insights Display**: AI-powered recommendations
+- [ ] **Free Tier Signup**: Onboarding flow for new users
+
+#### Phase 2: Pro Features (Weeks 3-4) - January 2025
+- [ ] **Advanced Analytics Dashboard**: Team metrics and comparisons
+- [ ] **AI Key Management**: Secure storage for customer API keys
+- [ ] **Team Collaboration**: Shared sessions and insights
+- [ ] **Export Capabilities**: CSV/JSON data export
+
+#### Phase 3: Launch (Week 5-6) - February 2025
+- [ ] **Pricing Page**: Tier comparison and checkout
+- [ ] **Marketing Website**: Landing pages and feature tours
+- [ ] **Documentation**: User guides and API docs
+- [ ] **Early Access Program**: Beta user onboarding
+
+#### Phase 4: Enterprise (Months 3-6) - Q2 2025
+- [ ] **SSO/SAML**: Enterprise authentication
+- [ ] **Custom Workflows**: SCRUM, Kanban, SAFe templates
+- [ ] **Advanced Permissions**: Role-based access control
+- [ ] **SLA & Support**: Enterprise support infrastructure
+
+### Pricing Tiers (Planned)
+- **Free**: Unlimited personal use, single project
+- **Pro**: $10/user/month - Teams, analytics, multi-project
+- **Enterprise**: Custom pricing - SSO, workflows, SLA
+
+### Key Differentiators
+- **Privacy-First**: Customer API keys, zero-knowledge architecture
+- **AI-Native**: Built for AI development workflows
+- **Git-Native**: All data stored in version control
+- **41% Cheaper**: Than comparable Jira Premium features
+
+For detailed monetization strategy, see [docs/PRD/monetization-strategy-2025.md](../docs/PRD/monetization-strategy-2025.md)
+
 ## Features
 
 - **Next.js 14 App Router** - Latest Next.js with app directory structure
