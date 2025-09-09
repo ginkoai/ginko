@@ -100,5 +100,37 @@
       "chalk",
       "process.stdout"
     ]
-  }
+  },
+  "modules": [
+    {
+      "filename": "pattern-use-connection-pooling-for-serverless-database-acc.md",
+      "type": "pattern",
+      "tags": [
+        "database",
+        "serverless",
+        "connection-pool",
+        "production",
+        "singleton"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-09T18:50:35.201Z",
+      "sessionId": "xtophr@gmail.com-1757443835189"
+    },
+    {
+      "filename": "gotcha-vercel-serverless-functions-need-explicit-api-rout.md",
+      "type": "gotcha",
+      "tags": [
+        "nextjs",
+        "api",
+        "vercel",
+        "app-router",
+        "serverless"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-09T18:50:35.204Z",
+      "sessionId": "xtophr@gmail.com-1757443835189"
+    }
+  ],
+  "lastUpdated": "2025-09-09T18:50:35.204Z",
+  "totalModules": 2
 }

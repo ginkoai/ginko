@@ -17,7 +17,7 @@ import simpleGit from 'simple-git';
 import { getUserEmail, getGinkoDir, detectWorkMode } from '../utils/helpers.js';
 import { SessionCollector } from '../utils/session-collector.js';
 import { InsightExtractor } from '../services/insight-extractor.js';
-import { ModuleGenerator } from '../services/module-generator.js';
+import { ModuleGenerator, GenerationResult } from '../services/module-generator.js';
 import { 
   SessionData,
   SessionInsight,
@@ -60,7 +60,7 @@ export async function enhancedHandoffCommand(options: EnhancedHandoffOptions = {
     
     const collector = new SessionCollector();
     const previousHandoff = await getMostRecentHandoff(sessionDir);
-    const sessionData = await collector.collectSessionData(userEmail, previousHandoff);
+    const sessionData = await collector.collectSessionData(userEmail, previousHandoff || undefined);
     
     if (options.verbose) {
       console.log(chalk.dim(`\n📊 Session: ${sessionData.duration} minutes, ${sessionData.filesChanged.length} files changed`));

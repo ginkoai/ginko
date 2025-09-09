@@ -604,11 +604,11 @@ export class InsightQualityController {
       const match = line.match(/^(\w+):\s*(.+)$/);
       if (match) {
         const key = match[1];
-        let value = match[2];
+        let value: any = match[2];
         
         // Parse arrays
         if (value.startsWith('[') && value.endsWith(']')) {
-          value = value.slice(1, -1).split(',').map(s => s.trim());
+          value = value.slice(1, -1).split(',').map((s: string) => s.trim());
         }
         
         result[key] = value;

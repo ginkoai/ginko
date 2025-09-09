@@ -29,11 +29,12 @@ import {
 export class SessionCollector {
   private git: SimpleGit;
   private sessionStart: Date;
-  private terminalBuffer: string[] = [];
+  private terminalBuffer: string[];
   
   constructor() {
     this.git = simpleGit();
     this.sessionStart = new Date();
+    this.terminalBuffer = [];
   }
   
   /**
@@ -56,7 +57,12 @@ export class SessionCollector {
     const duration = Math.round((sessionEnd.getTime() - this.sessionStart.getTime()) / 60000);
     
     return {
-      ...gitData,
+      branch: gitData.branch || 'main',
+      commits: gitData.commits || [],
+      diff: gitData.diff || '',
+      stagedDiff: gitData.stagedDiff || '',
+      filesChanged: gitData.filesChanged || [],
+      workMode: gitData.workMode || 'exploring',
       testResults,
       errorLogs,
       buildOutput,

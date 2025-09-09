@@ -184,7 +184,7 @@ export class ModuleGenerator {
     skipped: SkippedInsight[],
     total: SessionInsight[]
   ): string {
-    const qualitySkipped = skipped.filter(s => s.issues?.length > 0).length;
+    const qualitySkipped = skipped.filter(s => s.issues && s.issues.length > 0).length;
     const duplicateSkipped = skipped.filter(s => s.existingModule).length;
     
     const lines = [
@@ -607,6 +607,10 @@ insightId: ${module.metadata.insightId}
     let index: any = {};
     try {
       index = await fs.readJSON(indexPath);
+      // Ensure modules array exists
+      if (!index.modules) {
+        index.modules = [];
+      }
     } catch (error) {
       // Index doesn't exist yet
       index = {

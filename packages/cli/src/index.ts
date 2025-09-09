@@ -15,6 +15,7 @@ import { initCommand } from './commands/init.js';
 import { startCommand } from './commands/start-enhanced.js';
 import { handoffCommand } from './commands/handoff.js';
 import { handoffAiCommand } from './commands/handoff-ai.js';
+import enhancedHandoffCommand from './commands/handoff-enhanced.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
@@ -66,23 +67,28 @@ program
 
 program
   .command('handoff [message]')
-  .description('Create a session handoff with optional AI enhancement')
+  .description('Create a session handoff with automatic context capture')
   .option('--store', 'Store AI-enriched content (internal use)')
   .option('--id <id>', 'Handoff ID for storing enriched content')
   .option('--content <content>', 'Enriched content to store')
-  .option('--no-ai', 'Disable AI enhancement')
-  .option('--quick', 'Quick handoff without AI')
-  .option('-r, --review', 'Review template before AI processing')
+  .option('--no-capture', 'Disable automatic context capture')
+  .option('--quick', 'Quick handoff without AI enhancement')
+  .option('-r, --review', 'Review insights before saving')
   .option('-v, --verbose', 'Show detailed output')
+  .option('--max-insights <number>', 'Maximum insights to capture', parseInt)
+  .option('--enhanced', 'Use enhanced version with auto-capture (default)')
+  .option('--legacy', 'Use legacy AI version without capture')
   .action((message, options) => {
-    // Use AI-enhanced version if any AI-related options are present
-    const useAiVersion = options.store || options.id || options.content || 
-                         options.ai !== false || options.quick || options.review;
-    
-    if (useAiVersion) {
+    // Default to enhanced version unless explicitly using legacy
+    if (options.legacy) {
       return handoffAiCommand({ message, ...options });
     } else {
-      return handoffCommand(message);
+      // Use enhanced version with automatic context capture
+      return enhancedHandoffCommand({ 
+        message, 
+        capture: !options.noCapture,
+        ...options 
+      });
     }
   });
 
