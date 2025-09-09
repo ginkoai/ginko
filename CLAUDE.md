@@ -12,12 +12,14 @@ The Ginko SDK agents handle session management automatically:
 3. **Achievement System** - Gamified skill development tracking
 4. **Status Line Coaching** - Live hints: `⚡ Test as you go`
 
-### Context Tools Available
-When you need explicit context loading, these MCP tools are available:
-- `get_best_practices` - Team coding standards and practices
-- `get_project_overview` - Project structure with team insights  
-- `get_team_activity` - Recent team activity and focus areas
-- `load_handoff` - Resume from specific session handoff
+**IMPORTANT**: Use the git-native ginko CLI instead of MCP tools. The MCP tools (prepare_handoff, store_handoff, etc.) are deprecated in favor of direct filesystem operations via `ginko` commands.
+
+### Context Loading via Git-Native Approach
+Context is now loaded directly from the filesystem using the ginko CLI:
+- Run `ginko start` to begin or resume sessions
+- Context modules in `.ginko/context/modules/`
+- Session data in `.ginko/sessions/[user]/current.md`
+- Handoffs in `.ginko/sessions/[user]/archive/`
 
 ### Development Philosophy
 Always prioritize:
@@ -198,13 +200,13 @@ Example: "Reduce npm HIGH vulnerabilities to zero by end of sprint without break
 
 See `/docs/PLANNING-TEMPLATE.md` and `/docs/CONTEXT-GATHERING-CHECKLIST.md` for detailed frameworks.
 
-### Context Tools Available
-- `get_best_practices` - Team coding standards and practices
-- `suggest_best_practice` - Contextual guidance for specific scenarios  
-- `get_project_overview` - Project structure with team collaboration insights
-- `get_team_activity` - Recent team activity and focus areas
-- `find_relevant_code` - Smart code search with team patterns
-- `get_file_context` - File analysis with team usage patterns
+### Context Discovery Patterns
+- **Session context**: `.ginko/sessions/[user]/current.md`
+- **Context modules**: `.ginko/context/modules/*.md`
+- **Team patterns**: Found in existing code via `head -12` frontmatter
+- **Best practices**: Documented in `.ginko/context/modules/`
+- **Project structure**: Use `ls -la` and `find` commands
+- **Recent activity**: Check git log and `.ginko/sessions/` archives
 
 ### File Creation Workflow
 
@@ -293,15 +295,17 @@ This project implements an MCP (Model Context Protocol) server for intelligent c
 4. **Pure serverless architecture**: All functionality via Vercel API routes
 5. **Update BACKLOG.md**: Document new feature architectures before implementation
 
-### Testing the Best Practices System
+### Testing the Context System
 ```bash
-# Test with live Vercel deployment
-# All tools available at https://mcp.ginko.ai/api/mcp/tools/call
+# Test with ginko CLI (git-native approach)
+ginko start                    # Begin or resume session
+ginko context                  # List available context modules
+ginko context auth            # Load specific module
+ginko handoff "work summary"  # Save progress for next session
 
-# Test tools (in Claude Code session)
-get_best_practices priority=critical
-suggest_best_practice scenario="handling authentication errors"
-get_project_overview
+# Check context files directly
+ls -la .ginko/context/modules/
+head -12 .ginko/sessions/*/current.md
 ```
 
 ### Environment Setup

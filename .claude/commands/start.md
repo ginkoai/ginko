@@ -1,9 +1,12 @@
-Load the project context using /mcp context to:
-- Get the latest best practices
-- Resume your previous session automatically  
-- Show current team activity
-- Load project overview
+Start a ginko session using the ginko CLI:
+- Run `ginko start` to begin or resume your session
+- Load context from `.ginko/sessions/[user]/current.md`
+- Check `.ginko/context/modules/` for relevant context modules
+- Review any uncommitted handoffs in `.ginko/`
 
-After loading context, if a handoff was resumed, always use the assess_handoff_quality MCP tool to evaluate how well the handoff prepared you for the work ahead. This provides valuable feedback for improving future session transitions.
+The ginko CLI automatically handles:
+- Session continuity with handoff resumption
+- Context module discovery based on current work
+- Git-native tracking of all session data
 
 This ensures you're synchronized with the team and continuing from where you left off.
