@@ -4,6 +4,64 @@ This document contains planned features and architectural designs for future imp
 
 ## 🔴 CRITICAL PRIORITY
 
+### FEATURE-019: Enhanced Context Reflexes with Value Focus
+**Priority**: CRITICAL  
+**Status**: PROPOSED  
+**Created**: 2025-09-10  
+**Effort**: Small (1 day)  
+**Dependencies**: CLAUDE.md files, ginko init command  
+
+**Problem Statement**:
+Current Context Reflexes lack outcome-focused triggers and health monitoring. They check process compliance but miss value delivery, cost/benefit analysis, and system health. This leads to over-engineering, undetected broken states, and work that doesn't directly serve user goals.
+
+**Solution Design**:
+
+**Enhanced Reflex Set**:
+1. **Cost/Benefit Reflex** 💰
+   - Trigger: Before significant implementations
+   - Question: "Is this complexity worth the value delivered?"
+   - Prevents over-engineering
+
+2. **User Impact Reflex** 👤
+   - Trigger: After each implementation step
+   - Question: "How does this help achieve the user's actual goal?"
+   - Maintains outcome focus over output focus
+
+3. **Health Check Reflex** 🏥
+   - Trigger: Every 15-30 minutes or before commits
+   - Action: Validate tests pass, builds work, no breakage
+   - Catches issues early in development cycle
+
+4. **Velocity Awareness Enhancement** 🚄
+   - Enhance "Something Feels Off" with velocity triggers
+   - Detect: "Moving slower than expected - what's the friction?"
+   - Surface impediments before they compound
+
+5. **Commitment Point Triggers** 🎯
+   - Enhance "Why Am I Doing This?" with action-based triggers
+   - Activate before: Large edits, API calls, destructive operations
+   - Not just time-based but decision-based
+
+**Implementation Approach**:
+1. Update all CLAUDE.md files (root, dashboard/, mcp-client/, api/, evals/)
+2. Integrate into ginko init model adapter templates
+3. Maintain naturalistic language - thoughts not processes
+4. Preserve work mode sensitivity (Hack/Think/Plan)
+
+**Success Metrics**:
+- 50% reduction in over-engineered solutions
+- 80% of broken states caught before commit
+- 90% of work directly traceable to user goals
+- Zero additional cognitive overhead
+
+**Example Natural Integration**:
+```typescript
+// Before implementing complex caching system
+// Cost/Benefit: "This adds 200 lines for 50ms gain - worth it?"
+// User Impact: "Does Chris actually notice 50ms?"
+// Decision: Skip caching, ship simpler solution
+```
+
 ### FEATURE-018: Enhanced Handoff with Automatic Context Capture
 **Priority**: CRITICAL  
 **Status**: PROPOSED  
