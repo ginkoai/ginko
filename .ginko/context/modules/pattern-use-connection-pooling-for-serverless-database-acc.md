@@ -2,11 +2,11 @@
 type: pattern
 tags: [database, serverless, connection-pool, production, singleton]
 relevance: medium
-created: 2025-09-09T18:50:35.201Z
-updated: 2025-09-09T18:50:35.201Z
+created: 2025-09-09T21:49:04.763Z
+updated: 2025-09-09T21:49:04.763Z
 dependencies: []
-sessionId: xtophr@gmail.com-1757443835189
-insightId: 858831b4-5595-4813-a56a-c4d81c064c78
+sessionId: xtophr@gmail.com-1757454544754
+insightId: 8fb82938-0d8a-4d30-b5c1-cc5f5ab1e74d
 ---
 
 # Use connection pooling for serverless database access

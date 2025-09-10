@@ -7,7 +7,7 @@
  * @complexity: medium
  */
 
-export type AIModel = 'claude' | 'gpt4' | 'gemini' | 'llama' | 'universal';
+export type AIModel = 'claude' | 'gpt4' | 'grok' | 'gemini' | 'llama' | 'universal';
 
 export interface AIEnvironment {
   model: AIModel;
@@ -43,6 +43,15 @@ export function detectAIModel(): AIEnvironment {
       model: 'gpt4',
       confidence: 0.9,
       reason: 'OpenAI environment detected'
+    };
+  }
+  
+  // Check for Grok (xAI)
+  if (process.env.GROK_API_KEY || process.env.XAI_API_KEY) {
+    return {
+      model: 'grok',
+      confidence: 0.9,
+      reason: 'Grok (xAI) environment detected'
     };
   }
   
@@ -102,6 +111,15 @@ export function getModelDefaults(model: AIModel) {
         colors: false,
         emojis: false,
         verbosity: 'structured',
+        contextWindow: 128000
+      };
+    
+    case 'grok':
+      return {
+        format: 'markdown',
+        colors: true,
+        emojis: true,
+        verbosity: 'witty',
         contextWindow: 128000
       };
     

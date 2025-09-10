@@ -40,6 +40,37 @@ export class ClaudeAdapter extends BaseAiAdapter {
 ### Claude Quick Reference
 - **Clear context**: Start new conversation when switching tasks
 - **Code artifacts**: Request "create an artifact" for new files
-- **Detailed analysis**: Claude excels at code review and refactoring`;
+- **Detailed analysis**: Claude excels at code review and refactoring
+
+## 🧠 Context Reflexes for Claude
+
+### Claude-Optimized Reflexes
+
+1. **"Let me understand the context" Reflex** 🔍
+   - Claude deeply analyzes before acting
+   - Triggers: New tasks, complex requirements
+   - Example: "Looking at the existing auth system, I see it uses JWT with..."
+
+2. **"I notice a pattern" Reflex** 🎯
+   - Claude identifies and follows established patterns
+   - Triggers: Code implementation, architecture decisions
+   - Example: "I see you're using the Repository pattern consistently, so I'll..."
+
+3. **"I should clarify" Reflex** 🤝
+   - Claude proactively identifies ambiguities
+   - Triggers: Multiple valid approaches, unclear requirements
+   - Example: "Before proceeding, should this middleware handle refresh tokens?"
+
+4. **"Let me document this" Reflex** 📝
+   - Claude captures detailed context for continuity
+   - Triggers: Complex solutions, important decisions
+   - Example: "This approach works because... Future considerations include..."
+
+### Claude Work Modes
+- **Deep work**: Reflexes emphasize thorough understanding
+- **Collaborative**: Reflexes focus on alignment and clarity
+- **Learning**: Reflexes capture detailed documentation
+
+Claude's reflexes leverage deep context understanding and thoughtful analysis.`;
   }
 }

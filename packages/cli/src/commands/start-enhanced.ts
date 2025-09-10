@@ -14,6 +14,7 @@ import path from 'path';
 import ora from 'ora';
 import simpleGit from 'simple-git';
 import { getUserEmail, getGinkoDir, formatTimeAgo, detectWorkMode } from '../utils/helpers.js';
+import { ContextSearch, SearchResult } from '../services/context-search.js';
 
 interface StartOptions {
   verbose?: boolean;
@@ -85,14 +86,58 @@ export async function startEnhancedCommand(sessionId?: string, options: StartOpt
     console.log(chalk.dim(`🌿 Branch: ${branch.current}`));
     console.log(chalk.dim(`📝 Mode: ${mode}`));
     
-    // Load and display relevant context modules
-    const contextModules = await loadRelevantContext(ginkoDir, status, options.verbose || false);
-    if (contextModules.length > 0) {
+    // Load and display relevant context modules with enhanced search
+    const contextModules = await loadEnhancedContext(
+      ginkoDir, 
+      {
+        branch: branch.current,
+        status,
+        mode,
+        previousErrors: extractErrorsFromHandoff(handoffContent),
+        verbose: options.verbose || false
+      }
+    );
+    
+    if (contextModules.length > 0 && !options.minimal) {
       console.log();
       console.log(chalk.bold('📚 Loaded context modules:'));
-      contextModules.forEach(module => {
-        console.log(chalk.dim(`  • ${module.name}: ${module.summary}`));
+      
+      // Display modules with relevance indicators
+      contextModules.forEach((result, index) => {
+        const module = result.module;
+        const relevanceIcon = getRelevanceIcon(module.relevance || 'medium');
+        const typeIcon = getTypeIcon(module.type);
+        
+        console.log(chalk.dim(`  ${typeIcon} ${module.title || module.filename}`));
+        
+        // Show relevance reason
+        if (options.verbose && result.matches) {
+          const reasons = [];
+          if (result.matches.tags?.length) {
+            reasons.push(`tags: ${result.matches.tags.join(', ')}`);
+          }
+          if (result.matches.branch) {
+            reasons.push('branch match');
+          }
+          if (result.matches.error) {
+            reasons.push('error pattern');
+          }
+          if (reasons.length > 0) {
+            console.log(chalk.dim(`     → ${reasons.join(', ')}`));
+          }
+        }
       });
+      
+      // Show quick tip from top module
+      if (contextModules.length > 0) {
+        const topModule = contextModules[0].module;
+        const tip = await extractQuickTip(ginkoDir, topModule.filename);
+        if (tip) {
+          console.log();
+          console.log(chalk.cyan('💡 Quick tip from ' + topModule.filename.replace('.md', '') + ':'));
+          console.log(chalk.dim(`   "${tip}"`));
+        }
+      }
     }
     
     // Extract key information from handoff
@@ -171,71 +216,159 @@ interface ContextModule {
 }
 
 /**
- * Load context modules relevant to current work
+ * Load relevant context modules using enhanced search
  */
-async function loadRelevantContext(ginkoDir: string, status: any, verbose: boolean): Promise<ContextModule[]> {
+async function loadEnhancedContext(
+  ginkoDir: string, 
+  context: {
+    branch: string;
+    status: any;
+    mode: string;
+    previousErrors?: string[];
+    verbose: boolean;
+  }
+): Promise<SearchResult[]> {
+  try {
+    const search = new ContextSearch(ginkoDir);
+    await search.loadIndex();
+    
+    // Build search context
+    const searchContext: any = {
+      branch: context.branch,
+      files: [...(context.status.modified || []), ...(context.status.created || [])]
+    };
+    
+    // Add error patterns if available
+    if (context.previousErrors && context.previousErrors.length > 0) {
+      searchContext.errors = context.previousErrors;
+    }
+    
+    // Get relevant modules
+    let relevantModules = await search.getRelevantModules(searchContext);
+    
+    // If no relevant modules found, get recent high-relevance modules
+    if (relevantModules.length === 0) {
+      const allModules = await search.search({ 
+        relevance: 'medium',
+        limit: context.verbose ? 10 : 5 
+      });
+      relevantModules = allModules.map(r => r.module);
+    }
+    
+    // Convert to SearchResult format for consistency
+    const results: SearchResult[] = relevantModules.map(module => ({
+      module,
+      score: calculateContextScore(module, context),
+      matches: {
+        branch: module.tags?.some(tag => 
+          context.branch.toLowerCase().includes(tag.toLowerCase())
+        ),
+        error: context.previousErrors?.some(error =>
+          module.tags?.some(tag => error.toLowerCase().includes(tag.toLowerCase()))
+        ),
+        tags: module.tags?.filter(tag => 
+          searchContext.files?.some((file: string) => 
+            file.toLowerCase().includes(tag.toLowerCase())
+          )
+        )
+      }
+    }));
+    
+    // Sort by score and limit
+    results.sort((a, b) => b.score - a.score);
+    const limit = context.verbose ? 10 : 5;
+    
+    return results.slice(0, limit);
+    
+  } catch (error) {
+    // Fallback to basic loading if search fails
+    return loadBasicContext(ginkoDir, context.status, context.verbose);
+  }
+}
+
+/**
+ * Fallback to basic context loading (original implementation)
+ */
+async function loadBasicContext(ginkoDir: string, status: any, verbose: boolean): Promise<SearchResult[]> {
   const contextDir = path.join(ginkoDir, 'context', 'modules');
-  const modules: ContextModule[] = [];
   
   if (!await fs.pathExists(contextDir)) {
-    return modules;
+    return [];
   }
   
   try {
     const files = await fs.readdir(contextDir);
-    const modifiedFiles = new Set(status.modified);
+    const results: SearchResult[] = [];
     
-    // Score each module by relevance
-    const scoredModules: (ContextModule | null)[] = await Promise.all(files.map(async file => {
-      if (!file.endsWith('.md')) return null;
+    for (const file of files.slice(0, verbose ? 10 : 5)) {
+      if (!file.endsWith('.md')) continue;
       
       const content = await fs.readFile(path.join(contextDir, file), 'utf8');
       const frontmatter = extractFrontmatter(content);
       
-      // Calculate relevance score
-      let score = 0;
-      
-      // Check if module relates to modified files
-      if (frontmatter.area) {
-        for (const modified of modifiedFiles) {
-          if (typeof modified === 'string' && modified.includes(frontmatter.area)) {
-            score += 10;
-          }
-        }
-      }
-      
-      // Prioritize by recency
-      if (frontmatter.updated) {
-        const daysSince = Math.floor((Date.now() - new Date(frontmatter.updated).getTime()) / (1000 * 60 * 60 * 24));
-        if (daysSince < 1) score += 5;
-        else if (daysSince < 7) score += 2;
-      }
-      
-      // Prioritize by type
-      if (frontmatter.type === 'gotcha') score += 3;
-      if (frontmatter.type === 'pattern') score += 2;
-      
-      const module: ContextModule = {
-        name: file.replace('.md', ''),
-        summary: frontmatter.summary || extractFirstLine(content),
-        score,
-        type: frontmatter.type
-      };
-      
-      return module;
-    }));
+      results.push({
+        module: {
+          filename: file,
+          type: frontmatter.type || 'pattern',
+          tags: frontmatter.tags?.split(',').map((t: string) => t.trim()) || [],
+          relevance: frontmatter.relevance || 'medium',
+          created: frontmatter.created,
+          title: extractFirstLine(content)
+        },
+        score: 1,
+        matches: {}
+      });
+    }
     
-    // Filter and sort by relevance
-    const filtered = scoredModules.filter((m): m is ContextModule => m !== null && m.score > 0);
-    const sorted = filtered.sort((a, b) => b.score - a.score);
-    const relevant = sorted.slice(0, verbose ? 10 : 5);
-    
-    return relevant;
-    
+    return results;
   } catch (error) {
-    // Silently fail - context loading is not critical
-    return modules;
+    return [];
   }
+}
+
+/**
+ * Calculate context-specific relevance score
+ */
+function calculateContextScore(module: any, context: any): number {
+  let score = 0;
+  
+  // Relevance level scoring
+  const relevanceScores: Record<string, number> = {
+    'critical': 10,
+    'high': 7,
+    'medium': 4,
+    'low': 2
+  };
+  score += relevanceScores[module.relevance || 'medium'];
+  
+  // Type scoring based on work mode
+  if (context.mode === 'debugging' && module.type === 'gotcha') {
+    score += 5;
+  } else if (context.mode === 'developing' && module.type === 'pattern') {
+    score += 4;
+  } else if (context.mode === 'exploring' && module.type === 'architecture') {
+    score += 3;
+  }
+  
+  // Recency bonus
+  if (module.created) {
+    const daysSince = Math.floor(
+      (Date.now() - new Date(module.created).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    if (daysSince < 1) score += 5;
+    else if (daysSince < 7) score += 2;
+  }
+  
+  // Branch name matching
+  if (module.tags && context.branch) {
+    const branchWords = context.branch.toLowerCase().split(/[-_\/]/);
+    const matchingTags = module.tags.filter((tag: string) => 
+      branchWords.includes(tag.toLowerCase())
+    );
+    score += matchingTags.length * 2;
+  }
+  
+  return score;
 }
 
 /**
@@ -279,6 +412,90 @@ function extractFirstLine(content: string): string {
     }
   }
   return 'Context module';
+}
+
+/**
+ * Extract errors from previous handoff
+ */
+function extractErrorsFromHandoff(handoffContent: string | null): string[] {
+  if (!handoffContent) return [];
+  
+  const errors: string[] = [];
+  const errorSection = extractFromHandoff(handoffContent, 'Known Issues');
+  
+  if (errorSection) {
+    // Extract error patterns from the known issues
+    const lines = errorSection.split('\n');
+    lines.forEach(line => {
+      if (line.includes('error') || line.includes('Error') || line.includes('failed')) {
+        errors.push(line);
+      }
+    });
+  }
+  
+  return errors;
+}
+
+/**
+ * Get icon for relevance level
+ */
+function getRelevanceIcon(relevance: string): string {
+  const icons: Record<string, string> = {
+    'critical': '🔴',
+    'high': '🟠',
+    'medium': '🟡',
+    'low': '⚪'
+  };
+  return icons[relevance] || '⚪';
+}
+
+/**
+ * Get icon for insight type
+ */
+function getTypeIcon(type: string): string {
+  const icons: Record<string, string> = {
+    'gotcha': '⚠️',
+    'pattern': '📐',
+    'decision': '🎯',
+    'discovery': '💡',
+    'optimization': '⚡',
+    'workaround': '🔧',
+    'configuration': '⚙️',
+    'architecture': '🏗️'
+  };
+  return icons[type] || '📄';
+}
+
+/**
+ * Extract quick tip from module
+ */
+async function extractQuickTip(ginkoDir: string, filename: string): Promise<string | null> {
+  try {
+    const filepath = path.join(ginkoDir, 'context', 'modules', filename);
+    const content = await fs.readFile(filepath, 'utf8');
+    
+    // Try to extract the solution or key insight
+    const solutionMatch = content.match(/## (?:The )?Solution\n\n([^\n]+)/);
+    if (solutionMatch) {
+      return solutionMatch[1].trim();
+    }
+    
+    // Try to extract "How to Avoid"
+    const avoidMatch = content.match(/## How to Avoid\n\n([^\n]+)/);
+    if (avoidMatch) {
+      return avoidMatch[1].trim();
+    }
+    
+    // Try to extract first line of problem
+    const problemMatch = content.match(/## (?:The )?(?:Problem|Gotcha)\n\n([^\n]+)/);
+    if (problemMatch) {
+      return problemMatch[1].trim();
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
 }
 
 /**

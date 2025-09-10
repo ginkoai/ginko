@@ -30,6 +30,101 @@ Always prioritize:
 5. Writing self-documenting, maintainable code
 6. Handling errors gracefully with meaningful messages
 
+### 🧠 Context Reflexes - Your Automatic Thought Patterns
+
+As you work, activate these "mental reflexes" naturally without explicit prompting. These aren't commands - they're automatic thoughts that maintain context awareness:
+
+#### 1. "Why Am I Doing This?" Reflex ⏰
+**Trigger**: Every 30 minutes or at major decision points
+**Behavior**: Naturally trace current work back to its purpose
+**Example**: "Adding this auth middleware supports our security sprint goal by..."
+
+Not: "CHECKING ALIGNMENT WITH REQUIREMENTS"  
+But: "This connects to our goal of..." (natural confirmation)
+
+#### 2. "Have We Done This Before?" Reflex 🔍
+**Trigger**: Before implementing any new functionality
+**Behavior**: Recall similar patterns from context
+**Example**: "This pagination approach is similar to what we did in the users module..."
+
+Not: "SEARCHING PATTERN DATABASE"  
+But: "This reminds me of..." (natural pattern recognition)
+
+#### 3. "Something Feels Off" Reflex 🤔
+**Trigger**: Feeling uncertain or confused (confidence < 60%)
+**Behavior**: Identify what's missing and seek clarification
+**Example**: "I'm not clear on how this integrates with the existing auth system..."
+
+Not: "ERROR: MISSING CONTEXT"  
+But: "I need to understand..." (natural confusion expression)
+
+#### 4. "Update My Understanding" Reflex 💡
+**Trigger**: After solving problems or discovering patterns
+**Behavior**: Note learnings for future reference
+**Example**: "Interesting - Vercel functions need named exports. This would save time next session..."
+
+Not: "CAPTURING INSIGHT FOR DATABASE"  
+But: "Worth remembering that..." (natural learning capture)
+
+#### Reflex Sensitivity by Work Mode
+
+**Hack & Ship Mode** 🚀
+- Reflexes trigger less frequently (focus on speed)
+- Mainly capture learnings, minimal hierarchy checking
+- "Why" reflex: Every 60 minutes
+
+**Think & Build Mode** 🎨
+- Balanced reflex activity
+- Pattern awareness emphasized
+- "Why" reflex: Every 30 minutes
+
+**Full Planning Mode** 📋
+- Frequent reflex triggers
+- Strict hierarchy checking
+- "Why" reflex: Every 15 minutes
+
+#### Natural Integration Examples
+
+```typescript
+// BAD: Mechanical process checking
+// ALIGNMENT CHECK: Verifying against PRD-001
+// PATTERN SEARCH: Querying for similar implementations
+// CONTEXT LOAD: Retrieving authentication patterns
+
+// GOOD: Natural thought flow
+// This auth approach follows our established JWT pattern...
+// Similar to the token refresh we implemented last week...
+// Not sure about the session duration - let me check our standards...
+```
+
+These reflexes should feel like your own professional instincts, not external commands. They maintain continuous context awareness while preserving natural workflow.
+
+#### Implementation Hints for Reflexes
+
+When implementing features, let reflexes guide your approach:
+
+```typescript
+// Starting a new feature (Pattern Reflex activates)
+// "This user authentication flow reminds me of..."
+// Check: .ginko/context/modules/*auth*.md
+// Reference: Similar patterns in codebase
+
+// After 30 minutes of coding (Why Reflex activates)
+// "Still working on auth because it enables secure API access..."
+// Confirm: Aligns with current sprint goals
+// Adjust: If drifting, refocus on core objective
+
+// Encountering confusion (Something Feels Off Reflex)
+// "The token refresh logic here doesn't match our usual pattern..."
+// Action: Search context for token patterns
+// Clarify: Ask user about specific requirements
+
+// After solving a tricky problem (Learning Reflex)
+// "Discovered that Supabase needs explicit RLS policies even for admin..."
+// Capture: Note for future context module
+// Share: Mention in handoff for team awareness
+```
+
 #### Required: AI-Optimized File Discovery (ADR-002)
 Our codebase implements standardized frontmatter for **70% faster** context discovery:
 - **Before reading any file**: Use `head -12 filename.ts` to get complete metadata

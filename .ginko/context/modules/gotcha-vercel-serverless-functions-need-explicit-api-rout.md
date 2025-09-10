@@ -2,11 +2,11 @@
 type: gotcha
 tags: [nextjs, api, vercel, app-router, serverless]
 relevance: medium
-created: 2025-09-09T18:50:35.204Z
-updated: 2025-09-09T18:50:35.204Z
+created: 2025-09-09T21:49:04.764Z
+updated: 2025-09-09T21:49:04.764Z
 dependencies: []
-sessionId: xtophr@gmail.com-1757443835189
-insightId: 7e3b93ba-3d06-45f6-aaf9-3fec628f4716
+sessionId: xtophr@gmail.com-1757454544754
+insightId: feb6a861-33ee-4d9d-b93c-76b102b9e81f
 ---
 
 # Vercel serverless functions need explicit API route exports
@@ -14,7 +14,7 @@ insightId: 7e3b93ba-3d06-45f6-aaf9-3fec628f4716
 **Type**: gotcha  
 **Tags**: nextjs, api, vercel, app-router, serverless  
 **Created**: 2025-09-09  
-**Session**: xtophr@gmail.com-1757443835189  
+**Session**: xtophr@gmail.com-1757454544754  
 
 ## The Gotcha
 

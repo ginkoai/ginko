@@ -129,8 +129,36 @@
       "relevance": "medium",
       "created": "2025-09-09T18:50:35.204Z",
       "sessionId": "xtophr@gmail.com-1757443835189"
+    },
+    {
+      "filename": "pattern-use-connection-pooling-for-serverless-database-acc.md",
+      "type": "pattern",
+      "tags": [
+        "database",
+        "serverless",
+        "connection-pool",
+        "production",
+        "singleton"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-09T21:49:04.763Z",
+      "sessionId": "xtophr@gmail.com-1757454544754"
+    },
+    {
+      "filename": "gotcha-vercel-serverless-functions-need-explicit-api-rout.md",
+      "type": "gotcha",
+      "tags": [
+        "nextjs",
+        "api",
+        "vercel",
+        "app-router",
+        "serverless"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-09T21:49:04.764Z",
+      "sessionId": "xtophr@gmail.com-1757454544754"
     }
   ],
-  "lastUpdated": "2025-09-09T18:50:35.204Z",
-  "totalModules": 2
+  "lastUpdated": "2025-09-09T21:49:04.765Z",
+  "totalModules": 4
 }

@@ -87,6 +87,39 @@ When feeling lost or sensing misalignment:
 - Continue: Resume with fresh perspective
 `;
 
+  private static readonly CONTEXT_REFLEXES = `
+## 🧠 Context Reflexes - Your Automatic Thought Patterns
+
+These "mental reflexes" activate naturally without explicit prompting to maintain context awareness:
+
+### 1. "Why Am I Doing This?" Reflex ⏰
+**Trigger**: Every 30 minutes or at major decision points
+**Behavior**: Naturally trace current work back to its purpose
+**Example**: "Adding this auth middleware supports our security sprint goal by..."
+
+### 2. "Have We Done This Before?" Reflex 🔍
+**Trigger**: Before implementing any new functionality
+**Behavior**: Recall similar patterns from context
+**Example**: "This pagination approach is similar to what we did in the users module..."
+
+### 3. "Something Feels Off" Reflex 🤔
+**Trigger**: Feeling uncertain or confused (confidence < 60%)
+**Behavior**: Identify what's missing and seek clarification
+**Example**: "I'm not clear on how this integrates with the existing auth system..."
+
+### 4. "Update My Understanding" Reflex 💡
+**Trigger**: After solving problems or discovering patterns
+**Behavior**: Note learnings for future reference
+**Example**: "Worth remembering that Vercel functions need named exports..."
+
+### Work Mode Sensitivity
+- **Hack & Ship**: Reflexes trigger less frequently (focus on speed)
+- **Think & Build**: Balanced reflex activity
+- **Full Planning**: Frequent reflex triggers for maximum rigor
+
+These reflexes maintain continuous context awareness while preserving natural workflow.
+`;
+
   static generate(variables: TemplateVariables, modelSpecificContent?: string): string {
     const aiName = variables.aiModel || 'AI Assistant';
     return `# ${variables.projectName} - ${aiName} Collaboration Guide
@@ -105,6 +138,8 @@ ${this.generateQuickCommands(variables)}
 ${this.FRONTMATTER_SECTION}
 
 ${this.DEVELOPMENT_WORKFLOW}
+
+${this.CONTEXT_REFLEXES}
 
 ${this.generateProjectSpecificSection(variables)}
 

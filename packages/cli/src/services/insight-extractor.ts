@@ -18,6 +18,7 @@ import {
   ExtractionResult,
   CodeExample
 } from '../types/session.js';
+import { createAIService, BaseAIService } from './ai-service.js';
 
 /**
  * Service for extracting insights from session data using AI
@@ -30,6 +31,12 @@ export class InsightExtractor {
     includeCodeExamples: true,
     verbose: false
   };
+  
+  private aiService: BaseAIService;
+  
+  constructor(aiService?: BaseAIService) {
+    this.aiService = aiService || createAIService();
+  }
   
   /**
    * Extract insights from session data
@@ -168,49 +175,63 @@ Example insight:
   }
   
   /**
-   * Analyze with AI (stub - would use actual AI adapter)
+   * Analyze with AI
    */
   private async analyzeWithAI(prompt: string, options: ExtractionOptions): Promise<any> {
-    // In real implementation, this would:
-    // 1. Use the AI adapter system
-    // 2. Route to appropriate model based on ADR-026
-    // 3. Handle API failures gracefully
-    
-    // For now, return example insights
-    return [
-      {
-        type: 'gotcha',
-        title: 'Vercel serverless functions need explicit API route exports',
-        problem: 'API routes returning 404 despite correct file placement',
-        solution: 'Changed from default export to named exports (GET, POST) in route.ts files for App Router compatibility',
-        impact: 'Saves 1-2 hours debugging Next.js 13+ API routes',
-        reusabilityScore: 0.9,
-        timeSaving: 90,
-        codeExample: {
-          language: 'typescript',
-          before: 'export default function handler(req, res) { }',
-          after: 'export async function GET(request: Request) { }\nexport async function POST(request: Request) { }'
-        },
-        prevention: 'Always use named exports for HTTP methods in App Router API routes',
-        tags: ['nextjs', 'api', 'vercel', 'app-router', 'serverless']
-      },
-      {
-        type: 'pattern',
-        title: 'Use connection pooling for serverless database access',
-        problem: 'Database connections exhausted in production with serverless functions',
-        solution: 'Implemented singleton pattern for database connection pool, reusing connections across function invocations',
-        impact: 'Prevents production database connection failures',
-        reusabilityScore: 0.85,
-        timeSaving: 120,
-        codeExample: {
-          language: 'typescript',
-          before: 'const db = new DatabaseClient(config);',
-          after: 'let db: DatabaseClient;\nif (!db) { db = new DatabaseClient(config); }'
-        },
-        prevention: 'Always use connection pooling with serverless architectures',
-        tags: ['database', 'serverless', 'connection-pool', 'production', 'singleton']
+    try {
+      // Use the AI service to extract insights
+      const insights = await this.aiService.extractJSON(prompt);
+      
+      // Validate that we got an array back
+      if (!Array.isArray(insights)) {
+        console.warn('AI returned non-array response, wrapping in array');
+        return [insights];
       }
-    ];
+      
+      return insights;
+    } catch (error) {
+      // If AI service fails, log the error and return fallback insights
+      if (options.verbose) {
+        console.error('AI service error:', error);
+        console.log('Falling back to example insights');
+      }
+      
+      // Return example insights as fallback
+      return [
+        {
+          type: 'gotcha',
+          title: 'Vercel serverless functions need explicit API route exports',
+          problem: 'API routes returning 404 despite correct file placement',
+          solution: 'Changed from default export to named exports (GET, POST) in route.ts files for App Router compatibility',
+          impact: 'Saves 1-2 hours debugging Next.js 13+ API routes',
+          reusabilityScore: 0.9,
+          timeSaving: 90,
+          codeExample: {
+            language: 'typescript',
+            before: 'export default function handler(req, res) { }',
+            after: 'export async function GET(request: Request) { }\nexport async function POST(request: Request) { }'
+          },
+          prevention: 'Always use named exports for HTTP methods in App Router API routes',
+          tags: ['nextjs', 'api', 'vercel', 'app-router', 'serverless']
+        },
+        {
+          type: 'pattern',
+          title: 'Use connection pooling for serverless database access',
+          problem: 'Database connections exhausted in production with serverless functions',
+          solution: 'Implemented singleton pattern for database connection pool, reusing connections across function invocations',
+          impact: 'Prevents production database connection failures',
+          reusabilityScore: 0.85,
+          timeSaving: 120,
+          codeExample: {
+            language: 'typescript',
+            before: 'const db = new DatabaseClient(config);',
+            after: 'let db: DatabaseClient;\nif (!db) { db = new DatabaseClient(config); }'
+          },
+          prevention: 'Always use connection pooling with serverless architectures',
+          tags: ['database', 'serverless', 'connection-pool', 'production', 'singleton']
+        }
+      ];
+    }
   }
   
   /**
