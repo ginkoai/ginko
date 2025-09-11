@@ -169,8 +169,20 @@
       "relevance": "medium",
       "created": "2025-09-10T18:08:43.878Z",
       "sessionId": "xtophr@gmail.com-1757527723866"
+    },
+    {
+      "filename": "gotcha-mock-insight-from-ai-service.md",
+      "type": "gotcha",
+      "tags": [
+        "test",
+        "mock",
+        "development"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-11T18:03:03.838Z",
+      "sessionId": "xtophr@gmail.com-1757613783826"
     }
   ],
-  "lastUpdated": "2025-09-10T18:08:43.879Z",
-  "totalModules": 5
+  "lastUpdated": "2025-09-11T18:03:03.840Z",
+  "totalModules": 6
 }
