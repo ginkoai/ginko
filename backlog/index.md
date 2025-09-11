@@ -3,10 +3,10 @@
 > A git-native backlog system. Just markdown files, no database required.
 
 ## Quick Stats
-- **Total Items**: 9 features
+- **Total Items**: 15 (10 features, 3 stories, 2 tasks)
 - **In Progress**: 3
 - **Completed**: 2
-- **Proposed**: 4
+- **Proposed**: 10
 
 ## 🔴 CRITICAL Priority
 
@@ -17,6 +17,9 @@
   - Bridge for 95% of users who work in browser
 
 ### Proposed
+- [FEATURE-021](items/FEATURE-021-ginko-backlog-commands.md): Ginko Backlog Commands with Magic Interface ⭐ NEW
+  - Natural language backlog management with progressive mastery
+  - Contains 3 stories, starting with STORY-001
 - [FEATURE-018](items/FEATURE-018-handoff-auto-capture.md): Enhanced Handoff with Automatic Context Capture
   - Zero-friction learning preservation during handoffs
 - [FEATURE-017](items/FEATURE-017-persistent-context-modules.md): Persistent Context Module System
@@ -83,8 +86,27 @@ ginko task "Update deps"        # or just 'gt'
 
 ---
 
+## Implementation Plan Active 🚀
+
+**FEATURE-021** breaks down into:
+- **STORY-001**: Basic Command Structure (4 tasks)
+- **STORY-002**: AI Integration Layer (4 tasks)  
+- **STORY-003**: Progressive Shortcuts (3 tasks)
+
+View the full hierarchy:
+```bash
+# See the feature
+cat backlog/items/FEATURE-021-ginko-backlog-commands.md
+
+# See its stories
+grep -l "parent: FEATURE-021" backlog/items/*.md
+
+# See tasks for STORY-001
+grep -l "parent: STORY-001" backlog/items/*.md
+```
+
 ## Migration Progress
-Successfully migrated 9 high-priority features from the monolithic BACKLOG.md. Each feature is now its own file, preventing token limits and enabling parallel work. The archive (BACKLOG.md.archive) contains ~15 more features that can be migrated as needed.
+Successfully migrated 9 high-priority features from the monolithic BACKLOG.md. Created implementation plan with 1 feature, 3 stories, and 2 sample tasks. The archive (BACKLOG.md.archive) contains 6 more features ready to migrate.
 
 ### Benefits Already Visible
 - ✅ No more token limit errors
