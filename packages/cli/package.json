@@ -1,6 +1,6 @@
 {
   "name": "@ginkoai/cli",
-  "version": "0.1.0-alpha",
+  "version": "0.2.0-alpha",
   "description": "Privacy-first CLI for AI-assisted development",
   "main": "dist/index.js",
   "bin": {
@@ -25,9 +25,14 @@
     "@types/node": "^20.19.9",
     "@types/uuid": "^10.0.0",
     "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
     "commander": "^14.0.0",
     "fs-extra": "^11.3.1",
     "glob": "^7.2.3",
+    "gray-matter": "^4.0.3",
+    "inquirer": "^9.3.7",
+    "marked": "^15.0.12",
+    "marked-terminal": "^7.3.0",
     "ora": "^8.2.0",
     "simple-git": "^3.28.0",
     "typescript": "^5.9.2",
@@ -35,6 +40,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/glob": "^8.1.0"
+    "@types/glob": "^8.1.0",
+    "@types/inquirer": "^9.0.9"
   }
 }

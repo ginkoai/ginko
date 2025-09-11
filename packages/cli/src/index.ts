@@ -32,6 +32,8 @@ import { initCursorCommand } from './commands/init-cursor.js';
 import { uninstallCursorCommand } from './commands/uninstall-cursor.js';
 import { initCopilotCommand } from './commands/init-copilot.js';
 import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
+import { backlogCommand } from './commands/backlog/index.js';
+import { magicSimpleCommand } from './commands/magic-simple.js';
 
 const program = new Command();
 
@@ -240,6 +242,69 @@ program
   .option('--force', 'Skip confirmation prompt')
   .option('--revert-commit', 'Revert the Copilot integration git commit')
   .action((options) => uninstallCopilotCommand(options));
+
+// Backlog management command
+program.addCommand(backlogCommand());
+
+// Universal Reflection Pattern command
+program
+  .command('reflect <intent>')
+  .description('Universal reflection pattern for AI-enhanced content generation')
+  .option('-d, --domain <domain>', 'Specify domain (backlog, documentation, testing, etc.)')
+  .option('-r, --raw', 'Output raw reflection prompt without formatting')
+  .option('-v, --verbose', 'Show detailed processing information')
+  .action(async (intent, options) => {
+    const { reflectCommand } = await import('./commands/reflect.js');
+    return reflectCommand(intent, options);
+  });
+
+// Progressive shortcuts (Level 2-3 of architecture)
+// Shortcut: ginko feature "description" instead of ginko backlog create feature "description"
+program
+  .command('feature <description>')
+  .description('Quick create a feature (shortcut for backlog create feature)')
+  .option('-p, --priority <priority>', 'Priority level')
+  .option('-s, --size <size>', 'Size estimate')
+  .action(async (description, options) => {
+    const { createCommand } = await import('./commands/backlog/create.js');
+    return createCommand(description, { ...options, type: 'feature' });
+  });
+
+program
+  .command('story <description>')
+  .description('Quick create a story (shortcut for backlog create story)')
+  .option('-p, --priority <priority>', 'Priority level')
+  .option('-s, --size <size>', 'Size estimate')
+  .action(async (description, options) => {
+    const { createCommand } = await import('./commands/backlog/create.js');
+    return createCommand(description, { ...options, type: 'story' });
+  });
+
+program
+  .command('task <description>')
+  .description('Quick create a task (shortcut for backlog create task)')
+  .option('-p, --priority <priority>', 'Priority level')
+  .option('-s, --size <size>', 'Size estimate')
+  .action(async (description, options) => {
+    const { createCommand } = await import('./commands/backlog/create.js');
+    return createCommand(description, { ...options, type: 'task' });
+  });
+
+// Magic command - catch-all for natural language (Level 4-5)
+// This must be defined AFTER all other commands to work as a catch-all
+program
+  .argument('[request]', 'Natural language request')
+  .option('-v, --verbose', 'Show AI reasoning')
+  .option('--dry-run', 'Show what would be done without executing')
+  .action((request, options) => {
+    // If no request and no other command matched, show help
+    if (!request) {
+      program.help();
+      return;
+    }
+    // Route to simple magic command
+    return magicSimpleCommand(request, options);
+  });
 
 // Privacy notice only for help command
 program.hook('preAction', (thisCommand) => {
