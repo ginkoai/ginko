@@ -205,8 +205,61 @@
       "relevance": "high",
       "created": "2025-09-11T20:58:33.043Z",
       "sessionId": "xtophr@gmail.com-1757624313033"
+    },
+    {
+      "filename": "gotcha-mock-insight-from-ai-service.md",
+      "type": "gotcha",
+      "tags": [
+        "test",
+        "mock",
+        "development"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-12T20:12:48.357Z",
+      "sessionId": "xtophr@gmail.com-1757707968347"
     }
   ],
-  "lastUpdated": "2025-09-11T20:58:33.044Z",
-  "totalModules": 8
+  "lastUpdated": "2025-09-12T20:12:48.357Z",
+  "totalModules": 9,
+  "pattern-universal-reflection-pattern-i.md": {
+    "type": "pattern",
+    "tags": [
+      "reflection",
+      "ai",
+      "architecture",
+      "cli",
+      "collaboration"
+    ],
+    "area": "packages/cli",
+    "created": "2025-09-11",
+    "updated": "2025-09-11",
+    "relevance": "critical",
+    "dependencies": [
+      "commander",
+      "chalk",
+      "backlog",
+      "documentation"
+    ]
+  },
+  "pattern-reflection-pattern-as-dsl.md": {
+    "type": "pattern",
+    "tags": [
+      "dsl",
+      "reflection",
+      "framework",
+      "architecture",
+      "ai",
+      "collaboration",
+      "fluent-interface"
+    ],
+    "area": "packages/cli",
+    "created": "2025-09-12",
+    "updated": "2025-09-12",
+    "relevance": "critical",
+    "dependencies": [
+      "commander",
+      "reflection-pattern",
+      "domain-commands"
+    ]
+  }
 }

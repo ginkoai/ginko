@@ -42,7 +42,8 @@ export async function reflectCommand(intent: string, options: ReflectOptions = {
     
     if (!reflectionCommand) {
       console.log(chalk.yellow(`Domain '${detectedDomain}' not yet implemented`));
-      console.log(chalk.dim('Available domains: backlog, documentation'));
+      console.log(chalk.dim('Available domains: prd, architecture, backlog, documentation'));
+      console.log(chalk.dim('Coming soon: sprint, testing, git, overview'));
       return;
     }
     
@@ -64,18 +65,27 @@ async function createDomainReflection(domain: string): Promise<any> {
     case 'backlog':
       return new BacklogReflectionCommand();
     
+    case 'prd':
+      const { PRDReflectionCommand } = await import('./prd/prd-reflection.js');
+      return new PRDReflectionCommand();
+    
+    case 'architecture':
+      const { ArchitectureReflectionCommand } = await import('./architecture/architecture-reflection.js');
+      return new ArchitectureReflectionCommand();
+    
     case 'documentation':
-      // Dynamic import for documentation domain
       const { DocumentationReflectionCommand } = await import('./documentation/documentation-reflection.js');
       return new DocumentationReflectionCommand();
     
     // Future domains - using generic implementation for now
     case 'testing':
-    case 'architecture':
     case 'debugging':
     case 'review':
     case 'refactor':
     case 'pattern':
+    case 'sprint':
+    case 'overview':
+    case 'git':
       // These would have their own reflection implementations
       return createReflectionCommand(domain as any);
     

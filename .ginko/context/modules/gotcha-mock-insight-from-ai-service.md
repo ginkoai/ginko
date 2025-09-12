@@ -1,20 +1,20 @@
 ---
 type: gotcha
 tags: [test, mock, development]
-relevance: high
-created: 2025-09-11T20:58:33.043Z
-updated: 2025-09-11T20:58:33.043Z
+relevance: medium
+created: 2025-09-12T20:12:48.357Z
+updated: 2025-09-12T20:12:48.357Z
 dependencies: []
-sessionId: xtophr@gmail.com-1757624313033
-insightId: 1af4df37-539a-4788-87f1-e99da7344122
+sessionId: xtophr@gmail.com-1757707968347
+insightId: 64b7c0fa-e9f8-40bf-9233-2a7b9edf61af
 ---
 
 # Mock insight from AI service
 
 **Type**: gotcha  
 **Tags**: test, mock, development  
-**Created**: 2025-09-11  
-**Session**: xtophr@gmail.com-1757624313033  
+**Created**: 2025-09-12  
+**Session**: xtophr@gmail.com-1757707968347  
 
 ## The Gotcha
 
@@ -49,7 +49,7 @@ Always test your code
 
 ## Related Files
 
-- `.ginko/context/modules/gotcha-mock-insight-from-ai-service.md`
+*No specific files*
 
 ## Related Modules
 

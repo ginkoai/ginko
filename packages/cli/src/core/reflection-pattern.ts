@@ -46,6 +46,7 @@ export interface ReflectionPattern {
  * Domain types that can use reflection
  */
 export type ReflectionDomain = 
+  | 'prd'
   | 'backlog'
   | 'documentation'
   | 'testing'
@@ -53,7 +54,10 @@ export type ReflectionDomain =
   | 'debugging'
   | 'review'
   | 'refactor'
-  | 'pattern';
+  | 'pattern'
+  | 'sprint'
+  | 'overview'
+  | 'git';
 
 /**
  * Domain configuration
@@ -199,6 +203,15 @@ INSTRUCTIONS:
   protected loadDomainConfig(domain: ReflectionDomain): DomainConfig {
     // This would normally load from config files
     const configs: Record<ReflectionDomain, DomainConfig> = {
+      prd: {
+        name: 'prd',
+        description: 'Product Requirements Document',
+        detectPatterns: [/prd|requirements|product spec|user story|pain point/i],
+        templatePath: 'templates/prd.md',
+        outputFormat: 'markdown',
+        outputLocation: 'docs/prd/',
+        contextGatherers: ['product', 'users', 'market']
+      },
       backlog: {
         name: 'backlog',
         description: 'Backlog item creation and management',
@@ -270,6 +283,33 @@ INSTRUCTIONS:
         outputFormat: 'markdown',
         outputLocation: '.ginko/patterns/',
         contextGatherers: ['existing-patterns', 'use-cases']
+      },
+      sprint: {
+        name: 'sprint',
+        description: 'Sprint planning and work breakdown',
+        detectPatterns: [/sprint|planning|breakdown|wbs|iteration/i],
+        templatePath: 'templates/sprint.md',
+        outputFormat: 'markdown',
+        outputLocation: 'docs/sprints/',
+        contextGatherers: ['backlog', 'team', 'velocity']
+      },
+      overview: {
+        name: 'overview',
+        description: 'System overview and architecture documentation',
+        detectPatterns: [/overview|system|big picture|architecture doc/i],
+        templatePath: 'templates/overview.md',
+        outputFormat: 'markdown',
+        outputLocation: 'docs/',
+        contextGatherers: ['architecture', 'components', 'principles']
+      },
+      git: {
+        name: 'git',
+        description: 'Git workflow automation',
+        detectPatterns: [/git|branch|commit|pr|pull request|merge/i],
+        templatePath: 'templates/git.md',
+        outputFormat: 'markdown',
+        outputLocation: '.github/',
+        contextGatherers: ['git-state', 'backlog', 'conventions']
       }
     };
     
@@ -283,11 +323,15 @@ INSTRUCTIONS:
 export function detectDomain(intent: string): ReflectionDomain | null {
   // Order matters - more specific patterns first
   const domains: Array<[ReflectionDomain, RegExp[]]> = [
+    ['prd', [/prd|product requirement|user pain|user story|value prop|roi/i]],
+    ['sprint', [/sprint|planning|breakdown|wbs|iteration|velocity/i]],
+    ['git', [/branch|commit message|pr description|pull request/i]],
     ['debugging', [/debug|investigate|slow|error|bug|issue|broken|failing/i]],
     ['testing', [/test|spec|coverage/i]],
     ['backlog', [/create feature|create story|create task|backlog|todo|implement/i]],
     ['architecture', [/architecture|adr|design decision|system design/i]],
-    ['review', [/review|pr |pull request/i]],
+    ['overview', [/overview|system doc|big picture|architecture overview/i]],
+    ['review', [/review|pr |pull request review/i]],
     ['refactor', [/refactor|extract|reorganize|clean up|improve code/i]],
     ['pattern', [/pattern|template|framework/i]],
     ['documentation', [/doc|api|readme|guide|document/i]]  // Most general, last
