@@ -253,6 +253,7 @@ program
   .option('-d, --domain <domain>', 'Specify domain (backlog, documentation, testing, etc.)')
   .option('-r, --raw', 'Output raw reflection prompt without formatting')
   .option('-v, --verbose', 'Show detailed processing information')
+  .option('-s, --save', 'Save generated artifact to proper location')
   .action(async (intent, options) => {
     const { reflectCommand } = await import('./commands/reflect.js');
     return reflectCommand(intent, options);

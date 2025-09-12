@@ -14,6 +14,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import chalk from 'chalk';
 
 const execAsync = promisify(exec);
 
@@ -24,6 +25,51 @@ const execAsync = promisify(exec);
 export class PRDReflectionCommand extends ReflectionCommand {
   constructor() {
     super('prd');
+  }
+  
+  /**
+   * Save PRD artifact to proper location
+   */
+  async saveArtifact(content: string, filename?: string): Promise<string> {
+    // Ensure docs/PRD directory exists
+    const prdDir = path.join(process.cwd(), 'docs', 'PRD');
+    await fs.mkdir(prdDir, { recursive: true });
+    
+    // Generate filename if not provided
+    if (!filename) {
+      // Extract title from content
+      const titleMatch = content.match(/^#\s+PRD:\s+(.+)$/m);
+      const title = titleMatch ? titleMatch[1] : 'Untitled';
+      
+      // Find next PRD number
+      const existingPRDs = await fs.readdir(prdDir).catch(() => []);
+      const prdNumbers = existingPRDs
+        .filter(f => f.startsWith('PRD-'))
+        .map(f => parseInt(f.match(/PRD-(\d+)/)?.[1] || '0', 10))
+        .filter(n => !isNaN(n));
+      
+      const nextNumber = prdNumbers.length > 0 
+        ? Math.max(...prdNumbers) + 1 
+        : 1;
+      
+      // Clean title for filename
+      const cleanTitle = title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 50);
+      
+      filename = `PRD-${String(nextNumber).padStart(3, '0')}-${cleanTitle}.md`;
+    }
+    
+    // Write file
+    const filepath = path.join(prdDir, filename);
+    await fs.writeFile(filepath, content, 'utf-8');
+    
+    console.log(chalk.green(`\n✅ PRD saved to: ${path.relative(process.cwd(), filepath)}`));
+    console.log(chalk.dim('   Use this document for product planning and stakeholder alignment'));
+    
+    return filepath;
   }
   
   /**
@@ -497,6 +543,13 @@ IMPORTANT:
 
 OUTPUT FORMAT:
 ${template.outputExample}
+
+ARTIFACT HANDLING:
+When AI generates the PRD based on this template:
+1. Save to: docs/PRD/PRD-XXX-[title].md
+2. Use sequential numbering (001, 002, etc.)
+3. Clean title for filename (lowercase, hyphens)
+4. Preserve full markdown formatting
 
 </reflection-task>`;
   }

@@ -17,6 +17,7 @@ interface ReflectOptions {
   domain?: string;
   raw?: boolean;
   verbose?: boolean;
+  save?: boolean;
 }
 
 /**
