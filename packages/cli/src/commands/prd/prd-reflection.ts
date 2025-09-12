@@ -31,8 +31,9 @@ export class PRDReflectionCommand extends ReflectionCommand {
    * Save PRD artifact to proper location
    */
   async saveArtifact(content: string, filename?: string): Promise<string> {
-    // Ensure docs/PRD directory exists
-    const prdDir = path.join(process.cwd(), 'docs', 'PRD');
+    // Ensure docs/PRD directory exists at project root
+    const projectRoot = path.resolve(process.cwd(), '../..');
+    const prdDir = path.join(projectRoot, 'docs', 'PRD');
     await fs.mkdir(prdDir, { recursive: true });
     
     // Generate filename if not provided
