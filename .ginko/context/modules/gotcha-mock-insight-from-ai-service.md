@@ -2,11 +2,11 @@
 type: gotcha
 tags: [test, mock, development]
 relevance: medium
-created: 2025-09-12T20:12:48.357Z
-updated: 2025-09-12T20:12:48.357Z
+created: 2025-09-12T22:18:47.793Z
+updated: 2025-09-12T22:18:47.793Z
 dependencies: []
-sessionId: xtophr@gmail.com-1757707968347
-insightId: 64b7c0fa-e9f8-40bf-9233-2a7b9edf61af
+sessionId: xtophr@gmail.com-1757715527779
+insightId: 98be6966-fb7e-43b0-ba7e-0806cc63cdb9
 ---
 
 # Mock insight from AI service
@@ -14,7 +14,7 @@ insightId: 64b7c0fa-e9f8-40bf-9233-2a7b9edf61af
 **Type**: gotcha  
 **Tags**: test, mock, development  
 **Created**: 2025-09-12  
-**Session**: xtophr@gmail.com-1757707968347  
+**Session**: xtophr@gmail.com-1757715527779  
 
 ## The Gotcha
 
