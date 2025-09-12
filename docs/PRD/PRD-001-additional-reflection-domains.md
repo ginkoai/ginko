@@ -1,7 +1,7 @@
 # PRD: Additional Reflection Domains for Universal Reflection Pattern
 
 ## Executive Summary
-Expand the Universal Reflection Pattern system with specialized domains for architecture, testing, UX, and data modeling to provide comprehensive AI-enhanced content generation across all aspects of software development. This enhancement will enable teams to maintain consistency and quality across technical documentation, test scenarios, user experience design, and data structures.
+Expand the Universal Reflection Pattern system with specialized domains for architecture, testing, UX, data modeling, and overview maintenance to provide comprehensive AI-enhanced content generation across all aspects of software development. This enhancement will enable teams to maintain consistency and quality across technical documentation, test scenarios, user experience design, data structures, and keep high-level system documentation automatically synchronized with evolving code.
 
 ## Problem Statement
 
@@ -29,6 +29,11 @@ The Universal Reflection Pattern currently supports limited domains (backlog, do
    - Frequency: Every data structure modification
    - Severity: High
 
+5. **Stale System Documentation**: 
+   - Impact: README files and architecture docs become outdated as code evolves
+   - Frequency: Continuous drift with every significant change
+   - Severity: Critical
+
 ### Root Cause Analysis
 The lack of specialized reflection domains forces teams to use generic templates or create ad-hoc documentation, leading to inconsistency, missing context, and reduced AI assistance effectiveness. Each domain has unique requirements and patterns that aren't captured by generic approaches.
 
@@ -48,7 +53,7 @@ The lack of specialized reflection domains forces teams to use generic templates
 
 | Metric | Current Value | Target Value | Measurement Method |
 |--------|--------------|--------------|-------------------|
-| Domains Supported | 4 | 12+ | Count of implemented domains |
+| Domains Supported | 4 | 13+ | Count of implemented domains |
 | Documentation Time | 30 min/doc | 12 min/doc | Time tracking per document |
 | Template Compliance | 40% | 95% | Automated validation |
 | AI Enhancement Rate | 25% | 100% | Usage analytics |
@@ -96,6 +101,17 @@ The lack of specialized reflection domains forces teams to use generic templates
   - [ ] Includes migration paths and versioning
   - [ ] Provides performance considerations
 
+#### Story 5: Overview Domain
+- **As a** project maintainer
+- **I want** to automatically update high-level documentation as the system evolves
+- **So that** README files, architecture docs, and diagrams stay current
+- **Acceptance Criteria**:
+  - [ ] Updates README with new features and changes
+  - [ ] Maintains architecture documentation in sync with code
+  - [ ] Refreshes system diagrams and component relationships
+  - [ ] Triggered automatically on significant changes
+  - [ ] Preserves custom sections while updating generated content
+
 ## Functional Requirements
 
 ### Must Have (P0)
@@ -114,6 +130,10 @@ The lack of specialized reflection domains forces teams to use generic templates
 4. **[REQ-004]**: Data modeling domain with schema documentation
    - Rationale: Data structure changes need tracking
    - Acceptance: Documents schemas, relationships, and migrations
+
+5. **[REQ-005]**: Overview domain for living documentation
+   - Rationale: Critical for maintaining accurate system documentation
+   - Acceptance: Updates README, architecture docs, and diagrams automatically
 
 ### Should Have (P1)
 1. **[REQ-010]**: Performance domain for optimization documentation
@@ -158,6 +178,11 @@ The lack of specialized reflection domains forces teams to use generic templates
 - Support for custom domain extensions
 - Plugin architecture for new domains
 - Template versioning and evolution
+
+### Automation
+- Overview domain triggers on significant changes
+- Git hooks for automatic documentation updates
+- CI/CD integration for doc generation
 
 ## Solutions Considered
 
@@ -230,8 +255,9 @@ The plugin architecture provides the best long-term value by enabling community 
 ### Phase 1: Core Domains (Week 1-2)
 - Architecture domain implementation
 - Testing domain enhancement
+- Overview domain for living documentation
 - Basic plugin interface
-- Success Criteria: 4 new domains operational
+- Success Criteria: 5 new domains operational
 
 ### Phase 2: Extended Domains (Week 3-4)
 - UX and Data modeling domains
