@@ -65,6 +65,28 @@ The lack of specialized reflection domains forces teams to use generic templates
 - **I want** specialized reflection patterns for my domain
 - **So that** I can create consistent, high-quality documentation quickly
 
+#### Story 0A: Start Domain
+- **As a** developer resuming work
+- **I want** intelligent session initialization from previous handoff
+- **So that** I achieve flow state in <30 seconds
+- **Acceptance Criteria**:
+  - [ ] Reads and understands previous handoff content
+  - [ ] Loads ONLY relevant context modules based on workstream
+  - [ ] Sets appropriate work mode (Hack & Ship, Think & Build, etc.)
+  - [ ] Provides specific first action with exact commands
+  - [ ] Surfaces any blockers or warnings immediately
+
+#### Story 0B: Handoff Domain
+- **As a** developer ending a session
+- **I want** comprehensive workstream context preservation
+- **So that** the next session (mine or another AI's) starts instantly productive
+- **Acceptance Criteria**:
+  - [ ] References all active PRDs, ADRs, and Tasks by number
+  - [ ] Lists critical context modules that MUST be loaded
+  - [ ] Preserves architectural decisions and rationale
+  - [ ] Provides exact command sequences for resumption
+  - [ ] Captures mental model and current understanding
+
 #### Story 1: Architecture Domain
 - **As a** software architect
 - **I want** to generate ADRs with proper context and alternatives
@@ -113,6 +135,27 @@ The lack of specialized reflection domains forces teams to use generic templates
   - [ ] Preserves custom sections while updating generated content
 
 ## Functional Requirements
+
+### Core System Domains (P0-Critical)
+1. **[REQ-000A]**: Start domain for intelligent session initialization
+   - Rationale: Critical for rapid flow state achievement and context continuity
+   - Acceptance: Reads handoff, loads relevant modules, sets work mode, suggests next actions
+   - Features:
+     - Reads previous handoff through reflection
+     - Intelligently loads ONLY relevant context modules
+     - Sets appropriate work mode based on state
+     - Provides specific first actions with commands
+     - Achieves flow state in <30 seconds
+
+2. **[REQ-000B]**: Handoff domain for session state preservation
+   - Rationale: Essential for seamless AI-to-AI and human-to-human collaboration
+   - Acceptance: Captures complete workstream context for instant resumption
+   - Features:
+     - References all active PRDs/ADRs/Tasks
+     - Identifies critical context modules for next session
+     - Preserves architectural decisions and rationale
+     - Provides specific commands for session resumption
+     - Enables rapport preservation across sessions
 
 ### Must Have (P0)
 1. **[REQ-001]**: Architecture domain with ADR template support

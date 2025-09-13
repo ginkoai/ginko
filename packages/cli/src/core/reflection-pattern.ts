@@ -45,7 +45,9 @@ export interface ReflectionPattern {
 /**
  * Domain types that can use reflection
  */
-export type ReflectionDomain = 
+export type ReflectionDomain =
+  | 'start'         // Session initialization
+  | 'handoff'       // Session preservation
   | 'prd'
   | 'backlog'
   | 'documentation'
@@ -136,6 +138,17 @@ export abstract class ReflectionCommand {
   protected abstract gatherContext(intent: any): Promise<any>;
   
   /**
+   * Generate prompt - convenience method for subclasses
+   */
+  async generatePrompt(intent: string, template: any, context: any): Promise<string> {
+    return this.generateReflectionPrompt(
+      this.parseIntent(intent),
+      template,
+      context
+    );
+  }
+
+  /**
    * Generate the reflection prompt
    */
   protected generateReflectionPrompt(
@@ -203,6 +216,24 @@ INSTRUCTIONS:
   protected loadDomainConfig(domain: ReflectionDomain): DomainConfig {
     // This would normally load from config files
     const configs: Record<ReflectionDomain, DomainConfig> = {
+      start: {
+        name: 'start',
+        description: 'Intelligent session initialization',
+        detectPatterns: [/start|begin|resume|init|session/i],
+        templatePath: 'templates/start.md',
+        outputFormat: 'markdown',
+        outputLocation: '.ginko/sessions/',
+        contextGatherers: ['handoff', 'git', 'session']
+      },
+      handoff: {
+        name: 'handoff',
+        description: 'Session state preservation',
+        detectPatterns: [/handoff|stop|pause|save|preserve/i],
+        templatePath: 'templates/handoff.md',
+        outputFormat: 'markdown',
+        outputLocation: '.ginko/sessions/',
+        contextGatherers: ['git', 'session', 'workstream']
+      },
       prd: {
         name: 'prd',
         description: 'Product Requirements Document',

@@ -12,10 +12,10 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { initCommand } from './commands/init.js';
-import { startCommand } from './commands/start-enhanced.js';
-import { handoffCommand } from './commands/handoff.js';
-import { handoffAiCommand } from './commands/handoff-ai.js';
-import enhancedHandoffCommand from './commands/handoff-enhanced.js';
+import { startCommand } from './commands/start/index.js';
+import { handoffCommand } from './commands/handoff/index.js';
+import { handoffAiCommand } from './commands/handoff-ai-orig.js';
+import enhancedHandoffCommand from './commands/handoff-enhanced-orig.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
@@ -62,36 +62,21 @@ program
 
 program
   .command('start [sessionId]')
-  .description('Start or resume a session (fully git-native)')
+  .description('Start or resume a session (uses reflection for intelligent initialization)')
   .option('-v, --verbose', 'Show full context and handoff')
   .option('-m, --minimal', 'Minimal output for quick start')
-  .action(startCommand);
+  .option('--legacy', 'Use original implementation without reflection')
+  .action((sessionId, options) => startCommand({ sessionId, ...options }));
 
 program
   .command('handoff [message]')
-  .description('Create a session handoff with automatic context capture')
-  .option('--store', 'Store AI-enriched content (internal use)')
-  .option('--id <id>', 'Handoff ID for storing enriched content')
-  .option('--content <content>', 'Enriched content to store')
-  .option('--no-capture', 'Disable automatic context capture')
-  .option('--quick', 'Quick handoff without AI enhancement')
-  .option('-r, --review', 'Review insights before saving')
+  .description('Create a session handoff (uses reflection for workstream preservation)')
+  .option('--legacy', 'Use original implementation without reflection')
   .option('-v, --verbose', 'Show detailed output')
-  .option('--max-insights <number>', 'Maximum insights to capture', parseInt)
-  .option('--enhanced', 'Use enhanced version with auto-capture (default)')
-  .option('--legacy', 'Use legacy AI version without capture')
+  .option('-r, --review', 'Review handoff before saving')
   .action((message, options) => {
-    // Default to enhanced version unless explicitly using legacy
-    if (options.legacy) {
-      return handoffAiCommand({ message, ...options });
-    } else {
-      // Use enhanced version with automatic context capture
-      return enhancedHandoffCommand({ 
-        message, 
-        capture: !options.noCapture,
-        ...options 
-      });
-    }
+    // Use new reflection-based handoff by default
+    return handoffCommand({ message, ...options });
   });
 
 program

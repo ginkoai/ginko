@@ -43,8 +43,8 @@ export async function reflectCommand(intent: string, options: ReflectOptions = {
     
     if (!reflectionCommand) {
       console.log(chalk.yellow(`Domain '${detectedDomain}' not yet implemented`));
-      console.log(chalk.dim('Available domains: prd, architecture, backlog, documentation'));
-      console.log(chalk.dim('Coming soon: sprint, testing, git, overview'));
+      console.log(chalk.dim('Available domains: start, handoff, prd, architecture, backlog, documentation'));
+      console.log(chalk.dim('Coming soon: testing, sprint, git, overview'));
       return;
     }
     
@@ -63,21 +63,30 @@ export async function reflectCommand(intent: string, options: ReflectOptions = {
  */
 async function createDomainReflection(domain: string): Promise<any> {
   switch (domain) {
+    // Core system domains
+    case 'start':
+      const { StartReflectionCommand } = await import('./start/start-reflection.js');
+      return new StartReflectionCommand();
+
+    case 'handoff':
+      const { HandoffReflectionCommand } = await import('./handoff/handoff-reflection.js');
+      return new HandoffReflectionCommand();
+
     case 'backlog':
       return new BacklogReflectionCommand();
-    
+
     case 'prd':
       const { PRDReflectionCommand } = await import('./prd/prd-reflection.js');
       return new PRDReflectionCommand();
-    
+
     case 'architecture':
       const { ArchitectureReflectionCommand } = await import('./architecture/architecture-reflection.js');
       return new ArchitectureReflectionCommand();
-    
+
     case 'documentation':
       const { DocumentationReflectionCommand } = await import('./documentation/documentation-reflection.js');
       return new DocumentationReflectionCommand();
-    
+
     // Future domains - using generic implementation for now
     case 'testing':
     case 'debugging':
@@ -89,7 +98,7 @@ async function createDomainReflection(domain: string): Promise<any> {
     case 'git':
       // These would have their own reflection implementations
       return createReflectionCommand(domain as any);
-    
+
     default:
       return null;
   }

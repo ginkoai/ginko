@@ -41,6 +41,79 @@ Refactor these core commands to use the reflection pattern, transforming them in
 
 ## Proposed Reflection Domains
 
+### Start Domain (CRITICAL - Session Initialization)
+```typescript
+// ginko reflect --domain start
+// Or aliased: ginko start
+{
+  intent: "Initialize development session with optimal context",
+  template: {
+    requiredSections: ['session_configuration', 'loaded_modules', 'work_mode', 'immediate_actions'],
+    contextToConsider: ['previous_handoff', 'uncommitted_changes', 'time_elapsed', 'branch_state'],
+    rulesAndConstraints: [
+      'Load ONLY relevant modules from handoff',
+      'Set appropriate work mode',
+      'Provide specific first action',
+      'Surface blockers immediately',
+      'Achieve flow state in <30 seconds'
+    ]
+  },
+  reflection: {
+    // AI reads handoff and understands workstream
+    // Identifies exactly which modules are needed
+    // Determines optimal work mode
+    // Predicts likely next actions
+  },
+  output: {
+    format: 'interactive',
+    modules_loaded: ['pattern-reflection-pattern-as-dsl.md', 'universal-reflection-pattern.md'],
+    work_mode: 'Think & Build',
+    first_action: 'Continue implementing Overview domain at line 147'
+  }
+}
+```
+
+### Handoff Domain (CRITICAL - Session Preservation)
+```typescript
+// ginko reflect --domain handoff "completing reflection domain work"
+// Or aliased: ginko handoff
+{
+  intent: "Capture complete workstream context for seamless continuation",
+  template: {
+    requiredSections: ['session_summary', 'active_workstream', 'critical_modules', 'next_instructions'],
+    contextToConsider: ['git_changes', 'active_prds_adrs', 'critical_modules', 'test_results'],
+    rulesAndConstraints: [
+      'Reference ALL active PRDs/ADRs by number',
+      'List ESSENTIAL context modules explicitly',
+      'Provide SPECIFIC next actions with commands',
+      'Preserve architectural rationale',
+      'Enable instant flow state for next session'
+    ]
+  },
+  reflection: {
+    // AI synthesizes session into comprehensive handoff
+    // Identifies which PRDs/ADRs are active
+    // Determines critical context modules
+    // Captures architectural decisions made
+  },
+  output: {
+    format: 'markdown',
+    location: '.ginko/sessions/[user]/current.md',
+    includes_workstream: true,
+    includes_commands: true
+  }
+}
+```
+
+### The Complete Reflexive Cycle
+The Start and Handoff domains create a perfect loop:
+1. **Handoff** writes structured context through reflection
+2. Time passes (minutes, hours, or days)
+3. **Start** reads that context through reflection
+4. Session continues seamlessly with full understanding
+
+This solves the critical "rapport degradation" problem where each new session loses context and requires multiple prompts to regain productivity.
+
 ### Context Domain
 ```typescript
 // ginko reflect --domain context "Load modules for reflection pattern work"
