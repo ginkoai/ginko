@@ -152,6 +152,140 @@ Remember: The next session (could be another AI) needs to achieve productive wor
   }
 
   /**
+   * Override execute to include actual content generation
+   */
+  async execute(intent: string, options: any = {}): Promise<void> {
+    try {
+      // 1. Parse intent
+      const parsedIntent = this.parseIntent(intent);
+
+      // 2. Load template
+      const template = await this.loadTemplate();
+
+      // 3. Gather context
+      const context = await this.gatherContext(parsedIntent);
+
+      // 4. Generate the handoff content (not just the prompt)
+      const handoffContent = await this.generateHandoffContent(parsedIntent, template, context);
+
+      // 5. Save the artifact
+      await this.saveArtifact(handoffContent);
+
+    } catch (error) {
+      console.error(chalk.red(`Handoff failed: ${error}`));
+      throw error;
+    }
+  }
+
+  /**
+   * Generate actual handoff content based on template and context
+   */
+  private async generateHandoffContent(intent: any, template: any, context: any): Promise<string> {
+    const date = new Date().toISOString().split('T')[0];
+    const sessionId = `session-${Date.now()}`;
+
+    // Build handoff content following the template structure
+    const sections: string[] = [];
+
+    // Header
+    sections.push(`# Session Handoff: ${context.workstreamFocus || 'Development Session'}\n`);
+    sections.push(`**Date**: ${date}`);
+    sections.push(`**Session ID**: ${sessionId}`);
+    sections.push(`**Next Session Goal**: ${intent.raw || 'Continue development'}\n`);
+
+    // Active Workstream
+    if (context.workstream) {
+      sections.push(`## 🎯 Active Workstream\n`);
+      sections.push(`### Current Focus: ${context.workstream.focus}`);
+
+      if (context.workstream.prds?.length > 0) {
+        sections.push(`- **Primary PRDs**:`);
+        context.workstream.prds.forEach((prd: any) => {
+          sections.push(`  - ${prd.number}: ${prd.title}`);
+        });
+      }
+
+      if (context.workstream.adrs?.length > 0) {
+        sections.push(`- **Key ADRs**:`);
+        context.workstream.adrs.forEach((adr: any) => {
+          sections.push(`  - ${adr.number}: ${adr.title}`);
+        });
+      }
+
+      if (context.workstream.tasks?.length > 0) {
+        sections.push(`- **Active Tasks**:`);
+        context.workstream.tasks.forEach((task: any) => {
+          sections.push(`  - ${task.number}: ${task.title} (${task.priority || 'MEDIUM'})`);
+        });
+      }
+      sections.push('');
+    }
+
+    // Critical Context Modules
+    if (context.criticalModules?.length > 0) {
+      sections.push(`## 📚 Critical Context Modules to Load\n`);
+      sections.push(`**ESSENTIAL - Load these immediately for continuity:**`);
+      sections.push('```bash');
+      context.criticalModules.forEach((module: string) => {
+        const moduleName = module.replace('.md', '');
+        sections.push(`ginko context ${moduleName}`);
+      });
+      sections.push('```\n');
+    }
+
+    // Current State
+    sections.push(`## 🔄 Current State\n`);
+
+    // Git changes
+    if (context.uncommittedWork) {
+      const work = context.uncommittedWork;
+      if (work.modified?.length > 0 || work.created?.length > 0) {
+        sections.push(`### Uncommitted Changes`);
+        if (work.modified?.length > 0) {
+          sections.push(`- Modified: ${work.modified.length} files`);
+        }
+        if (work.created?.length > 0) {
+          sections.push(`- Created: ${work.created.length} files`);
+        }
+        sections.push('');
+      }
+    }
+
+    // Branch info
+    if (context.currentBranch) {
+      sections.push(`### Branch: ${context.currentBranch}`);
+      if (context.uncommittedWork?.ahead > 0) {
+        sections.push(`- ${context.uncommittedWork.ahead} commits ahead of origin`);
+      }
+      sections.push('');
+    }
+
+    // Instant Flow State Instructions
+    sections.push(`## ⚡ Instant Flow State Instructions\n`);
+    sections.push(`1. **Load this handoff**: Already loaded via \`ginko start\``);
+    sections.push(`2. **Continue work**: Review uncommitted changes and proceed`);
+    sections.push(`3. **Run tests**: Verify everything still works`);
+    sections.push('');
+
+    // Known Issues (if any)
+    if (context.knownIssues?.length > 0) {
+      sections.push(`## 🚧 Known Issues\n`);
+      context.knownIssues.forEach((issue: string, i: number) => {
+        sections.push(`${i + 1}. ${issue}`);
+      });
+      sections.push('');
+    }
+
+    // Footer
+    sections.push('---');
+    sections.push(`**Handoff Quality**: Generated from reflection domain`);
+    sections.push(`**Generated**: ${date}`);
+    sections.push(`**Confidence**: High - automated context capture`);
+
+    return sections.join('\n');
+  }
+
+  /**
    * Save handoff to filesystem
    */
   async saveArtifact(content: string, filename?: string): Promise<string> {

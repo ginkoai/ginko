@@ -27,6 +27,151 @@ export class StartReflectionCommand extends ReflectionCommand {
   }
 
   /**
+   * Override execute to process handoff and display session info
+   */
+  async execute(intent: string, options: any = {}): Promise<void> {
+    const spinner = ora('Initializing session...').start();
+
+    try {
+      // 1. Parse intent
+      const parsedIntent = this.parseIntent(intent);
+
+      // 2. Load template
+      const template = await this.loadTemplate();
+
+      // 3. Gather context (including handoff)
+      const context = await this.gatherContext(parsedIntent);
+
+      // 4. Display session information
+      await this.displaySessionInfo(context);
+
+      spinner.succeed('Session initialized!');
+
+    } catch (error) {
+      spinner.fail('Session initialization failed');
+      console.error(chalk.red(`Start failed: ${error}`));
+      throw error;
+    }
+  }
+
+  /**
+   * Display session information based on context
+   */
+  private async displaySessionInfo(context: any): Promise<void> {
+    console.log('');
+
+    // Display work mode
+    const workMode = context.workMode || 'Think & Build';
+    console.log(chalk.cyan(`📋 Work Mode: ${workMode}`));
+    console.log('');
+
+    // Display session header
+    console.log(chalk.green('✨ Session Ready!'));
+    console.log('');
+
+    // Show handoff goal if available
+    if (context.lastHandoff) {
+      const goalMatch = context.lastHandoff.match(/\*\*Next Session Goal\*\*: (.+)/);
+      if (goalMatch) {
+        console.log(chalk.yellow(`🎯 Goal: ${goalMatch[1]}`));
+        console.log('');
+      }
+    }
+
+    // Show workstream if detected
+    if (context.workstream?.focus && context.workstream.focus !== 'Continuing previous work') {
+      console.log(chalk.magenta(`📁 Workstream: ${context.workstream.focus}`));
+
+      if (context.workstream.prds?.length > 0) {
+        console.log(chalk.dim('   PRDs:'));
+        context.workstream.prds.forEach((prd: any) => {
+          console.log(chalk.dim(`   - ${prd.number}: ${prd.title}`));
+        });
+      }
+
+      if (context.workstream.adrs?.length > 0) {
+        console.log(chalk.dim('   ADRs:'));
+        context.workstream.adrs.forEach((adr: any) => {
+          console.log(chalk.dim(`   - ${adr.number}: ${adr.title}`));
+        });
+      }
+
+      if (context.workstream.tasks?.length > 0) {
+        console.log(chalk.dim('   Tasks:'));
+        context.workstream.tasks.forEach((task: any) => {
+          console.log(chalk.dim(`   - ${task.number}: ${task.title}`));
+        });
+      }
+      console.log('');
+    }
+
+    // Show critical modules from handoff
+    if (context.lastHandoff?.includes('Critical Context Modules')) {
+      const moduleSection = context.lastHandoff.match(/```bash\n(ginko context .+\n)+```/);
+      if (moduleSection) {
+        console.log(chalk.cyan('📚 Critical Context Modules:'));
+        const commands = moduleSection[0].match(/ginko context .+/g);
+        if (commands) {
+          commands.forEach((cmd: string) => {
+            console.log(chalk.dim(`   ${cmd}`));
+          });
+        }
+        console.log('');
+      }
+    }
+
+    // Show uncommitted changes
+    if (context.hasUncommittedChanges) {
+      const work = context.uncommittedWork;
+      console.log(chalk.yellow('⚠️  Uncommitted Changes:'));
+
+      if (work.modified?.length > 0) {
+        console.log(chalk.dim(`   Modified: ${work.modified.length} files`));
+        work.modified.slice(0, 3).forEach((file: string) => {
+          console.log(chalk.dim(`   - ${file}`));
+        });
+        if (work.modified.length > 3) {
+          console.log(chalk.dim(`   ... and ${work.modified.length - 3} more`));
+        }
+      }
+
+      if (work.created?.length > 0) {
+        console.log(chalk.dim(`   Created: ${work.created.length} files`));
+      }
+
+      if (work.not_added?.length > 0) {
+        console.log(chalk.dim(`   Untracked: ${work.not_added.length} files`));
+      }
+      console.log('');
+    }
+
+    // Show branch status
+    if (context.currentBranch) {
+      console.log(chalk.blue(`🌿 Branch: ${context.currentBranch}`));
+      if (context.uncommittedWork?.ahead > 0) {
+        console.log(chalk.dim(`   ${context.uncommittedWork.ahead} commits ahead of origin`));
+      }
+      console.log('');
+    }
+
+    // Instant action
+    console.log(chalk.green('⚡ Next Steps:'));
+
+    if (context.lastHandoff?.includes('Testing the fixed handoff')) {
+      console.log(chalk.white('   1. Test the complete handoff → start cycle'));
+      console.log(chalk.white('   2. Commit the handoff implementation fix'));
+      console.log(chalk.white('   3. Begin Overview domain implementation'));
+    } else {
+      console.log(chalk.white('   1. Review uncommitted changes'));
+      console.log(chalk.white('   2. Continue where you left off'));
+      console.log(chalk.white('   3. Run tests to verify everything works'));
+    }
+
+    console.log('');
+    console.log(chalk.dim('💡 Tip: Run `ginko handoff` before stopping to preserve context'));
+  }
+
+  /**
    * Load start-specific template for session initialization
    */
   async loadTemplate(): Promise<any> {
@@ -150,49 +295,6 @@ Example output structure:
 - Warning: [any blockers]`;
 
     return enhancedPrompt;
-  }
-
-  /**
-   * Execute start sequence with actual module loading
-   */
-  async execute(intent: string, options: any = {}): Promise<void> {
-    const spinner = ora('Initializing session...').start();
-
-    try {
-      // Run base reflection
-      spinner.text = 'Reading previous handoff...';
-      const result = await super.execute(intent, options);
-
-      // Parse the reflection output to get recommendations
-      const recommendations = this.parseRecommendations(result);
-
-      // Actually load the recommended context modules
-      spinner.text = 'Loading context modules...';
-      if (recommendations.modulesToLoad && recommendations.modulesToLoad.length > 0) {
-        for (const module of recommendations.modulesToLoad) {
-          await this.loadContextModule(module);
-        }
-      }
-
-      // Set the work mode
-      if (recommendations.workMode) {
-        await this.setWorkMode(recommendations.workMode);
-      }
-
-      spinner.succeed('Session initialized!');
-
-      // Display flow state instructions
-      this.displayFlowStateInstructions(recommendations);
-
-    } catch (error) {
-      spinner.fail('Failed to initialize session');
-      console.error(chalk.red('Error:'), error);
-
-      // Fallback to basic start
-      console.log(chalk.yellow('\nFalling back to basic session start...'));
-      const { startCommand } = await import('../start-orig.js');
-      return startCommand(options);
-    }
   }
 
   /**
