@@ -15,6 +15,13 @@ import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import { getUserEmail, getGinkoDir } from '../../utils/helpers.js';
+import {
+  HandoffQualityScorer,
+  HandoffContextAggregator,
+  HandoffEnhancer,
+  HandoffContext,
+  QualityReport
+} from '../../core/handoff-quality.js';
 
 /**
  * Handoff domain reflection for comprehensive session preservation
@@ -178,9 +185,19 @@ Remember: The next session (could be another AI) needs to achieve productive wor
   }
 
   /**
-   * Generate actual handoff content based on template and context
+   * Generate actual handoff content with quality assurance
    */
   private async generateHandoffContent(intent: any, template: any, context: any): Promise<string> {
+    // Use the enhanced context aggregator
+    const aggregator = new HandoffContextAggregator(process.cwd());
+    const enrichedContext = await aggregator.gatherContext();
+
+    // Merge with existing context
+    const fullContext: HandoffContext = {
+      ...enrichedContext,
+      ...context,
+      focus: context.workstreamFocus || enrichedContext.focus
+    };
     const date = new Date().toISOString().split('T')[0];
     const sessionId = `session-${Date.now()}`;
 
@@ -282,7 +299,24 @@ Remember: The next session (could be another AI) needs to achieve productive wor
     sections.push(`**Generated**: ${date}`);
     sections.push(`**Confidence**: High - automated context capture`);
 
-    return sections.join('\n');
+    let handoffContent = sections.join('\n');
+
+    // Quality check and enhancement
+    const qualityReport = HandoffQualityScorer.score(handoffContent);
+
+    if (qualityReport.percentage < HandoffQualityScorer.TARGET_SCORE) {
+      console.log(chalk.yellow('\n📊 Enhancing handoff quality...'));
+      handoffContent = await HandoffEnhancer.enhance(handoffContent, fullContext);
+
+      // Re-score after enhancement
+      const enhancedReport = HandoffQualityScorer.score(handoffContent);
+      HandoffQualityScorer.displayReport(enhancedReport);
+    } else {
+      console.log(chalk.green('\n✨ Excellent handoff quality achieved!'));
+      HandoffQualityScorer.displayReport(qualityReport);
+    }
+
+    return handoffContent;
   }
 
   /**
