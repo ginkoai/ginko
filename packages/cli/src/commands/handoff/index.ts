@@ -9,34 +9,34 @@
  * @dependencies: []
  */
 
+import { HandoffPipeline } from './handoff-reflection-pipeline.js';
 import { HandoffReflectionCommand } from './handoff-reflection.js';
 
 /**
  * Handoff command router
- * Routes between reflection-based and legacy implementations
+ * Routes between pipeline, reflection-based and legacy implementations
  */
-export async function handoffCommand(options: any = {}) {
+export async function handoffCommand(options: any = {}): Promise<void> {
   // Use legacy implementation if requested
   if (options.legacy) {
     // Try enhanced version first, fall back to basic
     try {
       const { enhancedHandoffCommand } = await import('../handoff-enhanced-orig.js');
-      return enhancedHandoffCommand(options);
+      await enhancedHandoffCommand(options);
+      return;
     } catch {
       const { handoffCommand: origCommand } = await import('../handoff-orig.js');
-      return origCommand(options);
+      await origCommand(options);
+      return;
     }
   }
 
-  // Use reflection domain (new default)
-  const reflection = new HandoffReflectionCommand();
-  const intent = options.message || 'Create comprehensive session handoff';
-
-  // Pass through any options
-  return reflection.execute(intent, options);
+  // Use new pipeline implementation (ADR-013 Simple Builder Pattern)
+  const pipeline = new HandoffPipeline(options.message || 'Create comprehensive session handoff');
+  await pipeline.build();
 }
 
 // Also export for direct 'ginko reflect --domain handoff' usage
-export { HandoffReflectionCommand };
+export { HandoffReflectionCommand, HandoffPipeline };
 
 export default handoffCommand;
