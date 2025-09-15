@@ -3,14 +3,13 @@
  * @status: current
  * @updated: 2025-01-13
  * @tags: [handoff, router, reflection, legacy]
- * @related: [./handoff-reflection.ts, ../handoff-enhanced-orig.ts]
+ * @related: [./handoff-reflection-pipeline.ts, ../handoff-enhanced-orig.ts]
  * @priority: critical
  * @complexity: low
  * @dependencies: []
  */
 
-import { HandoffPipeline } from './handoff-reflection-pipeline.js';
-import { HandoffReflectionCommand } from './handoff-reflection.js';
+import { HandoffPipeline, HandoffReflectionCommand } from './handoff-reflection-pipeline.js';
 
 /**
  * Handoff command router

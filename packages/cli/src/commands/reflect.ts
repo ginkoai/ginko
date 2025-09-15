@@ -69,7 +69,7 @@ async function createDomainReflection(domain: string): Promise<any> {
       return new StartReflectionCommand();
 
     case 'handoff':
-      const { HandoffReflectionCommand } = await import('./handoff/handoff-reflection.js');
+      const { HandoffReflectionCommand } = await import('./handoff/handoff-reflection-pipeline.js');
       return new HandoffReflectionCommand();
 
     case 'backlog':
