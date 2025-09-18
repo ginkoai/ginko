@@ -261,5 +261,22 @@
       "reflection-pattern",
       "domain-commands"
     ]
+  },
+  "module-insights-about-democratization.md": {
+    "type": "module",
+    "tags": [
+      "reflection-pattern",
+      "user-empowerment",
+      "meta-tools",
+      "democratization"
+    ],
+    "area": "packages/cli/src/commands/reflect.ts",
+    "created": "2025-09-17",
+    "updated": "2025-09-17",
+    "relevance": "high",
+    "dependencies": [
+      "reflection-pattern.ts",
+      "ReflectionCommand"
+    ]
   }
 }
