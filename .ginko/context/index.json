@@ -229,10 +229,34 @@
       "relevance": "medium",
       "created": "2025-09-12T22:18:47.793Z",
       "sessionId": "xtophr@gmail.com-1757715527779"
+    },
+    {
+      "filename": "gotcha-mock-insight-from-ai-service.md",
+      "type": "gotcha",
+      "tags": [
+        "test",
+        "mock",
+        "development"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-18T16:22:18.954Z",
+      "sessionId": "xtophr@gmail.com-1758212538917"
+    },
+    {
+      "filename": "gotcha-mock-insight-from-ai-service.md",
+      "type": "gotcha",
+      "tags": [
+        "test",
+        "mock",
+        "development"
+      ],
+      "relevance": "high",
+      "created": "2025-09-18T16:24:16.230Z",
+      "sessionId": "xtophr@gmail.com-1758212656200"
     }
   ],
-  "lastUpdated": "2025-09-12T22:18:47.794Z",
-  "totalModules": 10,
+  "lastUpdated": "2025-09-18T16:24:16.237Z",
+  "totalModules": 12,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
