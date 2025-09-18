@@ -1,0 +1,64 @@
+id: PRD-004
+title: AI Actively Managed Context Implementation
+status: ready
+priority: high
+points: 8
+sprint: 2025-09-16
+assignee: unassigned
+labels:
+  - ai
+  - context-management
+  - core-feature
+
+description: |
+  Implement the AI-powered context management system with progressive loading,
+  Context Reflexes, and real-time phase tracking for improved human-AI alignment.
+
+acceptance_criteria:
+  - Context loads progressively in 3 stages
+  - Context Reflexes trigger naturally during work
+  - Phase tracking provides real-time visibility
+  - AI service integration supports multiple models
+  - Performance: < 2 second initial load
+
+dependencies:
+  - ai-service.ts (COMPLETE)
+  - active-context-manager.ts (COMPLETE)
+  - statusline-tracker.ts (COMPLETE)
+  - Context Reflexes documentation (COMPLETE)
+
+subtasks:
+  - id: PRD-004-1
+    title: Integrate ActiveContextManager into start command
+    points: 2
+    status: pending
+
+  - id: PRD-004-2
+    title: Wire up real AI in handoff command
+    points: 2
+    status: pending
+
+  - id: PRD-004-3
+    title: Implement Context Reflex triggers
+    points: 2
+    status: pending
+
+  - id: PRD-004-4
+    title: Add configuration for reflex sensitivity
+    points: 1
+    status: pending
+
+  - id: PRD-004-5
+    title: Performance optimization and caching
+    points: 1
+    status: pending
+
+risks:
+  - AI API latency affecting performance
+  - Context Reflex false triggers
+  - Memory usage with large contexts
+
+notes: |
+  Services are already created, focus on integration.
+  Use mock service for development and testing.
+  Monitor API costs during testing.
