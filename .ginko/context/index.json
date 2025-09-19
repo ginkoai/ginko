@@ -253,10 +253,22 @@
       "relevance": "high",
       "created": "2025-09-18T16:24:16.230Z",
       "sessionId": "xtophr@gmail.com-1758212656200"
+    },
+    {
+      "filename": "gotcha-mock-insight-from-ai-service.md",
+      "type": "gotcha",
+      "tags": [
+        "test",
+        "mock",
+        "development"
+      ],
+      "relevance": "medium",
+      "created": "2025-09-19T22:12:02.852Z",
+      "sessionId": "xtophr@gmail.com-1758319922745"
     }
   ],
-  "lastUpdated": "2025-09-18T16:24:16.237Z",
-  "totalModules": 12,
+  "lastUpdated": "2025-09-19T22:12:02.857Z",
+  "totalModules": 13,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

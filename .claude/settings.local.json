@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm:*)",
+      "Read(//c/Users/cnort/Development/ginko-worktrees/validation-layer/**)",
+      "Bash(npm run build:*)",
+      "Bash(git add:*)",
+      "Read(//c/Users/cnort/Development/**)",
+      "Bash(git worktree add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(ginko handoff:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
