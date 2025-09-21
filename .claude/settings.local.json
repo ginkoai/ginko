@@ -10,7 +10,20 @@
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
-      "Bash(ginko handoff:*)"
+      "Bash(ginko handoff:*)",
+      "Bash(git worktree:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(npm install)",
+      "Bash(npm test:*)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npx typescript:*)",
+      "Bash(chmod:*)",
+      "Bash(bash:*)"
     ],
     "deny": [],
     "ask": []

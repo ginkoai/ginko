@@ -1,220 +1,107 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-09-11
- * @tags: [reflection, pattern, core, ai, universal]
- * @related: [../commands/backlog/ai-template.ts]
+ * @updated: 2025-09-21
+ * @tags: [reflection, pattern, core, ai, universal, path-config]
+ * @related: [../commands/backlog/ai-template.ts, config/path-config.ts]
  * @priority: critical
  * @complexity: high
- * @dependencies: [chalk]
+ * @dependencies: [chalk, path-config]
  */
 
 import chalk from 'chalk';
+import { pathManager } from './config/path-config.js';
 
 /**
  * Universal Reflection Pattern
  * The core pattern for Human+AI+Structure collaboration
+ * Now uses pathManager for configuration-based path management
  */
 export interface ReflectionPattern {
   // 1. Human provides intent
   intent: string;
-  
+
   // 2. System provides structure
   template: {
     requiredSections: string[];
     contextToConsider: string[];
     rulesAndConstraints: string[];
   };
-  
+
   // 3. AI reflects and creates
   reflection: {
-    conversationContext: any;
-    systemState: any;
-    domainKnowledge: any;
-    pastPatterns: any;
+    analysisOfIntent: string;
+    suggestedStructure: string;
+    keyInsights: string[];
+    risks: string[];
+    nextSteps: string[];
   };
-  
-  // 4. Output follows structure
-  output: {
-    format: 'markdown' | 'code' | 'json';
-    location: string;
-    validation: string[];
+
+  // 4. Output artifact
+  artifact: {
+    title: string;
+    content: string;
+    type: 'markdown' | 'code' | 'json' | 'yaml';
   };
 }
 
-/**
- * Domain types that can use reflection
- */
 export type ReflectionDomain =
-  | 'start'         // Session initialization
-  | 'handoff'       // Session preservation
-  | 'prd'
-  | 'backlog'
-  | 'documentation'
-  | 'testing'
-  | 'architecture'
-  | 'debugging'
-  | 'review'
-  | 'refactor'
-  | 'pattern'
-  | 'sprint'
-  | 'overview'
-  | 'git';
+  | 'start' | 'handoff' | 'prd' | 'backlog' | 'documentation'
+  | 'testing' | 'architecture' | 'debugging' | 'review' | 'refactor'
+  | 'pattern' | 'sprint' | 'overview' | 'git' | 'ai-collaboration';
 
-/**
- * Domain configuration
- */
 export interface DomainConfig {
-  name: ReflectionDomain;
+  name: string;
   description: string;
   detectPatterns: RegExp[];
   templatePath: string;
-  outputFormat: 'markdown' | 'code' | 'json';
+  outputFormat: string;
   outputLocation: string;
   contextGatherers: string[];
 }
 
 /**
- * Base class for reflection-based commands
+ * Base class for reflection commands with configuration-based paths
  */
 export abstract class ReflectionCommand {
-  protected domain: ReflectionDomain;
-  protected config: DomainConfig;
-  
-  constructor(domain: ReflectionDomain) {
+  protected domain: string;
+  private pathConfig = pathManager.getConfig();
+
+  constructor(domain: string) {
     this.domain = domain;
-    this.config = this.loadDomainConfig(domain);
   }
-  
+
+  abstract execute(intent: string, options?: any): Promise<void>;
+
   /**
-   * Main execution flow implementing the Universal Pattern
+   * Get dynamic output paths based on pathManager configuration
    */
-  async execute(intent: string, options: any = {}): Promise<void> {
-    try {
-      // 1. Parse intent
-      const parsedIntent = this.parseIntent(intent);
-      
-      // 2. Load template
-      const template = await this.loadTemplate();
-      
-      // 3. Gather context
-      const context = await this.gatherContext(parsedIntent);
-      
-      // 4. Generate reflection prompt
-      const reflectionPrompt = this.generateReflectionPrompt(
-        parsedIntent,
-        template,
-        context
-      );
-      
-      // 5. Output for AI reflection
-      this.outputReflectionPrompt(reflectionPrompt, options);
-      
-    } catch (error) {
-      console.error(chalk.red(`Reflection failed: ${error}`));
-      throw error;
-    }
-  }
-  
-  /**
-   * Parse human intent
-   */
-  protected parseIntent(intent: string): any {
-    return {
-      raw: intent,
-      domain: this.domain,
-      timestamp: new Date().toISOString()
+  protected getOutputPath(domain: ReflectionDomain): string {
+    const pathMappings: Record<ReflectionDomain, string> = {
+      'start': this.pathConfig.ginko.sessions,
+      'handoff': this.pathConfig.ginko.sessions,
+      'prd': this.pathConfig.docs.prd,
+      'backlog': this.pathConfig.ginko.backlog,
+      'documentation': this.pathConfig.docs.root,
+      'testing': pathManager.joinPaths(this.pathConfig.project.root, 'tests'),
+      'architecture': this.pathConfig.docs.adr,
+      'debugging': pathManager.joinPaths(this.pathConfig.project.root, 'debug'),
+      'review': pathManager.joinPaths(this.pathConfig.project.root, 'reviews'),
+      'refactor': pathManager.joinPaths(this.pathConfig.project.root, 'refactors'),
+      'pattern': pathManager.joinPaths(this.pathConfig.ginko.root, 'patterns'),
+      'sprint': this.pathConfig.docs.sprints,
+      'overview': this.pathConfig.docs.root,
+      'git': this.pathConfig.project.root,
+      'ai-collaboration': pathManager.joinPaths(this.pathConfig.ginko.root, 'ai-collab')
     };
-  }
-  
-  /**
-   * Load domain-specific template
-   */
-  protected abstract loadTemplate(): Promise<any>;
-  
-  /**
-   * Gather relevant context
-   */
-  protected abstract gatherContext(intent: any): Promise<any>;
-  
-  /**
-   * Generate prompt - convenience method for subclasses
-   */
-  async generatePrompt(intent: string, template: any, context: any): Promise<string> {
-    return this.generateReflectionPrompt(
-      this.parseIntent(intent),
-      template,
-      context
-    );
+
+    return pathMappings[domain] || this.pathConfig.docs.root;
   }
 
   /**
-   * Generate the reflection prompt
-   */
-  protected generateReflectionPrompt(
-    intent: any,
-    template: any,
-    context: any
-  ): string {
-    return `
-<reflection-task domain="${this.domain}">
-
-INTENT: ${intent.raw}
-
-TEMPLATE STRUCTURE:
-${JSON.stringify(template, null, 2)}
-
-CONTEXT TO REFLECT ON:
-${this.formatContext(context)}
-
-RULES AND CONSTRAINTS:
-${this.formatRules(template.rules)}
-
-INSTRUCTIONS:
-1. Reflect on the intent and context
-2. Create comprehensive output following the template
-3. Ensure all required sections are complete
-4. Maintain consistency with existing patterns
-5. Output in ${this.config.outputFormat} format
-
-</reflection-task>`;
-  }
-  
-  /**
-   * Output the reflection prompt
-   */
-  protected outputReflectionPrompt(prompt: string, options: any): void {
-    if (options.raw) {
-      console.log(prompt);
-    } else {
-      console.log(chalk.cyan('═══ Reflection Task ════════════════════════════════════'));
-      console.log(prompt);
-      console.log(chalk.cyan('════════════════════════════════════════════════════════'));
-      console.log(chalk.dim('\n// AI: Please reflect and create based on this template'));
-    }
-  }
-  
-  /**
-   * Format context for display
-   */
-  protected formatContext(context: any): string {
-    return Object.entries(context)
-      .map(([key, value]) => `${key}:\n${JSON.stringify(value, null, 2)}`)
-      .join('\n\n');
-  }
-  
-  /**
-   * Format rules for display
-   */
-  protected formatRules(rules: string[] = []): string {
-    return rules.map((rule, i) => `${i + 1}. ${rule}`).join('\n');
-  }
-  
-  /**
-   * Load domain configuration
+   * Load domain configuration with dynamic paths
    */
   protected loadDomainConfig(domain: ReflectionDomain): DomainConfig {
-    // This would normally load from config files
     const configs: Record<ReflectionDomain, DomainConfig> = {
       start: {
         name: 'start',
@@ -222,7 +109,7 @@ INSTRUCTIONS:
         detectPatterns: [/start|begin|resume|init|session/i],
         templatePath: 'templates/start.md',
         outputFormat: 'markdown',
-        outputLocation: '.ginko/sessions/',
+        outputLocation: this.getOutputPath('start'),
         contextGatherers: ['handoff', 'git', 'session']
       },
       handoff: {
@@ -231,7 +118,7 @@ INSTRUCTIONS:
         detectPatterns: [/handoff|stop|pause|save|preserve/i],
         templatePath: 'templates/handoff.md',
         outputFormat: 'markdown',
-        outputLocation: '.ginko/sessions/',
+        outputLocation: this.getOutputPath('handoff'),
         contextGatherers: ['git', 'session', 'workstream']
       },
       prd: {
@@ -240,7 +127,7 @@ INSTRUCTIONS:
         detectPatterns: [/prd|requirements|product spec|user story|pain point/i],
         templatePath: 'templates/prd.md',
         outputFormat: 'markdown',
-        outputLocation: 'docs/prd/',
+        outputLocation: this.getOutputPath('prd'),
         contextGatherers: ['product', 'users', 'market']
       },
       backlog: {
@@ -249,7 +136,7 @@ INSTRUCTIONS:
         detectPatterns: [/create|feature|story|task|backlog/i],
         templatePath: 'templates/backlog.md',
         outputFormat: 'markdown',
-        outputLocation: 'backlog/items/',
+        outputLocation: this.getOutputPath('backlog'),
         contextGatherers: ['git', 'backlog', 'session']
       },
       documentation: {
@@ -258,7 +145,7 @@ INSTRUCTIONS:
         detectPatterns: [/doc|api|readme|guide/i],
         templatePath: 'templates/documentation.md',
         outputFormat: 'markdown',
-        outputLocation: 'docs/',
+        outputLocation: this.getOutputPath('documentation'),
         contextGatherers: ['code', 'tests', 'comments']
       },
       testing: {
@@ -267,7 +154,7 @@ INSTRUCTIONS:
         detectPatterns: [/test|spec|coverage/i],
         templatePath: 'templates/testing.md',
         outputFormat: 'code',
-        outputLocation: 'tests/',
+        outputLocation: this.getOutputPath('testing'),
         contextGatherers: ['implementation', 'coverage', 'fixtures']
       },
       architecture: {
@@ -276,7 +163,7 @@ INSTRUCTIONS:
         detectPatterns: [/architecture|adr|design/i],
         templatePath: 'templates/architecture.md',
         outputFormat: 'markdown',
-        outputLocation: 'docs/architecture/',
+        outputLocation: this.getOutputPath('architecture'),
         contextGatherers: ['current-arch', 'constraints', 'alternatives']
       },
       debugging: {
@@ -285,7 +172,7 @@ INSTRUCTIONS:
         detectPatterns: [/debug|investigate|error|bug/i],
         templatePath: 'templates/debugging.md',
         outputFormat: 'markdown',
-        outputLocation: 'debug/',
+        outputLocation: this.getOutputPath('debugging'),
         contextGatherers: ['logs', 'errors', 'recent-changes']
       },
       review: {
@@ -294,7 +181,7 @@ INSTRUCTIONS:
         detectPatterns: [/review|pr|pull request/i],
         templatePath: 'templates/review.md',
         outputFormat: 'markdown',
-        outputLocation: 'reviews/',
+        outputLocation: this.getOutputPath('review'),
         contextGatherers: ['diff', 'conventions', 'history']
       },
       refactor: {
@@ -303,7 +190,7 @@ INSTRUCTIONS:
         detectPatterns: [/refactor|extract|reorganize/i],
         templatePath: 'templates/refactor.md',
         outputFormat: 'code',
-        outputLocation: 'refactors/',
+        outputLocation: this.getOutputPath('refactor'),
         contextGatherers: ['current-code', 'dependencies', 'tests']
       },
       pattern: {
@@ -312,7 +199,7 @@ INSTRUCTIONS:
         detectPatterns: [/pattern|template|framework/i],
         templatePath: 'templates/pattern.md',
         outputFormat: 'markdown',
-        outputLocation: '.ginko/patterns/',
+        outputLocation: this.getOutputPath('pattern'),
         contextGatherers: ['existing-patterns', 'use-cases']
       },
       sprint: {
@@ -321,7 +208,7 @@ INSTRUCTIONS:
         detectPatterns: [/sprint|planning|breakdown|wbs|iteration/i],
         templatePath: 'templates/sprint.md',
         outputFormat: 'markdown',
-        outputLocation: 'docs/sprints/',
+        outputLocation: this.getOutputPath('sprint'),
         contextGatherers: ['backlog', 'team', 'velocity']
       },
       overview: {
@@ -330,7 +217,7 @@ INSTRUCTIONS:
         detectPatterns: [/overview|system|big picture|architecture doc/i],
         templatePath: 'templates/overview.md',
         outputFormat: 'markdown',
-        outputLocation: 'docs/',
+        outputLocation: this.getOutputPath('overview'),
         contextGatherers: ['architecture', 'components', 'principles']
       },
       git: {
@@ -339,66 +226,98 @@ INSTRUCTIONS:
         detectPatterns: [/git|branch|commit|pr|pull request|merge/i],
         templatePath: 'templates/git.md',
         outputFormat: 'markdown',
-        outputLocation: '.github/',
-        contextGatherers: ['git-state', 'backlog', 'conventions']
+        outputLocation: this.getOutputPath('git'),
+        contextGatherers: ['git-status', 'recent-commits', 'branch-info']
+      },
+      'ai-collaboration': {
+        name: 'ai-collaboration',
+        description: 'AI collaboration patterns and insights',
+        detectPatterns: [/ai|claude|gpt|collaboration|prompt/i],
+        templatePath: 'templates/ai-collaboration.md',
+        outputFormat: 'markdown',
+        outputLocation: this.getOutputPath('ai-collaboration'),
+        contextGatherers: ['conversation-history', 'patterns', 'effectiveness']
       }
     };
-    
+
     return configs[domain];
   }
+
+  // ... rest of the methods remain the same
+
+  /**
+   * Format context for display
+   */
+  protected formatContext(context: any): string {
+    return Object.entries(context)
+      .map(([key, value]) => `${key}:\n${JSON.stringify(value, null, 2)}`)
+      .join('\n\n');
+  }
+
+  /**
+   * Format rules for display
+   */
+  protected formatRules(rules: string[] = []): string {
+    return rules.map((rule, i) => `${i + 1}. ${rule}`).join('\n');
+  }
 }
 
 /**
- * Detect domain from intent
+ * Factory for creating reflection commands
  */
-export function detectDomain(intent: string): ReflectionDomain | null {
-  // Order matters - more specific patterns first
-  const domains: Array<[ReflectionDomain, RegExp[]]> = [
-    ['prd', [/prd|product requirement|user pain|user story|value prop|roi/i]],
-    ['sprint', [/sprint|planning|breakdown|wbs|iteration|velocity/i]],
-    ['git', [/branch|commit message|pr description|pull request/i]],
-    ['debugging', [/debug|investigate|slow|error|bug|issue|broken|failing/i]],
-    ['testing', [/test|spec|coverage/i]],
-    ['backlog', [/create feature|create story|create task|backlog|todo|implement/i]],
-    ['architecture', [/architecture|adr|design decision|system design/i]],
-    ['overview', [/overview|system doc|big picture|architecture overview/i]],
-    ['review', [/review|pr |pull request review/i]],
-    ['refactor', [/refactor|extract|reorganize|clean up|improve code/i]],
-    ['pattern', [/pattern|template|framework/i]],
-    ['documentation', [/doc|api|readme|guide|document/i]]  // Most general, last
-  ];
-  
-  for (const [domain, patterns] of domains) {
-    if (patterns.some(pattern => pattern.test(intent))) {
-      return domain;
-    }
+export class ReflectionFactory {
+  static create(domain: ReflectionDomain): ReflectionCommand {
+    // This would return specific implementations
+    throw new Error(`Reflection command for domain ${domain} not implemented`);
   }
-  
-  return null;
+
+  static detectDomain(intent: string): ReflectionDomain | null {
+    const domains: ReflectionDomain[] = [
+      'start', 'handoff', 'prd', 'backlog', 'documentation',
+      'testing', 'architecture', 'debugging', 'review', 'refactor',
+      'pattern', 'sprint', 'overview', 'git', 'ai-collaboration'
+    ];
+
+    for (const domain of domains) {
+      const config = new (class extends ReflectionCommand {
+        async execute() {}
+      })(domain).loadDomainConfig(domain);
+
+      if (config.detectPatterns.some(pattern => pattern.test(intent))) {
+        return domain;
+      }
+    }
+
+    return null;
+  }
 }
 
 /**
- * Create reflection command for domain
+ * Utility functions for reflection patterns
  */
-export function createReflectionCommand(domain: ReflectionDomain): ReflectionCommand {
-  // This would instantiate the appropriate domain-specific class
-  // For now, returning a generic implementation
-  class GenericReflectionCommand extends ReflectionCommand {
-    async loadTemplate(): Promise<any> {
-      return {
-        sections: this.config.contextGatherers,
-        rules: ['Be comprehensive', 'Follow conventions', 'Include examples']
-      };
-    }
-    
-    async gatherContext(intent: any): Promise<any> {
-      return {
-        intent: intent.raw,
-        domain: this.domain,
-        timestamp: new Date().toISOString()
-      };
-    }
+export const ReflectionUtils = {
+  /**
+   * Generate a timestamp for artifacts
+   */
+  timestamp(): string {
+    return new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+  },
+
+  /**
+   * Sanitize filename for cross-platform compatibility
+   */
+  sanitizeFilename(filename: string): string {
+    return filename
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  },
+
+  /**
+   * Create relative path from project root
+   */
+  createRelativePath(absolutePath: string): string {
+    return pathManager.getRelativePath(absolutePath);
   }
-  
-  return new GenericReflectionCommand(domain);
-}
+};

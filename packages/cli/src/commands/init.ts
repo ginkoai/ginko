@@ -1,10 +1,12 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-08-28
- * @tags: [cli, init, setup, git-native, enhanced]
+ * @updated: 2025-09-21
+ * @tags: [cli, init, setup, git-native, enhanced, path-config]
+ * @related: [path-config.ts, ginko-root.ts]
  * @priority: high
  * @complexity: medium
+ * @dependencies: [path-config, chalk, fs-extra, ora]
  */
 
 import chalk from 'chalk';
@@ -20,21 +22,24 @@ import { OpenAIAdapter } from '../adapters/openai-adapter.js';
 import { GenericAdapter } from '../adapters/generic-adapter.js';
 import { CursorAdapter } from '../adapters/cursor-adapter.js';
 import { findGinkoRoot } from '../utils/ginko-root.js';
+import { pathManager } from '../core/config/path-config.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();
   let deepAnalysis: any = null; // Track deep analysis results for output
-  
+
   try {
-    const projectRoot = process.cwd();
-    const ginkoDir = path.join(projectRoot, '.ginko');
-    
+    // Get paths from pathManager instead of hardcoding
+    const pathConfig = pathManager.getConfig();
+    const projectRoot = pathConfig.project.root;
+    const ginkoDir = pathConfig.ginko.root;
+
     // Check if already initialized in current directory
     if (await fs.pathExists(ginkoDir)) {
       spinner.warn('Ginko already initialized in this directory');
       return;
     }
-    
+
     // Check if already initialized in a parent directory
     const existingRoot = await findGinkoRoot();
     if (existingRoot && existingRoot !== projectRoot) {
@@ -42,14 +47,14 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       console.log(chalk.yellow('\nTip: Run ginko commands from any subdirectory - they will use the parent .ginko'));
       return;
     }
-    
-    // Create directory structure
-    await fs.ensureDir(path.join(ginkoDir, 'sessions'));
-    await fs.ensureDir(path.join(ginkoDir, 'patterns'));
-    await fs.ensureDir(path.join(ginkoDir, 'best-practices'));
-    await fs.ensureDir(path.join(ginkoDir, 'context'));
-    await fs.ensureDir(path.join(ginkoDir, 'context', 'modules'));
-    
+
+    // Create directory structure using pathManager
+    await fs.ensureDir(pathConfig.ginko.sessions);
+    await fs.ensureDir(pathManager.joinPaths(pathConfig.ginko.root, 'patterns'));
+    await fs.ensureDir(pathManager.joinPaths(pathConfig.ginko.root, 'best-practices'));
+    await fs.ensureDir(pathConfig.ginko.context);
+    await fs.ensureDir(pathManager.joinPaths(pathConfig.ginko.context, 'modules'));
+
     // Get user info from git config
     let userEmail = 'user@example.com';
     let userName = 'Developer';
@@ -59,12 +64,13 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     } catch (e) {
       // Git not configured, use defaults
     }
-    
-    // Create user session directory
-    const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
-    await fs.ensureDir(path.join(ginkoDir, 'sessions', userSlug));
-    await fs.ensureDir(path.join(ginkoDir, 'sessions', userSlug, 'archive'));
-    
+
+    // Create user session directory using pathManager
+    const userSlug = userEmail.replace('@', '-at-').replace(/\\./g, '-');
+    const userSessionsDir = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug);
+    await fs.ensureDir(userSessionsDir);
+    await fs.ensureDir(pathManager.joinPaths(userSessionsDir, 'archive'));
+
     // Create default configuration (privacy-first)
     const config = {
       version: '0.1.0',
@@ -72,321 +78,177 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
         email: userEmail
       },
       privacy: {
-        analytics: {
-          enabled: false,  // Disabled by default
-          anonymous: true   // Always anonymous when enabled
-        },
-        telemetry: {
-          enabled: false
-        }
+        shareAnonymizedUsage: false,
+        trackFeatureUsage: true,
+        includeStackTraces: false
       },
-      git: {
-        autoCommit: false,
-        signCommits: false
+      features: {
+        deepAnalysis: options.analyze !== false,
+        autoBestPractices: true,
+        smartTemplates: true
       },
       ai: {
-        model: 'auto-detect',
-        output: {
-          format: 'human',
-          colors: true,
-          emojis: true
-        }
+        defaultModel: options.model || 'claude-3-5-sonnet-20241022',
+        fallbackModel: 'gpt-4o-mini'
       }
     };
-    
-    await fs.writeJSON(path.join(ginkoDir, 'config.json'), config, { spaces: 2 });
-    
-    // Analyze project and generate AI instructions (unless --quick is used)
-    if (!options.quick) {
+
+    // Save configuration using pathManager
+    const configPath = pathManager.joinPaths(pathConfig.ginko.root, 'config.json');
+    await fs.writeJSON(configPath, config, { spaces: 2 });
+
+    // Project analysis step
+    if (options.analyze !== false) {
       spinner.text = 'Analyzing project structure...';
-      
-      let projectContext;
-      
-      if (options.analyze) {
-        // Deep analysis mode
-        spinner.text = '🔬 Performing deep project analysis...';
-        const { DeepAnalyzer } = await import('../analysis/deep-analyzer.js');
-        const analyzer = new DeepAnalyzer(projectRoot);
-        
-        // Try to load cache first
-        deepAnalysis = await analyzer.loadCache();
-        
-        if (!deepAnalysis) {
-          deepAnalysis = await analyzer.analyze();
-          await analyzer.cacheResults(deepAnalysis);
-        }
-        
-        projectContext = deepAnalysis;
-      } else {
-        // Quick analysis mode
-        projectContext = await ProjectAnalyzer.quickAnalyze(projectRoot);
+
+      try {
+        const analyzer = new ProjectAnalyzer(projectRoot);
+
+        // Perform analysis
+        deepAnalysis = await analyzer.analyzeProject({
+          includeFiles: true,
+          analyzeDependencies: true,
+          detectFrameworks: true,
+          scanForPatterns: true,
+          generateSummary: true
+        });
+
+        // Save analysis results using pathManager
+        const analysisPath = pathManager.joinPaths(pathConfig.ginko.context, 'project-analysis.json');
+        await fs.writeJSON(analysisPath, deepAnalysis, { spaces: 2 });
+
+        spinner.succeed('Project analysis complete');
+      } catch (analysisError) {
+        spinner.warn('Project analysis failed, continuing with basic setup');
+        console.warn(chalk.yellow('Analysis error:', analysisError instanceof Error ? analysisError.message : String(analysisError)));
       }
-      
-      // Select AI adapter based on model or auto-detect
-      const adapter = selectAiAdapter(options.model);
-      
-      // Generate AI instructions with project-specific content
-      const templateVars: TemplateVariables = {
-        ...projectContext,
-        userEmail,
-        userName,
-        date: new Date().toISOString().split('T')[0],
-        aiModel: adapter.name,
-      };
-      
-      // Special handling for Cursor adapter which has its own concise format
-      let aiInstructions: string;
-      if (adapter instanceof CursorAdapter) {
-        // Use Cursor's custom generate method for concise .cursorrules
-        aiInstructions = await adapter.generate(templateVars);
-      } else {
-        // Use standard template generation for other adapters
-        const modelContent = adapter.getModelSpecificSections() + adapter.getQuickReferenceCommands();
-        aiInstructions = AiInstructionsTemplate.generate(templateVars, modelContent);
-      }
-      
-      await fs.writeFile(path.join(projectRoot, adapter.fileExtension), aiInstructions);
-      
-      // Generate initial context modules based on detected patterns
-      await generateContextModules(ginkoDir, projectContext);
     }
-    
-    // Create context rules
-    const contextRules = `# Context Rules
 
-## Auto-Load
-- Current file being edited
-- Files in same directory
-- Recent files (last 5 edited)
+    // AI instructions generation
+    spinner.start('Generating AI collaboration instructions...');
 
-## Exclude
-- node_modules/
-- .git/
-- dist/
-- build/
-- *.log
-- *.tmp
+    try {
+      const projectContext: ProjectContext = deepAnalysis || await new ProjectAnalyzer(projectRoot).getBasicContext();
 
-## Boundaries
-- Module: Current package/workspace
-- Project: Repository root
-- Focus: Active feature branch
+      // Create template variables
+      const variables: TemplateVariables = {
+        projectName: path.basename(projectRoot),
+        projectType: projectContext.type || 'unknown',
+        techStack: projectContext.techStack || [],
+        frameworks: projectContext.frameworks || [],
+        languages: projectContext.languages || [],
+        packageManager: projectContext.packageManager || 'unknown',
+        testCommand: projectContext.scripts?.test || 'npm test',
+        buildCommand: projectContext.scripts?.build || 'npm run build',
+        devCommand: projectContext.scripts?.dev || 'npm run dev',
+        hasDatabase: projectContext.hasDatabase || false,
+        hasTests: projectContext.hasTests || false,
+        timestamp: new Date().toISOString().split('T')[0]
+      };
+
+      // Generate instructions
+      const template = new AiInstructionsTemplate();
+      const instructions = template.generate(variables);
+
+      // Save instructions using pathManager
+      const instructionsPath = pathManager.joinPaths(projectRoot, 'CLAUDE.md');
+      await fs.writeFile(instructionsPath, instructions);
+
+      spinner.succeed('AI instructions generated');
+    } catch (error) {
+      spinner.warn('AI instructions generation failed');
+      console.warn(chalk.yellow('Instructions error:', error instanceof Error ? error.message : String(error)));
+    }
+
+    // Context rules
+    spinner.start('Setting up context management...');
+
+    const contextRules = `# Context Management Rules
+
+## Privacy & Security
+- All context stored locally in .ginko/
+- No data leaves your machine without explicit action
+- Handoffs are git-tracked for team collaboration
+- Config (.ginko/config.json) is gitignored
+
+## Best Practices
+- Always run \`ginko handoff\` before switching context
+- Use \`ginko start\` to resume with full context
+- Keep handoffs under 2000 words for clarity
+- Include specific next steps in every handoff
 `;
-    
-    await fs.writeFile(path.join(ginkoDir, 'context', 'rules.md'), contextRules);
-    
+
+    const contextPath = pathManager.joinPaths(pathConfig.ginko.context, 'rules.md');
+    await fs.writeFile(contextPath, contextRules);
+
     // Create initial best practice
-    const bestPractice = `# Local Best Practices
+    const bestPractice = `# Local Development Best Practices
 
-## Code Style
-- Follow existing patterns in the codebase
-- Maintain consistent naming conventions
-- Document complex logic
+## Session Management
+- \`ginko start\` - Begin new session with context loading
+- \`ginko handoff\` - Save progress for seamless continuation
+- \`ginko vibecheck\` - Quick realignment when stuck
 
-## Git Workflow
-- Commit early and often
-- Write clear commit messages
-- Create handoffs at natural breakpoints
+## Development Workflow
+1. Check what exists: \`ls -la\` relevant directories
+2. Find examples: Look for similar features already implemented
+3. Test existing: Try current endpoints/features first
+4. Plan, implement, test, document
 
-## AI Collaboration
-- Keep context focused
-- Use vibecheck when stuck
-- Archive sessions when complete
+*Customize this file for your team's specific practices*
 `;
-    
-    await fs.writeFile(path.join(ginkoDir, 'best-practices', 'local.md'), bestPractice);
-    
+
+    const bestPracticePath = pathManager.joinPaths(pathConfig.ginko.root, 'best-practices', 'local.md');
+    await fs.writeFile(bestPracticePath, bestPractice);
+
     // Add .ginko to .gitignore if it doesn't exist
-    const gitignorePath = path.join(projectRoot, '.gitignore');
+    const gitignorePath = pathManager.joinPaths(projectRoot, '.gitignore');
     if (await fs.pathExists(gitignorePath)) {
       const gitignore = await fs.readFile(gitignorePath, 'utf8');
       if (!gitignore.includes('.ginko/config.json')) {
-        await fs.appendFile(gitignorePath, '\n# Ginko local config (contains preferences)\n.ginko/config.json\n');
+        await fs.appendFile(gitignorePath, '\n# Ginko - Keep context, ignore private config\n.ginko/config.json\n.ginko/.temp/\n');
       }
+    } else {
+      await fs.writeFile(gitignorePath, '# Ginko - Keep context, ignore private config\n.ginko/config.json\n.ginko/.temp/\n');
     }
-    
+
+    spinner.succeed('Context management configured');
+
+    // Final setup
+    spinner.start('Completing setup...');
+
+    // Create initial session marker
+    const sessionMarker = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug, '.session-start');
+    await fs.writeFile(sessionMarker, new Date().toISOString());
+
     spinner.succeed('Ginko initialized successfully!');
-    
-    console.log('\n' + chalk.green('✨ Enhanced setup complete!'));
-    
-    if (!options.quick) {
-      console.log('\n' + chalk.bold('📋 Generated Files:'));
-      const adapter = selectAiAdapter(options.model);
-      console.log(chalk.green('  ✓') + ` ${adapter.fileExtension} - ${adapter.name} collaboration guide with project-specific instructions`);
-      console.log(chalk.green('  ✓') + ' .ginko/context/modules/ - Context modules for your tech stack');
-      console.log(chalk.green('  ✓') + ' Frontmatter templates configured');
-      
-      // Show deep analysis results if available
-      if (options.analyze && deepAnalysis) {
-        console.log('\n' + chalk.bold('🔬 Deep Analysis Results:'));
-        
-        if (deepAnalysis.patterns && deepAnalysis.patterns.length > 0) {
-          console.log(chalk.cyan('\n  Patterns Detected:'));
-          for (const pattern of deepAnalysis.patterns.slice(0, 5)) {
-            console.log(`    • ${pattern.pattern}: ${pattern.description}`);
-          }
-        }
-        
-        if (deepAnalysis.suggestions && deepAnalysis.suggestions.length > 0) {
-          console.log(chalk.yellow('\n  Suggestions:'));
-          for (const suggestion of deepAnalysis.suggestions) {
-            console.log(`    💡 ${suggestion}`);
-          }
-        }
-        
-        if (deepAnalysis.codeMetrics) {
-          console.log(chalk.blue('\n  Code Metrics:'));
-          console.log(`    • Total files: ${deepAnalysis.codeMetrics.totalFiles}`);
-          console.log(`    • Complexity: ${deepAnalysis.codeMetrics.complexity}`);
-          if (deepAnalysis.codeMetrics.componentCount) {
-            console.log(`    • Components: ${deepAnalysis.codeMetrics.componentCount}`);
-          }
-        }
-        
-        console.log(chalk.dim('\n  📦 Analysis cached in .ginko/.cache/'));
+
+    // Success message
+    console.log('\n' + chalk.green('🎉 Ginko is ready!'));
+    console.log('\n' + chalk.blue('Quick start:'));
+    console.log('  ' + chalk.cyan('ginko start') + ' - Begin your first session');
+    console.log('  ' + chalk.cyan('ginko handoff "Initial setup complete"') + ' - Save your progress');
+
+    if (deepAnalysis) {
+      console.log('\n' + chalk.blue('Project analysis:'));
+      console.log('  📊 ' + chalk.yellow('Type:') + ' ' + (deepAnalysis.type || 'Unknown'));
+      console.log('  🔧 ' + chalk.yellow('Languages:') + ' ' + (deepAnalysis.languages?.join(', ') || 'None detected'));
+      console.log('  📦 ' + chalk.yellow('Frameworks:') + ' ' + (deepAnalysis.frameworks?.join(', ') || 'None detected'));
+      console.log('  ⚗️  ' + chalk.yellow('Package Manager:') + ' ' + (deepAnalysis.packageManager || 'Unknown'));
+
+      if (deepAnalysis.commands?.length > 0) {
+        console.log('  🎯 ' + chalk.yellow('Quick Commands:') + ' ' + deepAnalysis.commands.slice(0, 3).join(', '));
       }
     }
-    
-    console.log('\n' + chalk.bold('Next steps:'));
-    console.log(chalk.cyan('  ginko start') + ' - Begin a new session with AI-optimized context');
-    console.log(chalk.cyan('  ginko handoff') + ' - Save your progress for seamless continuation');
-    console.log(chalk.cyan('  ginko vibecheck') + ' - Quick realignment when stuck');
-    
-    console.log('\n' + chalk.dim('📁 Created .ginko/ directory (git-tracked)'));
-    console.log(chalk.dim('🔐 Privacy: All data stays local. No analytics enabled.'));
-    console.log(chalk.dim('⚡ AI-optimized: Use `head -12 file.ts` for instant context'));
-    
+
+    console.log('\n' + chalk.gray('Files created:'));
+    console.log('  📁 ' + chalk.gray(pathManager.getRelativePath(ginkoDir)));
+    console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
+    console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
+
   } catch (error) {
-    spinner.fail('Failed to initialize Ginko');
+    spinner.fail('Initialization failed');
     console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
-}
-
-// Generate initial context modules based on project analysis
-async function generateContextModules(ginkoDir: string, context: ProjectContext): Promise<void> {
-  const modulesDir = path.join(ginkoDir, 'context', 'modules');
-  
-  // Generate frontmatter best practices module
-  const frontmatterModule = `---
-type: pattern
-tags: [frontmatter, ai-optimization, discovery]
-priority: critical
----
-
-# Frontmatter Best Practices
-
-Always add frontmatter to new TypeScript/JavaScript files:
-
-\`\`\`typescript
-/**
- * @fileType: [type]
- * @status: current
- * @updated: ${new Date().toISOString().split('T')[0]}
- * @tags: [relevant, tags]
- * @related: [related-files.ts]
- * @priority: [critical|high|medium|low]
- * @complexity: [low|medium|high]
- */
-\`\`\`
-
-This enables 70% faster AI context discovery.
-`;
-  
-  await fs.writeFile(path.join(modulesDir, 'frontmatter-required.md'), frontmatterModule);
-  
-  // Generate project-specific modules
-  if (context.frameworks.includes('react') || context.frameworks.includes('nextjs')) {
-    const reactModule = `---
-type: pattern
-tags: [react, components, hooks]
-priority: high
----
-
-# React Patterns in This Project
-
-## Component Structure
-- Components in \`src/components/\` or \`app/\`
-- Use existing component patterns as templates
-- Hooks prefixed with \`use\` in \`src/hooks/\`
-
-## Common Patterns
-- Check existing components with similar functionality
-- Follow state management patterns already in use
-- Maintain consistent prop typing approach
-`;
-    
-    await fs.writeFile(path.join(modulesDir, 'react-patterns.md'), reactModule);
-  }
-  
-  if (context.hasTests) {
-    const testModule = `---
-type: requirement
-tags: [testing, quality]
-priority: high
----
-
-# Testing Requirements
-
-## Test Command
-\`\`\`bash
-${context.testCommand || 'npm test'}
-\`\`\`
-
-## Requirements
-- Write tests for new features
-- Run tests before committing
-- Maintain existing coverage levels
-- Fix failing tests immediately
-`;
-    
-    await fs.writeFile(path.join(modulesDir, 'testing-required.md'), testModule);
-  }
-}
-
-// Select appropriate AI adapter based on model or environment
-function selectAiAdapter(model?: string): AiAdapter {
-  const modelName = model?.toLowerCase() || detectAiModel();
-  
-  switch (modelName) {
-    case 'claude':
-    case 'anthropic':
-      return new ClaudeAdapter();
-    case 'gpt':
-    case 'openai':
-    case 'gpt-4':
-    case 'gpt-3.5':
-      return new OpenAIAdapter();
-    case 'cursor':
-      return new CursorAdapter();
-    default:
-      // Default to Claude for backward compatibility,
-      // but could be made configurable
-      return new ClaudeAdapter();
-  }
-}
-
-// Auto-detect AI model from environment or config
-function detectAiModel(): string {
-  // Check for Cursor IDE
-  if (process.env.CURSOR_IDE || process.env.IS_CURSOR) return 'cursor';
-  
-  // Check common environment variables
-  if (process.env.ANTHROPIC_API_KEY) return 'claude';
-  if (process.env.OPENAI_API_KEY) return 'gpt';
-  
-  // Check for Claude Code environment
-  if (process.env.CLAUDE_CODE || process.env.CLAUDE_PROJECT_ID) return 'claude';
-  
-  // Check if .cursorrules exists in parent directories
-  try {
-    const { execSync } = require('child_process');
-    execSync('find . -maxdepth 3 -name ".cursorrules" 2>/dev/null | head -1', { encoding: 'utf8' });
-    return 'cursor';
-  } catch {
-    // Not in a Cursor project
-  }
-  
-  // Default to generic if no model detected
-  return 'generic';
 }

@@ -16,14 +16,19 @@ import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { getUserEmail, getGinkoDir, detectWorkMode } from '../../utils/helpers.js';
+import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
 
 /**
  * Start domain reflection for intelligent session initialization
  * Reads handoff and loads optimal context for instant flow state
  */
 export class StartReflectionCommand extends ReflectionCommand {
+  private contextManager: ActiveContextManager;
+
   constructor() {
     super('start');
+    // Initialize with default work mode, will be updated based on session context
+    this.contextManager = new ActiveContextManager('think-build');
   }
 
   /**
@@ -42,10 +47,26 @@ export class StartReflectionCommand extends ReflectionCommand {
       // 3. Gather context (including handoff)
       const context = await this.gatherContext(parsedIntent);
 
-      // 4. Display session information
-      await this.displaySessionInfo(context);
+      // 4. Determine work mode from context and update context manager
+      const workMode = this.determineWorkMode(context, options);
+      this.contextManager = new ActiveContextManager(workMode);
 
-      spinner.succeed('Session initialized!');
+      spinner.text = 'Loading context modules...';
+
+      // 5. Load initial context using ActiveContextManager
+      const sessionData = {
+        userSlug: context.userSlug || 'unknown',
+        branch: context.currentBranch,
+        filesChanged: context.uncommittedWork?.files || [],
+        tags: this.extractTagsFromHandoff(context.lastHandoff)
+      };
+
+      const contextLevel = await this.contextManager.loadInitialContext(sessionData);
+
+      // 6. Display session information with loaded context
+      await this.displaySessionInfo(context, contextLevel);
+
+      spinner.succeed('Session initialized with progressive context loading!');
 
     } catch (error) {
       spinner.fail('Session initialization failed');
@@ -57,7 +78,7 @@ export class StartReflectionCommand extends ReflectionCommand {
   /**
    * Display session information based on context
    */
-  private async displaySessionInfo(context: any): Promise<void> {
+  private async displaySessionInfo(context: any, contextLevel?: ContextLevel): Promise<void> {
     console.log('');
 
     // Display work mode
@@ -105,8 +126,35 @@ export class StartReflectionCommand extends ReflectionCommand {
       console.log('');
     }
 
-    // Show critical modules from handoff
-    if (context.lastHandoff?.includes('Critical Context Modules')) {
+    // Show loaded context modules from ActiveContextManager
+    if (contextLevel) {
+      console.log(chalk.cyan('📚 Context Modules Loaded:'));
+
+      if (contextLevel.immediate.length > 0) {
+        console.log(chalk.green('   ⚡ Immediate:'));
+        contextLevel.immediate.forEach(item => {
+          console.log(chalk.dim(`   - ${item.title} (${item.type}, score: ${item.relevanceScore.toFixed(2)})`));
+        });
+      }
+
+      if (contextLevel.deferred.length > 0) {
+        console.log(chalk.yellow('   ⏳ Loading in background:'));
+        contextLevel.deferred.slice(0, 3).forEach(item => {
+          console.log(chalk.dim(`   - ${item.title}`));
+        });
+        if (contextLevel.deferred.length > 3) {
+          console.log(chalk.dim(`   ... and ${contextLevel.deferred.length - 3} more`));
+        }
+      }
+
+      if (contextLevel.available.length > 0) {
+        console.log(chalk.dim(`   📖 Available: ${contextLevel.available.length} modules indexed`));
+      }
+      console.log('');
+    }
+
+    // Show critical modules from handoff (fallback)
+    if (!contextLevel && context.lastHandoff?.includes('Critical Context Modules')) {
       const moduleSection = context.lastHandoff.match(/```bash\n(ginko context .+\n)+```/);
       if (moduleSection) {
         console.log(chalk.cyan('📚 Critical Context Modules:'));
@@ -204,41 +252,6 @@ export class StartReflectionCommand extends ReflectionCommand {
     };
   }
 
-  /**
-   * Gather context from handoff and current state
-   */
-  async gatherContext(parsedIntent: any): Promise<any> {
-    const git = simpleGit();
-    const ginkoDir = await getGinkoDir();
-    const userEmail = await getUserEmail();
-    const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
-    const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
-
-    // Read previous handoff - this is critical
-    const handoff = await this.readHandoff(sessionDir);
-    const workstream = await this.parseWorkstreamFromHandoff(handoff);
-
-    // Get current state
-    const status = await git.status();
-    const branch = await git.branchLocal();
-
-    // Calculate time since last session
-    const timeSince = this.calculateTimeSince(handoff);
-
-    // Check for test failures
-    const testStatus = await this.getTestStatus();
-
-    return {
-      lastHandoff: handoff,
-      workstream: workstream,
-      uncommittedWork: status,
-      timeSinceLastSession: timeSince,
-      branchState: branch,
-      currentBranch: branch.current,
-      testStatus: testStatus,
-      hasUncommittedChanges: status.files.length > 0
-    };
-  }
 
   /**
    * Generate prompt for intelligent initialization
@@ -483,6 +496,120 @@ Example output structure:
     }
 
     console.log(chalk.dim('\n💡 Tip: Run `ginko handoff` before stopping to preserve context\n'));
+  }
+
+  /**
+   * Determine work mode based on context and options
+   */
+  private determineWorkMode(context: any, options: any): WorkMode {
+    // Check for explicit option
+    if (options.mode) {
+      switch (options.mode.toLowerCase()) {
+        case 'hack':
+        case 'ship':
+        case 'hack-ship':
+          return 'hack-ship';
+        case 'plan':
+        case 'planning':
+        case 'full-planning':
+          return 'full-planning';
+        default:
+          return 'think-build';
+      }
+    }
+
+    // Determine from session context
+    const timeSince = context.timeSinceLastSession || '';
+    const hasUncommitted = context.hasUncommittedChanges;
+    const branchName = context.currentBranch || '';
+
+    // Quick hack mode if short session or hotfix branch
+    if (timeSince.includes('minutes') && parseInt(timeSince) < 30) {
+      return 'hack-ship';
+    }
+
+    if (branchName.includes('hotfix') || branchName.includes('fix')) {
+      return 'hack-ship';
+    }
+
+    // Full planning mode for architecture branches or long breaks
+    if (branchName.includes('arch') || branchName.includes('refactor')) {
+      return 'full-planning';
+    }
+
+    if (timeSince.includes('days') || timeSince.includes('week')) {
+      return 'full-planning';
+    }
+
+    // Default to think-build
+    return 'think-build';
+  }
+
+  /**
+   * Extract tags from handoff content for context loading
+   */
+  private extractTagsFromHandoff(handoff: string | null): string[] {
+    if (!handoff) return [];
+
+    const tags: string[] = [];
+
+    // Extract PRD/ADR references
+    const prdMatches = handoff.matchAll(/PRD-(\d+)/gi);
+    for (const match of prdMatches) {
+      tags.push(`PRD-${match[1]}`);
+    }
+
+    const adrMatches = handoff.matchAll(/ADR-(\d+)/gi);
+    for (const match of adrMatches) {
+      tags.push(`ADR-${match[1]}`);
+    }
+
+    // Extract technology keywords
+    const techKeywords = ['typescript', 'react', 'node', 'api', 'database', 'auth', 'testing', 'deployment'];
+    for (const keyword of techKeywords) {
+      if (handoff.toLowerCase().includes(keyword)) {
+        tags.push(keyword);
+      }
+    }
+
+    return [...new Set(tags)]; // Remove duplicates
+  }
+
+  /**
+   * Update gatherContext to include userSlug
+   */
+  async gatherContext(parsedIntent: any): Promise<any> {
+    const git = simpleGit();
+    const ginkoDir = await getGinkoDir();
+    const userEmail = await getUserEmail();
+    const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
+    const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
+
+    // Read previous handoff - this is critical
+    const handoff = await this.readHandoff(sessionDir);
+    const workstream = await this.parseWorkstreamFromHandoff(handoff);
+
+    // Get current state
+    const status = await git.status();
+    const branch = await git.branchLocal();
+
+    // Calculate time since last session
+    const timeSince = this.calculateTimeSince(handoff);
+
+    // Check for test failures
+    const testStatus = await this.getTestStatus();
+
+    return {
+      userSlug,
+      lastHandoff: handoff,
+      workstream: workstream,
+      uncommittedWork: status,
+      timeSinceLastSession: timeSince,
+      branchState: branch,
+      currentBranch: branch.current,
+      testStatus: testStatus,
+      hasUncommittedChanges: status.files.length > 0
+    };
   }
 }
 

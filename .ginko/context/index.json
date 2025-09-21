@@ -326,5 +326,28 @@
       "reflection-pattern.ts",
       "ReflectionCommand"
     ]
+  },
+  "architecture-orchestrated-5-sonnet-agents.md": {
+    "type": "architecture",
+    "tags": [
+      "orchestration",
+      "worktrees",
+      "doctor-system",
+      "init-unification",
+      "agents"
+    ],
+    "area": "/",
+    "created": "2025-09-19",
+    "updated": "2025-09-19",
+    "relevance": "high",
+    "dependencies": [
+      "ADR-028",
+      "PRD-004",
+      "validation-layer",
+      "config-system",
+      "document-management",
+      "platform-adapter",
+      "doctor-system"
+    ]
   }
 }
