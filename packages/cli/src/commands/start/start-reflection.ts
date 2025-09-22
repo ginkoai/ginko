@@ -32,6 +32,17 @@ export class StartReflectionCommand extends ReflectionCommand {
   }
 
   /**
+   * Parse intent for session initialization
+   */
+  private parseIntent(intent: string): any {
+    return {
+      raw: intent,
+      type: 'session-start',
+      context: {}
+    };
+  }
+
+  /**
    * Override execute to process handoff and display session info
    */
   async execute(intent: string, options: any = {}): Promise<void> {

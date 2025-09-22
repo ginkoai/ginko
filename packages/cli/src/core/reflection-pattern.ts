@@ -74,6 +74,32 @@ export abstract class ReflectionCommand {
   abstract execute(intent: string, options?: any): Promise<void>;
 
   /**
+   * Generate prompt for AI reflection
+   */
+  protected async generatePrompt(intent: string, template: any, context: any): Promise<string> {
+    const formattedContext = this.formatContext(context);
+    const formattedRules = this.formatRules(template.rulesAndConstraints);
+
+    return `
+Intent: ${intent}
+
+Template Sections Required:
+${template.requiredSections?.map((s: string) => `- ${s}`).join('\n') || 'No sections specified'}
+
+Context to Consider:
+${template.contextToConsider?.map((c: string) => `- ${c}`).join('\n') || 'No context specified'}
+
+Current Context:
+${formattedContext}
+
+Rules and Constraints:
+${formattedRules}
+
+Please provide a structured response addressing all required sections.
+    `.trim();
+  }
+
+  /**
    * Get dynamic output paths based on pathManager configuration
    */
   protected getOutputPath(domain: ReflectionDomain): string {

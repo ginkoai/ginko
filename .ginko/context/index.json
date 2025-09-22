@@ -349,5 +349,24 @@
       "platform-adapter",
       "doctor-system"
     ]
+  },
+  "architecture-architectural-insights-from-th.md": {
+    "type": "architecture",
+    "tags": [
+      "first-use-experience",
+      "multi-agent-development",
+      "configuration-management",
+      "cross-platform"
+    ],
+    "area": "/",
+    "created": "2025-09-21",
+    "updated": "2025-09-21",
+    "relevance": "high",
+    "dependencies": [
+      "path-config",
+      "platform-adapter",
+      "config-system",
+      "validation-layer"
+    ]
   }
 }

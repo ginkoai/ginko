@@ -10,7 +10,7 @@
  */
 
 import chalk from 'chalk';
-import { detectDomain, createReflectionCommand } from '../core/reflection-pattern.js';
+import { ReflectionFactory } from '../core/reflection-pattern.js';
 import { BacklogReflectionCommand } from './backlog/backlog-reflection.js';
 
 interface ReflectOptions {
@@ -27,7 +27,7 @@ interface ReflectOptions {
 export async function reflectCommand(intent: string, options: ReflectOptions = {}) {
   try {
     // Detect domain from intent or use specified
-    const detectedDomain = options.domain || detectDomain(intent);
+    const detectedDomain = options.domain || ReflectionFactory.detectDomain(intent);
     
     if (!detectedDomain) {
       handleUnknownDomain(intent);
@@ -97,7 +97,7 @@ async function createDomainReflection(domain: string): Promise<any> {
     case 'overview':
     case 'git':
       // These would have their own reflection implementations
-      return createReflectionCommand(domain as any);
+      return ReflectionFactory.create(domain as any);
 
     default:
       return null;
