@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [revert, backup, claude-settings, recovery, troubleshooting]
+# @related: [install-statusline-intelligence.sh]
+# @priority: high
+# @complexity: low
+# @dependencies: [bash, jq]
+# @description: Reverts Claude Code settings to backup state for troubleshooting
 
 # Revert Claude Code settings script
 # This script restores the original Claude settings from backup

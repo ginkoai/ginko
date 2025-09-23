@@ -1,4 +1,14 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [testing, tools, comprehensive, mcp, verification]
+# @related: [quick-test.sh, track-status.sh, simple-test.sh]
+# @priority: high
+# @complexity: medium
+# @dependencies: [curl, jq, bash]
+# @description: Comprehensive test suite for all 21 MCP tools with detailed reporting
+
 BASE_URL=$1
 API_KEY="wmcp_sk_test_Ar0MN4BeW_Fro5mESi5PciTsOg6qlPcIr7k0vBL2mIk"
 

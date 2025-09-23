@@ -271,7 +271,7 @@ export class PathNormalizer {
 
     // Handle common Unix paths
     windowsPath = windowsPath.replace(/^\\home\\([^\\]+)\\/, 'C:\\Users\\$1\\');
-    windowsPath = windowsPath.replace(/^\\/home\\/, 'C:\\Users\\');
+    windowsPath = windowsPath.replace(/^\/home\//, 'C:\\Users\\');
 
     // Handle absolute paths that don't start with drive
     if (windowsPath.startsWith('\\') && !windowsPath.startsWith('\\\\')) {

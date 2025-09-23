@@ -23,7 +23,17 @@
       "Bash(npm uninstall:*)",
       "Bash(npx typescript:*)",
       "Bash(chmod:*)",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "Bash(git push:*)",
+      "WebSearch",
+      "Bash(echo $HOME)",
+      "Read(//c/Users/cnort/.claude/**)",
+      "Read(//c/Users/**)",
+      "Bash(echo:*)",
+      "Bash(ginko reflect:*)",
+      "Bash(ginko backlog:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx jest:*)"
     ],
     "deny": [],
     "ask": []

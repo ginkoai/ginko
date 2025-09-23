@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: legacy
+# @updated: 2025-09-22
+# @tags: [rebrand, legacy, migration, text-replacement, contextmcp]
+# @related: [rebrand.sh]
+# @priority: low
+# @complexity: medium
+# @dependencies: [bash, sed, find, git]
+# @description: Legacy script for rebranding from ContextMCP to Ginko - completed migration
 
 # Ginko Rebrand Script
 # Updates all references from ContextMCP to Ginko

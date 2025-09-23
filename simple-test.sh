@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [testing, mcp, simple, integration, server]
+# @related: [quick-test.sh, verify-all-tools.sh, run-server.sh]
+# @priority: medium
+# @complexity: low
+# @dependencies: [bash]
+# @description: Simple integration test checker for MCP server setup
 
 echo "🔬 Simple MCP Server Test"
 echo "========================="

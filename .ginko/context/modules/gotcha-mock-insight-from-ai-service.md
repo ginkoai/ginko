@@ -1,20 +1,20 @@
 ---
 type: gotcha
 tags: [test, mock, development]
-relevance: medium
-created: 2025-09-19T22:12:02.852Z
-updated: 2025-09-19T22:12:02.852Z
+relevance: high
+created: 2025-09-22T18:14:48.451Z
+updated: 2025-09-22T18:14:48.452Z
 dependencies: []
-sessionId: xtophr@gmail.com-1758319922745
-insightId: 981f6d3e-b81c-4490-802a-87cae1458abb
+sessionId: xtophr@gmail.com-1758564888315
+insightId: afc8e811-1642-4b38-9b49-2692314c1c3e
 ---
 
 # Mock insight from AI service
 
 **Type**: gotcha  
 **Tags**: test, mock, development  
-**Created**: 2025-09-19  
-**Session**: xtophr@gmail.com-1758319922745  
+**Created**: 2025-09-22  
+**Session**: xtophr@gmail.com-1758564888315  
 
 ## The Gotcha
 
@@ -49,7 +49,7 @@ Always test your code
 
 ## Related Files
 
-*No specific files*
+- `supabase/.temp/cli-latest`
 
 ## Related Modules
 

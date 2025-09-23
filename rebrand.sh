@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: deprecated
+# @updated: 2025-09-22
+# @tags: [rebrand, deprecated, no-op, legacy]
+# @related: [rebrand-to-ginko.sh]
+# @priority: low
+# @complexity: low
+# @dependencies: [bash, sed, find]
+# @description: Deprecated no-op rebrand script (Ginko to Ginko) - can be removed
 
 echo "🔄 Starting Ginko to Ginko rebranding..."
 

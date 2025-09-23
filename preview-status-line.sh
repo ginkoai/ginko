@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [preview, demo, statusline, testing, development]
+# @related: [install-statusline-intelligence.sh, statusline-reader.sh]
+# @priority: medium
+# @complexity: low
+# @dependencies: [bash, date]
+# @description: Live preview demonstration of Ginko status line states and coaching messages
 
 # Live preview of Ginko status line states
 

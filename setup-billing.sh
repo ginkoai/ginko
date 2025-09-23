@@ -1,4 +1,13 @@
-#\!/bin/bash
+#!/bin/bash
+# @fileType: script
+# @status: deprecated
+# @updated: 2025-09-22
+# @tags: [setup, billing, authentication, legacy, contextmcp]
+# @related: [setup-database.sh]
+# @priority: low
+# @complexity: medium
+# @dependencies: [npm, postgresql, bash]
+# @description: Deprecated setup script for billing and authentication - references old ContextMCP branding
 
 echo "🏗️  Setting up ContextMCP with Billing & Authentication"
 echo "======================================================"

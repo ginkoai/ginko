@@ -62,20 +62,22 @@ program
 
 program
   .command('start [sessionId]')
-  .description('Start or resume a session (uses reflection for intelligent initialization)')
+  .description('Start or resume a session with AI-enhanced reflection by default')
   .option('-v, --verbose', 'Show full context and handoff')
   .option('-m, --minimal', 'Minimal output for quick start')
-  .option('--legacy', 'Use original implementation without reflection')
+  .option('--noai', 'Disable AI enhancement and use procedural templates')
+  .option('--legacy', 'Use original implementation without reflection (deprecated)')
   .action((sessionId, options) => startCommand({ sessionId, ...options }));
 
 program
   .command('handoff [message]')
-  .description('Create a session handoff (uses reflection for workstream preservation)')
-  .option('--legacy', 'Use original implementation without reflection')
+  .description('Create a session handoff with AI-enhanced reflection by default')
+  .option('--noai', 'Disable AI enhancement and use procedural templates')
+  .option('--legacy', 'Use original implementation without reflection (deprecated)')
   .option('-v, --verbose', 'Show detailed output')
   .option('-r, --review', 'Review handoff before saving')
   .action((message, options) => {
-    // Use new reflection-based handoff by default
+    // Use AI-enhanced reflection-based handoff by default
     return handoffCommand({ message, ...options });
   });
 
@@ -179,11 +181,13 @@ program
 
 program
   .command('architecture [decision]')
-  .description('Design mode for crafting Architecture Decision Records (ADRs)')
+  .description('Design mode for crafting Architecture Decision Records (ADRs) with AI enhancement by default')
   .option('--store', 'Store generated ADR (internal use)')
   .option('--id <id>', 'Architecture ID')
   .option('--content <content>', 'ADR content to store')
   .option('--number <number>', 'ADR number')
+  .option('--noai', 'Disable AI enhancement and use basic templates')
+  .option('--basic', 'Use basic pipeline (deprecated, use --noai)')
   .option('-r, --review', 'Review before saving')
   .option('-v, --verbose', 'Show detailed output')
   .action(architectureCommand);
@@ -234,11 +238,12 @@ program.addCommand(backlogCommand());
 // Universal Reflection Pattern command
 program
   .command('reflect <intent>')
-  .description('Universal reflection pattern for AI-enhanced content generation')
+  .description('Universal reflection pattern for AI-enhanced content generation by default')
   .option('-d, --domain <domain>', 'Specify domain (backlog, documentation, testing, etc.)')
   .option('-r, --raw', 'Output raw reflection prompt without formatting')
   .option('-v, --verbose', 'Show detailed processing information')
   .option('-s, --save', 'Save generated artifact to proper location')
+  .option('--noai', 'Disable AI enhancement and use procedural templates')
   .action(async (intent, options) => {
     const { reflectCommand } = await import('./commands/reflect.js');
     return reflectCommand(intent, options);

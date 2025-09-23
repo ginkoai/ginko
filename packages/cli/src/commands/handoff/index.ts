@@ -13,11 +13,11 @@ import { HandoffPipeline, HandoffReflectionCommand } from './handoff-reflection-
 
 /**
  * Handoff command router
- * Routes between pipeline, reflection-based and legacy implementations
+ * Routes between AI-enhanced pipeline and legacy implementations
  */
 export async function handoffCommand(options: any = {}): Promise<void> {
-  // Use legacy implementation if requested
-  if (options.legacy) {
+  // Use legacy implementation if AI enhancement is disabled
+  if (options.noai || options.legacy) {
     // Try enhanced version first, fall back to basic
     try {
       const { enhancedHandoffCommand } = await import('../handoff-enhanced-orig.js');
@@ -30,7 +30,7 @@ export async function handoffCommand(options: any = {}): Promise<void> {
     }
   }
 
-  // Use new pipeline implementation (ADR-013 Simple Builder Pattern)
+  // Use AI-enhanced pipeline implementation (default - ADR-013 Simple Builder Pattern)
   const pipeline = new HandoffPipeline(options.message || 'Create comprehensive session handoff');
   await pipeline.build();
 }

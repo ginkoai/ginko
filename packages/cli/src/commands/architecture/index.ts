@@ -14,17 +14,17 @@ import { EnhancedArchitecturePipeline, ArchitectureOptions } from './architectur
 
 /**
  * Architecture command router
- * Routes to enhanced pipeline by default (ADR-014 Safe Defaults)
+ * Routes to AI-enhanced pipeline by default (ADR-014 Safe Defaults)
  */
 export async function architectureCommand(intent: string = '', options: any = {}): Promise<void> {
-  // Use basic pipeline if explicitly requested
-  if (options.basic) {
+  // Use basic pipeline if AI enhancement is disabled
+  if (options.noai || options.basic) {
     const pipeline = new ArchitecturePipeline(intent);
     await pipeline.build();
     return;
   }
 
-  // Use enhanced pipeline by default (ADR-014)
+  // Use AI-enhanced pipeline by default (ADR-014)
   const archOptions: ArchitectureOptions = {
     alternatives: options.alternatives || false,
     tradeoffs: options.tradeoffs || false,

@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [testing, mcp, server, health-check, development]
+# @related: [run-server.sh, verify-all-tools.sh, simple-test.sh]
+# @priority: medium
+# @complexity: low
+# @dependencies: [npm, curl, bash]
+# @description: Quick health check and test for remote MCP server
 
 echo "🔧 Quick Remote MCP Test"
 echo "======================="

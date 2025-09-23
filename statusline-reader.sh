@@ -1,4 +1,14 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [statusline, reader, coaching, patterns, session-management]
+# @related: [ginko-privacy.sh, install-statusline-intelligence.sh, preview-status-line.sh]
+# @priority: high
+# @complexity: medium
+# @dependencies: [bash, jq, date]
+# @description: Core statusline reader for displaying Ginko coaching messages and session state
+#
 # Ginko Statusline Reader
 # Reads pattern data and displays coaching messages
 

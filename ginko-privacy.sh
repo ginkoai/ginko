@@ -1,4 +1,14 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [privacy, data-management, analytics, consent, user-control]
+# @related: [install-statusline-intelligence.sh, statusline-reader.sh]
+# @priority: high
+# @complexity: medium
+# @dependencies: [jq, bash]
+# @description: Privacy management utility for Ginko data collection and analytics settings
+#
 # Ginko Privacy Management Utility
 # Manage data collection and privacy settings
 

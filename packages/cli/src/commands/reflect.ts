@@ -18,39 +18,41 @@ interface ReflectOptions {
   raw?: boolean;
   verbose?: boolean;
   save?: boolean;
+  noai?: boolean;
 }
 
 /**
  * Universal reflection command
- * Routes to appropriate domain-specific reflection
+ * Routes to appropriate domain-specific reflection with AI enhancement by default
  */
 export async function reflectCommand(intent: string, options: ReflectOptions = {}) {
   try {
     // Detect domain from intent or use specified
     const detectedDomain = options.domain || ReflectionFactory.detectDomain(intent);
-    
+
     if (!detectedDomain) {
       handleUnknownDomain(intent);
       return;
     }
-    
+
     if (options.verbose) {
       console.log(chalk.dim(`Detected domain: ${detectedDomain}`));
+      console.log(chalk.dim(`AI enhancement: ${!options.noai ? 'enabled' : 'disabled'}`));
     }
-    
+
     // Create appropriate reflection command
-    const reflectionCommand = await createDomainReflection(detectedDomain);
-    
+    const reflectionCommand = await createDomainReflection(detectedDomain, options.noai);
+
     if (!reflectionCommand) {
       console.log(chalk.yellow(`Domain '${detectedDomain}' not yet implemented`));
       console.log(chalk.dim('Available domains: start, handoff, prd, architecture, backlog, documentation'));
       console.log(chalk.dim('Coming soon: testing, sprint, git, overview'));
       return;
     }
-    
-    // Execute reflection pattern
+
+    // Execute reflection pattern (AI-enhanced by default)
     await reflectionCommand.execute(intent, options);
-    
+
   } catch (error) {
     console.error(chalk.red('Reflection failed:'));
     console.error(error);
@@ -61,7 +63,7 @@ export async function reflectCommand(intent: string, options: ReflectOptions = {
 /**
  * Create domain-specific reflection command
  */
-async function createDomainReflection(domain: string): Promise<any> {
+async function createDomainReflection(domain: string, noai = false): Promise<any> {
   switch (domain) {
     // Core system domains
     case 'start':

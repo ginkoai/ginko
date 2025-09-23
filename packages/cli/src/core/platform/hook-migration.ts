@@ -242,7 +242,7 @@ export class HookMigration {
     let converted = content;
 
     // Remove shebang and add batch header
-    converted = converted.replace(/^#!/[^\n]*\n?/g, '@echo off\n');
+    converted = converted.replace(/^#![^\n]*\n?/g, '@echo off\n');
 
     // Remove set commands
     converted = converted.replace(/^set -[ex]\s*\n?/gm, '');

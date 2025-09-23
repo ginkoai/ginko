@@ -1,4 +1,14 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [installer, hooks, claude-code, coaching, statusline, intelligence]
+# @related: [ginko-privacy.sh, statusline-reader.sh, preview-status-line.sh]
+# @priority: critical
+# @complexity: high
+# @dependencies: [bash, jq, curl, claude-code]
+# @description: Main installer for Ginko statusline intelligence and Claude Code hooks
+#
 # Ginko Statusline Intelligence Installer
 # Configures Claude Code hooks for real-time coaching
 

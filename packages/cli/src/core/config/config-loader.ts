@@ -1,324 +1,563 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-09-20
- * @tags: [config, loader, paths, variables, resolution]
- * @related: [config.ts, init.ts, project-detector.ts]
- * @priority: high
- * @complexity: medium
- * @dependencies: [fs-extra, path]
+ * @updated: 2025-09-19
+ * @tags: [config, loader, singleton, defaults, caching]
+ * @related: [config-schema.ts, path-resolver.ts, config-migrator.ts]
+ * @priority: critical
+ * @complexity: high
+ * @dependencies: [fs, path]
  */
 
-import fs from 'fs-extra';
-import path from 'path';
-import os from 'os';
-import { GinkoConfig, DEFAULT_CONFIG, PathsConfig, PlatformConfig } from '../../types/config.js';
-import { findGinkoRoot } from '../../utils/ginko-root.js';
-import { PlatformAdapter } from '../platform/platform-adapter.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import {
+  GinkoConfig,
+  DEFAULT_CONFIG,
+  isValidGinkoConfig,
+  validateConfig,
+  ConfigValidationError,
+  PlatformConfig
+} from './config-schema.js';
+import { PathResolver, ResolverContext } from './path-resolver.js';
 
 /**
- * Configuration loader with path resolution and variable substitution
+ * Configuration Loader with Singleton Pattern
+ * Implements ADR-028 First-Use Experience Enhancement Architecture
  */
-export class ConfigLoader {
-  private cachedConfig: GinkoConfig | null = null;
-  private configPath: string | null = null;
-  private platformAdapter: PlatformAdapter;
 
-  constructor() {
-    this.platformAdapter = new PlatformAdapter();
-  }
+export interface LoaderOptions {
+  /** Project root directory (defaults to cwd) */
+  projectRoot?: string;
+  /** Configuration file name (defaults to 'ginko.json') */
+  configFileName?: string;
+  /** Force reload from disk, ignoring cache */
+  forceReload?: boolean;
+  /** Enable automatic migration */
+  autoMigrate?: boolean;
+  /** Validation strictness level */
+  validation?: 'strict' | 'loose' | 'none';
+}
 
-  /**
-   * Load ginko configuration from ginko.json or defaults
-   */
-  async loadConfig(projectRoot?: string): Promise<GinkoConfig> {
-    if (this.cachedConfig && this.configPath) {
-      return this.cachedConfig;
-    }
+export interface LoadResult {
+  /** Loaded configuration */
+  config: GinkoConfig;
+  /** Path to configuration file */
+  configPath: string;
+  /** Whether config was loaded from file or defaults */
+  fromFile: boolean;
+  /** Whether config was migrated */
+  migrated: boolean;
+  /** Path resolver instance */
+  resolver: PathResolver;
+  /** Validation warnings */
+  warnings: string[];
+  /** Load timestamp */
+  loadedAt: Date;
+}
 
-    const root = projectRoot || await this.findProjectRoot();
-    const configFile = path.join(root, 'ginko.json');
-
-    let config: GinkoConfig;
-
-    if (await fs.pathExists(configFile)) {
-      try {
-        const rawConfig = await fs.readJSON(configFile);
-        config = this.mergeWithDefaults(rawConfig);
-        this.configPath = configFile;
-      } catch (error) {
-        console.warn(`Warning: Could not parse ginko.json, using defaults. Error: ${error}`);
-        config = { ...DEFAULT_CONFIG };
-      }
-    } else {
-      config = { ...DEFAULT_CONFIG };
-    }
-
-    // Apply platform-specific settings
-    config = this.applyPlatformDefaults(config);
-
-    // Resolve path variables
-    config.paths = this.resolvePathVariables(config.paths);
-
-    this.cachedConfig = config;
-    return config;
-  }
-
-  /**
-   * Save configuration to ginko.json
-   */
-  async saveConfig(config: GinkoConfig, projectRoot?: string): Promise<void> {
-    const root = projectRoot || await this.findProjectRoot();
-    const configFile = path.join(root, 'ginko.json');
-
-    // Don't save resolved paths, keep variables for portability
-    const configToSave = {
-      ...config,
-      paths: this.unresolvePathVariables(config.paths)
-    };
-
-    await fs.writeJSON(configFile, configToSave, { spaces: 2 });
-    this.configPath = configFile;
-    this.cachedConfig = config; // Keep resolved version in cache
-  }
-
-  /**
-   * Resolve path variables like ${docs.root}/adr
-   */
-  private resolvePathVariables(paths: PathsConfig): PathsConfig {
-    const resolved = JSON.parse(JSON.stringify(paths)); // Deep clone
-
-    // First pass: resolve root paths
-    for (const [category, categoryPaths] of Object.entries(resolved)) {
-      if (typeof categoryPaths === 'object') {
-        for (const [key, value] of Object.entries(categoryPaths)) {
-          if (typeof value === 'string' && !value.includes('${')) {
-            // Already resolved or no variables
-            continue;
-          }
-        }
-      }
-    }
-
-    // Second pass: resolve dependent paths
-    const maxIterations = 5; // Prevent infinite loops
-    for (let i = 0; i < maxIterations; i++) {
-      let hasUnresolved = false;
-
-      for (const [category, categoryPaths] of Object.entries(resolved)) {
-        if (typeof categoryPaths === 'object') {
-          for (const [key, value] of Object.entries(categoryPaths)) {
-            if (typeof value === 'string' && value.includes('${')) {
-              const resolvedValue = this.substituteVariables(value, resolved);
-              if (resolvedValue !== value) {
-                (categoryPaths as any)[key] = resolvedValue;
-              } else {
-                hasUnresolved = true;
-              }
-            }
-          }
-        }
-      }
-
-      if (!hasUnresolved) break;
-    }
-
-    return resolved;
-  }
-
-  /**
-   * Convert resolved paths back to variables for saving
-   */
-  private unresolvePathVariables(paths: PathsConfig): PathsConfig {
-    // Return the original variable-based format
-    // This is a simplified approach - in practice, we'd track original vs resolved
-    return {
-      docs: {
-        root: "docs",
-        adr: "${docs.root}/adr",
-        prd: "${docs.root}/PRD",
-        sprints: "${docs.root}/sprints"
-      },
-      ginko: {
-        root: ".ginko",
-        context: "${ginko.root}/context",
-        sessions: "${ginko.root}/sessions",
-        backlog: "${ginko.root}/backlog",
-        patterns: "${ginko.root}/patterns",
-        bestPractices: "${ginko.root}/best-practices"
-      }
-    };
-  }
-
-  /**
-   * Substitute variables in a path string
-   */
-  private substituteVariables(template: string, paths: PathsConfig): string {
-    let result = template;
-
-    // Replace ${category.key} with actual values
-    const variableRegex = /\$\{([^}]+)\}/g;
-    result = result.replace(variableRegex, (match, variable) => {
-      const [category, key] = variable.split('.');
-
-      if (paths[category] && typeof paths[category] === 'object') {
-        const value = (paths[category] as any)[key];
-        if (typeof value === 'string' && !value.includes('${')) {
-          return value;
-        }
-      }
-
-      return match; // Keep unresolved
-    });
-
-    return result;
-  }
-
-  /**
-   * Apply platform-specific configuration defaults
-   */
-  private applyPlatformDefaults(config: GinkoConfig): GinkoConfig {
-    const platformConfig = this.platformAdapter.getPlatformConfig();
-
-    const enhancedPlatformConfig: PlatformConfig = {
-      platform: platformConfig.platform,
-      hookExtension: platformConfig.hookExtension as '.bat' | '.sh',
-      shellExtension: platformConfig.shellExtension as '.bat' | '.sh',
-      pathSeparator: platformConfig.pathSeparator as '/' | '\\',
-      homeDirectory: platformConfig.homeDirectory,
-      claudeConfigPath: platformConfig.claudeConfigPath,
-      hookDirectory: platformConfig.hookDirectory,
-      autoDetect: config.platform?.autoDetect ?? true,
-      migrationSettings: {
-        backupOriginal: config.platform?.migrationSettings?.backupOriginal ?? true,
-        preserveComments: config.platform?.migrationSettings?.preserveComments ?? true,
-        addPlatformHeader: config.platform?.migrationSettings?.addPlatformHeader ?? true,
-        ...config.platform?.migrationSettings
-      }
-    };
-
-    return {
-      ...config,
-      platform: enhancedPlatformConfig
-    };
-  }
-
-  /**
-   * Get platform adapter for external access
-   */
-  getPlatformAdapter(): PlatformAdapter {
-    return this.platformAdapter;
-  }
-
-  /**
-   * Merge user config with defaults
-   */
-  private mergeWithDefaults(userConfig: Partial<GinkoConfig>): GinkoConfig {
-    return {
-      version: userConfig.version || DEFAULT_CONFIG.version,
-      paths: {
-        docs: {
-          ...DEFAULT_CONFIG.paths.docs,
-          ...userConfig.paths?.docs
-        },
-        ginko: {
-          ...DEFAULT_CONFIG.paths.ginko,
-          ...userConfig.paths?.ginko
-        }
-      },
-      features: {
-        ...DEFAULT_CONFIG.features,
-        ...userConfig.features
-      },
-      platform: userConfig.platform,
-      naming: {
-        ...DEFAULT_CONFIG.naming,
-        ...userConfig.naming,
-        types: {
-          ...DEFAULT_CONFIG.naming?.types,
-          ...userConfig.naming?.types
-        }
-      }
-    };
-  }
-
-  /**
-   * Find project root (git root or current directory)
-   */
-  private async findProjectRoot(): Promise<string> {
-    try {
-      const ginkoRoot = await findGinkoRoot();
-      if (ginkoRoot) {
-        return ginkoRoot;
-      }
-    } catch (error) {
-      // Continue to fallback
-    }
-
-    return process.cwd();
-  }
-
-  /**
-   * Get resolved path for a specific type
-   */
-  async getPath(type: string, subpath?: string): Promise<string> {
-    const config = await this.loadConfig();
-
-    // Handle ginko paths
-    if (type.startsWith('ginko.')) {
-      const key = type.substring(6); // Remove 'ginko.'
-      const basePath = (config.paths.ginko as any)[key];
-      if (!basePath) {
-        throw new Error(`Unknown ginko path: ${type}`);
-      }
-      return subpath ? path.join(basePath, subpath) : basePath;
-    }
-
-    // Handle docs paths
-    if (type.startsWith('docs.')) {
-      const key = type.substring(5); // Remove 'docs.'
-      const basePath = (config.paths.docs as any)[key];
-      if (!basePath) {
-        throw new Error(`Unknown docs path: ${type}`);
-      }
-      return subpath ? path.join(basePath, subpath) : basePath;
-    }
-
-    // Handle document type paths from naming config
-    if (config.naming?.types?.[type]) {
-      const docType = config.naming.types[type];
-      const resolvedPath = this.substituteVariables(docType.path, config.paths);
-      return subpath ? path.join(resolvedPath, subpath) : resolvedPath;
-    }
-
-    throw new Error(`Unknown path type: ${type}`);
-  }
-
-  /**
-   * Ensure all configured paths exist
-   */
-  async ensurePaths(): Promise<void> {
-    const config = await this.loadConfig();
-    const pathsToCreate = [
-      ...Object.values(config.paths.ginko),
-      ...Object.values(config.paths.docs)
-    ];
-
-    for (const pathStr of pathsToCreate) {
-      if (typeof pathStr === 'string' && !pathStr.includes('${')) {
-        await fs.ensureDir(pathStr);
-      }
-    }
-  }
-
-  /**
-   * Clear cached configuration (for testing)
-   */
-  clearCache(): void {
-    this.cachedConfig = null;
-    this.configPath = null;
+export class ConfigLoadError extends Error {
+  constructor(
+    message: string,
+    public configPath?: string,
+    public cause?: Error
+  ) {
+    super(message);
+    this.name = 'ConfigLoadError';
   }
 }
 
-// Export singleton instance
-export const configLoader = new ConfigLoader();
+/**
+ * ConfigLoader singleton for managing ginko configuration
+ */
+export class ConfigLoader {
+  private static instance: ConfigLoader | null = null;
+  private cachedResult: LoadResult | null = null;
+  private loadPromise: Promise<LoadResult> | null = null;
+
+  private constructor() {
+    // Private constructor for singleton
+  }
+
+  /**
+   * Get the singleton instance
+   */
+  static getInstance(): ConfigLoader {
+    if (!ConfigLoader.instance) {
+      ConfigLoader.instance = new ConfigLoader();
+    }
+    return ConfigLoader.instance;
+  }
+
+  /**
+   * Reset the singleton (useful for testing)
+   */
+  static reset(): void {
+    ConfigLoader.instance = null;
+  }
+
+  /**
+   * Load configuration with caching and graceful fallback
+   */
+  async load(options: LoaderOptions = {}): Promise<LoadResult> {
+    const {
+      projectRoot = process.cwd(),
+      configFileName = 'ginko.json',
+      forceReload = false,
+      autoMigrate = true,
+      validation = 'strict'
+    } = options;
+
+    // Return cached result if available and not forcing reload
+    if (this.cachedResult && !forceReload) {
+      return this.cachedResult;
+    }
+
+    // If already loading, return the same promise
+    if (this.loadPromise && !forceReload) {
+      return this.loadPromise;
+    }
+
+    // Start loading
+    this.loadPromise = this.doLoad(projectRoot, configFileName, autoMigrate, validation);
+
+    try {
+      const result = await this.loadPromise;
+      this.cachedResult = result;
+      return result;
+    } finally {
+      this.loadPromise = null;
+    }
+  }
+
+  /**
+   * Internal loading logic
+   */
+  private async doLoad(
+    projectRoot: string,
+    configFileName: string,
+    autoMigrate: boolean,
+    validation: 'strict' | 'loose' | 'none'
+  ): Promise<LoadResult> {
+    const configPath = path.join(projectRoot, configFileName);
+    const warnings: string[] = [];
+
+    try {
+      // Try to load from file
+      const fileContent = await fs.readFile(configPath, 'utf-8');
+      let config: any;
+
+      try {
+        config = JSON.parse(fileContent);
+      } catch (parseError) {
+        throw new ConfigLoadError(
+          `Invalid JSON in configuration file: ${configPath}`,
+          configPath,
+          parseError instanceof Error ? parseError : new Error('Parse error')
+        );
+      }
+
+      // Validate configuration
+      if (validation !== 'none') {
+        const validationResult = validateConfig(config);
+        if (!validationResult.valid) {
+          if (validation === 'strict') {
+            throw new ConfigValidationError(
+              `Configuration validation failed: ${validationResult.errors.join(', ')}`
+            );
+          } else {
+            warnings.push(...validationResult.errors);
+          }
+        }
+      }
+
+      // Handle migration if needed
+      let migrated = false;
+      if (autoMigrate && this.needsMigration(config)) {
+        const { ConfigMigrator } = await import('./config-migrator.js');
+        const migrator = new ConfigMigrator();
+        config = await migrator.migrate(config);
+        migrated = true;
+        warnings.push('Configuration was automatically migrated to current version');
+      }
+
+      // Merge with defaults for any missing fields
+      const mergedConfig = this.mergeWithDefaults(config);
+
+      // Create path resolver
+      const resolver = this.createPathResolver(mergedConfig);
+
+      return {
+        config: mergedConfig,
+        configPath,
+        fromFile: true,
+        migrated,
+        resolver,
+        warnings,
+        loadedAt: new Date()
+      };
+
+    } catch (error) {
+      if (error instanceof ConfigLoadError || error instanceof ConfigValidationError) {
+        throw error;
+      }
+
+      // File doesn't exist or other IO error - use defaults
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        warnings.push(`Configuration file not found at ${configPath}, using defaults`);
+      } else {
+        warnings.push(`Failed to load configuration: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+
+      const defaultConfig = this.createDefaultConfig();
+      const resolver = this.createPathResolver(defaultConfig);
+
+      return {
+        config: defaultConfig,
+        configPath,
+        fromFile: false,
+        migrated: false,
+        resolver,
+        warnings,
+        loadedAt: new Date()
+      };
+    }
+  }
+
+  /**
+   * Save configuration to file
+   */
+  async save(config: GinkoConfig, options: LoaderOptions = {}): Promise<void> {
+    const {
+      projectRoot = process.cwd(),
+      configFileName = 'ginko.json'
+    } = options;
+
+    const configPath = path.join(projectRoot, configFileName);
+
+    // Validate before saving
+    const validationResult = validateConfig(config);
+    if (!validationResult.valid) {
+      throw new ConfigValidationError(
+        `Cannot save invalid configuration: ${validationResult.errors.join(', ')}`
+      );
+    }
+
+    // Update metadata
+    const configWithMetadata = {
+      ...config,
+      metadata: {
+        ...config.metadata,
+        updatedAt: new Date().toISOString(),
+        updatedBy: process.env.USER || process.env.USERNAME || 'unknown'
+      }
+    };
+
+    try {
+      // Ensure directory exists
+      await fs.mkdir(path.dirname(configPath), { recursive: true });
+
+      // Write file with pretty formatting
+      await fs.writeFile(
+        configPath,
+        JSON.stringify(configWithMetadata, null, 2) + '\n',
+        'utf-8'
+      );
+
+      // Clear cache to force reload
+      this.cachedResult = null;
+
+    } catch (error) {
+      throw new ConfigLoadError(
+        `Failed to save configuration to ${configPath}`,
+        configPath,
+        error instanceof Error ? error : new Error('Unknown error')
+      );
+    }
+  }
+
+  /**
+   * Create default configuration with platform detection
+   */
+  private createDefaultConfig(): GinkoConfig {
+    const platform = this.detectPlatform();
+
+    return {
+      ...DEFAULT_CONFIG,
+      platform,
+      metadata: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        updatedBy: process.env.USER || process.env.USERNAME || 'unknown',
+        migrationHistory: []
+      }
+    };
+  }
+
+  /**
+   * Detect current platform configuration
+   */
+  private detectPlatform(): PlatformConfig {
+    const type = PathResolver.detectPlatform();
+    const homeDirectory = require('os').homedir();
+
+    // Detect shell
+    let shell: PlatformConfig['shell'] = 'bash';
+    if (type === 'windows') {
+      shell = process.env.ComSpec?.includes('powershell') ? 'powershell' : 'cmd';
+    } else {
+      shell = path.basename(process.env.SHELL || 'bash') as PlatformConfig['shell'];
+    }
+
+    return {
+      type,
+      shell,
+      pathSeparator: path.sep as '/' | '\\',
+      homeDirectory,
+      specific: this.getPlatformSpecific(type)
+    };
+  }
+
+  /**
+   * Get platform-specific configurations
+   */
+  private getPlatformSpecific(type: 'windows' | 'macos' | 'linux'): PlatformConfig['specific'] {
+    switch (type) {
+      case 'windows':
+        return {
+          windows: {
+            useWSL: !!process.env.WSL_DISTRO_NAME,
+            wslDistro: process.env.WSL_DISTRO_NAME
+          }
+        };
+      case 'macos':
+        return {
+          macos: {
+            brewPrefix: process.env.HOMEBREW_PREFIX || '/opt/homebrew'
+          }
+        };
+      case 'linux':
+        return {
+          linux: {
+            distribution: this.detectLinuxDistribution()
+          }
+        };
+    }
+  }
+
+  /**
+   * Detect Linux distribution
+   */
+  private detectLinuxDistribution(): string {
+    try {
+      // This is a simplified detection - could be enhanced
+      if (process.env.DEBIAN_FRONTEND) return 'debian';
+      if (process.env.RHEL_VERSION) return 'rhel';
+      return 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Check if configuration needs migration
+   */
+  private needsMigration(config: any): boolean {
+    if (!config.version) return true;
+    if (config.version !== DEFAULT_CONFIG.version) return true;
+    return false;
+  }
+
+  /**
+   * Merge user configuration with defaults
+   */
+  private mergeWithDefaults(userConfig: Partial<GinkoConfig>): GinkoConfig {
+    const defaultConfig = this.createDefaultConfig();
+
+    return {
+      version: userConfig.version || defaultConfig.version,
+      paths: {
+        docs: { ...defaultConfig.paths.docs, ...userConfig.paths?.docs },
+        ginko: { ...defaultConfig.paths.ginko, ...userConfig.paths?.ginko }
+      },
+      features: { ...defaultConfig.features, ...userConfig.features },
+      platform: userConfig.platform || defaultConfig.platform,
+      metadata: { ...defaultConfig.metadata, ...userConfig.metadata }
+    };
+  }
+
+  /**
+   * Create path resolver from configuration
+   */
+  private createPathResolver(config: GinkoConfig): PathResolver {
+    // Flatten path configuration for resolver
+    const variables: Record<string, string> = {};
+
+    // Add docs paths
+    for (const [key, value] of Object.entries(config.paths.docs)) {
+      variables[`docs.${key}`] = value;
+    }
+
+    // Add ginko paths
+    for (const [key, value] of Object.entries(config.paths.ginko)) {
+      variables[`ginko.${key}`] = value;
+    }
+
+    return PathResolver.create(variables);
+  }
+
+  /**
+   * Get current configuration without loading
+   */
+  getCached(): LoadResult | null {
+    return this.cachedResult;
+  }
+
+  /**
+   * Check if configuration exists
+   */
+  async exists(options: LoaderOptions = {}): Promise<boolean> {
+    const {
+      projectRoot = process.cwd(),
+      configFileName = 'ginko.json'
+    } = options;
+
+    const configPath = path.join(projectRoot, configFileName);
+
+    try {
+      await fs.access(configPath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Initialize a new configuration file
+   */
+  async initialize(options: LoaderOptions = {}): Promise<LoadResult> {
+    const {
+      projectRoot = process.cwd(),
+      configFileName = 'ginko.json'
+    } = options;
+
+    const configPath = path.join(projectRoot, configFileName);
+
+    // Check if file already exists
+    if (await this.exists(options)) {
+      throw new ConfigLoadError(
+        `Configuration file already exists at ${configPath}`,
+        configPath
+      );
+    }
+
+    // Create default configuration
+    const config = this.createDefaultConfig();
+
+    // Save to file
+    await this.save(config, options);
+
+    // Return load result
+    return this.load({ ...options, forceReload: true });
+  }
+
+  /**
+   * Invalidate cache
+   */
+  invalidateCache(): void {
+    this.cachedResult = null;
+  }
+
+  /**
+   * Get configuration statistics
+   */
+  getStats(): {
+    cached: boolean;
+    loadedAt?: Date;
+    configPath?: string;
+    fromFile?: boolean;
+    migrated?: boolean;
+  } {
+    if (!this.cachedResult) {
+      return { cached: false };
+    }
+
+    return {
+      cached: true,
+      loadedAt: this.cachedResult.loadedAt,
+      configPath: this.cachedResult.configPath,
+      fromFile: this.cachedResult.fromFile,
+      migrated: this.cachedResult.migrated
+    };
+  }
+}
+
+/**
+ * Convenience functions for common operations
+ */
+export namespace ConfigLoaderUtils {
+  /**
+   * Quick load with defaults
+   */
+  export async function quickLoad(projectRoot?: string): Promise<GinkoConfig> {
+    const loader = ConfigLoader.getInstance();
+    const result = await loader.load({ projectRoot });
+    return result.config;
+  }
+
+  /**
+   * Get resolved path from configuration
+   */
+  export async function getResolvedPath(pathKey: string, projectRoot?: string): Promise<string> {
+    const loader = ConfigLoader.getInstance();
+    const result = await loader.load({ projectRoot });
+
+    // Parse path key (e.g., "docs.adr" or "ginko.sessions")
+    const [category, key] = pathKey.split('.');
+    if (!category || !key) {
+      throw new Error(`Invalid path key: ${pathKey}. Expected format: "category.key"`);
+    }
+
+    const pathTemplate = (result.config.paths as any)[category]?.[key];
+    if (!pathTemplate) {
+      throw new Error(`Path not found: ${pathKey}`);
+    }
+
+    const resolved = result.resolver.resolve(pathTemplate);
+    if (!resolved.success) {
+      throw new Error(`Failed to resolve path ${pathKey}: ${resolved.errors.join(', ')}`);
+    }
+
+    return resolved.resolved;
+  }
+
+  /**
+   * Check if a feature is enabled
+   */
+  export async function isFeatureEnabled(feature: string, projectRoot?: string): Promise<boolean> {
+    const config = await quickLoad(projectRoot);
+    return config.features[feature] === true;
+  }
+
+  /**
+   * Update a single configuration value
+   */
+  export async function updateConfig(
+    updates: Partial<GinkoConfig>,
+    projectRoot?: string
+  ): Promise<void> {
+    const loader = ConfigLoader.getInstance();
+    const result = await loader.load({ projectRoot });
+
+    const updatedConfig = {
+      ...result.config,
+      ...updates,
+      metadata: {
+        ...result.config.metadata,
+        updatedAt: new Date().toISOString()
+      }
+    };
+
+    await loader.save(updatedConfig, { projectRoot });
+  }
+}

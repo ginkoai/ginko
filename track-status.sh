@@ -1,4 +1,14 @@
 #!/bin/bash
+# @fileType: script
+# @status: current
+# @updated: 2025-09-22
+# @tags: [monitoring, endpoint, status, health-check, api]
+# @related: [verify-all-tools.sh, quick-test.sh]
+# @priority: medium
+# @complexity: low
+# @dependencies: [curl, bash]
+# @description: Monitor API endpoint health and status for Ginko services
+
 echo "📈 Endpoint Status Tracker"
 echo "========================="
 

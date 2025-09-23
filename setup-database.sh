@@ -1,4 +1,13 @@
 #!/bin/bash
+# @fileType: script
+# @status: deprecated
+# @updated: 2025-09-22
+# @tags: [database, postgresql, setup, legacy, contextmcp]
+# @related: [setup-billing.sh]
+# @priority: low
+# @complexity: medium
+# @dependencies: [postgresql, psql, createdb, brew]
+# @description: Deprecated database setup script - references old ContextMCP branding and credentials
 
 echo "🗄️  Setting up PostgreSQL for ContextMCP"
 echo "========================================"

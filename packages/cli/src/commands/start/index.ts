@@ -13,11 +13,11 @@ import { StartReflectionCommand } from './start-reflection.js';
 
 /**
  * Start command router
- * Routes between reflection-based and legacy implementations
+ * Routes between AI-enhanced reflection and legacy implementations
  */
 export async function startCommand(options: any = {}) {
-  // Use legacy implementation if requested
-  if (options.legacy) {
+  // Use legacy implementation if AI enhancement is disabled
+  if (options.noai || options.legacy) {
     // Try enhanced version first, fall back to basic
     try {
       const { startEnhancedCommand } = await import('../start-enhanced-orig.js');
@@ -28,7 +28,7 @@ export async function startCommand(options: any = {}) {
     }
   }
 
-  // Use reflection domain (new default)
+  // Use AI-enhanced reflection (default)
   const reflection = new StartReflectionCommand();
   const intent = 'Initialize development session with optimal context';
 

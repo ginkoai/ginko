@@ -373,7 +373,7 @@ exit 0`;
 2. Create your hook file:
    ${config.dir}/your_hook_name${config.ext}
 
-3. ${platform === 'windows' ? 'Ensure the file is executable (Windows batch files are executable by default)' : 'Make the file executable:'
+3. ${platform === 'windows' ? 'Ensure the file is executable (Windows batch files are executable by default)' : 'Make the file executable:'}
    ${platform === 'windows' ? '' : `chmod +x ${config.dir}/your_hook_name${config.ext}`}
 
 4. Test your hook:

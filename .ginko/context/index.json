@@ -265,10 +265,22 @@
       "relevance": "medium",
       "created": "2025-09-19T22:12:02.852Z",
       "sessionId": "xtophr@gmail.com-1758319922745"
+    },
+    {
+      "filename": "gotcha-mock-insight-from-ai-service.md",
+      "type": "gotcha",
+      "tags": [
+        "test",
+        "mock",
+        "development"
+      ],
+      "relevance": "high",
+      "created": "2025-09-22T18:14:48.451Z",
+      "sessionId": "xtophr@gmail.com-1758564888315"
     }
   ],
-  "lastUpdated": "2025-09-19T22:12:02.857Z",
-  "totalModules": 13,
+  "lastUpdated": "2025-09-22T18:14:48.459Z",
+  "totalModules": 14,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

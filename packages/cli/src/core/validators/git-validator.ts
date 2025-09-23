@@ -1,257 +1,344 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-09-20
- * @tags: [git, validation, repository, safety, commands]
- * @related: [init.ts, config-loader.ts]
+ * @updated: 2025-09-19
+ * @tags: [validation, git, repository, first-use-experience]
+ * @related: [config-validator.ts, environment-validator.ts, index.ts]
  * @priority: critical
- * @complexity: low
- * @dependencies: [fs-extra, path, child_process]
+ * @complexity: medium
+ * @dependencies: [simple-git, fs-extra]
  */
 
-import fs from 'fs-extra';
-import path from 'path';
-import { execSync } from 'child_process';
-import chalk from 'chalk';
+import { simpleGit, SimpleGit, GitError } from 'simple-git';
+import * as fs from 'fs-extra';
+import * as path from 'path';
 
 /**
- * Git repository validation for ginko commands
- * Ensures context isolation and prevents configuration errors
+ * Result of a validation check
  */
-export class GitValidator {
+export interface ValidationResult {
+  valid: boolean;
+  error?: string;
+  suggestions?: string[];
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Base interface for all validators
+ */
+export interface Validator {
+  validate(): Promise<ValidationResult>;
+  getErrorMessage(): string;
+  getSuggestions(): string[];
+}
+
+/**
+ * Validates git repository requirements for ginko
+ *
+ * Checks:
+ * - Git command availability
+ * - Current directory is in a git repository
+ * - Repository is properly initialized
+ * - Working directory is clean (optional warning)
+ */
+export class GitValidator implements Validator {
+  private git: SimpleGit;
+  private currentPath: string;
+  private lastError?: string;
+  private lastSuggestions: string[] = [];
+
+  constructor(cwd: string = process.cwd()) {
+    this.currentPath = cwd;
+    this.git = simpleGit(cwd);
+  }
+
+  /**
+   * Perform comprehensive git validation
+   */
+  async validate(): Promise<ValidationResult> {
+    try {
+      // Check 1: Git command availability
+      const gitAvailable = await this.checkGitCommand();
+      if (!gitAvailable.valid) {
+        return gitAvailable;
+      }
+
+      // Check 2: Git repository detection
+      const repoCheck = await this.checkGitRepository();
+      if (!repoCheck.valid) {
+        return repoCheck;
+      }
+
+      // Check 3: Repository health
+      const healthCheck = await this.checkRepositoryHealth();
+      if (!healthCheck.valid) {
+        return healthCheck;
+      }
+
+      // All checks passed
+      return {
+        valid: true,
+        metadata: {
+          gitVersion: await this.getGitVersion(),
+          repositoryPath: await this.getRepositoryRoot(),
+          currentBranch: await this.getCurrentBranch(),
+          hasUncommittedChanges: await this.hasUncommittedChanges()
+        }
+      };
+
+    } catch (error) {
+      this.lastError = error instanceof Error ? error.message : 'Unknown git validation error';
+      this.lastSuggestions = this.generateErrorSuggestions(error);
+
+      return {
+        valid: false,
+        error: this.lastError,
+        suggestions: this.lastSuggestions
+      };
+    }
+  }
+
+  /**
+   * Get user-friendly error message
+   */
+  getErrorMessage(): string {
+    return this.lastError || 'Git validation failed';
+  }
+
+  /**
+   * Get actionable suggestions for fixing the error
+   */
+  getSuggestions(): string[] {
+    return this.lastSuggestions;
+  }
+
+  /**
+   * Check if git command is available
+   */
+  private async checkGitCommand(): Promise<ValidationResult> {
+    try {
+      await this.git.version();
+      return { valid: true };
+    } catch (error) {
+      this.lastError = 'Git command not found or not working';
+      this.lastSuggestions = [
+        'Install Git: https://git-scm.com/downloads',
+        'Verify Git is in your PATH: git --version',
+        'On Windows: Restart terminal after Git installation',
+        'On macOS: Install Xcode Command Line Tools: xcode-select --install'
+      ];
+
+      return {
+        valid: false,
+        error: this.lastError,
+        suggestions: this.lastSuggestions
+      };
+    }
+  }
 
   /**
    * Check if current directory is in a git repository
    */
-  static async isGitRepository(directory: string = process.cwd()): Promise<boolean> {
+  private async checkGitRepository(): Promise<ValidationResult> {
     try {
-      // Check for .git directory
-      const gitDir = path.join(directory, '.git');
-      if (await fs.pathExists(gitDir)) {
-        return true;
+      // Try to get repository root
+      const isRepo = await this.git.checkIsRepo();
+
+      if (!isRepo) {
+        this.lastError = 'Current directory is not in a git repository';
+        this.lastSuggestions = [
+          'Initialize a new repository: git init',
+          'Navigate to an existing repository: cd /path/to/your/repo',
+          'Clone a repository: git clone <repository-url>',
+          'Ginko requires a git repository to track context and changes'
+        ];
+
+        return {
+          valid: false,
+          error: this.lastError,
+          suggestions: this.lastSuggestions
+        };
       }
 
-      // Check if git command recognizes this as a repository
-      execSync('git rev-parse --git-dir', {
-        cwd: directory,
-        stdio: 'pipe',
-        timeout: 5000
-      });
-      return true;
+      return { valid: true };
     } catch (error) {
-      return false;
+      this.lastError = 'Failed to check git repository status';
+      this.lastSuggestions = [
+        'Ensure you have read permissions in the current directory',
+        'Check if .git directory exists and is accessible',
+        'Try running: git status'
+      ];
+
+      return {
+        valid: false,
+        error: this.lastError,
+        suggestions: this.lastSuggestions
+      };
     }
   }
 
   /**
-   * Get the git repository root directory
+   * Check repository health and configuration
    */
-  static async getGitRoot(directory: string = process.cwd()): Promise<string | null> {
+  private async checkRepositoryHealth(): Promise<ValidationResult> {
     try {
-      const gitRoot = execSync('git rev-parse --show-toplevel', {
-        cwd: directory,
-        encoding: 'utf8',
-        stdio: 'pipe',
-        timeout: 5000
-      }).trim();
+      // Check if repository has at least one commit
+      const hasCommits = await this.hasCommits();
 
-      return gitRoot;
-    } catch (error) {
-      return null;
-    }
-  }
+      if (!hasCommits) {
+        // This is a warning, not a fatal error
+        this.lastSuggestions = [
+          'Repository has no commits yet',
+          'Create your first commit: git add . && git commit -m "Initial commit"',
+          'Ginko works best with committed code for context tracking'
+        ];
 
-  /**
-   * Validate git repository before running ginko commands
-   * Throws error with helpful message if invalid
-   */
-  static async validateOrExit(command: string = 'ginko'): Promise<void> {
-    const isGitRepo = await this.isGitRepository();
-
-    if (!isGitRepo) {
-      console.log(chalk.red(`
-✗ Not in a git repository
-
-Ginko requires a git repository for context tracking and isolation.
-
-Options:
-→ Initialize git: ${chalk.cyan('git init')}
-→ Navigate to existing repo: ${chalk.cyan('cd /path/to/your/project')}
-→ Clone a repository: ${chalk.cyan('git clone <repository-url>')}
-
-Then run: ${chalk.cyan(`${command} init`)}
-      `));
-      process.exit(1);
-    }
-  }
-
-  /**
-   * Check for parent .ginko directories that could cause conflicts
-   */
-  static async findParentGinko(directory: string = process.cwd()): Promise<string | null> {
-    let currentDir = path.dirname(directory);
-    const rootDir = path.parse(directory).root;
-
-    while (currentDir !== rootDir) {
-      const ginkoPath = path.join(currentDir, '.ginko');
-      if (await fs.pathExists(ginkoPath)) {
-        return currentDir;
+        return {
+          valid: true,
+          metadata: { warning: 'No commits found in repository' }
+        };
       }
 
-      const newDir = path.dirname(currentDir);
-      if (newDir === currentDir) break; // Reached filesystem root
-      currentDir = newDir;
-    }
-
-    return null;
-  }
-
-  /**
-   * Validate initialization location
-   */
-  static async validateInitLocation(directory: string = process.cwd()): Promise<{
-    valid: boolean;
-    warnings: string[];
-    gitRoot: string | null;
-  }> {
-    const warnings: string[] = [];
-    let valid = true;
-
-    // Check if we're in a git repo
-    const isGitRepo = await this.isGitRepository(directory);
-    if (!isGitRepo) {
-      valid = false;
-      warnings.push('Not in a git repository');
-    }
-
-    // Get git root
-    const gitRoot = await this.getGitRoot(directory);
-
-    // Check if current directory matches git root
-    if (gitRoot && path.resolve(directory) !== path.resolve(gitRoot)) {
-      warnings.push(`Not at git repository root. Git root: ${gitRoot}`);
-    }
-
-    // Check for parent .ginko directories
-    const parentGinko = await this.findParentGinko(directory);
-    if (parentGinko) {
-      warnings.push(`Found .ginko/ in parent directory: ${parentGinko}`);
-    }
-
-    // Check for existing .ginko
-    const existingGinko = path.join(directory, '.ginko');
-    if (await fs.pathExists(existingGinko)) {
-      valid = false;
-      warnings.push('Ginko already initialized in this directory');
-    }
-
-    return { valid, warnings, gitRoot };
-  }
-
-  /**
-   * Interactive validation with user prompts
-   */
-  static async interactiveValidation(directory: string = process.cwd()): Promise<boolean> {
-    const validation = await this.validateInitLocation(directory);
-
-    if (validation.warnings.length > 0) {
-      console.log(chalk.yellow('\n⚠️ Validation Warnings:'));
-      validation.warnings.forEach(warning => {
-        console.log(chalk.yellow(`  • ${warning}`));
-      });
-    }
-
-    if (!validation.valid) {
-      console.log(chalk.red('\n✗ Cannot initialize ginko here'));
-      return false;
-    }
-
-    if (validation.warnings.length > 0) {
-      console.log(chalk.blue(`\nWill initialize ginko in: ${directory}`));
-
-      // In a real implementation, you'd use inquirer or similar for prompts
-      // For now, we'll assume continuation
-      return true;
-    }
-
-    return true;
-  }
-
-  /**
-   * Display helpful git status information
-   */
-  static async displayGitInfo(): Promise<void> {
-    try {
-      const gitRoot = await this.getGitRoot();
-      if (gitRoot) {
-        console.log(chalk.dim(`Git repository: ${gitRoot}`));
-
-        // Get current branch
-        try {
-          const branch = execSync('git branch --show-current', {
-            encoding: 'utf8',
-            stdio: 'pipe',
-            timeout: 3000
-          }).trim();
-          console.log(chalk.dim(`Current branch: ${branch}`));
-        } catch (error) {
-          // Branch info not critical
+      return { valid: true };
+    } catch (error) {
+      // Repository health issues are warnings, not blockers
+      return {
+        valid: true,
+        metadata: {
+          warning: 'Could not check repository health',
+          details: error instanceof Error ? error.message : 'Unknown error'
         }
-      }
-    } catch (error) {
-      // Git info not critical for functionality
+      };
     }
   }
 
   /**
-   * Check git configuration for basic requirements
+   * Get git version
    */
-  static async checkGitConfig(): Promise<{
-    hasUserName: boolean;
-    hasUserEmail: boolean;
-    warnings: string[];
-  }> {
-    const warnings: string[] = [];
-    let hasUserName = false;
-    let hasUserEmail = false;
-
+  private async getGitVersion(): Promise<string | undefined> {
     try {
-      execSync('git config user.name', { stdio: 'pipe', timeout: 3000 });
-      hasUserName = true;
-    } catch (error) {
-      warnings.push('Git user.name not configured');
+      const version = await this.git.version();
+      return version.installed;
+    } catch {
+      return undefined;
     }
-
-    try {
-      execSync('git config user.email', { stdio: 'pipe', timeout: 3000 });
-      hasUserEmail = true;
-    } catch (error) {
-      warnings.push('Git user.email not configured');
-    }
-
-    return { hasUserName, hasUserEmail, warnings };
   }
-}
 
-/**
- * Decorator function to add git validation to commands
- */
-export function requireGitRepository(commandName: string = 'ginko') {
-  return function(target: any, propertyName: string, descriptor: PropertyDescriptor) {
-    const method = descriptor.value;
+  /**
+   * Get repository root path
+   */
+  private async getRepositoryRoot(): Promise<string | undefined> {
+    try {
+      const root = await this.git.revparse(['--show-toplevel']);
+      return root.trim();
+    } catch {
+      return undefined;
+    }
+  }
 
-    descriptor.value = async function(...args: any[]) {
-      await GitValidator.validateOrExit(commandName);
-      return method.apply(this, args);
-    };
+  /**
+   * Get current branch name
+   */
+  private async getCurrentBranch(): Promise<string | undefined> {
+    try {
+      const branch = await this.git.branch();
+      return branch.current;
+    } catch {
+      return undefined;
+    }
+  }
 
-    return descriptor;
-  };
-}
+  /**
+   * Check if repository has any commits
+   */
+  private async hasCommits(): Promise<boolean> {
+    try {
+      await this.git.log({ maxCount: 1 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-/**
- * Quick validation function for use in command entry points
- */
-export async function ensureGitRepository(commandName: string = 'ginko'): Promise<void> {
-  await GitValidator.validateOrExit(commandName);
+  /**
+   * Check if there are uncommitted changes
+   */
+  private async hasUncommittedChanges(): Promise<boolean> {
+    try {
+      const status = await this.git.status();
+      return status.files.length > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Generate contextual suggestions based on error type
+   */
+  private generateErrorSuggestions(error: any): string[] {
+    const suggestions: string[] = [];
+
+    if (error instanceof GitError) {
+      switch (error.git?.exitCode) {
+        case 128:
+          suggestions.push(
+            'Repository may be corrupted or inaccessible',
+            'Try: git status',
+            'Reinitialize if needed: rm -rf .git && git init'
+          );
+          break;
+        case 129:
+          suggestions.push(
+            'Invalid git command or arguments',
+            'Check git installation: git --version'
+          );
+          break;
+        default:
+          suggestions.push(
+            'Git command failed',
+            'Check git installation and repository permissions'
+          );
+      }
+    } else if (error?.message?.includes('ENOENT')) {
+      suggestions.push(
+        'Git executable not found',
+        'Install Git from https://git-scm.com/',
+        'Add Git to your system PATH'
+      );
+    } else {
+      suggestions.push(
+        'Unexpected git error occurred',
+        'Try: git status',
+        'Ensure repository is properly initialized'
+      );
+    }
+
+    return suggestions;
+  }
+
+  /**
+   * Static method to quickly check if directory is a git repo
+   */
+  static async isGitRepository(path: string = process.cwd()): Promise<boolean> {
+    try {
+      const validator = new GitValidator(path);
+      const result = await validator.validate();
+      return result.valid;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Static method to get basic git info
+   */
+  static async getGitInfo(path: string = process.cwd()): Promise<Record<string, any>> {
+    try {
+      const validator = new GitValidator(path);
+      const result = await validator.validate();
+      return result.metadata || {};
+    } catch {
+      return {};
+    }
+  }
 }
