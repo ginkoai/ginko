@@ -48,7 +48,8 @@ export interface ReflectionPattern {
 export type ReflectionDomain =
   | 'start' | 'handoff' | 'prd' | 'backlog' | 'documentation'
   | 'testing' | 'architecture' | 'debugging' | 'review' | 'refactor'
-  | 'pattern' | 'sprint' | 'overview' | 'git' | 'ai-collaboration';
+  | 'pattern' | 'sprint' | 'overview' | 'git' | 'ai-collaboration'
+  | 'bug' | 'changelog';
 
 export interface DomainConfig {
   name: string;

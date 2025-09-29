@@ -33,7 +33,12 @@
       "Bash(ginko reflect:*)",
       "Bash(ginko backlog:*)",
       "Bash(npm ls:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(git mv:*)",
+      "Bash(git rm:*)",
+      "Bash(for:*)",
+      "Bash(do git mv \"$file\" docs/adr/)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

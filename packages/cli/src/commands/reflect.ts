@@ -45,8 +45,8 @@ export async function reflectCommand(intent: string, options: ReflectOptions = {
 
     if (!reflectionCommand) {
       console.log(chalk.yellow(`Domain '${detectedDomain}' not yet implemented`));
-      console.log(chalk.dim('Available domains: start, handoff, prd, architecture, backlog, documentation'));
-      console.log(chalk.dim('Coming soon: testing, sprint, git, overview'));
+      console.log(chalk.dim('Available domains: start, handoff, prd, architecture, backlog, documentation, bug, changelog, git'));
+      console.log(chalk.dim('Coming soon: testing, sprint, overview'));
       return;
     }
 
@@ -89,6 +89,18 @@ async function createDomainReflection(domain: string, noai = false): Promise<any
       const { DocumentationReflectionCommand } = await import('./documentation/documentation-reflection.js');
       return new DocumentationReflectionCommand();
 
+    case 'bug':
+      const { BugReflectionCommand } = await import('./bug/bug-reflection.js');
+      return new BugReflectionCommand();
+
+    case 'changelog':
+      const { ChangelogReflectionCommand } = await import('./changelog/changelog-reflection.js');
+      return new ChangelogReflectionCommand();
+
+    case 'git':
+      const { GitReflectionCommand } = await import('./git/git-reflection.js');
+      return new GitReflectionCommand();
+
     // Future domains - using generic implementation for now
     case 'testing':
     case 'debugging':
@@ -97,7 +109,6 @@ async function createDomainReflection(domain: string, noai = false): Promise<any
     case 'pattern':
     case 'sprint':
     case 'overview':
-    case 'git':
       // These would have their own reflection implementations
       return ReflectionFactory.create(domain as any);
 
