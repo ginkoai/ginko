@@ -45,8 +45,22 @@ export async function reflectCommand(intent: string, options: ReflectOptions = {
 
     if (!reflectionCommand) {
       console.log(chalk.yellow(`Domain '${detectedDomain}' not yet implemented`));
-      console.log(chalk.dim('Available domains: start, handoff, prd, architecture, backlog, documentation, bug, changelog, git'));
-      console.log(chalk.dim('Coming soon: testing, sprint, overview'));
+      console.log(chalk.dim('\nImplemented domains:'));
+      console.log(chalk.green('  • start         ') + chalk.dim('- Session context loading'));
+      console.log(chalk.green('  • handoff       ') + chalk.dim('- Session preservation'));
+      console.log(chalk.green('  • capture       ') + chalk.dim('- Capture learnings and context'));
+      console.log(chalk.green('  • explore       ') + chalk.dim('- Problem space exploration'));
+      console.log(chalk.green('  • architecture  ') + chalk.dim('- Architecture decisions (ADRs)'));
+      console.log(chalk.green('  • plan          ') + chalk.dim('- Sprint planning'));
+      console.log(chalk.green('  • ship          ') + chalk.dim('- Deployment preparation'));
+      console.log(chalk.green('  • backlog       ') + chalk.dim('- Backlog item creation'));
+      console.log(chalk.green('  • prd           ') + chalk.dim('- Product requirements'));
+      console.log(chalk.green('  • documentation ') + chalk.dim('- Documentation generation'));
+      console.log(chalk.green('  • bug           ') + chalk.dim('- Bug tracking'));
+      console.log(chalk.green('  • changelog     ') + chalk.dim('- Changelog generation'));
+      console.log(chalk.green('  • git           ') + chalk.dim('- Git workflow automation'));
+      console.log(chalk.green('  • testing       ') + chalk.dim('- Test planning'));
+      console.log(chalk.dim('\nExample: ginko reflect --domain capture "authentication pattern discovered"'));
       return;
     }
 
@@ -100,6 +114,23 @@ async function createDomainReflection(domain: string, noai = false): Promise<any
     case 'git':
       const { GitReflectionCommand } = await import('./git/git-reflection.js');
       return new GitReflectionCommand();
+
+    // Development workflow domains (newly migrated)
+    case 'capture':
+      const { CaptureReflectionCommand } = await import('./capture/capture-reflection.js');
+      return new CaptureReflectionCommand();
+
+    case 'ship':
+      const { ShipReflectionCommand } = await import('./ship/ship-reflection.js');
+      return new ShipReflectionCommand();
+
+    case 'explore':
+      const { ExploreReflectionCommand } = await import('./explore/explore-reflection-pipeline.js');
+      return new ExploreReflectionCommand();
+
+    case 'plan':
+      const { PlanReflectionCommand } = await import('./plan/plan-reflection-pipeline.js');
+      return new PlanReflectionCommand();
 
     // Future domains - using generic implementation for now
     case 'testing':

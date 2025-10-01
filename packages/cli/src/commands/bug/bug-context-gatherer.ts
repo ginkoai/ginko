@@ -12,7 +12,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
-import { pathManager } from '../../core/config/path-config.js';
+import { pathManager } from '../../core/config-backup/path-config.js';
 
 export interface BugContext {
   errors: string[];

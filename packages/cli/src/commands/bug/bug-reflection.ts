@@ -14,7 +14,7 @@ import { BugContextGatherer } from './bug-context-gatherer.js';
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
-import { pathManager } from '../../core/config/path-config.js';
+import { pathManager } from '../../core/config-backup/path-config.js';
 import { execSync } from 'child_process';
 
 interface BugOptions {

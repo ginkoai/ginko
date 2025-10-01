@@ -10,7 +10,7 @@
  */
 
 import { Platform } from './platform-adapter';
-import { pathManager } from '../config/path-config.js';
+import { pathManager } from '../config-backup/path-config.js';
 
 export interface HookTemplate {
   name: string;

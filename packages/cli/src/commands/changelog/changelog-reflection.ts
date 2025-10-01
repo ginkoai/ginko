@@ -218,7 +218,7 @@ export class ChangelogReflectionCommand extends ReflectionCommand {
     const description = data.description.trim();
     const lines = description.split('\n');
 
-    lines.forEach(line => {
+    lines.forEach((line: string) => {
       if (line.trim()) {
         entry += `- ${line.trim()}`;
 

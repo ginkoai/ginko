@@ -140,17 +140,22 @@ program
   .option('--content <content>', 'AI-generated ship content')
   .option('--no-ai', 'Disable AI enhancement')
   .option('--quick', 'Quick ship without AI')
+  .option('--legacy', 'Use standalone implementation (deprecated)')
   .option('-v, --verbose', 'Show detailed output')
-  .action((message, options) => {
-    // Use AI version if any AI-related options present
-    const useAiVersion = options.store || options.id || options.content ||
-                         (options.ai !== false && !options.quick);
-    
-    if (useAiVersion) {
-      return shipAiCommand(message, options);
-    } else {
-      return shipCommand(message, options);
+  .action(async (message, options) => {
+    // Use legacy standalone if explicitly requested
+    if (options.legacy) {
+      const useAiVersion = options.store || options.id || options.content ||
+                           (options.ai !== false && !options.quick);
+      if (useAiVersion) {
+        return shipAiCommand(message, options);
+      } else {
+        return shipCommand(message, options);
+      }
     }
+    // Default: Use Universal Reflection Pattern via shortcut
+    const { executeShortcut } = await import('./core/command-shortcuts.js');
+    return executeShortcut('ship', [message, options]);
   });
 
 // Hero command: capture - for effortless context capture
@@ -164,8 +169,18 @@ program
   .option('-v, --verbose', 'Show detailed output')
   .option('-q, --quiet', 'Suppress all output')
   .option('--quick', 'Quick capture without AI enhancement')
+  .option('--noai', 'Disable AI enhancement (use reflection templates)')
+  .option('--legacy', 'Use standalone implementation (deprecated)')
   .option('-e, --edit', 'Open in editor after creation')
-  .action(captureCommand);
+  .action(async (description, options) => {
+    // Use legacy standalone if explicitly requested
+    if (options.legacy) {
+      return captureCommand(description, options);
+    }
+    // Default: Use Universal Reflection Pattern via shortcut
+    const { executeShortcut } = await import('./core/command-shortcuts.js');
+    return executeShortcut('capture', [description, options]);
+  });
 
 // Development workflow commands: explore -> architecture -> plan -> build
 program
@@ -177,7 +192,17 @@ program
   .option('--type <type>', 'Output type: prd or backlog', 'backlog')
   .option('-r, --review', 'Review before saving')
   .option('-v, --verbose', 'Show detailed output')
-  .action(exploreCommand);
+  .option('--noai', 'Disable AI enhancement (use reflection templates)')
+  .option('--legacy', 'Use standalone implementation (deprecated)')
+  .action(async (topic, options) => {
+    // Use legacy standalone if explicitly requested
+    if (options.legacy) {
+      return exploreCommand(topic, options);
+    }
+    // Default: Use Universal Reflection Pattern via shortcut
+    const { executeShortcut } = await import('./core/command-shortcuts.js');
+    return executeShortcut('explore', [topic, options]);
+  });
 
 program
   .command('architecture [decision]')
@@ -201,7 +226,17 @@ program
   .option('-d, --days <number>', 'Sprint duration in days', '5')
   .option('-r, --review', 'Review before saving')
   .option('-v, --verbose', 'Show detailed output')
-  .action(planCommand);
+  .option('--noai', 'Disable AI enhancement (use reflection templates)')
+  .option('--legacy', 'Use standalone implementation (deprecated)')
+  .action(async (feature, options) => {
+    // Use legacy standalone if explicitly requested
+    if (options.legacy) {
+      return planCommand(feature, options);
+    }
+    // Default: Use Universal Reflection Pattern via shortcut
+    const { executeShortcut } = await import('./core/command-shortcuts.js');
+    return executeShortcut('plan', [feature, options]);
+  });
 
 program
   .command('init-cursor')
@@ -239,7 +274,7 @@ program.addCommand(backlogCommand());
 program
   .command('reflect <intent>')
   .description('Universal reflection pattern for AI-enhanced content generation by default')
-  .option('-d, --domain <domain>', 'Specify domain (backlog, documentation, testing, etc.)')
+  .option('-d, --domain <domain>', 'Specify domain: start, handoff, capture, explore, architecture, plan, ship, backlog, prd, documentation, bug, changelog, git, testing')
   .option('-r, --raw', 'Output raw reflection prompt without formatting')
   .option('-v, --verbose', 'Show detailed processing information')
   .option('-s, --save', 'Save generated artifact to proper location')

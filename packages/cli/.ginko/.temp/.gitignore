@@ -1,0 +1,3 @@
+# Temporary pipeline state files (auto-generated during execution)
+*.json
+!.gitignore

@@ -22,7 +22,7 @@ import { OpenAIAdapter } from '../adapters/openai-adapter.js';
 import { GenericAdapter } from '../adapters/generic-adapter.js';
 import { CursorAdapter } from '../adapters/cursor-adapter.js';
 import { findGinkoRoot } from '../utils/ginko-root.js';
-import { pathManager } from '../core/config/path-config.js';
+import { pathManager } from '../core/config-backup/path-config.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();

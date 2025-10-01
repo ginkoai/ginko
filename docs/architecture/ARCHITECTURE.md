@@ -1,270 +1,940 @@
-# Ginko Architecture Documentation
+# Ginko Architecture
 
-## Overview
+**Version**: 2.0.0
+**Status**: Current
+**Last Updated**: 2025-09-29
 
-Ginko is a monorepo-based intelligent context management platform for AI-assisted development. The architecture consists of multiple packages working together to provide seamless context sharing and management across development teams.
+## Executive Summary
 
-## Package Architecture
+Ginko is a git-native workflow tool that solves the fundamental problems of AI-human pair programming: **context rot, lost knowledge, broken rapport, and collaboration friction**. By implementing a **Universal Reflection Pattern** that transforms natural language intent into structured, predictable output, Ginko maximizes flow state for both humans and AI while enabling seamless team knowledge sharing.
 
-### 🏢 **Main Package (`ginko` v1.1.0)**
-**Purpose**: Monorepo orchestrator and deployment container
-- **Type**: Private workspace root
-- **Function**: Build coordination, deployment, workspace management
-- **Deployment**: Vercel platform
-- **Scripts**: Cross-package build orchestration
+### Core Innovation
 
-### 🖥️ **CLI Package (`@ginkoai/cli` v1.0.0)**
-**Purpose**: Primary user interface and local development tools
-- **Publishable**: Yes (main npm package)
-- **Binary**: `ginko` command
-- **Installation**: `npm install -g @ginkoai/cli`
+**Imperative commands with structured output to predictable locations** — Ginko provides shorthand commands (`ginko handoff`, `ginko start`, `ginko reflect`) that eliminate cognitive load from repetitive interactions, produce consistent results, and output directly into git-tracked workspace directories where any AI tool can discover them.
 
-#### Core Systems
-- **Git Repository Validation**: Ensures proper repository setup
-- **Configuration Management**: Interactive `ginko.json` setup
-- **Path Management**: Cross-platform path resolution
-- **Document Management**: Standardized naming and organization
-- **Health Management**: `ginko doctor` diagnostics and repair
+### Key Architectural Principles
 
-#### Key Features
-- First-use experience optimization (<5 minutes to productivity)
-- Cross-platform compatibility (Windows/Mac/Linux)
-- Context isolation and security
-- Interactive command-line interface
+1. **Git-Native Strategy** — All context, sessions, and knowledge stored in `.ginko/` directory, version controlled alongside code
+2. **Universal Reflection Pattern** — Single command syntax (`ginko reflect --domain <domain> "intent"`) extensible to any domain
+3. **AI-Agnostic Design** — Structured markdown output works with any AI tool; no vendor lock-in
+4. **Flow-First UX** — Silent success, minimal output, operations complete in <5 seconds
+5. **Predictable Determinism** — Despite non-deterministic AI, templates and quality gates ensure consistent outcomes
 
-### 🌐 **MCP Server (`@ginko/mcp-server` v1.1.0)**
-**Purpose**: Model Context Protocol server for Claude Code integration
-- **Deployment**: Vercel serverless functions
-- **Protocol**: MCP (Model Context Protocol)
-- **Database**: Supabase PostgreSQL
-- **Authentication**: OAuth with GitHub
+---
 
-#### Capabilities
-- Real-time context synchronization
-- Team collaboration features
-- Session management
-- Best practices enforcement
+## Problem Space
 
-### 📚 **Shared Package (`@ginko/shared` v1.1.0)**
-**Purpose**: Common utilities and types
-- **Function**: Cross-package shared code
-- **Contains**: Types, interfaces, utilities
-- **Dependencies**: Minimal (dotenv)
+### The AI-Human Collaboration Challenge
 
-### 🧩 **Extension Packages**
-- **`@ginkoai/claude-sdk`**: Claude Code integration
-- **`create-ginko-project`**: Project scaffolding
-- **`cursor-agent`**: Cursor IDE integration
-- **`vscode-extension`**: VS Code extension
+Modern software development increasingly involves AI pair programming, but current tools create friction rather than reducing it:
 
-## Technical Stack
+#### 1. **Context Rot** (Critical)
+Every AI session starts from zero. Developers spend 10+ minutes re-explaining:
+- Project architecture and decisions
+- Recent work and current state
+- Team patterns and conventions
+- Known gotchas and constraints
 
-### Frontend
-- **Dashboard**: Next.js with React
-- **Authentication**: NextAuth.js with GitHub OAuth
-- **Styling**: Tailwind CSS
-- **Deployment**: Vercel
+**Impact**: Lost productivity, repeated work, degraded session quality over time.
 
-### Backend
-- **API**: Vercel serverless functions
-- **Database**: Supabase PostgreSQL
-- **MCP Protocol**: @modelcontextprotocol/sdk
-- **Authentication**: JWT with Supabase Auth
+#### 2. **Lost Knowledge** (High)
+Insights discovered during AI collaboration evaporate:
+- Architectural decisions made but not documented
+- Gotchas encountered then forgotten
+- Patterns discovered but not captured
+- Team knowledge remains in individual heads
 
-### CLI
-- **Runtime**: Node.js 18+
-- **Language**: TypeScript
-- **UI Framework**: Commander.js with Inquirer
-- **Git Integration**: simple-git
-- **Cross-Platform**: Native Node.js path handling
+**Impact**: Repeated mistakes, knowledge silos, inefficient onboarding.
 
-## Configuration System
+#### 3. **Broken Rapport** (Medium)
+AI sessions are stateless; each restart loses:
+- Working mental model of the project
+- Established communication patterns
+- Context about what's been tried
+- Understanding of team preferences
 
-### Path Management
-```typescript
-// Dynamic path resolution
-const pathManager = new PathManager();
-const config = pathManager.getConfig();
+**Impact**: Slower ramp-up, repeated explanations, friction in collaboration.
 
-// Example paths
-config.ginko.root      // .ginko/
-config.docs.prd        // docs/PRD/
-config.docs.adr        // docs/adr/
+#### 4. **Team Collaboration Friction** (Medium)
+Individual AI interactions don't benefit the team:
+- Knowledge not shared across developers
+- Inconsistent AI output quality
+- No team-wide learning accumulation
+- Manual handoffs between team members
+
+**Impact**: Reduced team velocity, inconsistent standards, coordination overhead.
+
+### Root Cause: Impedance Mismatch
+
+**Humans** bring judgment, intent, and high-level direction but are:
+- Sometimes ambiguous or imprecise
+- Focused on outcomes, not implementation details
+- Seeking flow state with minimal interruption
+
+**AI** provides intelligence, pattern recognition, and rapid execution but:
+- Can drift during reasoning
+- Produces variable quality without structure
+- Requires explicit instructions for each task
+- Has no memory between sessions
+
+**Current tools** optimize for individual interactions but fail at:
+- Persistent context across sessions
+- Team knowledge accumulation
+- Deterministic workflows with AI
+- Git-native developer experience
+
+---
+
+## Solution Architecture
+
+### Design Philosophy
+
+Ginko's architecture embodies three core philosophies:
+
+#### 1. **Maximize Flow State**
+From [ADR-023: Flow State Design Philosophy](../adr/ADR-023-flow-state-design-philosophy.md):
+
+- **Silent success** — Default output: "done"
+- **Five-second rule** — No command takes >5s of user time
+- **Snapshot metaphor** — Point and shoot simplicity
+- **No required interaction** — Sensible defaults, override via flags
+- **Progressive disclosure** — Minimal by default, verbose on request
+
+#### 2. **Privacy-First, Git-Native**
+From [ADR-021: Privacy-First Git-Native Architecture](../adr/ADR-021-privacy-first-git-native.md):
+
+- **All code stays local** — No proprietary information leaves machine
+- **Git is source of truth** — Everything in `.ginko/` directory
+- **Full offline operation** — Core functions never require internet
+- **Zero-knowledge server** — Optional services never see code
+- **Audit trail built-in** — Complete history via git
+
+#### 3. **Structured Determinism with AI Intelligence**
+From [ADR-024: AI-Enhanced Local Tooling Pattern](../adr/ADR-024-ai-enhanced-local-tooling.md):
+
+- **CLI provides structure** — Templates, validation, predictable locations
+- **AI provides intelligence** — Contextual enrichment, pattern detection
+- **Template-driven quality** — Consistent output despite AI variability
+- **Local enhancement** — AI processing happens on user's machine
+
+---
+
+## Universal Reflection Pattern
+
+### Conceptual Foundation
+
+The **Universal Reflection Pattern** is Ginko's core architectural innovation: a single, consistent interface for transforming human intent into structured output across unlimited domains.
+
+#### The Pattern
+
+```bash
+ginko reflect --domain <domain> "human intent input" [options]
 ```
 
-### Platform Adaptation
+Every reflector follows the same lifecycle:
+1. **Parse Intent** — Understand what the user wants
+2. **Gather Context** — Collect relevant information from workspace
+3. **Apply Template** — Structure output according to domain rules
+4. **Enhance with AI** — Enrich content with contextual intelligence
+5. **Validate Quality** — Score against template requirements
+6. **Store Output** — Write to predictable git-tracked location
+
+This pattern applies to **any domain**: session management, documentation, architecture, testing, planning, debugging, and more.
+
+### Why This Pattern?
+
+Traditional approaches require developers to:
+- Know specific file formats and locations
+- Manually structure documentation
+- Remember what information to include
+- Repeat the same work across projects
+
+**Ginko's reflection pattern** provides:
+- **Imperative shorthand** for common tasks
+- **Consistent structure** across domains
+- **Quality assurance** through templates
+- **Predictable output** for automation
+- **Extensibility** to new domains
+
+
+### The Simple Builder Pattern
+
+From [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-013-simple-builder-pattern.md), Ginko implements reflection through a modular, chainable pipeline:
+
 ```typescript
-// Cross-platform compatibility
-const pathAdapter = new PathAdapter();
-const configDir = pathAdapter.getConfigDir('ginko');
+export abstract class ReflectionPipeline {
+  protected ctx: PipelineContext;
 
-// Windows: C:\Users\user\AppData\Roaming\ginko
-// macOS:   ~/Library/Application Support/ginko
-// Linux:   ~/.config/ginko
-```
+  constructor(intent: string) {
+    this.ctx = {
+      intent,
+      domain: '',
+      context: {},
+      errors: [],
+      confidence: 1.0
+    };
+  }
 
-### Configuration Schema
-```json
-{
-  "version": "1.0.0",
-  "paths": {
-    "docs": {
-      "root": "docs",
-      "adr": "${docs.root}/adr",
-      "prd": "${docs.root}/PRD"
+  // Chainable configuration
+  withDomain(domain: string): this {
+    this.ctx.domain = domain;
+    return this;
+  }
+
+  withTemplate(template: QualityTemplate): this {
+    this.ctx.template = template;
+    return this;
+  }
+
+  // Context gathering
+  async gatherContext(): Promise<this> {
+    this.ctx.context = await this.contextGatherer.gather(
+      this.ctx.domain,
+      this.ctx.intent
+    );
+    return this;
+  }
+
+  // Validation with confidence tracking
+  validate(): this {
+    if (!this.ctx.domain) {
+      this.ctx.errors.push('Domain is required');
+      this.ctx.confidence *= 0.5;
     }
-  },
-  "features": {
-    "autoCapture": true,
-    "gitIntegration": true,
-    "aiEnhancement": true
+    return this;
+  }
+
+  // Auto-recovery for common failures
+  recover(): this {
+    if (this.ctx.errors.length > 0) {
+      // Attempt automatic fixes
+      this.attemptRecovery();
+      this.ctx.confidence = 0.7;
+    }
+    return this;
+  }
+
+  // AI-enhanced generation
+  async generate(): Promise<this> {
+    const reflection = await this.aiProvider.reflect(
+      this.ctx.intent,
+      this.ctx.template,
+      this.ctx.context
+    );
+    this.ctx.output = reflection;
+    return this;
+  }
+
+  // Quality evaluation
+  async evaluateQuality(): Promise<this> {
+    this.ctx.quality = await this.qualitySystem.evaluate(
+      this.ctx.output,
+      this.ctx.template
+    );
+    return this;
+  }
+
+  // Final execution
+  async execute(): Promise<PipelineContext> {
+    if (this.ctx.confidence < 0.3) {
+      throw new Error(`Pipeline failed: ${this.ctx.errors.join(', ')}`);
+    }
+
+    await this.gitStorage.save(
+      this.ctx.output,
+      this.ctx.domain,
+      this.ctx.quality
+    );
+
+    return this.ctx;
   }
 }
 ```
 
-## Development Workflow
+#### Why Simple Builder Over Alternatives?
 
-### Local Development
+We evaluated Railway-oriented programming, functional pipelines, and state machines. The **Simple Builder Pattern** won because:
+
+1. **Zero learning curve** — Familiar OOP pattern, no FP knowledge required
+2. **Perfect IDE support** — Full autocomplete in all major IDEs
+3. **Cross-language portability** — Translates to Python, Java, C#, Go
+4. **Progressive complexity** — Start simple, add features as needed
+5. **Clear execution flow** — Easy debugging and observability
+6. **Testability** — Simple to mock and test
+
+**Complexity rating: 2/10** — Accessible to all developers while maintaining power.
+
+### Safe Defaults Pattern
+
+From [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-014-safe-defaults-reflector-pattern.md), reflectors perform beneficial analyses **by default** with explicit opt-out:
+
 ```bash
-# Clone and setup
-git clone https://github.com/ginko-ai/ginko
-cd ginko
-npm install
+# Safe by default - dependency checks, validation, warnings
+ginko reflect --domain sprint "Plan next sprint"
 
-# Build all packages
-npm run build
+# Explicit opt-out when speed matters
+ginko reflect --domain sprint "Quick planning" --nodep --nowarn
 
-# Test CLI locally
-cd packages/cli
-npm run build
-npm link
-ginko --version
+# Strict mode for CI/CD
+ginko reflect --domain sprint "Production planning" --strict
 ```
 
-### Testing
-```bash
-# Run all tests
-npm test
-
-# CLI package tests
-cd packages/cli
-npm test
-
-# MCP server tests
-cd packages/mcp-server
-npm test
-```
-
-### Deployment
-```bash
-# Deploy to Vercel
-npm run deploy
-
-# CLI package publishing
-cd packages/cli
-npm publish
-```
-
-## Security Architecture
-
-### Context Isolation
-- Git repository validation before operations
-- Project-specific `.ginko` directories
-- No cross-project context leakage
-- Validation of initialization locations
-
-### Authentication
-- GitHub OAuth for team features
-- JWT tokens for API access
-- Supabase Row Level Security (RLS)
-- API key management for enterprise
-
-### Privacy
-- Local-first context storage
-- Optional cloud synchronization
-- Encrypted data transmission
-- GDPR compliance
-
-## Deployment Architecture
-
-### Vercel Platform
-```
-ginko.com                 → Main website
-app.ginko.com            → Dashboard application
-mcp.ginko.com            → MCP API endpoints
-```
-
-### Database Schema
-- **Users**: GitHub OAuth profiles
-- **Projects**: Repository metadata
-- **Sessions**: Development sessions
-- **Context**: Shared context modules
-- **Insights**: AI-generated insights
-
-## Performance Considerations
-
-### CLI Performance
-- **Startup Time**: <2 seconds for common commands
-- **Path Resolution**: Cached configuration loading
-- **Git Operations**: Optimized repository detection
-- **Context Loading**: Progressive loading strategy
-
-### MCP Server Performance
-- **Serverless**: Auto-scaling Vercel functions
-- **Database**: Connection pooling with Supabase
-- **Caching**: Redis for session data
-- **CDN**: Static asset delivery
-
-## Migration and Upgrade Path
-
-### Version 1.0 → 1.1 Migration
-- Automatic path configuration migration
-- Document naming standardization
-- Environment dependency updates
-- Cross-platform compatibility fixes
-
-### Future Considerations
-- **v2.0**: Team collaboration features
-- **v2.1**: Enterprise authentication
-- **v2.2**: Advanced AI insights
-- **v3.0**: IDE integrations expansion
-
-## Monitoring and Observability
-
-### Metrics
-- CLI command usage analytics
-- Error rate monitoring
-- Performance tracking
-- User adoption metrics
-
-### Logging
-- Structured logging with context
-- Error tracking and reporting
-- Usage pattern analysis
-- Security event monitoring
-
-## Development Guidelines
-
-### Code Organization
-- **Packages**: Feature-based organization
-- **Types**: Shared in @ginko/shared
-- **Tests**: Co-located with source
-- **Documentation**: Frontmatter-based metadata
-
-### Naming Conventions
-- **Documents**: `TYPE-###-description.md`
-- **Packages**: `@ginko/` or `@ginkoai/` scope
-- **Commands**: Kebab-case CLI commands
-- **Functions**: camelCase TypeScript
-
-### Quality Assurance
-- TypeScript strict mode
-- ESLint with consistent rules
-- Jest for unit testing
-- Integration test coverage
+**Principle**: Make safe things easy, unsafe things possible.
 
 ---
 
-**Document Version**: 1.0.0
-**Last Updated**: 2025-09-21
-**Status**: Current
+## Core Architecture Components
+
+### 1. Git-Native Storage
+
+All Ginko data lives in the `.ginko/` directory, committed to version control alongside code:
+
+```
+.ginko/
+├── config.json                 # Local configuration
+├── context/
+│   ├── index.json              # Context module registry
+│   └── modules/                # Team knowledge modules
+│       ├── auth-patterns.md    # Reusable context about authentication
+│       ├── test-strategy.md    # Team testing approaches
+│       └── gotcha-*.md         # Captured learnings and gotchas
+├── sessions/
+│   └── [user-slug]/
+│       ├── current.md          # Active session state
+│       └── archive/            # Historical sessions (timestamped)
+│           ├── 2025-09-29T10-30-00.md
+│           └── 2025-09-28T15-45-00.md
+└── templates/                  # Quality templates (optional overrides)
+    ├── handoff.yml
+    ├── documentation.yml
+    └── architecture.yml
+```
+
+#### Benefits
+
+- **Version controlled** — Complete history via git
+- **Team shared** — Commit and push to share knowledge
+- **Offline first** — No network dependency
+- **Audit trail** — Who changed what, when, why
+- **Portable** — Clone repo, get all context
+- **Tool agnostic** — Any AI can read `.ginko/` files
+
+### 2. Quality Template System
+
+The **Quality Template System** ensures consistent, high-quality output across all reflectors. Each domain has a template defining required sections, context gatherers, and quality rules.
+
+#### Template Structure
+
+Templates are YAML files that define the structure and quality criteria for each domain:
+
+```yaml
+domain: handoff
+name: "Session Handoff"
+description: "Preserve session insights and enable context restoration"
+
+sections:
+  - name: "session_summary"
+    required: true
+    prompt: "Summarize key accomplishments and decisions"
+  - name: "next_session_goals"
+    required: true
+    prompt: "Define clear objectives for next session"
+  - name: "critical_context"
+    required: true
+    prompt: "Identify essential context for restoration"
+
+quality_rules:
+  - name: "actionability"
+    weight: 0.3
+    description: "Next steps are clear and specific"
+  - name: "completeness"
+    weight: 0.4
+    description: "All required sections included"
+  - name: "clarity"
+    weight: 0.3
+    description: "Content is clear and well-structured"
+
+threshold: 70
+```
+
+#### Quality Scoring
+
+Every reflection output is scored against its template:
+
+- **Completeness** (40%) — All required sections present
+- **Clarity** (30%) — Clear, well-structured content
+- **Actionability** (30%) — Specific, actionable next steps
+
+Outputs scoring below 70% trigger warnings or regeneration depending on configuration.
+
+### 3. Context Module System
+
+From [ADR-022: Persistent Context Modules](../adr/ADR-022-persistent-context-modules.md), context modules transform ephemeral AI conversations into persistent team knowledge.
+
+#### Module Structure
+
+Context modules are markdown files with structured frontmatter:
+
+```markdown
+---
+id: auth-patterns
+type: pattern
+tags: [authentication, security, jwt]
+created: 2025-09-15
+updated: 2025-09-29
+confidence: high
+team-validated: true
+---
+
+# Authentication Patterns
+
+## Overview
+Our authentication system uses JWT tokens with refresh token rotation...
+
+## Key Patterns
+- Access tokens expire in 15 minutes
+- Refresh tokens rotate on each use
+- Tokens stored in httpOnly cookies
+
+## Gotchas
+- Supabase RLS policies must explicitly allow service role
+- Token rotation fails silently if session table lacks proper indexes
+
+## Related Modules
+- [[security-checklist]]
+- [[api-error-handling]]
+```
+
+#### Intelligent Loading
+
+Context modules are loaded based on:
+- **Semantic relevance** — NLP analysis of user intent
+- **Tag matching** — Explicit tag-based discovery
+- **Recency** — Recently updated modules prioritized
+- **Team validation** — Team-validated modules weighted higher
+
+### 4. Reflection Engine
+
+The **Reflection Engine** orchestrates the Universal Reflection Pattern for all domains:
+
+```typescript
+export class ReflectionEngine {
+  private domainRegistry: DomainRegistry;
+  private templateSystem: QualityTemplateSystem;
+  private contextManager: ContextModuleManager;
+  private gitStorage: GitStorageManager;
+
+  async executeReflection(
+    domain: string,
+    intent: string,
+    options: ReflectionOptions
+  ): Promise<ReflectionResult> {
+
+    // Load domain configuration
+    const reflector = this.domainRegistry.get(domain);
+    const template = await this.templateSystem.loadTemplate(domain);
+
+    // Build and execute pipeline
+    const pipeline = new ReflectionPipeline(intent)
+      .withDomain(domain)
+      .withTemplate(template)
+      .withOptions(options);
+
+    await pipeline
+      .gatherContext()
+      .validate()
+      .recover()
+      .generate()
+      .evaluateQuality()
+      .execute();
+
+    return pipeline.ctx;
+  }
+}
+```
+
+---
+
+## Phase 1 Core Reflectors
+
+From [PRD-006: Phase 1 Developer Tools Implementation](../prd/PRD-006-phase-1-developer-tools-implementation.md), these essential reflectors form the foundation of Ginko:
+
+### `ginko handoff`
+**Purpose**: Session preservation with insight capture
+
+**What it does**:
+- Analyzes current session activity (git diffs, file changes, time spent)
+- Extracts key insights, decisions, and patterns discovered
+- Identifies critical context for next session
+- Archives session with structured handoff document
+- Updates context modules with new learnings
+
+**Output**: `.ginko/sessions/[user]/archive/[timestamp].md`
+
+**Example**:
+```bash
+ginko handoff "Completed OAuth implementation, discovered Supabase RLS gotcha"
+# Output: Handoff saved to .ginko/sessions/chris/archive/2025-09-29T14-30-00.md
+#         Updated context module: auth-patterns.md
+```
+
+### `ginko start`
+**Purpose**: Context restoration for instant session startup
+
+**What it does**:
+- Loads last session handoff
+- Identifies relevant context modules
+- Surfaces critical information (blockers, next steps, gotchas)
+- Presents 2-second summary of project state
+- Prepares new `current.md` session file
+
+**Output**: Console summary + `.ginko/sessions/[user]/current.md`
+
+**Example**:
+```bash
+ginko start
+# Last session: OAuth implementation (2 hours ago)
+# Next: Test refresh token rotation
+# Active modules: auth-patterns, api-error-handling
+# Blocker: RLS policy configuration needed
+```
+
+### `ginko context`
+**Purpose**: Knowledge module management
+
+**What it does**:
+- Lists available context modules
+- Loads specific modules into session
+- Creates new modules from session insights
+- Manages module lifecycle (create, update, archive)
+
+**Commands**:
+```bash
+ginko context list                    # Show all modules
+ginko context load auth-patterns     # Load specific module
+ginko context create security        # Create new module
+ginko context update auth-patterns   # Update existing module
+```
+
+### `ginko capture`
+**Purpose**: Real-time insight capture during development
+
+**What it does**:
+- Captures quick insights, gotchas, patterns discovered mid-session
+- Appends to current session without interrupting flow
+- Tags for later context module extraction
+
+**Example**:
+```bash
+ginko capture "Supabase RLS requires explicit service_role grants"
+# Captured to current session, tagged for auth-patterns module
+```
+
+### `ginko init`
+**Purpose**: Project initialization and Ginko setup
+
+**What it does**:
+- Creates `.ginko/` directory structure
+- Initializes configuration
+- Sets up git integration (gitignore patterns)
+- Creates starter context modules
+- Generates project-specific CLAUDE.md
+
+**Example**:
+```bash
+ginko init
+# Created .ginko/ directory
+# Initialized configuration
+# Added .ginko/ to git tracking
+# Created starter modules: project-overview.md
+```
+
+### `ginko doctor`
+**Purpose**: Environment health and diagnostic checks
+
+**What it does**:
+- Validates git repository setup
+- Checks `.ginko/` directory structure
+- Verifies configuration validity
+- Tests AI provider connectivity
+- Diagnoses common issues
+- Suggests fixes for problems
+
+**Example**:
+```bash
+ginko doctor
+# ✓ Git repository detected
+# ✓ .ginko/ directory structure valid
+# ✓ Configuration valid
+# ✗ Warning: 3 context modules missing tags
+# → Run: ginko context validate --fix
+```
+
+---
+
+## Future Domains (Planned)
+
+The Universal Reflection Pattern extends to unlimited domains. Examples planned for Phase 2+:
+
+### `ginko reflect --domain architecture`
+Generate architectural decision records (ADRs) from session discussions:
+```bash
+ginko reflect --domain architecture "Why we chose Simple Builder pattern"
+# Output: docs/adr/ADR-NNN-simple-builder-pattern-decision.md
+```
+
+### `ginko reflect --domain testing`
+Generate test plans and strategies from feature discussions:
+```bash
+ginko reflect --domain testing "OAuth refresh token rotation edge cases"
+# Output: tests/plans/oauth-refresh-testing-strategy.md
+```
+
+### `ginko reflect --domain backlog`
+Transform planning discussions into structured backlog items:
+```bash
+ginko reflect --domain backlog "User feedback: need team analytics dashboard"
+# Output: .ginko/backlog/user-analytics-dashboard.md (linked to project tracker)
+```
+
+### `ginko reflect --domain debugging`
+Structure debugging sessions and root cause analysis:
+```bash
+ginko reflect --domain debugging "Token refresh failing in production"
+# Output: .ginko/debug/token-refresh-failure-analysis.md
+```
+
+### `ginko reflect --domain planning`
+Generate sprint plans and roadmaps from strategic discussions:
+```bash
+ginko reflect --domain planning "Phase 2 team collaboration features"
+# Output: docs/planning/phase-2-team-collaboration-plan.md
+```
+
+---
+
+## Meta-Reflection: Creating New Reflectors
+
+The **Universal Reflection Pattern** is self-extensible: you can use reflection to create new reflectors.
+
+### The Meta-Reflection Process
+
+1. **Define Intent**: Describe the new domain and what problems it solves
+2. **Generate Template**: Use reflection to create quality template
+3. **Implement Context Gatherers**: Define what information the reflector needs
+4. **Create Domain Logic**: Implement domain-specific processing
+5. **Test and Refine**: Validate output quality and iterate
+
+### Example: Creating a "Review" Reflector
+
+```bash
+# Step 1: Use meta-reflection to design the domain
+ginko reflect --domain meta "Create a code review reflector"
+# Output: .ginko/reflectors/review-reflector-design.md
+
+# Step 2: Generate quality template
+ginko reflect --domain meta --artifact template "code review template"
+# Output: .ginko/templates/review.yml
+
+# Step 3: Implement the reflector (human development)
+# Follows the ReflectionPipeline base class pattern
+
+# Step 4: Test and validate
+ginko reflect --domain review "Review OAuth implementation"
+# Output: docs/reviews/oauth-implementation-review.md
+```
+
+### Reflector Marketplace (Future)
+
+The meta-reflection capability enables a **Reflector Marketplace** where:
+- Community creates domain-specific reflectors
+- Teams share industry-specific templates
+- Organizations build internal reflector libraries
+- Quality templates ensure consistency across marketplace
+
+**Example marketplace reflectors**:
+- **Compliance**: Generate GDPR/SOC2 documentation from code
+- **Security**: Security review reports from codebase analysis
+- **Performance**: Performance analysis and optimization plans
+- **Migration**: Migration guides for framework upgrades
+
+---
+
+## AI-Agnostic Design
+
+Ginko works with **any AI tool** through ambient discovery of git-native output.
+
+### The Ambient Discovery Pattern
+
+Instead of requiring explicit integration or APIs, Ginko outputs structured markdown to predictable locations where any AI naturally discovers it:
+
+```bash
+# Developer workflow
+ginko handoff "Completed OAuth implementation"
+# → .ginko/sessions/chris/archive/2025-09-29T14-30-00.md
+
+# Next session with ANY AI tool (Claude, GPT-4, Copilot, etc.)
+AI: "Read the files in .ginko/sessions/chris/ to understand recent work"
+# AI naturally discovers handoff and context modules
+```
+
+### How Ambient Discovery Works
+
+1. **Predictable Locations** — All Ginko output goes to `.ginko/` directory
+2. **Structured Markdown** — Universal format readable by all AI tools
+3. **Frontmatter Metadata** — Enables semantic search and relevance ranking
+4. **Git Integration** — Version control provides historical context
+5. **No Explicit Loading** — AI tools naturally explore workspace directories
+
+### Benefits of AI-Agnostic Design
+
+- **No Vendor Lock-In** — Switch AI tools without losing context
+- **Tool Polyglot** — Use multiple AI tools in same project
+- **Future-Proof** — Works with AI tools that don't exist yet
+- **Team Flexibility** — Team members use preferred AI tools
+- **Graceful Degradation** — Works even when AI unavailable (human-readable markdown)
+
+---
+
+## Advantages of Imperative Commands + Structured Output
+
+The combination of **natural language imperatives** with **structured output to predictable locations** provides five key advantages:
+
+### 1. Predictability Despite Non-Determinism
+
+**Problem**: AI models are non-deterministic; same prompt can yield different outputs.
+
+**Solution**: Quality templates and validation gates ensure consistent structure despite AI variability.
+
+```bash
+ginko handoff "Work summary"
+# Always produces: session_summary, next_session_goals, critical_context sections
+# Quality score ensures 70%+ completeness, clarity, actionability
+```
+
+**Benefit**: Reliable automation and scripting despite AI randomness.
+
+### 2. Scriptability and Automation
+
+**Problem**: Natural language AI interactions are hard to automate reliably.
+
+**Solution**: Imperative commands with predictable output enable scripting:
+
+```bash
+# CI/CD integration
+if ginko doctor --strict; then
+  ginko handoff --auto "CI build passed"
+  git add .ginko/
+  git commit -m "Update session context"
+fi
+
+# Pre-commit hook
+ginko capture "$(git diff --stat)" --tag commit-summary
+```
+
+**Benefit**: Integrate AI-enhanced workflows into existing automation.
+
+### 3. Git-Native Ambient AI Discovery
+
+**Problem**: Explicit AI tool integration creates vendor lock-in and fragmentation.
+
+**Solution**: Output to `.ginko/` directory enables any AI to discover context naturally:
+
+```bash
+# Developer uses Ginko
+ginko handoff "OAuth implementation done"
+
+# Next developer (or same developer with different AI) starts fresh session
+# ANY AI tool can read: .ginko/sessions/*/current.md, .ginko/context/modules/*
+# No explicit "loading" or "integration" required
+```
+
+**Benefit**: Universal context availability across all AI tools.
+
+### 4. Cognitive Load Reduction
+
+**Problem**: Developers repeat same explanations and documentation tasks constantly.
+
+**Solution**: Imperative shorthand eliminates repetitive natural language prompting:
+
+```
+Instead of:
+"Please analyze my current git session, identify key insights and decisions,
+extract critical context for the next session, and create a structured handoff
+document with sections for accomplishments, next steps, and blockers."
+
+Simply:
+ginko handoff
+```
+
+**Benefit**: Maintain flow state with minimal interruption.
+
+### 5. Team Knowledge Accumulation
+
+**Problem**: Individual AI interactions don't benefit the team; knowledge stays siloed.
+
+**Solution**: Git-tracked context modules enable team-wide knowledge sharing:
+
+```bash
+# Developer discovers gotcha
+ginko capture "Supabase RLS requires explicit service_role grants"
+
+# System updates context module
+# → .ginko/context/modules/auth-patterns.md (team-validated: false)
+
+# Team member reviews and validates
+ginko context validate auth-patterns
+# → auth-patterns.md (team-validated: true)
+
+# Git commit + push shares with entire team
+git add .ginko/context/
+git commit -m "Add Supabase RLS gotcha to auth patterns"
+git push
+```
+
+**Benefit**: Continuous team learning and knowledge compounding.
+
+---
+
+## Technical Architecture
+
+### Technology Stack
+
+**CLI Runtime**:
+- Node.js 18+ (cross-platform compatibility)
+- TypeScript (type safety, IDE support)
+- Commander.js (CLI framework)
+
+**AI Integration**:
+- Provider-agnostic interface
+- Support for local models (Ollama, LM Studio)
+- Cloud providers (OpenAI, Anthropic, Cohere)
+- Graceful degradation when AI unavailable
+
+**Storage**:
+- Git-native filesystem storage
+- No database required
+- Optional cloud sync (future)
+
+**Quality System**:
+- YAML-based templates
+- AI-powered quality scoring
+- Configurable thresholds
+
+### Performance Targets
+
+From [ADR-023: Flow State Design Philosophy](../adr/ADR-023-flow-state-design-philosophy.md):
+
+- **Session startup**: < 5 seconds with full context loaded
+- **Command execution**: < 2 seconds for standard operations
+- **Context search**: < 1 second for module discovery
+- **Handoff capture**: < 3 seconds for session archival
+
+### Security and Privacy
+
+From [ADR-021: Privacy-First Git-Native Architecture](../adr/ADR-021-privacy-first-git-native.md):
+
+- **All processing local** — No data sent to external servers without explicit user action
+- **Code never leaves machine** — Ginko analyzes local git diffs and files only
+- **Optional cloud sync** — Team features require opt-in cloud storage
+- **Zero-knowledge architecture** — Optional services never see code content
+- **Audit trail** — Complete git history of all context changes
+
+---
+
+## Success Metrics
+
+### Developer Experience Metrics
+
+- **Time to First Value**: < 5 minutes from `ginko init` to first successful handoff
+- **Session Startup Time**: < 5 seconds with full context restoration
+- **Cognitive Load**: 80%+ reduction in repetitive explanations (measured by survey)
+- **Flow State Maintenance**: 90%+ of commands complete in < 5 seconds
+
+### Quality Metrics
+
+- **Output Quality Score**: 75%+ average across all reflections
+- **Context Relevance**: 85%+ of loaded context modules rated relevant by users
+- **Knowledge Capture**: 70%+ of sessions produce context module updates
+- **Team Validation**: 60%+ of captured insights validated by team members
+
+### Adoption Metrics
+
+From [PRD-006: Phase 1 Developer Tools Implementation](../prd/PRD-006-phase-1-developer-tools-implementation.md):
+
+- **Monthly Active Developers**: 10,000 using Basic tier (Phase 1 target)
+- **Team Adoption**: 500 teams with 5+ developers
+- **Weekly Retention**: 80% of active users
+- **Session Completion**: 90% of started sessions completed with handoff
+
+---
+
+## Migration and Evolution
+
+### MCP to Git-Native Pivot
+
+From [ADR-020: CLI-First Pivot](../adr/ADR-020-cli-first-pivot.md), Ginko evolved from MCP-focused to universal git-native tool:
+
+**Original Architecture** (Deprecated):
+- Model Context Protocol (MCP) server
+- Claude Code specific integration
+- Network-dependent context synchronization
+
+**Current Architecture**:
+- Git-native filesystem storage
+- AI-agnostic ambient discovery
+- Offline-first with optional cloud sync
+- Universal CLI works with any development environment
+
+**Migration Path**: Existing MCP users can transition seamlessly:
+```bash
+# Old: MCP tools via Claude Code
+# New: Git-native CLI
+ginko init  # Migrates MCP data to .ginko/ directory
+```
+
+### Extensibility Roadmap
+
+**Phase 1** (Current): Core reflectors + Universal Reflection Pattern
+- handoff, start, context, capture, init, doctor
+
+**Phase 2** (Planned): Extended domains + Meta-reflection
+- architecture, testing, debugging, planning, backlog
+- Meta-reflection tooling for creating new reflectors
+
+**Phase 3** (Future): Marketplace + Enterprise
+- Community reflector marketplace
+- Enterprise team features (advanced analytics, compliance)
+- Custom quality templates and domain-specific extensions
+
+---
+
+## References
+
+### Architecture Decision Records
+- [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-013-simple-builder-pattern.md)
+- [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-014-safe-defaults-reflector-pattern.md)
+- [ADR-020: CLI-First Pivot](../adr/ADR-020-cli-first-pivot.md)
+- [ADR-021: Privacy-First Git-Native Architecture](../adr/ADR-021-privacy-first-git-native.md)
+- [ADR-022: Persistent Context Modules](../adr/ADR-022-persistent-context-modules.md)
+- [ADR-023: Flow State Design Philosophy](../adr/ADR-023-flow-state-design-philosophy.md)
+- [ADR-024: AI-Enhanced Local Tooling Pattern](../adr/ADR-024-ai-enhanced-local-tooling.md)
+- [ADR-032: Core CLI Architecture and Reflection System](../adr/ADR-032-core-cli-architecture-and-reflection-system.md)
+
+### Product Requirements
+- [PRD-006: Phase 1 Developer Tools Implementation](../prd/PRD-006-phase-1-developer-tools-implementation.md)
+
+### Related Documentation
+- [Competitive Positioning and GTM Strategy](../strategy/competitive-positioning-and-gtm-strategy.md)
+
+---
+
+**Document Metadata**:
+- **Version**: 2.0.0
+- **Status**: Current
+- **Created**: 2025-09-29
+- **Last Updated**: 2025-09-29
+- **Authors**: Architecture Team
+- **Reviewers**: Product Team, Engineering Team
+- **Next Review**: After Phase 1 implementation completion
+

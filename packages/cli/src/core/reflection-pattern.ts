@@ -10,7 +10,7 @@
  */
 
 import chalk from 'chalk';
-import { pathManager } from './config/path-config.js';
+import { pathManager } from './config-backup/path-config.js';
 
 /**
  * Universal Reflection Pattern
@@ -119,7 +119,9 @@ Please provide a structured response addressing all required sections.
       'sprint': this.pathConfig.docs.sprints,
       'overview': this.pathConfig.docs.root,
       'git': this.pathConfig.project.root,
-      'ai-collaboration': pathManager.joinPaths(this.pathConfig.ginko.root, 'ai-collab')
+      'ai-collaboration': pathManager.joinPaths(this.pathConfig.ginko.root, 'ai-collab'),
+      'bug': pathManager.joinPaths(this.pathConfig.ginko.root, 'bugs'),
+      'changelog': this.pathConfig.docs.root
     };
 
     return pathMappings[domain] || this.pathConfig.docs.root;
@@ -264,6 +266,24 @@ Please provide a structured response addressing all required sections.
         outputFormat: 'markdown',
         outputLocation: this.getOutputPath('ai-collaboration'),
         contextGatherers: ['conversation-history', 'patterns', 'effectiveness']
+      },
+      bug: {
+        name: 'bug',
+        description: 'Bug tracking and resolution',
+        detectPatterns: [/bug|defect|issue|broken|error|crash/i],
+        templatePath: 'templates/bug.md',
+        outputFormat: 'markdown',
+        outputLocation: this.getOutputPath('bug'),
+        contextGatherers: ['errors', 'logs', 'recent-changes', 'affected-files']
+      },
+      changelog: {
+        name: 'changelog',
+        description: 'Changelog generation from git history',
+        detectPatterns: [/changelog|changes|release notes|version/i],
+        templatePath: 'templates/changelog.md',
+        outputFormat: 'markdown',
+        outputLocation: this.getOutputPath('changelog'),
+        contextGatherers: ['git-commits', 'version-tags', 'pr-history']
       }
     };
 
@@ -302,7 +322,8 @@ export class ReflectionFactory {
     const domains: ReflectionDomain[] = [
       'start', 'handoff', 'prd', 'backlog', 'documentation',
       'testing', 'architecture', 'debugging', 'review', 'refactor',
-      'pattern', 'sprint', 'overview', 'git', 'ai-collaboration'
+      'pattern', 'sprint', 'overview', 'git', 'ai-collaboration',
+      'bug', 'changelog'
     ];
 
     for (const domain of domains) {

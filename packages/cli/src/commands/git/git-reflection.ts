@@ -105,10 +105,14 @@ export class GitReflectionCommand extends ReflectionCommand {
       console.log(chalk.blue('📝 Generating changelog entry...\n'));
 
       const changelogCmd = new ChangelogReflectionCommand();
+      // Map git commit types to changelog types
+      const changelogType = context.changeAnalysis.type === 'Refactored' ? 'Changed' :
+                           context.changeAnalysis.type === 'Unknown' ? undefined :
+                           context.changeAnalysis.type as 'Added' | 'Changed' | 'Fixed' | 'Removed';
       await changelogCmd.execute(
         intent || commitMessage,
         {
-          type: context.changeAnalysis.type,
+          type: changelogType,
           scope: context.changeAnalysis.scope,
           breaking: context.changeAnalysis.isBreaking,
           save: true,

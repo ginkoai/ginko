@@ -38,7 +38,9 @@
       "Bash(git rm:*)",
       "Bash(for:*)",
       "Bash(do git mv \"$file\" docs/adr/)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(cut:*)",
+      "Bash(ginko start:*)"
     ],
     "deny": [],
     "ask": []
