@@ -1,11 +1,11 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-09-09
- * @tags: [types, session, insights, context-capture]
+ * @updated: 2025-10-01
+ * @tags: [types, session, insights, context-capture, session-log, adr-033]
  * @related: [../services/insight-extractor.ts, ../services/module-generator.ts]
  * @priority: critical
- * @complexity: low
+ * @complexity: medium
  * @dependencies: []
  */
 
@@ -210,4 +210,94 @@ export interface CaptureConfig {
   excludePatterns?: string[];
   includeTestFailures: boolean;
   includeBuildErrors: boolean;
+}
+/**
+ * Session log entry for continuous logging (ADR-033 Phase 2)
+ * Captured at low context pressure for high-quality handoff synthesis
+ */
+export interface SessionLogEntry {
+  timestamp: Date;
+  type: 'timeline' | 'decision' | 'file' | 'insight' | 'git' | 'achievement';
+  content: string;
+  metadata?: Record<string, any>;
+}
+
+/**
+ * Complete session log structure (ADR-033 Phase 2)
+ * Parsed from current-session-log.md
+ */
+export interface SessionLog {
+  // Metadata from frontmatter
+  sessionId: string;
+  started: Date;
+  lastUpdated: Date;
+  contextPressure?: number;
+  
+  // Main content sections
+  timeline: TimelineEntry[];
+  decisions: DecisionEntry[];
+  filesAffected: FileAffectedEntry[];
+  insights: InsightEntry[];
+  gitOperations: GitOperationEntry[];
+  achievements: string[];
+  
+  // Raw entries for debugging
+  rawEntries?: SessionLogEntry[];
+}
+
+/**
+ * Timeline entry showing chronological progress
+ */
+export interface TimelineEntry {
+  timestamp: Date;
+  event: string;
+  duration?: string;
+  outcome?: string;
+}
+
+/**
+ * Decision entry capturing architectural and implementation choices
+ */
+export interface DecisionEntry {
+  timestamp: Date;
+  title: string;
+  context: string;
+  decision: string;
+  rationale: string;
+  alternatives?: string[];
+  impact?: string;
+}
+
+/**
+ * File affected entry with context
+ */
+export interface FileAffectedEntry {
+  path: string;
+  action: 'created' | 'modified' | 'deleted' | 'renamed';
+  purpose: string;
+  keyChanges?: string[];
+  relatedTo?: string[];
+}
+
+/**
+ * Insight entry for learnings and discoveries
+ */
+export interface InsightEntry {
+  timestamp: Date;
+  type: InsightType;
+  title: string;
+  description: string;
+  impact?: string;
+  codeExample?: CodeExample;
+}
+
+/**
+ * Git operation entry
+ */
+export interface GitOperationEntry {
+  timestamp: Date;
+  operation: 'commit' | 'branch' | 'merge' | 'rebase' | 'stash';
+  command: string;
+  message?: string;
+  files?: string[];
 }
