@@ -26,15 +26,15 @@ export async function statusCommand() {
     const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
     const currentHandoff = path.join(sessionDir, 'current.md');
     const projectInfo = await getProjectInfo();
-
+    
     console.log(chalk.green('\n🌿 Ginko Status\n'));
-
+    
     // Project info
     console.log(chalk.cyan('📦 Project'));
-    console.log(\`  Name: \${projectInfo.name}\`);
-    console.log(\`  Type: \${projectInfo.type}\`);
-    console.log(\`  User: \${userEmail}\`);
-
+    console.log(`  Name: ${projectInfo.name}`);
+    console.log(`  Type: ${projectInfo.type}`);
+    console.log(`  User: ${userEmail}`);
+    
     // Session info
     console.log(chalk.cyan('\n📝 Session'));
     let lastHandoffTime: Date | null = null;
@@ -44,14 +44,14 @@ export async function statusCommand() {
       const content = await fs.readFile(currentHandoff, 'utf8');
       const modeMatch = content.match(/mode: (.*)/);
       const mode = modeMatch ? modeMatch[1] : 'Unknown';
-
-      console.log(\`  Status: Active\`);
-      console.log(\`  Mode: \${mode}\`);
-      console.log(\`  Last saved: \${formatTimeAgo(stats.mtime)}\`);
-      console.log(\`  Size: \${Math.round(stats.size / 1024)}KB\`);
+      
+      console.log(`  Status: Active`);
+      console.log(`  Mode: ${mode}`);
+      console.log(`  Last saved: ${formatTimeAgo(stats.mtime)}`);
+      console.log(`  Size: ${Math.round(stats.size / 1024)}KB`);
     } else {
-      console.log(\`  Status: No active session\`);
-      console.log(chalk.dim(\`  Run 'ginko start' to begin\`));
+      console.log(`  Status: No active session`);
+      console.log(chalk.dim(`  Run 'ginko start' to begin`));
     }
 
     // Context Pressure (NEW - ADR-033)
@@ -79,9 +79,9 @@ export async function statusCommand() {
     }
 
     const pressurePercent = (pressureReading.pressure * 100).toFixed(0);
-    console.log(\`  Pressure: \${pressureColor(pressurePercent + '%')} \${zoneEmoji} (\${pressureReading.zone} zone)\`);
-    console.log(\`  Quality Estimate: \${pressureColor(pressureReading.qualityEstimate + '%')}\`);
-    console.log(\`  \${chalk.dim('💡')} \${pressureReading.recommendation}\`);
+    console.log(`  Pressure: ${pressureColor(pressurePercent + '%')} ${zoneEmoji} (${pressureReading.zone} zone)`);
+    console.log(`  Quality Estimate: ${pressureColor(pressureReading.qualityEstimate + '%')}`);
+    console.log(`  ${chalk.dim('💡')} ${pressureReading.recommendation}`);
 
     // Session logging status
     if (hasSessionLog) {
@@ -89,41 +89,41 @@ export async function statusCommand() {
       const summary = SessionLogManager.getSummary(logContent);
 
       console.log(chalk.cyan('\n📝 Session Logging'));
-      console.log(\`  Status: \${chalk.green('Active')}\`);
-      console.log(\`  Entries: \${summary.totalEntries}\`);
-      console.log(\`  Files: \${summary.filesAffected}\`);
-      console.log(\`  Avg Pressure: \${(summary.avgPressure * 100).toFixed(0)}%\`);
+      console.log(`  Status: ${chalk.green('Active')}`);
+      console.log(`  Entries: ${summary.totalEntries}`);
+      console.log(`  Files: ${summary.filesAffected}`);
+      console.log(`  Avg Pressure: ${(summary.avgPressure * 100).toFixed(0)}%`);
 
       // Show breakdown by category
       if (summary.totalEntries > 0) {
         const categories = Object.entries(summary.byCategory)
-          .map(([cat, count]) => \`\${cat}: \${count}\`)
+          .map(([cat, count]) => `${cat}: ${count}`)
           .join(', ');
-        console.log(\`  \${chalk.dim(categories)}\`);
+        console.log(`  ${chalk.dim(categories)}`);
       }
     } else {
       console.log(chalk.cyan('\n📝 Session Logging'));
-      console.log(\`  Status: \${chalk.dim('Not initialized')}\`);
-      console.log(chalk.dim(\`  Run 'ginko start' to enable\`));
+      console.log(`  Status: ${chalk.dim('Not initialized')}`);
+      console.log(chalk.dim(`  Run 'ginko start' to enable`));
     }
 
     // Git status
     const gitStatus = await git.status();
     const branch = await git.branchLocal();
-
+    
     console.log(chalk.cyan('\n🌳 Git'));
-    console.log(\`  Branch: \${branch.current}\`);
-    console.log(\`  Modified: \${gitStatus.modified.length} files\`);
-    console.log(\`  Staged: \${gitStatus.staged.length} files\`);
-    console.log(\`  Untracked: \${gitStatus.not_added.length} files\`);
-
+    console.log(`  Branch: ${branch.current}`);
+    console.log(`  Modified: ${gitStatus.modified.length} files`);
+    console.log(`  Staged: ${gitStatus.staged.length} files`);
+    console.log(`  Untracked: ${gitStatus.not_added.length} files`);
+    
     // Privacy status
     const config = await fs.readJSON(path.join(ginkoDir, 'config.json'));
     console.log(chalk.cyan('\n🔐 Privacy'));
-    console.log(\`  Analytics: \${config.privacy?.analytics?.enabled ? chalk.yellow('Enabled (anonymous)') : chalk.green('Disabled')}\`);
-    console.log(\`  Telemetry: \${config.privacy?.telemetry?.enabled ? chalk.yellow('Enabled') : chalk.green('Disabled')}\`);
-    console.log(chalk.dim(\`  All data stored locally in .ginko/\`));
-
+    console.log(`  Analytics: ${config.privacy?.analytics?.enabled ? chalk.yellow('Enabled (anonymous)') : chalk.green('Disabled')}`);
+    console.log(`  Telemetry: ${config.privacy?.telemetry?.enabled ? chalk.yellow('Enabled') : chalk.green('Disabled')}`);
+    console.log(chalk.dim(`  All data stored locally in .ginko/`));
+    
     // Archive stats
     const archiveDir = path.join(sessionDir, 'archive');
     let archiveCount = 0;
@@ -131,25 +131,25 @@ export async function statusCommand() {
       const archives = await fs.readdir(archiveDir);
       archiveCount = archives.length;
       console.log(chalk.cyan('\n📚 Archives'));
-      console.log(\`  Sessions: \${archives.length}\`);
+      console.log(`  Sessions: ${archives.length}`);
       if (archives.length > 0) {
-        console.log(chalk.dim(\`  View with: ls .ginko/sessions/\${userSlug}/archive/\`));
+        console.log(chalk.dim(`  View with: ls .ginko/sessions/${userSlug}/archive/`));
       }
     }
-
+    
     // Progressive learning hints
     await ProgressiveLearning.updateProgress('status');
-
-    const sessionAge = lastHandoffTime ?
+    
+    const sessionAge = lastHandoffTime ? 
       Math.floor((Date.now() - lastHandoffTime.getTime()) / 60000) : 0;
-
+    
     await ProgressiveLearning.showHint({
       command: 'status',
       gitStatus,
       sessionAge,
       fileCount: archiveCount,
     });
-
+    
     // Show smart suggestions (enhanced with pressure awareness)
     const suggestions = await ProgressiveLearning.getSmartSuggestions(gitStatus);
 
