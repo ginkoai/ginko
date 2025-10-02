@@ -2,139 +2,186 @@
  * @fileType: utility
  * @status: current
  * @updated: 2025-10-01
- * @tags: [context-pressure, monitoring, adr-033, quality-degradation]
- * @related: [session-log-manager.ts, ../types/session-log.ts]
- * @priority: critical
+ * @tags: [context-pressure, monitoring, quality-estimation, session-management]
+ * @related: [session-log-manager.ts, status.ts, start/index.ts]
+ * @priority: high
  * @complexity: medium
  * @dependencies: []
  */
 
 /**
- * Context pressure thresholds based on ADR-033 quality analysis
+ * Context Pressure Monitor
+ *
+ * Tracks context window utilization and provides quality estimates.
+ * Based on ADR-033: Context Pressure Mitigation Strategy.
  */
-export const PRESSURE_THRESHOLDS = {
-  OPTIMAL_MAX: 0.5,      // 0-50%: Full reasoning capacity
-  DEGRADATION_MAX: 0.85, // 50-85%: Noticeable compression
-  CRITICAL_MAX: 1.0      // 85-100%: Significant degradation
-} as const;
 
 export type PressureZone = 'optimal' | 'degradation' | 'critical';
 
+export interface PressureReading {
+  pressure: number; // 0-1 float
+  zone: PressureZone;
+  qualityEstimate: number; // 0-100 percentage
+  recommendation: string;
+  tokensUsed?: number;
+  maxTokens?: number;
+}
+
 /**
- * Monitors context window pressure and provides quality assessments
- * Implements ADR-033 Phase 1: Pressure monitoring for session log decisions
- *
- * Quality Estimation:
- * - 0-50%:   100% quality - Full reasoning available
- * - 50-70%:   95% quality - Minor compression
- * - 70-85%:   85% quality - Noticeable compression
- * - 85-95%:   65% quality - Significant degradation
- * - 95-100%:  40% quality - Crisis mode
+ * Context Pressure Thresholds
+ * Based on empirical observations from ADR-033
  */
+const PRESSURE_THRESHOLDS = {
+  OPTIMAL_MAX: 0.50,      // 0-50%: Full reasoning capacity
+  DEGRADATION_MAX: 0.85,  // 50-85%: Noticeable compression
+  CRITICAL_MAX: 1.0       // 85-100%: Severe degradation
+};
+
+/**
+ * Quality Estimation Curve
+ * Maps pressure percentage to expected AI quality
+ */
+const QUALITY_CURVE = [
+  { pressure: 0.00, quality: 100 },
+  { pressure: 0.50, quality: 100 },
+  { pressure: 0.70, quality: 95 },
+  { pressure: 0.85, quality: 85 },
+  { pressure: 0.95, quality: 65 },
+  { pressure: 1.00, quality: 40 }
+];
+
 export class PressureMonitor {
-  private currentPressure: number = 0;
+  private static estimatedTokens: number = 0;
+  private static maxTokens: number = 200000; // Claude Sonnet 4.5 default
 
   /**
-   * Get current context pressure as 0-1 float
-   *
-   * @returns Current pressure value (0 = empty, 1 = full)
-   *
-   * @note PHASE 1 IMPLEMENTATION: Returns mock value
-   * @todo PHASE 2: Integrate with Claude API token counting
-   *
-   * Integration point for Claude Code API:
-   * - Use conversation.usage.input_tokens / conversation.max_tokens
-   * - Or estimate based on message count and average length
-   * - Consider implementing exponential smoothing for stability
+   * Calculate current context pressure
+   * @param tokensUsed Optional override for token count
+   * @returns Pressure value between 0 and 1
    */
-  getCurrentPressure(): number {
-    // PHASE 1: Mock implementation for testing infrastructure
-    // In production, this would query the Claude API for actual token usage
-    return this.currentPressure;
+  static getCurrentPressure(tokensUsed?: number): number {
+    const used = tokensUsed ?? this.estimatedTokens;
+    return Math.min(used / this.maxTokens, 1.0);
   }
 
   /**
-   * Set current pressure (for testing and mock purposes)
-   * @internal
+   * Get pressure zone classification
+   * @param pressure Optional pressure value (calculated if not provided)
    */
-  setCurrentPressure(pressure: number): void {
-    if (pressure < 0 || pressure > 1) {
-      throw new Error('Pressure must be between 0 and 1');
+  static getPressureZone(pressure?: number): PressureZone {
+    const p = pressure ?? this.getCurrentPressure();
+
+    if (p <= PRESSURE_THRESHOLDS.OPTIMAL_MAX) return 'optimal';
+    if (p <= PRESSURE_THRESHOLDS.DEGRADATION_MAX) return 'degradation';
+    return 'critical';
+  }
+
+  /**
+   * Estimate AI quality percentage based on pressure
+   * Uses interpolation on the quality curve
+   */
+  static calculateQualityEstimate(pressure?: number): number {
+    const p = pressure ?? this.getCurrentPressure();
+
+    // Find bounding points on quality curve
+    let lower = QUALITY_CURVE[0];
+    let upper = QUALITY_CURVE[QUALITY_CURVE.length - 1];
+
+    for (let i = 0; i < QUALITY_CURVE.length - 1; i++) {
+      if (p >= QUALITY_CURVE[i].pressure && p <= QUALITY_CURVE[i + 1].pressure) {
+        lower = QUALITY_CURVE[i];
+        upper = QUALITY_CURVE[i + 1];
+        break;
+      }
     }
-    this.currentPressure = pressure;
+
+    // Linear interpolation
+    const range = upper.pressure - lower.pressure;
+    const ratio = range > 0 ? (p - lower.pressure) / range : 0;
+    const quality = lower.quality + (upper.quality - lower.quality) * ratio;
+
+    return Math.round(quality);
   }
 
   /**
-   * Determine current pressure zone based on thresholds
-   *
-   * @returns Zone classification: optimal, degradation, or critical
+   * Get actionable recommendation based on pressure and zone
    */
-  getPressureZone(): PressureZone {
-    const pressure = this.getCurrentPressure();
+  static getRecommendation(pressure?: number, zone?: PressureZone): string {
+    const p = pressure ?? this.getCurrentPressure();
+    const z = zone ?? this.getPressureZone(p);
 
-    if (pressure <= PRESSURE_THRESHOLDS.OPTIMAL_MAX) {
-      return 'optimal';
-    } else if (pressure <= PRESSURE_THRESHOLDS.DEGRADATION_MAX) {
-      return 'degradation';
-    } else {
-      return 'critical';
-    }
-  }
-
-  /**
-   * Determine if an event should be logged based on pressure
-   *
-   * Logging Policy (ADR-033):
-   * - Log all events in optimal zone (< 50%)
-   * - Log all events in degradation zone (50-85%)
-   * - Skip logging in critical zone (> 85%) to preserve context
-   *
-   * @returns true if event should be logged, false if pressure too high
-   */
-  shouldLogEvent(): boolean {
-    return this.getCurrentPressure() < PRESSURE_THRESHOLDS.DEGRADATION_MAX;
-  }
-
-  /**
-   * Estimate reasoning quality at current pressure
-   *
-   * @returns Quality percentage (40-100)
-   */
-  estimateQuality(): number {
-    const pressure = this.getCurrentPressure();
-
-    if (pressure <= 0.5) {
-      return 100;
-    } else if (pressure <= 0.7) {
-      return 95;
-    } else if (pressure <= 0.85) {
-      return 85;
-    } else if (pressure <= 0.95) {
-      return 65;
-    } else {
-      return 40;
+    if (z === 'optimal') {
+      return 'Continue working (optimal quality)';
+    } else if (z === 'degradation') {
+      if (p < 0.75) {
+        return 'Quality still good - continue working';
+      } else {
+        return 'Consider handoff soon to preserve quality';
+      }
+    } else { // critical
+      if (p < 0.95) {
+        return 'Quality degrading - recommend handoff now';
+      } else {
+        return 'Critical pressure - handoff strongly recommended';
+      }
     }
   }
 
   /**
-   * Determine if handoff should be triggered based on pressure
-   *
-   * @returns true if pressure is in critical zone (> 85%)
+   * Get complete pressure reading
    */
-  shouldTriggerHandoff(): boolean {
-    return this.getCurrentPressure() > PRESSURE_THRESHOLDS.DEGRADATION_MAX;
+  static getPressureReading(): PressureReading {
+    const pressure = this.getCurrentPressure();
+    const zone = this.getPressureZone(pressure);
+    const qualityEstimate = this.calculateQualityEstimate(pressure);
+    const recommendation = this.getRecommendation(pressure, zone);
+
+    return {
+      pressure,
+      zone,
+      qualityEstimate,
+      recommendation,
+      tokensUsed: this.estimatedTokens,
+      maxTokens: this.maxTokens
+    };
   }
 
   /**
-   * Get human-readable pressure status
-   *
-   * @returns Descriptive status string
+   * Determine if event should be logged based on pressure
+   * Logging is optimal when pressure < 85%
    */
-  getPressureStatus(): string {
-    const pressure = this.getCurrentPressure();
-    const zone = this.getPressureZone();
-    const quality = this.estimateQuality();
+  static shouldLogEvent(pressure?: number): boolean {
+    const p = pressure ?? this.getCurrentPressure();
+    return p < PRESSURE_THRESHOLDS.DEGRADATION_MAX;
+  }
 
-    return `${(pressure * 100).toFixed(0)}% (${zone} - ${quality}% quality)`;
+  /**
+   * Update token count estimates
+   * This is a rough estimate - actual tokens would come from Claude API
+   */
+  static updateEstimatedTokens(tokens: number): void {
+    this.estimatedTokens = tokens;
+  }
+
+  /**
+   * Set maximum token limit
+   */
+  static setMaxTokens(max: number): void {
+    this.maxTokens = max;
+  }
+
+  /**
+   * Reset monitor state
+   */
+  static reset(): void {
+    this.estimatedTokens = 0;
+  }
+
+  /**
+   * Estimate tokens added (rough heuristic: ~4 chars per token)
+   */
+  static addEstimatedTokens(text: string): void {
+    const estimatedTokens = Math.ceil(text.length / 4);
+    this.estimatedTokens += estimatedTokens;
   }
 }

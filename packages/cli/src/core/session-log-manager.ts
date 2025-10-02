@@ -2,347 +2,382 @@
  * @fileType: utility
  * @status: current
  * @updated: 2025-10-01
- * @tags: [session-log, yaml, atomic-operations, adr-033]
- * @related: [pressure-monitor.ts, ../types/session-log.ts]
- * @priority: critical
+ * @tags: [session-logging, context-pressure, handoff, continuous-logging]
+ * @related: [pressure-monitor.ts, handoff/handoff-reflection-pipeline.ts, start/index.ts]
+ * @priority: high
  * @complexity: high
- * @dependencies: [fs-extra, gray-matter, path]
+ * @dependencies: [fs, path, yaml]
  */
-
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import matter from 'gray-matter';
-import {
-  SessionLog,
-  SessionMetadata,
-  LogEntry,
-  ParsedSessionLog,
-  CreateSessionLogOptions,
-  AppendLogEntryOptions,
-  ArchiveLogResult
-} from '../types/session-log.js';
-
-const SESSION_LOG_FILENAME = 'session.log.md';
 
 /**
- * Manages session log lifecycle: creation, appending, archiving, and loading
- * Implements ADR-033 Phase 1: Session log infrastructure with atomic operations
+ * Session Log Manager
  *
- * Key Features:
- * - YAML frontmatter for structured metadata
- * - Atomic append operations (write to temp, then move)
- * - Categorized sections (Timeline, Decisions, Files, Insights, Git)
- * - Context pressure tracking per entry
+ * Manages continuous session logging to capture insights at low context pressure.
+ * Enables high-quality handoffs even when called at high pressure.
+ *
+ * Based on ADR-033: Context Pressure Mitigation Strategy
  */
+
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { PressureMonitor } from './pressure-monitor.js';
+
+export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
+export type LogImpact = 'high' | 'medium' | 'low';
+
+export interface LogEntry {
+  timestamp: string;
+  category: LogCategory;
+  description: string; // 1-2 sentences
+  files?: string[];
+  impact: LogImpact;
+  context_pressure: number;
+}
+
+export interface SessionLogMetadata {
+  session_id: string;
+  started: string;
+  user: string;
+  branch: string;
+  context_pressure_at_start: number;
+}
+
+export interface SessionLog {
+  metadata: SessionLogMetadata;
+  timeline: LogEntry[];
+  keyDecisions: LogEntry[];
+  filesAffected: Set<string>;
+  insights: LogEntry[];
+  gitOperations: LogEntry[];
+}
+
 export class SessionLogManager {
+  private static SESSION_LOG_FILENAME = 'current-session-log.md';
+  private static ARCHIVE_DIR = 'archive';
+
   /**
-   * Create a new session log with YAML frontmatter
-   *
-   * @param userId - User identifier
-   * @param branch - Git branch name
-   * @param options - Optional session configuration
-   * @returns Path to created log file
+   * Get the session log path for a user
    */
-  async createSessionLog(
-    userId: string,
-    branch: string,
-    options?: Partial<CreateSessionLogOptions>
-  ): Promise<string> {
-    const sessionId = `session-${Date.now()}`;
-    const metadata: SessionMetadata = {
-      session_id: sessionId,
-      started: new Date().toISOString(),
-      user: userId,
-      branch: branch,
-      context_pressure_at_start: options?.initialPressure ?? 0
-    };
-
-    const frontmatter = this.formatFrontmatter(metadata);
-    const content = this.formatEmptyLog();
-    const fullContent = `${frontmatter}\n${content}`;
-
-    // Create session directory if it doesn't exist
-    const sessionDir = path.join('.ginko', 'sessions', userId);
-    await fs.ensureDir(sessionDir);
-
-    const logPath = path.join(sessionDir, SESSION_LOG_FILENAME);
-    await fs.writeFile(logPath, fullContent, 'utf-8');
-
-    return logPath;
+  private static getSessionLogPath(userDir: string): string {
+    return path.join(userDir, this.SESSION_LOG_FILENAME);
   }
 
   /**
-   * Append an entry to the session log atomically
-   *
-   * Atomic Strategy:
-   * 1. Read current log
-   * 2. Parse and categorize entry
-   * 3. Write to temporary file
-   * 4. Rename temp to actual (atomic operation)
-   *
-   * @param sessionDir - Directory containing session.log.md
-   * @param entry - Log entry to append
-   * @param atomic - Use atomic write (default: true)
+   * Get archive directory path
    */
-  async appendEntry(
-    sessionDir: string,
-    entry: LogEntry,
-    atomic: boolean = true
+  private static getArchiveDir(userDir: string): string {
+    return path.join(userDir, this.ARCHIVE_DIR);
+  }
+
+  /**
+   * Create a new session log
+   */
+  static async createSessionLog(
+    userDir: string,
+    user: string,
+    branch: string
   ): Promise<void> {
-    const logPath = path.join(sessionDir, SESSION_LOG_FILENAME);
+    const sessionId = `session-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    const pressure = PressureMonitor.getCurrentPressure();
 
-    // Read current log
-    const currentContent = await fs.readFile(logPath, 'utf-8');
-    const parsed = matter(currentContent);
+    const logContent = `---
+session_id: ${sessionId}
+started: ${new Date().toISOString()}
+user: ${user}
+branch: ${branch}
+context_pressure_at_start: ${pressure.toFixed(2)}
+---
 
-    // Build new content with entry added to appropriate section
-    const newContent = this.addEntryToContent(parsed.content, entry);
-    const fullContent = matter.stringify(newContent, parsed.data);
+# Session Log: ${sessionId}
 
-    if (atomic) {
-      // Atomic write: temp file + rename
-      const tempPath = `${logPath}.tmp`;
-      await fs.writeFile(tempPath, fullContent, 'utf-8');
-      await fs.rename(tempPath, logPath);
-    } else {
-      // Direct write (for testing non-atomic scenarios)
-      await fs.writeFile(logPath, fullContent, 'utf-8');
-    }
-  }
-
-  /**
-   * Archive the current session log
-   *
-   * @param sessionDir - Directory containing session.log.md
-   * @param archivePath - Destination path for archive
-   * @returns Archive operation result
-   */
-  async archiveLog(
-    sessionDir: string,
-    archivePath?: string
-  ): Promise<ArchiveLogResult> {
-    try {
-      const logPath = path.join(sessionDir, SESSION_LOG_FILENAME);
-
-      if (!await fs.pathExists(logPath)) {
-        return {
-          success: false,
-          archivePath: '',
-          timestamp: new Date().toISOString(),
-          error: 'Session log not found'
-        };
-      }
-
-      // Generate archive path if not provided
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const finalArchivePath = archivePath || path.join(
-        sessionDir,
-        'archive',
-        `session-${timestamp}.log.md`
-      );
-
-      // Ensure archive directory exists
-      await fs.ensureDir(path.dirname(finalArchivePath));
-
-      // Move log to archive
-      await fs.move(logPath, finalArchivePath, { overwrite: false });
-
-      return {
-        success: true,
-        archivePath: finalArchivePath,
-        timestamp: new Date().toISOString()
-      };
-    } catch (error) {
-      return {
-        success: false,
-        archivePath: archivePath || '',
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Unknown error'
-      };
-    }
-  }
-
-  /**
-   * Load and parse a session log
-   *
-   * @param sessionDir - Directory containing session.log.md
-   * @returns Parsed session log with metadata and sections
-   */
-  async loadSessionLog(sessionDir: string): Promise<ParsedSessionLog> {
-    const logPath = path.join(sessionDir, SESSION_LOG_FILENAME);
-
-    if (!await fs.pathExists(logPath)) {
-      throw new Error(`Session log not found at ${logPath}`);
-    }
-
-    const content = await fs.readFile(logPath, 'utf-8');
-    const parsed = matter(content);
-
-    // Extract sections from content
-    const sections = this.parseSections(parsed.content);
-
-    return {
-      frontmatter: parsed.data as SessionMetadata,
-      content: parsed.content,
-      sections
-    };
-  }
-
-  /**
-   * Format YAML frontmatter from metadata
-   * @private
-   */
-  private formatFrontmatter(metadata: SessionMetadata): string {
-    return `---
-session_id: ${metadata.session_id}
-started: ${metadata.started}
-user: ${metadata.user}
-branch: ${metadata.branch}
-context_pressure_at_start: ${metadata.context_pressure_at_start}
----`;
-  }
-
-  /**
-   * Format empty log structure with section headers
-   * @private
-   */
-  private formatEmptyLog(): string {
-    return `
 ## Timeline
+<!-- Chronological log of all session events -->
 
 ## Key Decisions
+<!-- Important decisions made during session -->
 
 ## Files Affected
+<!-- Files modified during session -->
 
 ## Insights
+<!-- Patterns, gotchas, learnings discovered -->
 
 ## Git Operations
+<!-- Commits, merges, branch changes -->
+
+## Achievements
+<!-- Features completed, tests passing -->
 `;
+
+    const logPath = this.getSessionLogPath(userDir);
+    await fs.writeFile(logPath, logContent, 'utf-8');
   }
 
   /**
-   * Add entry to appropriate section in content
-   * @private
+   * Append an entry to the session log
+   * Atomic operation to prevent corruption
    */
-  private addEntryToContent(content: string, entry: LogEntry): string {
-    const sectionMap: Record<LogEntry['category'], string> = {
-      feature: 'Timeline',
-      fix: 'Timeline',
-      decision: 'Key Decisions',
-      insight: 'Insights',
-      git: 'Git Operations',
-      achievement: 'Timeline'
-    };
+  static async appendEntry(
+    userDir: string,
+    entry: LogEntry
+  ): Promise<void> {
+    const logPath = this.getSessionLogPath(userDir);
 
-    const targetSection = sectionMap[entry.category];
-    const entryText = this.formatLogEntry(entry);
-
-    // Find the section and append the entry
-    const sectionRegex = new RegExp(`(## ${targetSection}\\n)`, 'i');
-
-    if (sectionRegex.test(content)) {
-      return content.replace(
-        sectionRegex,
-        `$1\n${entryText}\n`
-      );
+    // Check if log exists
+    try {
+      await fs.access(logPath);
+    } catch {
+      throw new Error('Session log does not exist. Run "ginko start" first.');
     }
 
-    // If section doesn't exist, append at end
-    return `${content}\n## ${targetSection}\n\n${entryText}\n`;
+    // Format entry
+    const timestamp = new Date(entry.timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+
+    const filesStr = entry.files && entry.files.length > 0
+      ? `\nFiles: ${entry.files.join(', ')}`
+      : '';
+
+    const entryText = `
+### ${timestamp} - [${entry.category}]
+${entry.description}${filesStr}
+Impact: ${entry.impact} | Pressure: ${(entry.context_pressure * 100).toFixed(0)}%
+`;
+
+    // Determine which section to append to
+    let sectionMarker: string;
+    switch (entry.category) {
+      case 'decision':
+        sectionMarker = '## Key Decisions';
+        break;
+      case 'insight':
+        sectionMarker = '## Insights';
+        break;
+      case 'git':
+        sectionMarker = '## Git Operations';
+        break;
+      case 'achievement':
+        sectionMarker = '## Achievements';
+        break;
+      default:
+        sectionMarker = '## Timeline';
+    }
+
+    // Read current log
+    const content = await fs.readFile(logPath, 'utf-8');
+
+    // Find section and append
+    const sectionIndex = content.indexOf(sectionMarker);
+    if (sectionIndex === -1) {
+      throw new Error(`Section ${sectionMarker} not found in log`);
+    }
+
+    // Find the end of the section (next ## or end of file)
+    const nextSectionIndex = content.indexOf('\n## ', sectionIndex + sectionMarker.length);
+    const insertPoint = nextSectionIndex === -1 ? content.length : nextSectionIndex;
+
+    const newContent =
+      content.slice(0, insertPoint) +
+      entryText +
+      (nextSectionIndex === -1 ? '' : '\n' + content.slice(insertPoint));
+
+    // Also append to Timeline
+    if (entry.category !== 'decision' && entry.category !== 'insight') {
+      const timelineIndex = newContent.indexOf('## Timeline');
+      const timelineNextSection = newContent.indexOf('\n## ', timelineIndex + 11);
+      const timelineInsert = timelineNextSection === -1 ? newContent.length : timelineNextSection;
+
+      const finalContent =
+        newContent.slice(0, timelineInsert) +
+        entryText +
+        (timelineNextSection === -1 ? '' : '\n' + newContent.slice(timelineInsert));
+
+      await fs.writeFile(logPath, finalContent, 'utf-8');
+    } else {
+      await fs.writeFile(logPath, newContent, 'utf-8');
+    }
   }
 
   /**
-   * Format a single log entry as markdown
-   * @private
+   * Load the current session log
    */
-  private formatLogEntry(entry: LogEntry): string {
-    const files = entry.files ? ` (${entry.files.join(', ')})` : '';
-    const impact = entry.impact ? ` [${entry.impact}]` : '';
-    return `- **${entry.timestamp}** (pressure: ${entry.context_pressure.toFixed(2)})${impact}: ${entry.description}${files}`;
+  static async loadSessionLog(userDir: string): Promise<string> {
+    const logPath = this.getSessionLogPath(userDir);
+
+    try {
+      return await fs.readFile(logPath, 'utf-8');
+    } catch {
+      return '';
+    }
   }
 
   /**
-   * Parse content sections into structured data
-   * @private
+   * Archive the session log with timestamp
    */
-  private parseSections(content: string): ParsedSessionLog['sections'] {
-    const sections = {
-      timeline: [] as LogEntry[],
-      decisions: [] as LogEntry[],
-      filesAffected: [] as string[],
-      insights: [] as LogEntry[],
-      gitOperations: [] as LogEntry[]
-    };
+  static async archiveLog(userDir: string, handoffSummary?: string): Promise<string> {
+    const logPath = this.getSessionLogPath(userDir);
+    const archiveDir = this.getArchiveDir(userDir);
 
-    // Extract each section
-    const timelineMatch = content.match(/## Timeline\n([\s\S]*?)(?=\n## |$)/i);
-    const decisionsMatch = content.match(/## Key Decisions\n([\s\S]*?)(?=\n## |$)/i);
-    const filesMatch = content.match(/## Files Affected\n([\s\S]*?)(?=\n## |$)/i);
-    const insightsMatch = content.match(/## Insights\n([\s\S]*?)(?=\n## |$)/i);
-    const gitMatch = content.match(/## Git Operations\n([\s\S]*?)(?=\n## |$)/i);
+    // Ensure archive directory exists
+    await fs.mkdir(archiveDir, { recursive: true });
 
-    if (timelineMatch) {
-      sections.timeline = this.parseEntries(timelineMatch[1], 'feature');
-    }
-    if (decisionsMatch) {
-      sections.decisions = this.parseEntries(decisionsMatch[1], 'decision');
-    }
-    if (filesMatch) {
-      sections.filesAffected = this.parseFiles(filesMatch[1]);
-    }
-    if (insightsMatch) {
-      sections.insights = this.parseEntries(insightsMatch[1], 'insight');
-    }
-    if (gitMatch) {
-      sections.gitOperations = this.parseEntries(gitMatch[1], 'git');
-    }
+    // Generate archive filename with timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const archiveFilename = `session-log-${timestamp}.md`;
+    const archivePath = path.join(archiveDir, archiveFilename);
 
-    return sections;
-  }
+    try {
+      // Read current log
+      let logContent = await fs.readFile(logPath, 'utf-8');
 
-  /**
-   * Parse log entries from markdown list
-   * @private
-   */
-  private parseEntries(text: string, category: LogEntry['category']): LogEntry[] {
-    const entries: LogEntry[] = [];
-    const lines = text.split('\n').filter(line => line.trim().startsWith('-'));
-
-    for (const line of lines) {
-      // Parse: - **timestamp** (pressure: 0.42) [impact]: description (files)
-      const match = line.match(/\*\*([^*]+)\*\*\s+\(pressure:\s+([\d.]+)\)(?:\s+\[(\w+)\])?\s*:\s*(.+?)(?:\s+\(([^)]+)\))?$/);
-
-      if (match) {
-        const [, timestamp, pressure, impact, description, files] = match;
-        entries.push({
-          timestamp,
-          category,
-          description: description.trim(),
-          files: files ? files.split(',').map(f => f.trim()) : undefined,
-          impact: (impact as LogEntry['impact']) || 'medium',
-          context_pressure: parseFloat(pressure)
-        });
+      // Append handoff summary if provided
+      if (handoffSummary) {
+        logContent += `\n\n## Handoff Summary\n${handoffSummary}\n`;
       }
+
+      // Write to archive
+      await fs.writeFile(archivePath, logContent, 'utf-8');
+
+      // Delete current log
+      await fs.unlink(logPath);
+
+      return archivePath;
+    } catch (error) {
+      throw new Error(`Failed to archive session log: ${error}`);
+    }
+  }
+
+  /**
+   * Check if a session log exists
+   */
+  static async hasSessionLog(userDir: string): Promise<boolean> {
+    const logPath = this.getSessionLogPath(userDir);
+    try {
+      await fs.access(logPath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Parse session log metadata from frontmatter
+   */
+  static parseMetadata(logContent: string): SessionLogMetadata | null {
+    const frontmatterMatch = logContent.match(/^---\n([\s\S]*?)\n---/);
+    if (!frontmatterMatch) return null;
+
+    const frontmatter = frontmatterMatch[1];
+    const lines = frontmatter.split('\n');
+
+    const metadata: any = {};
+    for (const line of lines) {
+      const [key, ...valueParts] = line.split(':');
+      if (key && valueParts.length > 0) {
+        metadata[key.trim()] = valueParts.join(':').trim();
+      }
+    }
+
+    return {
+      session_id: metadata.session_id || '',
+      started: metadata.started || '',
+      user: metadata.user || '',
+      branch: metadata.branch || '',
+      context_pressure_at_start: parseFloat(metadata.context_pressure_at_start || '0')
+    };
+  }
+
+  /**
+   * Extract entries from a section
+   */
+  static extractEntries(logContent: string, section: string): LogEntry[] {
+    const sectionMatch = logContent.match(
+      new RegExp(`## ${section}\\n([\\s\\S]*?)(?=\\n## |$)`)
+    );
+
+    if (!sectionMatch) return [];
+
+    const sectionContent = sectionMatch[1];
+    const entries: LogEntry[] = [];
+
+    // Match entry pattern: ### HH:MM - [category]
+    const entryRegex = /### (\d{2}:\d{2}) - \[(\w+)\]\n([\s\S]*?)(?=\n### |\n## |$)/g;
+    let match;
+
+    while ((match = entryRegex.exec(sectionContent)) !== null) {
+      const [, time, category, content] = match;
+
+      // Parse description, files, impact, pressure
+      const lines = content.trim().split('\n');
+      const description = lines[0] || '';
+
+      let files: string[] = [];
+      let impact: LogImpact = 'medium';
+      let pressure = 0;
+
+      for (const line of lines.slice(1)) {
+        if (line.startsWith('Files:')) {
+          files = line.replace('Files:', '').trim().split(',').map(f => f.trim());
+        } else if (line.startsWith('Impact:')) {
+          const impactMatch = line.match(/Impact: (\w+)/);
+          if (impactMatch) impact = impactMatch[1] as LogImpact;
+
+          const pressureMatch = line.match(/Pressure: (\d+)%/);
+          if (pressureMatch) pressure = parseInt(pressureMatch[1]) / 100;
+        }
+      }
+
+      entries.push({
+        timestamp: time,
+        category: category as LogCategory,
+        description,
+        files: files.length > 0 ? files : undefined,
+        impact,
+        context_pressure: pressure
+      });
     }
 
     return entries;
   }
 
   /**
-   * Parse files from markdown list
-   * @private
+   * Get summary statistics from session log
    */
-  private parseFiles(text: string): string[] {
-    const files: string[] = [];
-    const lines = text.split('\n').filter(line => line.trim().startsWith('-'));
+  static getSummary(logContent: string): {
+    totalEntries: number;
+    byCategory: Record<string, number>;
+    filesAffected: number;
+    avgPressure: number;
+  } {
+    const timeline = this.extractEntries(logContent, 'Timeline');
+    const decisions = this.extractEntries(logContent, 'Key Decisions');
+    const insights = this.extractEntries(logContent, 'Insights');
+    const git = this.extractEntries(logContent, 'Git Operations');
+    const achievements = this.extractEntries(logContent, 'Achievements');
 
-    for (const line of lines) {
-      const file = line.replace(/^-\s*/, '').trim();
-      if (file) {
-        files.push(file);
+    const allEntries = [...timeline, ...decisions, ...insights, ...git, ...achievements];
+
+    const byCategory: Record<string, number> = {};
+    let totalPressure = 0;
+    const filesSet = new Set<string>();
+
+    for (const entry of allEntries) {
+      byCategory[entry.category] = (byCategory[entry.category] || 0) + 1;
+      totalPressure += entry.context_pressure;
+
+      if (entry.files) {
+        entry.files.forEach(f => filesSet.add(f));
       }
     }
 
-    return files;
+    return {
+      totalEntries: allEntries.length,
+      byCategory,
+      filesAffected: filesSet.size,
+      avgPressure: allEntries.length > 0 ? totalPressure / allEntries.length : 0
+    };
   }
 }
