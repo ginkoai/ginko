@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-01-15
- * @tags: [handoff, quality, scoring, validation]
+ * @updated: 2025-10-01
+ * @tags: [handoff, quality, scoring, validation, adr-033, synthesis]
  * @related: [../commands/handoff/handoff-reflection.ts, ./simple-pipeline.ts]
  * @priority: critical
  * @complexity: high
@@ -41,6 +41,9 @@ export interface QualityReport {
   suggestions: string[];
   passed: boolean;
   confidence: number;
+  contextPressure?: number;
+  qualityEstimate?: number;
+  synthesisRatio?: string;
 }
 
 export interface HandoffContext {
