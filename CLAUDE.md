@@ -196,6 +196,105 @@ Our codebase implements standardized frontmatter for **70% faster** context disc
 - 🧠 **AI optimization**: Better context for development decisions
 - 🚀 **Team velocity**: 70% faster file discovery and understanding
 
+### Understanding Context Pressure 📊
+
+**Context Pressure** is the degradation of AI reasoning quality that occurs as the conversation context window approaches saturation. This is a fundamental constraint in AI-assisted development that affects every session.
+
+#### The Context Pressure Curve
+
+```
+Quality
+  100% |●●●●●●●●●●●●●●●○○○○○○○○○○○○○○○
+       |              ╲                ╲
+   80% |               ●●●●●●●●○○○○○○○ ╲
+       |                       ╲        ╲
+   60% |                        ●●●●○○○ ╲
+       |                            ╲    ╲
+   40% |                             ●●○○●
+       |                                ╲╱
+   20% |                                 ●
+       |___________________________________
+        0%   25%   50%   75%   90%   95% 100%
+              Context Window Utilization
+```
+
+#### Pressure Zones
+
+**Zone 1: Optimal (0-50% utilization)** ✅
+- Full reasoning capacity available
+- Deep analysis and exploration
+- Creative problem-solving
+- Complete code examples
+- Multi-angle consideration
+
+**Zone 2: Degradation (50-85% utilization)** ⚠️
+- Reasoning begins to compress
+- Shorter examples
+- Less exploration of alternatives
+- Focus on primary solution
+- Reduced historical references
+
+**Zone 3: Critical Pressure (85-100% utilization)** 🔴
+- Severely compressed reasoning
+- Generic, pattern-matched responses
+- Minimal examples
+- Unable to reference early context
+- Quality collapse
+
+#### Context Pressure Symptoms
+
+**Early Warning (60-75%):**
+- Shorter code examples
+- Fewer alternatives suggested
+- Less detailed explanations
+- Reduced use of earlier context
+
+**Critical Symptoms (85-95%):**
+- Generic responses
+- Unable to reference specifics
+- Repetitive patterns
+- "As mentioned earlier..." without detail
+- Suggesting new conversation
+
+**Crisis Mode (95-100%):**
+- Auto-compact triggered
+- Major context loss
+- Disjointed responses
+- Quality collapse
+
+#### Managing Context Pressure
+
+**Proactive Strategies:**
+1. **Call `ginko handoff` at 75-85%** - Before critical pressure
+2. **Use `ginko capture` throughout** - Preserve insights early
+3. **Monitor with `/context`** - Check pressure regularly
+4. **New session at 90%+** - Fresh start for complex work
+
+**Pressure-Aware Command Usage:**
+- **Low Pressure (0-50%)**: Perfect for deep work, architecture decisions
+- **Medium Pressure (50-85%)**: Good for implementation, bug fixes
+- **High Pressure (85-100%)**: Time for handoff, capture, or new session
+
+**Quality Estimation:**
+```
+0-50%:   100% quality - Full reasoning available
+50-70%:   95% quality - Minor compression
+70-85%:   85% quality - Noticeable compression
+85-95%:   65% quality - Significant degradation
+95-100%:  40% quality - Crisis mode
+```
+
+#### The Handoff Timing Paradox
+
+The current challenge: `ginko handoff` is typically called when context pressure is highest (85-100%), exactly when AI quality is most degraded. This results in generic handoffs that miss insights from earlier in the session.
+
+**Solution (ADR-033)**: Continuous Session Logging
+- Log insights throughout session (at low pressure)
+- Synthesize handoff from logs (at high pressure)
+- Maintain quality even when called late
+
+See [ADR-033: Context Pressure Mitigation Strategy](docs/adr/ADR-033-context-pressure-mitigation-strategy.md) for full details.
+
 ### Collaboration Patterns
 
 #### The "Vibecheck" Pattern 🎯
