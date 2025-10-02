@@ -17,6 +17,8 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { getUserEmail, getGinkoDir, detectWorkMode } from '../../utils/helpers.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
+import { PressureMonitor } from '../../core/pressure-monitor.js';
+import { SessionLogManager } from '../../core/session-log-manager.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -73,6 +75,17 @@ export class StartReflectionCommand extends ReflectionCommand {
       };
 
       const contextLevel = await this.contextManager.loadInitialContext(sessionData);
+
+      // Initialize session logging (ADR-033)
+      spinner.text = 'Creating session log...';
+      await this.initializeSessionLog(context, options);
+      
+      // Display pressure info
+      const pressureReading = PressureMonitor.getPressureReading();
+      spinner.info(`Context Pressure: ${(pressureReading.pressure * 100).toFixed(0)}% (${pressureReading.zone} zone)`);
+      if (!options.noLog) {
+        spinner.info('Session logging enabled (use --no-log to disable)');
+      }
 
       // 6. Display session information with loaded context
       await this.displaySessionInfo(context, contextLevel);
@@ -621,6 +634,34 @@ Example output structure:
       testStatus: testStatus,
       hasUncommittedChanges: status.files.length > 0
     };
+  }
+
+  /**
+   * Initialize session logging (ADR-033)
+   */
+  private async initializeSessionLog(context: any, options: any): Promise<void> {
+    // Skip if disabled
+    if (options.noLog) {
+      return;
+    }
+
+    const ginkoDir = await getGinkoDir();
+    const userEmail = await getUserEmail();
+    const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
+    const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
+
+    // Create session log if it doesn't exist
+    const hasLog = await SessionLogManager.hasSessionLog(sessionDir);
+    if (!hasLog) {
+      await SessionLogManager.createSessionLog(
+        sessionDir,
+        userEmail,
+        context.currentBranch || 'unknown'
+      );
+    }
+
+    // Reset pressure monitor
+    PressureMonitor.reset();
   }
 }
 
