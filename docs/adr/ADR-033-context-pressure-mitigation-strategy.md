@@ -425,3 +425,75 @@ interface TimelineEntry {
 ---
 
 **Key Insight**: Context pressure is a fundamental constraint in AI-assisted development. By naming it and designing around it, we transform a limitation into an architectural principle that improves system quality.
+
+## Amendment: Event-Based Approach (2025-10-03)
+
+### Decision Update
+
+**Original Approach**: Pressure measurement-based logging with explicit pressure thresholds and monitoring.
+
+**Revised Approach**: Event-based defensive logging without pressure measurement.
+
+### Rationale
+
+During Phase 2 implementation, we discovered that:
+
+1. **Pressure measurement adds complexity** without proportional value
+   - Requires model-specific token counting
+   - Adds false precision (percentages imply accuracy we don't have)
+   - Different models have different context windows
+
+2. **Event triggers are more reliable** than pressure thresholds
+   - "After fixing a bug" is clearer than "at 45% pressure"
+   - Works across all AI models (model-agnostic)
+   - Simpler mental model for developers and AI agents
+
+3. **Core value remains unchanged**
+   - Continuous logging still prevents context rot
+   - Early capture still preserves insights
+   - Handoff synthesis still benefits from accumulated logs
+
+### What Changed
+
+**Removed**:
+- Explicit pressure percentage measurement
+- Pressure zones (optimal/degradation/critical)
+- Pressure-based logging triggers
+- `Pressure: XX%` from log entry format
+
+**Preserved**:
+- Event-based logging protocol
+- Six event categories (fix, feature, decision, insight, git, achievement)
+- Continuous capture throughout session
+- Handoff synthesis from accumulated logs
+
+### Updated Logging Format
+
+**Old Format** (pressure-based):
+```markdown
+### 14:30 - [feature]
+Brief description
+Files: file.ts:123
+Impact: high | Pressure: 35%
+```
+
+**New Format** (event-based):
+```markdown
+### 14:30 - [feature]
+Brief description
+Files: file.ts:123
+Impact: high
+```
+
+### Implementation Impact
+
+- Phase 1-2: Already event-based in practice
+- Phase 3-4: Remove pressure monitoring infrastructure
+- Documentation: Updated to reflect event-based approach
+- Mental model: "Log important events" vs "Log at low pressure"
+
+### Historical Context
+
+This amendment preserves the ADR's historical context about why pressure was a concern, while updating the solution to be simpler and more practical. The observation that AI quality degrades as conversations lengthen remains valid; we've simply found a better way to address it.
+
+**Key Learning**: Defensive logging (log after every significant event) achieves the same goal as pressure-aware logging, but with less complexity and better model-agnosticism.
