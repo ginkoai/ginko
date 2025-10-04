@@ -24,6 +24,9 @@ This document maintains the official registry of all Architecture Decision Recor
 | [ADR-016](ADR-016-simplify-mcp-interface-preserve-capabilities.md) | Simplify MCP Interface While Preserving Internal Capabilities | Accepted | 2025-08-11 | mcp, interface, mvp, capabilities |
 | [ADR-017](ADR-017-ai-driven-handoff-prompt-architecture.md) | AI-Driven Handoff Prompt Architecture | Accepted | 2025-08-11 | handoff, prompts, session-management, ai |
 | [ADR-018](ADR-018-collaborative-slash-commands.md) | Collaborative Slash Commands with Safety Guardrails | Accepted | 2025-08-12 | claude-code, collaboration, commands, ux |
+| [ADR-032](ADR-032-core-cli-architecture-and-reflection-system.md) | Core CLI Architecture and Reflection System | Accepted | 2025-09-01 | cli, reflection, architecture |
+| [ADR-033](ADR-033-context-pressure-mitigation-strategy.md) | Context Pressure Mitigation Strategy | Accepted | 2025-10-01 | context-pressure, session-logging, handoff |
+| [ADR-034](ADR-034-event-based-defensive-logging-architecture.md) | Event-Based Defensive Logging Architecture | Accepted | 2025-10-03 | defensive-logging, model-agnostic, simplification |
 
 ## ADR Status Definitions
 
@@ -112,8 +115,8 @@ ADRs are never deleted, only deprecated or superseded. This maintains a complete
 
 ---
 
-**Last Updated:** 2025-08-12  
-**Next Available Number:** ADR-019  
+**Last Updated:** 2025-10-03
+**Next Available Number:** ADR-035
 **Maintainer:** Architecture Team
 - [ADR-025: Context Preservation System Architecture](./ADR-025-context-preservation-system-architecture.md)
 
