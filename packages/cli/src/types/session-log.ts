@@ -1,9 +1,9 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-10-01
- * @tags: [types, session-log, context-pressure, adr-033]
- * @related: [../core/session-log-manager.ts, ../core/pressure-monitor.ts]
+ * @updated: 2025-10-03
+ * @tags: [types, session-log, adr-033]
+ * @related: [../core/session-log-manager.ts]
  * @priority: critical
  * @complexity: low
  * @dependencies: []
@@ -24,19 +24,18 @@ export interface SessionLog {
 
 /**
  * YAML frontmatter metadata for session logs
- * Captures initial session state and context pressure
+ * Captures initial session state
  */
 export interface SessionMetadata {
   session_id: string;
   started: string; // ISO datetime
   user: string;
   branch: string;
-  context_pressure_at_start: number; // 0-1 float
 }
 
 /**
- * Individual log entry with timestamp, category, and context pressure
- * Enables pressure-aware handoff synthesis
+ * Individual log entry with timestamp and category
+ * Enables defensive session logging
  */
 export interface LogEntry {
   timestamp: string; // ISO datetime
@@ -44,7 +43,6 @@ export interface LogEntry {
   description: string;
   files?: string[];
   impact: 'high' | 'medium' | 'low';
-  context_pressure: number; // 0-1 float at time of log
 }
 
 /**
@@ -69,7 +67,6 @@ export interface ParsedSessionLog {
 export interface CreateSessionLogOptions {
   userId: string;
   branch: string;
-  initialPressure?: number;
 }
 
 /**

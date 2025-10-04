@@ -1,9 +1,9 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-10-01
- * @tags: [session-logging, context-pressure, handoff, continuous-logging]
- * @related: [pressure-monitor.ts, handoff/handoff-reflection-pipeline.ts, start/index.ts]
+ * @updated: 2025-10-03
+ * @tags: [session-logging, defensive-logging, handoff, continuous-logging]
+ * @related: [handoff/handoff-reflection-pipeline.ts, start/index.ts]
  * @priority: high
  * @complexity: high
  * @dependencies: [fs, path, yaml]
@@ -12,15 +12,14 @@
 /**
  * Session Log Manager
  *
- * Manages continuous session logging to capture insights at low context pressure.
- * Enables high-quality handoffs even when called at high pressure.
+ * Manages continuous session logging to capture insights throughout development sessions.
+ * Enables high-quality handoffs through event-based defensive logging.
  *
- * Based on ADR-033: Context Pressure Mitigation Strategy
+ * Based on ADR-033: Context Pressure Mitigation Strategy (Event-Based Amendment)
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { PressureMonitor } from './pressure-monitor.js';
 
 export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
 export type LogImpact = 'high' | 'medium' | 'low';
@@ -31,7 +30,6 @@ export interface LogEntry {
   description: string; // 1-2 sentences
   files?: string[];
   impact: LogImpact;
-  context_pressure: number;
 }
 
 export interface SessionLogMetadata {
@@ -39,7 +37,6 @@ export interface SessionLogMetadata {
   started: string;
   user: string;
   branch: string;
-  context_pressure_at_start: number;
 }
 
 export interface SessionLog {
@@ -78,14 +75,12 @@ export class SessionLogManager {
     branch: string
   ): Promise<void> {
     const sessionId = `session-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-    const pressure = PressureMonitor.getCurrentPressure();
 
     const logContent = `---
 session_id: ${sessionId}
 started: ${new Date().toISOString()}
 user: ${user}
 branch: ${branch}
-context_pressure_at_start: ${pressure.toFixed(2)}
 ---
 
 # Session Log: ${sessionId}
@@ -144,7 +139,7 @@ context_pressure_at_start: ${pressure.toFixed(2)}
     const entryText = `
 ### ${timestamp} - [${entry.category}]
 ${entry.description}${filesStr}
-Impact: ${entry.impact} | Pressure: ${(entry.context_pressure * 100).toFixed(0)}%
+Impact: ${entry.impact}
 `;
 
     // Determine which section to append to

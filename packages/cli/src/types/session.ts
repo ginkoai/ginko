@@ -213,7 +213,7 @@ export interface CaptureConfig {
 }
 /**
  * Session log entry for continuous logging (ADR-033 Phase 2)
- * Captured at low context pressure for high-quality handoff synthesis
+ * Captured for defensive logging and handoff synthesis
  */
 export interface SessionLogEntry {
   timestamp: Date;
@@ -231,7 +231,6 @@ export interface SessionLog {
   sessionId: string;
   started: Date;
   lastUpdated: Date;
-  contextPressure?: number;
   
   // Main content sections
   timeline: TimelineEntry[];

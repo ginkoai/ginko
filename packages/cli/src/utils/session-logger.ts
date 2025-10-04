@@ -33,7 +33,6 @@ export interface LogEvent {
   description: string;
   files?: string[];
   impact: ImpactLevel;
-  contextPressure?: number;
 }
 
 /**
@@ -45,7 +44,6 @@ export interface SessionLog {
     started: string;
     user: string;
     branch: string;
-    initial_pressure: number;
   };
   timeline: LogEvent[];
   decisions: LogEvent[];
@@ -70,7 +68,7 @@ export class SessionLogger {
   /**
    * Initialize session log
    */
-  async initialize(sessionId: string, branch: string, initialPressure = 0.15): Promise<void> {
+  async initialize(sessionId: string, branch: string): Promise<void> {
     const ginkoDir = await getGinkoDir();
     const userEmail = await getUserEmail();
     const userName = userEmail.split('@')[0].replace(/[^a-z0-9-]/gi, '-');
@@ -85,8 +83,7 @@ export class SessionLogger {
         session_id: sessionId,
         started: new Date().toISOString(),
         user: userName,
-        branch,
-        initial_pressure: initialPressure
+        branch
       },
       timeline: [],
       decisions: [],
@@ -135,23 +132,18 @@ export class SessionLogger {
     metadata: {
       files?: string[];
       impact?: ImpactLevel;
-      contextPressure?: number;
     } = {}
   ): Promise<void> {
     if (!this.sessionLog || !this.logPath) {
       throw new Error('Session log not initialized. Call initialize() first.');
     }
 
-    // Auto-capture context pressure if not provided
-    const pressure = metadata.contextPressure ?? (await this.estimateContextPressure());
-
     const event: LogEvent = {
       timestamp: this.formatTime(new Date()),
       category,
       description: this.validateDescription(description),
       files: metadata.files,
-      impact: metadata.impact ?? 'medium',
-      contextPressure: pressure
+      impact: metadata.impact ?? 'medium'
     };
 
     // Validate event format
@@ -295,7 +287,6 @@ session_id: ${metadata.session_id}
 started: ${metadata.started}
 user: ${metadata.user}
 branch: ${metadata.branch}
-context_pressure_at_start: ${metadata.initial_pressure}
 ---
 
 # Session Log: ${metadata.session_id}
@@ -329,15 +320,8 @@ context_pressure_at_start: ${metadata.initial_pressure}
 
     markdown += `Impact: ${event.impact}`;
 
-    if (event.contextPressure !== undefined) {
-      markdown += ` | Pressure: ${(event.contextPressure * 100).toFixed(0)}%`;
-    }
-
     return markdown;
   }
-
-  /**
-   * Parse log file content into SessionLog structure
    */
   private parseLogFile(content: string): SessionLog {
     // Extract frontmatter
@@ -402,8 +386,7 @@ context_pressure_at_start: ${metadata.initial_pressure}
         session_id: frontmatter.session_id || 'unknown',
         started: frontmatter.started || new Date().toISOString(),
         user: frontmatter.user || 'unknown',
-        branch: frontmatter.branch || 'main',
-        initial_pressure: parseFloat(frontmatter.context_pressure_at_start) || 0.15
+        branch: frontmatter.branch || 'main'
       },
       timeline,
       decisions,
@@ -456,25 +439,6 @@ context_pressure_at_start: ${metadata.initial_pressure}
     }
   }
 
-  /**
-   * Estimate context pressure (simplified - in real implementation,
-   * this would integrate with a proper pressure monitor)
-   */
-  private async estimateContextPressure(): Promise<number> {
-    // This is a placeholder. In a real implementation, this would:
-    // 1. Track conversation token count
-    // 2. Compare against max context window
-    // 3. Return pressure percentage (0.0 - 1.0)
-
-    // For now, return a reasonable default
-    if (!this.sessionLog) return 0.15;
-
-    // Estimate based on number of events (rough heuristic)
-    const eventCount = this.sessionLog.timeline.length;
-    const estimatedPressure = Math.min(0.95, 0.15 + (eventCount * 0.05));
-
-    return estimatedPressure;
-  }
 }
 
 /**
@@ -486,7 +450,6 @@ export async function logEvent(
   metadata?: {
     files?: string[];
     impact?: ImpactLevel;
-    contextPressure?: number;
   }
 ): Promise<void> {
   const logger = new SessionLogger();
@@ -499,11 +462,10 @@ export async function logEvent(
  */
 export async function createSessionLog(
   sessionId: string,
-  branch: string,
-  initialPressure = 0.15
+  branch: string
 ): Promise<SessionLogger> {
   const logger = new SessionLogger();
-  await logger.initialize(sessionId, branch, initialPressure);
+  await logger.initialize(sessionId, branch);
   return logger;
 }
 
