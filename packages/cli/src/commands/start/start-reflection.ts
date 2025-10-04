@@ -17,7 +17,6 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { getUserEmail, getGinkoDir, detectWorkMode } from '../../utils/helpers.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
-import { PressureMonitor } from '../../core/pressure-monitor.js';
 import { SessionLogManager } from '../../core/session-log-manager.js';
 
 /**
@@ -79,10 +78,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Initialize session logging (ADR-033)
       spinner.text = 'Creating session log...';
       await this.initializeSessionLog(context, options);
-      
-      // Display pressure info
-      const pressureReading = PressureMonitor.getPressureReading();
-      spinner.info(`Context Pressure: ${(pressureReading.pressure * 100).toFixed(0)}% (${pressureReading.zone} zone)`);
+
       if (!options.noLog) {
         spinner.info('Session logging enabled (use --no-log to disable)');
       }
@@ -659,9 +655,6 @@ Example output structure:
         context.currentBranch || 'unknown'
       );
     }
-
-    // Reset pressure monitor
-    PressureMonitor.reset();
   }
 }
 

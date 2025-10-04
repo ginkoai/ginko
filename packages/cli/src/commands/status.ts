@@ -1,9 +1,9 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-10-01
- * @tags: [cli, status, session, info, progressive-learning, context-pressure]
- * @related: [pressure-monitor.ts, session-log-manager.ts]
+ * @updated: 2025-10-03
+ * @tags: [cli, status, session, info, progressive-learning, defensive-logging]
+ * @related: [session-log-manager.ts]
  * @priority: medium
  * @complexity: low
  */
@@ -14,7 +14,6 @@ import path from 'path';
 import simpleGit from 'simple-git';
 import { getUserEmail, getGinkoDir, formatTimeAgo, getProjectInfo } from '../utils/helpers.js';
 import { ProgressiveLearning } from '../utils/progressive-learning.js';
-import { PressureMonitor } from '../core/pressure-monitor.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 
 export async function statusCommand() {
@@ -54,36 +53,9 @@ export async function statusCommand() {
       console.log(chalk.dim(`  Run 'ginko start' to begin`));
     }
 
-    // Context Pressure (NEW - ADR-033)
-    const pressureReading = PressureMonitor.getPressureReading();
+    // Session logging status
     const hasSessionLog = await SessionLogManager.hasSessionLog(sessionDir);
 
-    console.log(chalk.cyan('\n📊 Context Pressure'));
-
-    // Color code pressure based on zone
-    let pressureColor: chalk.Chalk;
-    let zoneEmoji: string;
-    switch (pressureReading.zone) {
-      case 'optimal':
-        pressureColor = chalk.green;
-        zoneEmoji = '✅';
-        break;
-      case 'degradation':
-        pressureColor = chalk.yellow;
-        zoneEmoji = '⚠️';
-        break;
-      case 'critical':
-        pressureColor = chalk.red;
-        zoneEmoji = '🔴';
-        break;
-    }
-
-    const pressurePercent = (pressureReading.pressure * 100).toFixed(0);
-    console.log(`  Pressure: ${pressureColor(pressurePercent + '%')} ${zoneEmoji} (${pressureReading.zone} zone)`);
-    console.log(`  Quality Estimate: ${pressureColor(pressureReading.qualityEstimate + '%')}`);
-    console.log(`  ${chalk.dim('💡')} ${pressureReading.recommendation}`);
-
-    // Session logging status
     if (hasSessionLog) {
       const logContent = await SessionLogManager.loadSessionLog(sessionDir);
       const summary = SessionLogManager.getSummary(logContent);
@@ -92,7 +64,6 @@ export async function statusCommand() {
       console.log(`  Status: ${chalk.green('Active')}`);
       console.log(`  Entries: ${summary.totalEntries}`);
       console.log(`  Files: ${summary.filesAffected}`);
-      console.log(`  Avg Pressure: ${(summary.avgPressure * 100).toFixed(0)}%`);
 
       // Show breakdown by category
       if (summary.totalEntries > 0) {
