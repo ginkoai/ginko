@@ -371,6 +371,71 @@ No changes required. Session logging continues to work, now with simpler impleme
 
 5. **Defensive Logging Works**: "Always log significant events" is better than "log when conditions are right"
 
+## Broader Implications
+
+### The Vendor Complexity Trap
+
+Modern AI systems are increasingly complex:
+- **Multi-agent routing** with independent context windows
+- **Frequent model updates** and replacements
+- **Vendor-specific implementations** (OpenAI, Anthropic, Google, local)
+- **Dynamic context allocation** across subagents
+
+**Example of Routing Complexity**:
+```
+User Query
+  → Main Model (context window: 200k)
+    → Routes to Search Agent (context: 128k)
+    → Routes to Code Agent (context: 200k)
+    → Routes to Analysis Agent (context: 100k)
+```
+
+**Anti-Pattern**: Try to measure and adapt to every vendor's implementation
+- Which agent's context matters?
+- Do we aggregate? Average? Track separately?
+- What about agent hand-offs?
+- Different vendors route differently
+- Models change frequently
+
+**Better Pattern**: Understand fundamental constraints, adopt simple model-agnostic strategies
+- Constraint: Context degrades over time
+- Solution: Log events as they occur
+- Works regardless of vendor, routing, or model architecture
+
+### The Simplicity Principle for AI Integration
+
+When designing systems that integrate with AI:
+
+1. **Understand the fundamentals** (not the implementation details)
+   - Context has limits
+   - Quality can degrade
+   - Different models behave differently
+
+2. **Design simple, observable solutions**
+   - Event-based triggers (concrete)
+   - Not estimation-based triggers (abstract)
+   - Works across all implementations
+
+3. **Avoid vendor coupling**
+   - No model-specific APIs
+   - No token counting dependencies
+   - No architecture assumptions
+
+4. **Test across models**
+   - Verify with Claude, GPT, Gemini
+   - Try local models (Ollama, LM Studio)
+   - Ensure true model-agnosticism
+
+### Future-Proofing
+
+This approach survives:
+- ✅ Model updates (GPT-4 → GPT-5, Claude 3 → 4)
+- ✅ Vendor changes (switching providers)
+- ✅ Architecture shifts (single-agent → multi-agent)
+- ✅ New AI paradigms (current unknown unknowns)
+
+**Key Learning**: Don't try to outsmart the model vendors; understand the fundamentals of AI model constraints and adopt simple strategies that remain model-agnostic.
+
 ## References
 
 ### Related ADRs
