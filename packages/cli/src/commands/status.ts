@@ -124,21 +124,6 @@ export async function statusCommand() {
     // Show smart suggestions (enhanced with pressure awareness)
     const suggestions = await ProgressiveLearning.getSmartSuggestions(gitStatus);
 
-    // Add pressure-aware suggestions
-    if (pressureReading.pressure > 0.85 && pressureReading.pressure < 0.95) {
-      suggestions.push({
-        type: 'warning',
-        message: 'Context pressure is high - consider running "ginko handoff" soon',
-        command: 'ginko handoff'
-      });
-    } else if (pressureReading.pressure >= 0.95) {
-      suggestions.push({
-        type: 'urgent',
-        message: 'Critical context pressure - run "ginko handoff" now to preserve quality',
-        command: 'ginko handoff'
-      });
-    }
-
     if (suggestions.length > 0) {
       console.log(ProgressiveLearning.formatSuggestions(suggestions));
     }

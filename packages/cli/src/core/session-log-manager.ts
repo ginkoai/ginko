@@ -280,8 +280,7 @@ Impact: ${entry.impact}
       session_id: metadata.session_id || '',
       started: metadata.started || '',
       user: metadata.user || '',
-      branch: metadata.branch || '',
-      context_pressure_at_start: parseFloat(metadata.context_pressure_at_start || '0')
+      branch: metadata.branch || ''
     };
   }
 
@@ -330,8 +329,7 @@ Impact: ${entry.impact}
         category: category as LogCategory,
         description,
         files: files.length > 0 ? files : undefined,
-        impact,
-        context_pressure: pressure
+        impact
       });
     }
 
@@ -345,7 +343,6 @@ Impact: ${entry.impact}
     totalEntries: number;
     byCategory: Record<string, number>;
     filesAffected: number;
-    avgPressure: number;
   } {
     const timeline = this.extractEntries(logContent, 'Timeline');
     const decisions = this.extractEntries(logContent, 'Key Decisions');
@@ -356,12 +353,10 @@ Impact: ${entry.impact}
     const allEntries = [...timeline, ...decisions, ...insights, ...git, ...achievements];
 
     const byCategory: Record<string, number> = {};
-    let totalPressure = 0;
     const filesSet = new Set<string>();
 
     for (const entry of allEntries) {
       byCategory[entry.category] = (byCategory[entry.category] || 0) + 1;
-      totalPressure += entry.context_pressure;
 
       if (entry.files) {
         entry.files.forEach(f => filesSet.add(f));
@@ -371,8 +366,7 @@ Impact: ${entry.impact}
     return {
       totalEntries: allEntries.length,
       byCategory,
-      filesAffected: filesSet.size,
-      avgPressure: allEntries.length > 0 ? totalPressure / allEntries.length : 0
+      filesAffected: filesSet.size
     };
   }
 }

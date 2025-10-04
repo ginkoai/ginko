@@ -322,6 +322,9 @@ branch: ${metadata.branch}
 
     return markdown;
   }
+
+  /**
+   * Parse log file content into SessionLog structure
    */
   private parseLogFile(content: string): SessionLog {
     // Extract frontmatter

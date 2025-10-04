@@ -40,7 +40,15 @@
       "Bash(do git mv \"$file\" docs/adr/)",
       "Bash(done)",
       "Bash(cut:*)",
-      "Bash(ginko start:*)"
+      "Bash(ginko start:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(xargs cat:*)",
+      "Bash(md5sum:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(head:*)",
+      "Bash(git merge:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run build:cli:*)"
     ],
     "deny": [],
     "ask": []
