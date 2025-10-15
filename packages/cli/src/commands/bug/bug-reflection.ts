@@ -14,7 +14,7 @@ import { BugContextGatherer } from './bug-context-gatherer.js';
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
-import { pathManager } from '../../core/config-backup/path-config.js';
+import { getGinkoDir } from '../../utils/helpers.js';
 import { execSync } from 'child_process';
 
 interface BugOptions {
@@ -69,14 +69,7 @@ export class BugReflectionCommand extends ReflectionCommand {
     const filename = `BUG-${bugNumber}-${slug}.md`;
 
     // Generate AI prompt
-    const prompt = await this.generatePrompt(intent, template, context, {
-      priority,
-      status: options.status || 'Open',
-      reporter: options.reporter || await this.getGitUser(),
-      number: bugNumber,
-      includeReproduction: options.reproduce !== false,
-      skipAnalysis: options['no-analysis'] === true
-    });
+    const prompt = await this.generatePrompt(intent, template, context);
 
     console.log(chalk.blue('📋 Bug Analysis:'));
     console.log(chalk.dim(`   Priority: ${priority} (${options.priority ? 'specified' : 'auto-detected'})`));
@@ -102,7 +95,8 @@ export class BugReflectionCommand extends ReflectionCommand {
     });
 
     // Save bug report
-    const bugsDir = path.join(pathManager.getGinkoRoot(), 'bugs');
+    const ginkoDir = await getGinkoDir();
+    const bugsDir = path.join(ginkoDir, 'bugs');
     await fs.mkdir(bugsDir, { recursive: true });
 
     const bugPath = path.join(bugsDir, filename);
@@ -189,7 +183,8 @@ export class BugReflectionCommand extends ReflectionCommand {
    * Get next bug number
    */
   private async getNextBugNumber(): Promise<string> {
-    const bugsDir = path.join(pathManager.getGinkoRoot(), 'bugs');
+    const ginkoDir = await getGinkoDir();
+    const bugsDir = path.join(ginkoDir, 'bugs');
 
     try {
       await fs.mkdir(bugsDir, { recursive: true });
@@ -378,7 +373,8 @@ ${context.workaround || 'No workaround identified yet.'}
    * Update bug index for querying
    */
   private async updateBugIndex(number: string, filename: string, metadata: any): Promise<void> {
-    const bugsDir = path.join(pathManager.getGinkoRoot(), 'bugs');
+    const ginkoDir = await getGinkoDir();
+    const bugsDir = path.join(ginkoDir, 'bugs');
     const indexPath = path.join(bugsDir, 'index.json');
 
     let index: any = { bugs: [] };

@@ -218,7 +218,7 @@ export class GitValidator implements Validator {
   private async getGitVersion(): Promise<string | undefined> {
     try {
       const version = await this.git.version();
-      return version.installed;
+      return version.installed ? 'installed' : undefined;
     } catch {
       return undefined;
     }
@@ -279,7 +279,8 @@ export class GitValidator implements Validator {
     const suggestions: string[] = [];
 
     if (error instanceof GitError) {
-      switch (error.git?.exitCode) {
+      const exitCode = (error as any).git?.exitCode;
+      switch (exitCode) {
         case 128:
           suggestions.push(
             'Repository may be corrupted or inaccessible',

@@ -10,7 +10,7 @@
  */
 
 import chalk from 'chalk';
-import { pathManager } from './config-backup/path-config.js';
+import { pathManager } from './utils/paths.js';
 
 /**
  * Universal Reflection Pattern
@@ -326,16 +326,8 @@ export class ReflectionFactory {
       'bug', 'changelog'
     ];
 
-    for (const domain of domains) {
-      const config = new (class extends ReflectionCommand {
-        async execute() {}
-      })(domain).loadDomainConfig(domain);
-
-      if (config.detectPatterns.some(pattern => pattern.test(intent))) {
-        return domain;
-      }
-    }
-
+    // Domain auto-detection disabled - requires explicit domain parameter
+    // TODO: Implement proper domain detection without accessing protected methods
     return null;
   }
 }

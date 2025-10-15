@@ -10,12 +10,32 @@
  */
 
 import { HandoffPipeline, HandoffReflectionCommand } from './handoff-reflection-pipeline.js';
+import { saveSessionLogAsHandoff } from './handoff-save.js';
+import { SessionLogManager } from '../../core/session-log-manager.js';
+import { getUserEmail, getGinkoDir } from '../../utils/helpers.js';
+import * as path from 'path';
 
 /**
  * Handoff command router
  * Routes between AI-enhanced pipeline and legacy implementations
  */
 export async function handoffCommand(options: any = {}): Promise<void> {
+  // Get user directory
+  const ginkoDir = await getGinkoDir();
+  const userEmail = await getUserEmail();
+  const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
+  const userDir = path.join(ginkoDir, 'sessions', userSlug);
+
+  // Check for session log (ADR-033 Strategy 1)
+  const hasLog = await SessionLogManager.hasSessionLog(userDir);
+
+  if (hasLog && !options.noai && !options.legacy) {
+    // Strategy 1: Deterministic save of session log
+    await saveSessionLogAsHandoff(userDir, options.message);
+    return;
+  }
+
+  // Strategy 2: Fallback to AI synthesis
   // Use legacy implementation if AI enhancement is disabled
   if (options.noai || options.legacy) {
     // Try enhanced version first, fall back to basic

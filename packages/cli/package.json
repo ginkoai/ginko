@@ -1,7 +1,7 @@
 {
   "name": "@ginkoai/cli",
   "version": "1.0.0",
-  "description": "Privacy-first CLI for AI-assisted development",
+  "description": "Privacy-first CLI for AI-assisted development. Your code never leaves your machine.",
   "main": "dist/index.js",
   "bin": {
     "ginko": "./dist/index.js"
@@ -9,18 +9,43 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "ai",
     "development",
     "git",
     "privacy",
-    "cli"
+    "cli",
+    "context",
+    "session",
+    "handoff",
+    "reflection",
+    "claude",
+    "copilot",
+    "cursor"
   ],
   "author": "Ginko AI",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ginkoai/ginko.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/ginkoai/ginko#readme",
+  "bugs": {
+    "url": "https://github.com/ginkoai/ginko/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "dependencies": {
     "@types/node": "^20.19.9",
     "@types/uuid": "^10.0.0",

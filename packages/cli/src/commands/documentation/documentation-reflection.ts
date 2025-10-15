@@ -14,6 +14,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import chalk from 'chalk';
 
 const execAsync = promisify(exec);
 
@@ -24,7 +25,21 @@ export class DocumentationReflectionCommand extends ReflectionCommand {
   constructor() {
     super('documentation');
   }
-  
+
+  /**
+   * Execute documentation reflection
+   */
+  async execute(intent: string, options?: any): Promise<void> {
+    const template = await this.loadTemplate();
+    const context = await this.gatherContext({ raw: intent, timestamp: new Date().toISOString() });
+    const prompt = this.generateReflectionPrompt({ raw: intent }, template, context);
+
+    console.log(chalk.blue('📚 Documentation Reflection'));
+    console.log(chalk.dim('   Use this prompt with AI to generate documentation'));
+    console.log();
+    console.log(prompt);
+  }
+
   /**
    * Load documentation-specific template
    */

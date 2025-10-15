@@ -152,6 +152,13 @@ export class PathManager {
   }
 
   /**
+   * Get Ginko root directory (.ginko folder)
+   */
+  getGinkoRoot(): string {
+    return this.config.ginko.root;
+  }
+
+  /**
    * Resolve path with platform-specific separators
    */
   resolvePath(...segments: string[]): string {

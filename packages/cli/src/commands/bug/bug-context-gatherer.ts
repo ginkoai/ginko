@@ -12,7 +12,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
-import { pathManager } from '../../core/config-backup/path-config.js';
+import { getGinkoDir } from '../../utils/helpers.js';
 
 export interface BugContext {
   errors: string[];
@@ -164,7 +164,8 @@ export class BugContextGatherer {
    */
   private async findSimilarBugs(description: string): Promise<string[]> {
     try {
-      const bugsDir = path.join(pathManager.getGinkoRoot(), 'bugs');
+      const ginkoDir = await getGinkoDir();
+      const bugsDir = path.join(ginkoDir, 'bugs');
       const files = await fs.readdir(bugsDir);
 
       const bugFiles = files.filter(f => f.startsWith('BUG-') && f.endsWith('.md'));

@@ -12,7 +12,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Platform, PlatformAdapter, HookInfo } from './platform-adapter';
-import HookTemplates from './hook-templates';
+import { HookTemplates } from './hook-templates';
 
 export interface MigrationResult {
   success: boolean;

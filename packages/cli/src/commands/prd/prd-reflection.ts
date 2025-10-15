@@ -26,7 +26,21 @@ export class PRDReflectionCommand extends ReflectionCommand {
   constructor() {
     super('prd');
   }
-  
+
+  /**
+   * Execute PRD reflection to create PRD document
+   */
+  async execute(intent: string, options?: any): Promise<void> {
+    const template = await this.loadTemplate();
+    const context = await this.gatherContext({ raw: intent, timestamp: new Date().toISOString() });
+    const prompt = this.generateReflectionPrompt({ raw: intent }, template, context);
+
+    console.log(chalk.blue('📋 PRD Reflection'));
+    console.log(chalk.dim('   Use this prompt with AI to generate a PRD'));
+    console.log();
+    console.log(prompt);
+  }
+
   /**
    * Save PRD artifact to proper location
    */

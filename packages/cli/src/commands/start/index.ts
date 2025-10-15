@@ -10,12 +10,16 @@
  */
 
 import { StartReflectionCommand } from './start-reflection.js';
+import { loadPreviousSession } from './start-with-synthesis.js';
 
 /**
  * Start command router
  * Routes between AI-enhanced reflection and legacy implementations
  */
 export async function startCommand(options: any = {}) {
+  // Load and synthesize previous session (ADR-033: synthesis at optimal 0-20% pressure)
+  await loadPreviousSession();
+
   // Use legacy implementation if AI enhancement is disabled
   if (options.noai || options.legacy) {
     // Try enhanced version first, fall back to basic

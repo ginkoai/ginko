@@ -12,6 +12,7 @@
 import { ReflectionCommand } from '../../core/reflection-pattern.js';
 import { ContextGatherer } from './context-gatherer.js';
 import { BacklogBase } from './base.js';
+import chalk from 'chalk';
 
 /**
  * Backlog-specific implementation of the Reflection Pattern
@@ -19,13 +20,27 @@ import { BacklogBase } from './base.js';
 export class BacklogReflectionCommand extends ReflectionCommand {
   private contextGatherer: ContextGatherer;
   private backlog: BacklogBase;
-  
+
   constructor() {
     super('backlog');
     this.contextGatherer = new ContextGatherer();
     this.backlog = new BacklogBase();
   }
-  
+
+  /**
+   * Execute backlog reflection to create backlog item
+   */
+  async execute(intent: string, options?: any): Promise<void> {
+    const template = await this.loadTemplate();
+    const context = await this.gatherContext({ raw: intent, timestamp: new Date().toISOString() });
+    const prompt = this.generateReflectionPrompt({ raw: intent }, template, context);
+
+    console.log(chalk.blue('📋 Backlog Reflection'));
+    console.log(chalk.dim('   Use this prompt with AI to generate a backlog item'));
+    console.log();
+    console.log(prompt);
+  }
+
   /**
    * Load backlog-specific template
    */

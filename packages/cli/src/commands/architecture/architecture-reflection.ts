@@ -26,7 +26,21 @@ export class ArchitectureReflectionCommand extends ReflectionCommand {
   constructor() {
     super('architecture');
   }
-  
+
+  /**
+   * Execute architecture reflection to create ADR
+   */
+  async execute(intent: string, options?: any): Promise<void> {
+    const template = await this.loadTemplate();
+    const context = await this.gatherContext({ raw: intent, timestamp: new Date().toISOString() });
+    const prompt = this.generateReflectionPrompt({ raw: intent }, template, context);
+
+    console.log(chalk.blue('🏗️  Architecture Reflection'));
+    console.log(chalk.dim('   Use this prompt with AI to generate an ADR'));
+    console.log();
+    console.log(prompt);
+  }
+
   /**
    * Save ADR artifact to proper location
    */

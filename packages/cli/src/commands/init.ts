@@ -22,7 +22,8 @@ import { OpenAIAdapter } from '../adapters/openai-adapter.js';
 import { GenericAdapter } from '../adapters/generic-adapter.js';
 import { CursorAdapter } from '../adapters/cursor-adapter.js';
 import { findGinkoRoot } from '../utils/ginko-root.js';
-import { pathManager } from '../core/config-backup/path-config.js';
+import { pathManager } from '../core/utils/paths.js';
+import { getUserEmail } from '../utils/helpers.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();
@@ -105,13 +106,7 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
         const analyzer = new ProjectAnalyzer(projectRoot);
 
         // Perform analysis
-        deepAnalysis = await analyzer.analyzeProject({
-          includeFiles: true,
-          analyzeDependencies: true,
-          detectFrameworks: true,
-          scanForPatterns: true,
-          generateSummary: true
-        });
+        deepAnalysis = await analyzer.analyze();
 
         // Save analysis results using pathManager
         const analysisPath = pathManager.joinPaths(pathConfig.ginko.context, 'project-analysis.json');
@@ -128,27 +123,26 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     spinner.start('Generating AI collaboration instructions...');
 
     try {
-      const projectContext: ProjectContext = deepAnalysis || await new ProjectAnalyzer(projectRoot).getBasicContext();
+      const projectContext: ProjectContext = deepAnalysis || await new ProjectAnalyzer(projectRoot).analyze();
 
       // Create template variables
       const variables: TemplateVariables = {
         projectName: path.basename(projectRoot),
-        projectType: projectContext.type || 'unknown',
+        projectType: projectContext.projectType || 'unknown',
         techStack: projectContext.techStack || [],
         frameworks: projectContext.frameworks || [],
         languages: projectContext.languages || [],
         packageManager: projectContext.packageManager || 'unknown',
-        testCommand: projectContext.scripts?.test || 'npm test',
-        buildCommand: projectContext.scripts?.build || 'npm run build',
-        devCommand: projectContext.scripts?.dev || 'npm run dev',
-        hasDatabase: projectContext.hasDatabase || false,
+        testCommand: projectContext.testCommand || 'npm test',
+        buildCommand: projectContext.buildCommand || 'npm run build',
         hasTests: projectContext.hasTests || false,
-        timestamp: new Date().toISOString().split('T')[0]
+        userEmail: await getUserEmail(),
+        userName: 'Developer',
+        date: new Date().toISOString().split('T')[0]
       };
 
       // Generate instructions
-      const template = new AiInstructionsTemplate();
-      const instructions = template.generate(variables);
+      const instructions = AiInstructionsTemplate.generate(variables);
 
       // Save instructions using pathManager
       const instructionsPath = pathManager.joinPaths(projectRoot, 'CLAUDE.md');

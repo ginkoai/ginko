@@ -126,7 +126,7 @@ async function createDomainReflection(domain: string, noai = false): Promise<any
 
     case 'explore':
       const { ExploreReflectionCommand } = await import('./explore/explore-reflection-pipeline.js');
-      return new ExploreReflectionCommand();
+      return new ExploreReflectionCommand(undefined);
 
     case 'plan':
       const { PlanReflectionCommand } = await import('./plan/plan-reflection-pipeline.js');
