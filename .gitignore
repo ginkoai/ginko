@@ -127,3 +127,6 @@ api/_lib/
 
 # Ginko local config (contains preferences)
 .ginko/config.json
+
+# Claude Code local settings (user-specific permissions)
+.claude/settings.local.json
