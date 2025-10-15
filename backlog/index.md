@@ -3,10 +3,11 @@
 > A git-native backlog system. Just markdown files, no database required.
 
 ## Quick Stats
-- **Total Items**: 15 (10 features, 3 stories, 2 tasks)
+- **Total Items**: 11 (6 features, 3 stories, 2 tasks)
 - **In Progress**: 3
 - **Completed**: 2
-- **Proposed**: 10
+- **Proposed**: 6
+- **Archived**: 4 (outdated pressure measurement approach)
 
 ## 🔴 CRITICAL Priority
 
@@ -30,6 +31,8 @@
   - Automatic recovery with zero data loss
 
 ### Completed ✅
+- [TASK-004](items/TASK-004.md): Session Logging CLI Command Implementation
+  - Completed 2025-10-15 - Implemented `ginko log` command for ADR-033 defensive logging
 - [FEATURE-019](items/FEATURE-019-context-reflexes-value.md): Enhanced Context Reflexes with Value Focus
   - Completed 2025-09-10
 - [FEATURE-014](items/FEATURE-014-intelligent-statusline.md): Intelligent Statusline via Hook Integration
@@ -115,6 +118,21 @@ Successfully migrated 9 high-priority features from the monolithic BACKLOG.md. C
 - ✅ Multiple devs can work without conflicts
 - ✅ AI can process entire backlog efficiently
 
+## Archived Items
+
+### Outdated Pressure Measurement Approach (2025-10-15)
+Four features archived based on flawed context pressure measurement strategy:
+- FEATURE-030, FEATURE-031 (test placeholders)
+- FEATURE-032 (CLI staleness detection)
+- FEATURE-033 (Pressure integration with Claude Code)
+
+**Why archived:** ADR-033 uses defensive event logging instead of real-time pressure measurement. See `items/archive/outdated-pressure-approach/README.md` for details.
+
+**Current approach:**
+- Log key events at session start when AI quality is optimal
+- Synthesize full context at next `ginko start` when reasoning is maximum
+- Already implemented in `packages/cli/src/commands/start/` and `core/session-log-manager.ts`
+
 ---
 
-*Last Updated: 2025-09-10*
+*Last Updated: 2025-10-15*

@@ -34,6 +34,7 @@ import { initCopilotCommand } from './commands/init-copilot.js';
 import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
 import { backlogCommand } from './commands/backlog/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
+import { logCommand, logExamples } from './commands/log.js';
 
 const program = new Command();
 
@@ -85,6 +86,21 @@ program
   .command('status')
   .description('Show current session status')
   .action(statusCommand);
+
+program
+  .command('log <description>')
+  .description('Log an event to the current session (ADR-033 defensive logging)')
+  .option('-c, --category <category>', 'Event category: fix, feature, decision, insight, git, achievement', 'feature')
+  .option('-i, --impact <impact>', 'Impact level: high, medium, low', 'medium')
+  .option('-f, --files <files>', 'Comma-separated list of files affected')
+  .option('--examples', 'Show logging examples')
+  .action((description, options) => {
+    if (options.examples) {
+      logExamples();
+      return;
+    }
+    return logCommand(description, options);
+  });
 
 program
   .command('context')
