@@ -85,12 +85,43 @@ But: "Worth remembering that..." (natural learning capture)
 **Example**: "This refactoring makes the code cleaner, but does it move us toward Chris's objective?"
 
 ##### 7. "Health Monitor" Reflex 🏥
-**Triggers**: 
+**Triggers**:
 - Every 15-30 minutes
 - Before any commit
 - After significant changes
 **Actions**: Quick validation that tests pass, builds work, nothing broken
 **Example**: "Let me verify the build still works after these changes..."
+
+##### 8. "Defensive Logging" Reflex 📝 (ADR-033)
+**Triggers** (AUTONOMOUS - log immediately after):
+- Fixing any bug (root cause identified)
+- Implementing any feature (new functionality added)
+- Making architectural/design decisions
+- Discovering insights, gotchas, or patterns
+- Git operations (commits, merges, branch changes)
+- Achieving milestones (tests pass, features complete)
+
+**Behavior**: Use `Bash` tool to call `ginko log` with context-rich description
+**Example**: After fixing a bug → quietly log → continue
+
+**Quality Standard**: Write for a fresh AI with zero context
+- Include WHAT happened, WHY it happened, HOW you fixed it
+- Add file paths and line numbers
+- Explain root cause and impact
+- Make it actionable for next session
+
+**Good Logging**:
+```bash
+ginko log "Fixed authentication timeout in login flow. Root cause: bcrypt rounds set to 15 (too slow for production load). Reduced to 11, achieving 200ms response time while maintaining security." \
+  --category=fix --impact=high --files="src/auth/login.ts:42-50"
+```
+
+**Bad Logging** (too terse):
+```bash
+ginko log "Fixed auth timeout" --category=fix
+```
+
+**Integration**: This reflex works silently - don't announce you're logging unless relevant to conversation flow
 
 #### Reflex Sensitivity by Work Mode
 
@@ -354,33 +385,32 @@ Session logging integrates seamlessly with existing Context Reflexes. When refle
        → High-quality handoff despite high pressure
 ```
 
-**Using the Logging API**:
+**Real Session Examples - Use Bash Tool**:
 
-```typescript
-import { logEvent } from './utils/session-logger.js';
+```bash
+# After fixing a bug - include root cause and solution
+ginko log "Resolved race condition in session initialization. Root cause: multiple async operations writing to same file. Added mutex lock to serialize writes." \
+  --category=fix --impact=high --files="session-logger.ts:89"
 
-// After fixing a bug
-await logEvent('fix', 'Resolved race condition in session initialization by adding mutex lock', {
-  files: ['session-logger.ts:89'],
-  impact: 'high'
-});
+# After implementing a feature - include purpose and approach
+ginko log "Added archive() method to preserve completed sessions for team review. Moves current-session-log.md to archive/ with timestamp, enables session history browsing." \
+  --category=feature --impact=medium --files="session-logger.ts:195,session-logger.ts:223"
 
-// After implementing a feature
-await logEvent('feature', 'Added archive() method to preserve completed sessions for team review', {
-  files: ['session-logger.ts:195', 'session-logger.ts:223'],
-  impact: 'medium'
-});
+# After making a decision - include alternatives and rationale
+ginko log "Chose event-driven logging over periodic snapshots. Rationale: Events align with developer actions, providing meaningful context. Periodic snapshots would capture arbitrary states without semantic meaning." \
+  --category=decision --impact=high
 
-// After making a decision
-await logEvent('decision', 'Chose event-driven logging over periodic snapshots for better context alignment', {
-  impact: 'high'
-});
+# After discovering an insight - include discovery context
+ginko log "Discovered git operations require absolute paths for cross-platform compatibility. Windows path resolution differs from Unix. Using path.join() prevents platform-specific bugs." \
+  --category=insight --impact=medium --files="helpers.ts:45"
 
-// After discovering an insight
-await logEvent('insight', 'Git operations work better with absolute paths in cross-platform environments', {
-  files: ['helpers.ts:45'],
-  impact: 'low'
-});
+# After git operations - include what changed
+ginko log "Committed session logging CLI implementation (d56466f). Added ginko log command, archived outdated backlog features, completed TASK-004." \
+  --category=git --impact=high
+
+# After achievements - include significance
+ginko log "All integration tests passing after session logging refactor. Validates event capture, file persistence, and handoff synthesis working end-to-end." \
+  --category=achievement --impact=high
 ```
 
 #### Benefits of Session Logging
@@ -692,61 +722,93 @@ Log events after significant milestones:
 - Tests passing
 - Milestones reached
 
-### How to Write Concise, Valuable Entries
+### How to Write Context-Rich, Valuable Entries
 
-**Format:**
-```markdown
-### HH:MM - [category]
-Brief description (1-2 sentences max)
-Files: path/to/file.ts:line-range, other-file.ts:lines
-Impact: high|medium|low
+**The Fresh Session Test**: Write each log entry as if explaining to a new AI with ZERO context about your session. Include WHY, not just WHAT.
+
+**Autonomous Logging via CLI**:
+```bash
+# Use Bash tool to call ginko log after significant events
+ginko log "DESCRIPTION" --category=CATEGORY --impact=IMPACT --files="file.ts:lines"
 ```
 
-**Good Examples:**
+**Quality Examples - Write for Future Context**:
 
-```markdown
-### 14:30 - [feature]
-Implemented JWT authentication with access/refresh token rotation
-Files: src/auth/jwt.ts:1-120, src/middleware/auth.ts:40-85
-Impact: high | Pressure: 35%
+**Fix - Include Root Cause:**
+```bash
+ginko log "Fixed authentication timeout in login flow. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11 for 200ms response time while maintaining security standards." \
+  --category=fix --impact=high --files="src/auth/login.ts:42-50"
 ```
 
-```markdown
-### 15:15 - [insight]
-Discovered bcrypt rounds 10-11 optimal balance (security vs performance)
-Impact: medium | Pressure: 42%
+**Decision - Include Rationale:**
+```bash
+ginko log "Chose JWT with refresh tokens over server-side sessions. Rationale: stateless scaling for mobile clients. Trade-off: increased token management complexity vs simplified server architecture." \
+  --category=decision --impact=high
 ```
 
-**Bad Examples (Too Vague):**
+**Feature - Include Purpose:**
+```bash
+ginko log "Implemented session logging CLI command to enable defensive logging during development. Addresses ADR-033 by providing user/AI interface to log events throughout session." \
+  --category=feature --impact=high --files="packages/cli/src/commands/log.ts,packages/cli/src/index.ts"
+```
 
-```markdown
-### 14:30 - [feature]
-Fixed auth stuff
-Impact: medium | Pressure: 35%
+**Insight - Include Context:**
+```bash
+ginko log "Discovered bcrypt rounds 10-11 provide optimal security/performance balance. Testing showed rounds 15 caused 800ms login delays; rounds 11 achieved 200ms with acceptable entropy." \
+  --category=insight --impact=medium --files="src/auth/password.ts:23"
+```
+
+**Bad Examples - Too Vague for Handoff:**
+
+```bash
+# DON'T: No context, no value to fresh AI
+ginko log "Fixed auth" --category=fix
+
+# DON'T: Missing WHY
+ginko log "Updated login function" --category=feature
+
+# DON'T: No actionable information
+ginko log "Made a decision about sessions" --category=decision
+```
+
+### Autonomous Logging in Practice
+
+**Silent Operation**: Logging happens automatically via the "Defensive Logging" reflex. Don't interrupt conversation flow to announce logging unless contextually relevant.
+
+**Typical Pattern**:
+```
+Human: "We just fixed the auth timeout"
+AI: [silently logs via Bash]
+AI: "Great! Now let's test the login flow..."
+```
+
+**Not**:
+```
+Human: "We just fixed the auth timeout"
+AI: "Let me log that event first..."
+AI: [logs]
+AI: "Okay, logged. Now let's..."
 ```
 
 ### Integration with Work Modes
 
-#### Hack & Ship Mode
-- **Frequency**: Log every 60-90 minutes
-- **Focus**: Achievements, blockers, decisions
-- **Detail**: Minimal (1 sentence)
-- **Categories**: feature, fix, achievement
-- **Pressure threshold**: Handoff at 85-90%
+#### Hack & Ship Mode 🚀
+- **Logging Triggers**: After major changes only (fixes, features, achievements)
+- **Quality Bar**: Essential context (WHAT + WHY in 1-2 sentences)
+- **Example**: "Fixed login timeout. Root cause: slow bcrypt. Reduced rounds to 11."
+- **Frequency**: 3-5 log entries per session
 
-#### Think & Build Mode
-- **Frequency**: Log every 30-45 minutes
-- **Focus**: Decisions, patterns, files
-- **Detail**: Moderate (1-2 sentences)
-- **Categories**: All categories
-- **Pressure threshold**: Handoff at 75-85%
+#### Think & Build Mode 🎨 (Default)
+- **Logging Triggers**: After all significant events (fixes, features, decisions, insights)
+- **Quality Bar**: Full context (WHAT + WHY + HOW in 2-3 sentences)
+- **Example**: "Chose JWT over sessions for mobile scalability. Trade-off: token management complexity vs stateless scaling benefits."
+- **Frequency**: 5-10 log entries per session
 
-#### Deep Work Mode
-- **Frequency**: Log every 20-30 minutes
-- **Focus**: Comprehensive context, rationale
-- **Detail**: Detailed (2-3 sentences)
-- **Categories**: All categories + extensive insights
-- **Pressure threshold**: Handoff at 70-80%
+#### Deep Work Mode 🔬
+- **Logging Triggers**: After every insight, decision, or discovery
+- **Quality Bar**: Rich context with alternatives and rationale (2-3 detailed sentences)
+- **Example**: "Discovered optimal bcrypt rounds through load testing. Rounds 15 caused 800ms delays. Rounds 11 achieved 200ms with equivalent security per OWASP standards. Documented in auth module."
+- **Frequency**: 10-15 log entries per session
 
 ### Pressure-Aware Workflow
 
