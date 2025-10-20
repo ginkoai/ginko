@@ -1,25 +1,48 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-10-04
- * @tags: [handoff, session-logging, adr-033, deterministic-save]
+ * @updated: 2025-10-20
+ * @tags: [handoff, session-logging, adr-033, adr-036, housekeeping]
  * @related: [./index.ts, ../../core/session-log-manager.ts]
  * @priority: high
- * @complexity: low
- * @dependencies: [fs/promises, path, chalk]
+ * @complexity: medium
+ * @dependencies: [fs/promises, path, chalk, simple-git]
  */
 
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import chalk from 'chalk';
+import simpleGit from 'simple-git';
+import ora from 'ora';
 
 /**
- * Save session log as handoff (deterministic, no AI needed)
- * Implements ADR-033 quality inversion: save raw log, synthesize later
+ * Housekeeping options for handoff
  */
-export async function saveSessionLogAsHandoff(userDir: string, message?: string): Promise<void> {
-  console.log(chalk.cyan('📋 Saving session log as handoff...'));
+export interface HandoffOptions {
+  message?: string;
+  clean?: boolean;      // Clean temp files
+  commit?: boolean;     // Commit staged changes
+  noClean?: boolean;    // Skip cleanup
+  noCommit?: boolean;   // Skip commit
+}
+
+/**
+ * Save session log as handoff with optional housekeeping (ADR-036)
+ *
+ * Handoff is OPTIONAL - provides logical boundary marking + cleanup
+ * Not required for session resumption (ginko start handles that)
+ */
+export async function saveSessionLogAsHandoff(
+  userDir: string,
+  messageOrOptions?: string | HandoffOptions
+): Promise<void> {
+  // Parse options
+  const options: HandoffOptions = typeof messageOrOptions === 'string'
+    ? { message: messageOrOptions }
+    : messageOrOptions || {};
+
+  const spinner = ora('Archiving session log...').start();
 
   const sessionLogPath = path.join(userDir, 'current-session-log.md');
   const archiveDir = path.join(userDir, 'archive');
@@ -29,7 +52,7 @@ export async function saveSessionLogAsHandoff(userDir: string, message?: string)
 
   // Append session-end event if message provided
   let finalContent = logContent;
-  if (message) {
+  if (options.message) {
     const timestamp = new Date().toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
@@ -37,12 +60,12 @@ export async function saveSessionLogAsHandoff(userDir: string, message?: string)
     });
 
     const sessionEndEvent = `
-### ${timestamp} - [session-end]
-Session ended via handoff: ${message}
+### ${timestamp} - [achievement]
+Session handoff: ${options.message}
 Impact: high
 `;
 
-    // Append to Timeline section
+    // Append to Timeline and Achievements
     const timelineIndex = finalContent.indexOf('## Timeline');
     if (timelineIndex !== -1) {
       const nextSectionIndex = finalContent.indexOf('\n## ', timelineIndex + 11);
@@ -69,8 +92,13 @@ Impact: high
   // Save to archive
   await fs.writeFile(archivePath, finalContent, 'utf-8');
 
+  // Delete current session log to create clean slate
+  await fs.unlink(sessionLogPath);
+
   // Get statistics for display
   const stats = SessionLogManager.getSummary(finalContent);
+
+  spinner.succeed('Session archived');
 
   console.log(chalk.green(`  ✅ Handoff saved: ${path.relative(process.cwd(), archivePath)}`));
   console.log(chalk.cyan(`  📊 Session captured:`));
@@ -79,6 +107,103 @@ Impact: high
   console.log(chalk.gray(`     - ${stats.byCategory.insight || 0} insights discovered`));
   console.log(chalk.gray(`     - ${stats.filesAffected} files affected`));
   console.log();
-  console.log(chalk.cyan('  💡 Next: Run `ginko start` to resume (synthesis happens then)'));
-  console.log(chalk.gray('     High-quality summary will be generated at optimal context pressure'));
+
+  // Optional housekeeping tasks (ADR-036)
+  const shouldClean = options.clean || (!options.noClean && stats.totalEntries > 5);
+  const shouldCommit = options.commit && !options.noCommit;
+
+  if (shouldClean) {
+    await performCleanup();
+  }
+
+  if (shouldCommit) {
+    await performCommit(options.message || 'Session handoff');
+  }
+
+  console.log(chalk.cyan('  💡 Next: Run `ginko start` anytime to resume'));
+  console.log(chalk.gray('     Context synthesis happens automatically - no handoff required'));
+  console.log();
+}
+
+/**
+ * Clean up temporary files and artifacts
+ */
+async function performCleanup(): Promise<void> {
+  const spinner = ora('Cleaning temp files...').start();
+
+  try {
+    const projectRoot = process.cwd();
+    const tempPatterns = [
+      '.ginko/temp/**/*',
+      '.ginko/cache/**/*',
+      '**/*.tmp',
+      '**/node_modules/.cache/**/*'
+    ];
+
+    let cleaned = 0;
+
+    for (const pattern of tempPatterns) {
+      try {
+        const globPath = path.join(projectRoot, pattern);
+        // Simple check - just look for .ginko/temp
+        const tempDir = path.join(projectRoot, '.ginko', 'temp');
+        try {
+          const files = await fs.readdir(tempDir);
+          for (const file of files) {
+            await fs.unlink(path.join(tempDir, file));
+            cleaned++;
+          }
+        } catch {
+          // Directory doesn't exist, skip
+        }
+      } catch {
+        // Pattern not found, skip
+      }
+    }
+
+    if (cleaned > 0) {
+      spinner.succeed(`Cleaned ${cleaned} temp files`);
+    } else {
+      spinner.info('No temp files to clean');
+    }
+  } catch (error) {
+    spinner.fail('Cleanup failed');
+    console.log(chalk.dim(`     ${error}`));
+  }
+}
+
+/**
+ * Commit staged changes with handoff message
+ */
+async function performCommit(message: string): Promise<void> {
+  const spinner = ora('Committing changes...').start();
+
+  try {
+    const git = simpleGit();
+    const status = await git.status();
+
+    if (status.files.length === 0) {
+      spinner.info('No changes to commit');
+      return;
+    }
+
+    // Only commit staged files
+    if (status.staged.length === 0) {
+      spinner.warn('No staged files - use git add first');
+      return;
+    }
+
+    const commitMessage = `Session handoff: ${message}
+
+🤖 Generated with [Ginko CLI](https://github.com/anthropics/ginko)
+
+Co-Authored-By: Claude <noreply@anthropic.com>`;
+
+    await git.commit(commitMessage);
+    spinner.succeed(`Committed ${status.staged.length} files`);
+
+  } catch (error) {
+    spinner.fail('Commit failed');
+    console.log(chalk.dim(`     ${error}`));
+  }
 }

@@ -72,13 +72,17 @@ program
 
 program
   .command('handoff [message]')
-  .description('Create a session handoff with AI-enhanced reflection by default')
+  .description('Optional session boundary marker with housekeeping (ADR-036)')
+  .option('--clean', 'Clean temporary files (auto if >5 events)')
+  .option('--commit', 'Commit staged changes with handoff message')
+  .option('--no-clean', 'Skip cleanup even if triggered')
+  .option('--no-commit', 'Skip commit even if --commit specified')
   .option('--noai', 'Disable AI enhancement and use procedural templates')
   .option('--legacy', 'Use original implementation without reflection (deprecated)')
   .option('-v, --verbose', 'Show detailed output')
   .option('-r, --review', 'Review handoff before saving')
   .action((message, options) => {
-    // Use AI-enhanced reflection-based handoff by default
+    // ADR-036: Optional handoff with housekeeping
     return handoffCommand({ message, ...options });
   });
 

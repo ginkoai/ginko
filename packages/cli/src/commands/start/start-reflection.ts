@@ -18,6 +18,7 @@ import ora from 'ora';
 import { getUserEmail, getGinkoDir, detectWorkMode } from '../../utils/helpers.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
 import { SessionLogManager } from '../../core/session-log-manager.js';
+import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -53,19 +54,34 @@ export class StartReflectionCommand extends ReflectionCommand {
       // 1. Parse intent
       const parsedIntent = this.parseIntent(intent);
 
-      // 2. Load template
-      const template = await this.loadTemplate();
-
-      // 3. Gather context (including handoff)
+      // 2. Gather context (including handoff)
       const context = await this.gatherContext(parsedIntent);
 
-      // 4. Determine work mode from context and update context manager
+      // 3. Check for stale session log and auto-archive (ADR-036)
+      spinner.text = 'Checking session log...';
+      const ginkoDir = await getGinkoDir();
+      const userEmail = await getUserEmail();
+      const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
+      const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
+      const projectRoot = process.cwd();
+
+      const wasArchived = await SessionLogManager.autoArchiveIfStale(sessionDir);
+      if (wasArchived) {
+        spinner.info('Previous session archived (>48h or >50 entries)');
+      }
+
+      // 4. Run session synthesis (ADR-036)
+      spinner.text = 'Synthesizing session context...';
+      const synthesizer = new SessionSynthesizer(sessionDir, projectRoot);
+      const synthesis = await synthesizer.synthesize();
+
+      // 5. Determine work mode from context and update context manager
       const workMode = this.determineWorkMode(context, options);
       this.contextManager = new ActiveContextManager(workMode);
 
       spinner.text = 'Loading context modules...';
 
-      // 5. Load initial context using ActiveContextManager
+      // 6. Load initial context using ActiveContextManager
       const sessionData = {
         userSlug: context.userSlug || 'unknown',
         branch: context.currentBranch,
@@ -75,7 +91,7 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       const contextLevel = await this.contextManager.loadInitialContext(sessionData);
 
-      // Initialize session logging (ADR-033)
+      // 7. Initialize session logging if needed (ADR-033)
       spinner.text = 'Creating session log...';
       await this.initializeSessionLog(context, options);
 
@@ -83,10 +99,10 @@ export class StartReflectionCommand extends ReflectionCommand {
         spinner.info('Session logging enabled (use --no-log to disable)');
       }
 
-      // 6. Display session information with loaded context
-      await this.displaySessionInfo(context, contextLevel);
+      // 8. Display session information with synthesis
+      await this.displaySessionInfo(context, contextLevel, synthesis);
 
-      spinner.succeed('Session initialized with progressive context loading!');
+      spinner.succeed('Session initialized with synthesis!');
 
     } catch (error) {
       spinner.fail('Session initialization failed');
@@ -96,10 +112,33 @@ export class StartReflectionCommand extends ReflectionCommand {
   }
 
   /**
-   * Display session information based on context
+   * Display session information based on synthesis (ADR-036)
    */
-  private async displaySessionInfo(context: any, contextLevel?: ContextLevel): Promise<void> {
+  private async displaySessionInfo(context: any, contextLevel?: ContextLevel, synthesis?: SynthesisOutput): Promise<void> {
     console.log('');
+
+    // Display quality tier
+    if (synthesis) {
+      const tierEmoji = {
+        rich: '🌟',
+        medium: '⭐',
+        basic: '✨',
+        minimal: '💫'
+      };
+      console.log(chalk.dim(`${tierEmoji[synthesis.qualityTier]} Context Quality: ${synthesis.qualityTier}`));
+      console.log('');
+    }
+
+    // Display flow state (ADR-036: 1-10 scale with emotional tone)
+    if (synthesis?.flowState) {
+      const flow = synthesis.flowState;
+      const scoreColor = flow.score >= 7 ? chalk.green : flow.score >= 4 ? chalk.yellow : chalk.red;
+      console.log(chalk.cyan('🌊 Flow State:'));
+      console.log(scoreColor(`   Score: ${flow.score}/10 - ${flow.energy}`));
+      console.log(chalk.dim(`   ${flow.emotionalTone}`));
+      console.log(chalk.dim(`   Last activity: ${flow.timeContext}`));
+      console.log('');
+    }
 
     // Display work mode
     const workMode = context.workMode || 'Think & Build';
@@ -110,40 +149,69 @@ export class StartReflectionCommand extends ReflectionCommand {
     console.log(chalk.green('✨ Session Ready!'));
     console.log('');
 
-    // Show handoff goal if available
-    if (context.lastHandoff) {
-      const goalMatch = context.lastHandoff.match(/\*\*Next Session Goal\*\*: (.+)/);
-      if (goalMatch) {
-        console.log(chalk.yellow(`🎯 Goal: ${goalMatch[1]}`));
+    // Show sprint context from synthesis
+    if (synthesis?.sprintContext) {
+      const sprint = synthesis.sprintContext;
+      console.log(chalk.yellow(`🎯 Sprint: ${sprint.goal}`));
+      const progressColor = sprint.progress >= 75 ? chalk.green : sprint.progress >= 50 ? chalk.yellow : chalk.white;
+      console.log(progressColor(`   Progress: ${sprint.progress}% - ${sprint.estimatedCompletion}`));
+      console.log('');
+    }
+
+    // Show work performed from synthesis
+    if (synthesis?.workPerformed) {
+      const work = synthesis.workPerformed;
+
+      if (work.completed.length > 0) {
+        console.log(chalk.green('✅ Completed:'));
+        work.completed.slice(0, 3).forEach(item => {
+          console.log(chalk.dim(`   - ${item}`));
+        });
+        if (work.completed.length > 3) {
+          console.log(chalk.dim(`   ... and ${work.completed.length - 3} more`));
+        }
+        console.log('');
+      }
+
+      if (work.inProgress.length > 0) {
+        console.log(chalk.yellow('🚧 In Progress:'));
+        work.inProgress.forEach(item => {
+          console.log(chalk.dim(`   - ${item}`));
+        });
+        console.log('');
+      }
+
+      if (work.blocked.length > 0) {
+        console.log(chalk.red('🚫 Blocked:'));
+        work.blocked.forEach(item => {
+          console.log(chalk.dim(`   - ${item}`));
+        });
         console.log('');
       }
     }
 
-    // Show workstream if detected
-    if (context.workstream?.focus && context.workstream.focus !== 'Continuing previous work') {
-      console.log(chalk.magenta(`📁 Workstream: ${context.workstream.focus}`));
+    // Show key discoveries from synthesis
+    if (synthesis?.discoveries) {
+      const discoveries = synthesis.discoveries;
 
-      if (context.workstream.prds?.length > 0) {
-        console.log(chalk.dim('   PRDs:'));
-        context.workstream.prds.forEach((prd: any) => {
-          console.log(chalk.dim(`   - ${prd.number}: ${prd.title}`));
+      if (discoveries.decisions.length > 0) {
+        console.log(chalk.magenta('🧠 Key Decisions:'));
+        discoveries.decisions.slice(0, 2).forEach(decision => {
+          console.log(chalk.dim(`   - ${decision.description}`));
         });
+        if (discoveries.decisions.length > 2) {
+          console.log(chalk.dim(`   ... and ${discoveries.decisions.length - 2} more`));
+        }
+        console.log('');
       }
 
-      if (context.workstream.adrs?.length > 0) {
-        console.log(chalk.dim('   ADRs:'));
-        context.workstream.adrs.forEach((adr: any) => {
-          console.log(chalk.dim(`   - ${adr.number}: ${adr.title}`));
+      if (discoveries.gotchas.length > 0) {
+        console.log(chalk.red('⚠️  Gotchas:'));
+        discoveries.gotchas.forEach(gotcha => {
+          console.log(chalk.dim(`   - ${gotcha}`));
         });
+        console.log('');
       }
-
-      if (context.workstream.tasks?.length > 0) {
-        console.log(chalk.dim('   Tasks:'));
-        context.workstream.tasks.forEach((task: any) => {
-          console.log(chalk.dim(`   - ${task.number}: ${task.title}`));
-        });
-      }
-      console.log('');
     }
 
     // Show loaded context modules from ActiveContextManager
@@ -222,21 +290,42 @@ export class StartReflectionCommand extends ReflectionCommand {
       console.log('');
     }
 
-    // Instant action
-    console.log(chalk.green('⚡ Next Steps:'));
+    // Resume point from synthesis (ADR-036)
+    if (synthesis?.resumePoint) {
+      const resume = synthesis.resumePoint;
+      console.log(chalk.green('⚡ Resume Point:'));
+      console.log(chalk.white(`   ${resume.summary}`));
+      console.log('');
+      console.log(chalk.yellow('📍 Next Action:'));
+      console.log(chalk.white(`   ${resume.nextAction}`));
+      console.log(chalk.dim(`   $ ${resume.suggestedCommand}`));
 
-    if (context.lastHandoff?.includes('Testing the fixed handoff')) {
-      console.log(chalk.white('   1. Test the complete handoff → start cycle'));
-      console.log(chalk.white('   2. Commit the handoff implementation fix'));
-      console.log(chalk.white('   3. Begin Overview domain implementation'));
+      if (resume.contextFiles.length > 0) {
+        console.log('');
+        console.log(chalk.cyan('📄 Context Files:'));
+        resume.contextFiles.slice(0, 3).forEach(file => {
+          console.log(chalk.dim(`   - ${file}`));
+        });
+      }
     } else {
+      // Fallback to generic steps
+      console.log(chalk.green('⚡ Next Steps:'));
       console.log(chalk.white('   1. Review uncommitted changes'));
       console.log(chalk.white('   2. Continue where you left off'));
       console.log(chalk.white('   3. Run tests to verify everything works'));
     }
 
+    // Show warnings from synthesis
+    if (synthesis?.warnings && synthesis.warnings.length > 0) {
+      console.log('');
+      console.log(chalk.yellow('⚠️  Warnings:'));
+      synthesis.warnings.forEach(warning => {
+        console.log(chalk.dim(`   - ${warning}`));
+      });
+    }
+
     console.log('');
-    console.log(chalk.dim('💡 Tip: Run `ginko handoff` before stopping to preserve context'));
+    console.log(chalk.dim('💡 Tip: `ginko handoff` is optional - just walk away and come back anytime'));
   }
 
   /**

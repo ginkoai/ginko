@@ -142,7 +142,15 @@ ${entry.description}${filesStr}
 Impact: ${entry.impact}
 `;
 
-    // Determine which section to append to
+    // Read current log
+    const content = await fs.readFile(logPath, 'utf-8');
+
+    // Determine sections to append to
+    // Logic: decision/insight go to specific sections only
+    //        fix/feature go to Timeline only
+    //        git/achievement go to both specific section AND Timeline (for chronological view)
+    const shouldAppendToTimeline = entry.category === 'git' || entry.category === 'achievement';
+
     let sectionMarker: string;
     switch (entry.category) {
       case 'decision':
@@ -158,42 +166,37 @@ Impact: ${entry.impact}
         sectionMarker = '## Achievements';
         break;
       default:
+        // fix, feature default to Timeline
         sectionMarker = '## Timeline';
     }
 
-    // Read current log
-    const content = await fs.readFile(logPath, 'utf-8');
-
-    // Find section and append
+    // Append to primary section
     const sectionIndex = content.indexOf(sectionMarker);
     if (sectionIndex === -1) {
       throw new Error(`Section ${sectionMarker} not found in log`);
     }
 
-    // Find the end of the section (next ## or end of file)
     const nextSectionIndex = content.indexOf('\n## ', sectionIndex + sectionMarker.length);
     const insertPoint = nextSectionIndex === -1 ? content.length : nextSectionIndex;
 
-    const newContent =
+    let finalContent =
       content.slice(0, insertPoint) +
       entryText +
       (nextSectionIndex === -1 ? '' : '\n' + content.slice(insertPoint));
 
-    // Also append to Timeline
-    if (entry.category !== 'decision' && entry.category !== 'insight') {
-      const timelineIndex = newContent.indexOf('## Timeline');
-      const timelineNextSection = newContent.indexOf('\n## ', timelineIndex + 11);
-      const timelineInsert = timelineNextSection === -1 ? newContent.length : timelineNextSection;
+    // Also append to Timeline if this is git or achievement (for chronological view)
+    if (shouldAppendToTimeline) {
+      const timelineIndex = finalContent.indexOf('## Timeline');
+      const timelineNextSection = finalContent.indexOf('\n## ', timelineIndex + 11);
+      const timelineInsert = timelineNextSection === -1 ? finalContent.length : timelineNextSection;
 
-      const finalContent =
-        newContent.slice(0, timelineInsert) +
+      finalContent =
+        finalContent.slice(0, timelineInsert) +
         entryText +
-        (timelineNextSection === -1 ? '' : '\n' + newContent.slice(timelineInsert));
-
-      await fs.writeFile(logPath, finalContent, 'utf-8');
-    } else {
-      await fs.writeFile(logPath, newContent, 'utf-8');
+        (timelineNextSection === -1 ? '' : '\n' + finalContent.slice(timelineInsert));
     }
+
+    await fs.writeFile(logPath, finalContent, 'utf-8');
   }
 
   /**
@@ -368,5 +371,55 @@ Impact: ${entry.impact}
       byCategory,
       filesAffected: filesSet.size
     };
+  }
+
+  /**
+   * Check if session log should be auto-archived
+   * Based on ADR-036: age (>48h) or size (>50 entries)
+   */
+  static async shouldAutoArchive(userDir: string): Promise<boolean> {
+    const hasLog = await this.hasSessionLog(userDir);
+    if (!hasLog) {
+      return false;
+    }
+
+    const logContent = await this.loadSessionLog(userDir);
+    const metadata = this.parseMetadata(logContent);
+
+    if (!metadata) {
+      return false;
+    }
+
+    // Check age: >48 hours
+    const started = new Date(metadata.started);
+    const now = new Date();
+    const hoursOld = (now.getTime() - started.getTime()) / (1000 * 60 * 60);
+
+    if (hoursOld > 48) {
+      return true;
+    }
+
+    // Check size: >50 entries
+    const summary = this.getSummary(logContent);
+    if (summary.totalEntries > 50) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Auto-archive if conditions met, return true if archived
+   * Used by ginko start to clean up stale sessions
+   */
+  static async autoArchiveIfStale(userDir: string): Promise<boolean> {
+    const shouldArchive = await this.shouldAutoArchive(userDir);
+
+    if (shouldArchive) {
+      await this.archiveLog(userDir, 'Auto-archived due to age or size');
+      return true;
+    }
+
+    return false;
   }
 }

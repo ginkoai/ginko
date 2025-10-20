@@ -16,8 +16,11 @@ import { getUserEmail, getGinkoDir } from '../../utils/helpers.js';
 import * as path from 'path';
 
 /**
- * Handoff command router
- * Routes between AI-enhanced pipeline and legacy implementations
+ * Handoff command router (ADR-036: Optional housekeeping tool)
+ *
+ * Handoff is OPTIONAL - not required for resumption.
+ * Use when: feature complete, sprint done, end of day, major milestone
+ * Skip for: coffee break, lunch, short pause
  */
 export async function handoffCommand(options: any = {}): Promise<void> {
   // Get user directory
@@ -30,8 +33,14 @@ export async function handoffCommand(options: any = {}): Promise<void> {
   const hasLog = await SessionLogManager.hasSessionLog(userDir);
 
   if (hasLog && !options.noai && !options.legacy) {
-    // Strategy 1: Deterministic save of session log
-    await saveSessionLogAsHandoff(userDir, options.message);
+    // ADR-036: Enhanced handoff with optional housekeeping
+    await saveSessionLogAsHandoff(userDir, {
+      message: options.message,
+      clean: options.clean,
+      commit: options.commit,
+      noClean: options.noClean,
+      noCommit: options.noCommit
+    });
     return;
   }
 
