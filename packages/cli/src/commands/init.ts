@@ -98,8 +98,11 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     const configPath = pathManager.joinPaths(pathConfig.ginko.root, 'config.json');
     await fs.writeJSON(configPath, config, { spaces: 2 });
 
-    // Project analysis step
-    if (options.analyze !== false) {
+    // Project analysis step - skip if quick mode
+    if (options.quick) {
+      spinner.text = 'Quick initialization (skipping analysis)...';
+      spinner.succeed('Quick initialization complete');
+    } else if (options.analyze !== false) {
       spinner.text = 'Analyzing project structure...';
 
       try {
@@ -219,6 +222,11 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     // Success message
     console.log('\n' + chalk.green('🎉 Ginko is ready!'));
+
+    if (options.quick) {
+      console.log(chalk.dim('\n💨 Quick mode: Skipped project analysis. Run ') + chalk.cyan('ginko init --analyze') + chalk.dim(' anytime to analyze your project.'));
+    }
+
     console.log('\n' + chalk.blue('Quick start:'));
     console.log('  ' + chalk.cyan('ginko start') + ' - Begin your first session');
     console.log('  ' + chalk.cyan('ginko handoff "Initial setup complete"') + ' - Save your progress');
