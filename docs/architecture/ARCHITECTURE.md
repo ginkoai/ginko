@@ -300,10 +300,12 @@ All Ginko data lives in the `.ginko/` directory, committed to version control al
 │       └── gotcha-*.md         # Captured learnings and gotchas
 ├── sessions/
 │   └── [user-slug]/
-│       ├── current.md          # Active session state
-│       └── archive/            # Historical sessions (timestamped)
-│           ├── 2025-09-29T10-30-00.md
-│           └── 2025-09-28T15-45-00.md
+│       ├── current.md          # DEPRECATED: Use current-session-log.md instead
+│       ├── current-session-log.md  # Active session event log (ADR-036)
+│       └── archive/            # Historical sessions and logs
+│           ├── 2025-09-29T10-30-00-handoff.md
+│           ├── session-log-2025-09-28T15-45-01.md
+│           └── 2025-09-27T14-20-00-handoff.md
 └── templates/                  # Quality templates (optional overrides)
     ├── handoff.yml
     ├── documentation.yml
@@ -453,51 +455,170 @@ export class ReflectionEngine {
 }
 ```
 
+### 5. Session Logging and Synthesis System
+
+From [ADR-033: Context Pressure Mitigation Strategy](../adr/ADR-033-context-pressure-mitigation-strategy.md), [ADR-034: Event-Based Defensive Logging](../adr/ADR-034-event-based-defensive-logging-architecture.md), and [ADR-036: Session Synthesis Architecture](../adr/ADR-036-session-synthesis-architecture.md)
+
+The **Session Logging System** enables continuous context capture and synthesis-based session restoration, replacing the previous pre-synthesis handoff approach.
+
+#### Architecture Shift
+
+**OLD**: Synthesize handoff at END (high context pressure → degraded AI quality)
+**NEW**: Log events continuously → Synthesize at START (low pressure → optimal AI quality)
+
+This implements the **Quality Inversion Principle**: Perform complex reasoning when AI quality is optimal, not when degraded.
+
+#### Session Log Lifecycle
+
+1. **Creation** - `ginko start` initializes `current-session-log.md`
+2. **Continuous Updates** - Events logged throughout session (defensive logging)
+3. **Archival** - `ginko handoff` or auto-archive (>48h age, >50 entries)
+4. **Synthesis** - Next `ginko start` loads logs and synthesizes context
+
+#### Event Categories (Defensive Logging)
+
+Events are logged immediately after significant milestones:
+
+| Category | When to Log | Example |
+|----------|-------------|---------|
+| **fix** | After bug resolution | "Fixed auth timeout - root cause: slow bcrypt rounds" |
+| **feature** | After implementing functionality | "Implemented session logging CLI command" |
+| **decision** | After architectural choices | "Chose JWT over sessions for mobile scalability" |
+| **insight** | After discovering patterns/gotchas | "Bcrypt rounds 10-11 optimal for security/performance" |
+| **git** | After commits/merges/branch changes | "Committed OAuth implementation (d56466f)" |
+| **achievement** | After completing milestones | "All integration tests passing" |
+
+#### Log Format
+
+```markdown
+---
+session_id: session-2025-10-20T20-34-01-413Z
+started: 2025-10-20T20:34:01.413Z
+user: xtophr@gmail.com
+branch: main
+---
+
+## Timeline
+
+### HH:MM - [category]
+Description (WHAT + WHY + HOW in 1-2 sentences)
+Files: file.ts:123, other.ts:456
+Impact: high|medium|low
+
+## Key Decisions
+<!-- Important decisions copied from Timeline -->
+
+## Files Affected
+<!-- Files modified during session -->
+
+## Insights
+<!-- Patterns, gotchas, learnings copied from Timeline -->
+```
+
+#### Progressive Fail-Safe Synthesis
+
+`ginko start` synthesizes using best available sources:
+
+**Tier 1 (Rich)**: Session log + sprint + ADRs + git → Full context, flow state 7-10/10
+**Tier 2 (Medium)**: Handoff + sprint + git → Good context, flow state 5-7/10
+**Tier 3 (Basic)**: Git log only → Minimal context, flow state 3-5/10
+**Tier 4 (Minimal)**: Git status only → Graceful degradation, flow state 1-3/10
+
+#### Flow State Assessment
+
+Synthesis includes flow state scoring (1-10 scale) based on:
+
+- Recent achievements (+1-2)
+- Active session with events (+1)
+- Time since last work (-1 to -3 based on age)
+- Blocked items (-1)
+- Failed tests (-1)
+
+**Flow States**:
+- **10-9**: Hot momentum (<1 hour, recent wins)
+- **8-7**: Mid-stride (1-8 hours, context warm)
+- **6-5**: Needs refresh (1-2 days, still accessible)
+- **4-3**: Fresh start (>2 days, treat as new)
+- **2-1**: Cold start (>1 week, minimal continuity)
+
 ---
 
 ## Phase 1 Core Reflectors
 
 From [PRD-006: Phase 1 Developer Tools Implementation](../prd/PRD-006-phase-1-developer-tools-implementation.md), these essential reflectors form the foundation of Ginko:
 
-### `ginko handoff`
-**Purpose**: Session preservation with insight capture
-
-**What it does**:
-- Analyzes current session activity (git diffs, file changes, time spent)
-- Extracts key insights, decisions, and patterns discovered
-- Identifies critical context for next session
-- Archives session with structured handoff document
-- Updates context modules with new learnings
-
-**Output**: `.ginko/sessions/[user]/archive/[timestamp].md`
-
-**Example**:
-```bash
-ginko handoff "Completed OAuth implementation, discovered Supabase RLS gotcha"
-# Output: Handoff saved to .ginko/sessions/chris/archive/2025-09-29T14-30-00.md
-#         Updated context module: auth-patterns.md
-```
-
 ### `ginko start`
-**Purpose**: Context restoration for instant session startup
+**Purpose**: Context restoration with live session synthesis
+
+From [ADR-036: Session Synthesis Architecture](../adr/ADR-036-session-synthesis-architecture.md)
 
 **What it does**:
-- Loads last session handoff
-- Identifies relevant context modules
-- Surfaces critical information (blockers, next steps, gotchas)
-- Presents 2-second summary of project state
-- Prepares new `current.md` session file
+- Synthesizes session context from logs (NOT pre-saved handoffs)
+- Assesses flow state (1-10 scale) based on recent activity
+- Identifies resume point and actionable next steps
+- Surfaces blockers, achievements, and sprint progress
+- Creates new session log for continuous tracking
 
-**Output**: Console summary + `.ginko/sessions/[user]/current.md`
+**Output**: Console synthesis + new `.ginko/sessions/[user]/current-session-log.md`
+
+**Progressive Fail-Safe Tiers**:
+1. **Rich** (session log + sprint + ADRs + git) - Full context
+2. **Medium** (handoff + sprint + git) - Good context
+3. **Basic** (git log only) - Minimal context
+4. **Minimal** (git status only) - Graceful degradation
 
 **Example**:
 ```bash
 ginko start
-# Last session: OAuth implementation (2 hours ago)
-# Next: Test refresh token rotation
-# Active modules: auth-patterns, api-error-handling
-# Blocker: RLS policy configuration needed
+
+🌟 Context Quality: rich
+🌊 Flow State: 7/10 - Mid-stride
+   Last activity: 2 hours ago
+
+🎯 Sprint: OAuth Implementation (85% complete)
+✅ Achievements: Refresh token rotation working
+⚠️  Blocker: RLS policy configuration pending
+
+📋 Resume Point: Test token expiration edge cases
+
+💡 Loaded: auth-patterns.md, api-error-handling.md
 ```
+
+**Key Innovation**: Synthesis happens at START (low context pressure, high AI quality) instead of END (high pressure, degraded quality). This implements the [Quality Inversion Principle](../adr/ADR-034-event-based-defensive-logging-architecture.md).
+
+### `ginko handoff` (Optional Housekeeping Marker)
+**Purpose**: Logical boundary marker + cleanup tasks
+
+From [ADR-036: Session Synthesis Architecture](../adr/ADR-036-session-synthesis-architecture.md)
+
+**Status**: ⚠️ **OPTIONAL** - Not required for session continuity. The system synthesizes from logs at start.
+
+**When to use**:
+- ✅ Feature complete (logical stopping point)
+- ✅ Sprint complete (major milestone)
+- ✅ End of work day (clean slate for tomorrow)
+- ❌ Coffee break (15 min - just walk away)
+- ❌ Lunch break (1 hour - synthesis handles it)
+
+**What it does**:
+- Archives current session log with summary
+- Cleans temporary files
+- Updates backlog item states
+- Optionally commits staged changes
+- Creates clean boundary for next phase
+
+**Output**: Archived `.ginko/sessions/[user]/archive/[timestamp]-handoff.md`
+
+**Example**:
+```bash
+ginko handoff "Completed OAuth implementation"
+
+✓ Session log archived
+✓ Backlog items updated (3 completed)
+✓ Temp files cleaned
+```
+
+**"Coffee Break Test"**: You should be able to walk away for coffee (15 min), lunch (1 hour), or overnight without calling handoff. `ginko start` will synthesize context automatically.
 
 ### `ginko context`
 **Purpose**: Knowledge module management
@@ -912,6 +1033,8 @@ ginko init  # Migrates MCP data to .ginko/ directory
 ## References
 
 ### Architecture Decision Records
+
+#### Core Architecture
 - [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-013-simple-builder-pattern.md)
 - [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-014-safe-defaults-reflector-pattern.md)
 - [ADR-020: CLI-First Pivot](../adr/ADR-020-cli-first-pivot.md)
@@ -920,6 +1043,11 @@ ginko init  # Migrates MCP data to .ginko/ directory
 - [ADR-023: Flow State Design Philosophy](../adr/ADR-023-flow-state-design-philosophy.md)
 - [ADR-024: AI-Enhanced Local Tooling Pattern](../adr/ADR-024-ai-enhanced-local-tooling.md)
 - [ADR-032: Core CLI Architecture and Reflection System](../adr/ADR-032-core-cli-architecture-and-reflection-system.md)
+
+#### Session Management Architecture
+- [ADR-033: Context Pressure Mitigation Strategy](../adr/ADR-033-context-pressure-mitigation-strategy.md) - Continuous session logging
+- [ADR-034: Event-Based Defensive Logging Architecture](../adr/ADR-034-event-based-defensive-logging-architecture.md) - Model-agnostic event logging
+- [ADR-036: Session Synthesis Architecture](../adr/ADR-036-session-synthesis-architecture.md) - Live synthesis at session start
 
 ### Product Requirements
 - [PRD-006: Phase 1 Developer Tools Implementation](../prd/PRD-006-phase-1-developer-tools-implementation.md)
@@ -930,11 +1058,13 @@ ginko init  # Migrates MCP data to .ginko/ directory
 ---
 
 **Document Metadata**:
-- **Version**: 2.0.0
+- **Version**: 2.1.0
 - **Status**: Current
 - **Created**: 2025-09-29
-- **Last Updated**: 2025-09-29
+- **Last Updated**: 2025-10-20
 - **Authors**: Architecture Team
 - **Reviewers**: Product Team, Engineering Team
 - **Next Review**: After Phase 1 implementation completion
+- **Change Log**:
+  - 2.1.0 (2025-10-20): Added Session Logging & Synthesis System (ADR-033, ADR-034, ADR-036), updated handoff/start semantics, updated storage structure
 
