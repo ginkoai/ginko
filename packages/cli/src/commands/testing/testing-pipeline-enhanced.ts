@@ -13,7 +13,7 @@ import { SimplePipelineBase, PipelineContext } from '../../core/simple-pipeline-
 import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
-import { getGinkoDir } from '../../utils/helpers.js';
+import { getGinkoDir, getProjectRoot } from '../../utils/helpers.js';
 
 /**
  * Testing options following ADR-014 Safe Defaults Pattern
@@ -568,7 +568,8 @@ export class EnhancedTestingPipeline extends SimplePipelineBase {
 
   private async analyzeCoverage(parsedIntent: any): Promise<any> {
     // Check for coverage report
-    const coverageFile = path.join(process.cwd(), 'coverage', 'coverage-summary.json');
+    const projectRoot = await getProjectRoot();
+    const coverageFile = path.join(projectRoot, 'coverage', 'coverage-summary.json');
 
     let current = {
       statements: 75,
@@ -670,7 +671,8 @@ export class EnhancedTestingPipeline extends SimplePipelineBase {
   }
 
   private async detectTestFramework(): Promise<string> {
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const projectRoot = await getProjectRoot();
+    const packageJsonPath = path.join(projectRoot, 'package.json');
     if (await fs.pathExists(packageJsonPath)) {
       const pkg = await fs.readJson(packageJsonPath);
       if (pkg.devDependencies?.jest) return 'Jest';

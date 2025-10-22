@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { execSync } from 'child_process';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 interface ChangelogOptions {
   type?: 'Added' | 'Changed' | 'Fixed' | 'Removed' | 'Deprecated' | 'Security';
@@ -125,7 +126,8 @@ export class ChangelogReflectionCommand extends ReflectionCommand {
    */
   private async getCurrentVersion(): Promise<string> {
     try {
-      const packagePath = path.join(process.cwd(), 'package.json');
+      const projectRoot = await getProjectRoot();
+      const packagePath = path.join(projectRoot, 'package.json');
       const pkg = JSON.parse(await fs.readFile(packagePath, 'utf-8'));
       return pkg.version || '0.0.0';
     } catch {
@@ -253,7 +255,8 @@ export class ChangelogReflectionCommand extends ReflectionCommand {
    * Update CHANGELOG.md file
    */
   private async updateChangelog(entry: string, version: string): Promise<void> {
-    const changelogPath = path.join(process.cwd(), 'CHANGELOG.md');
+    const projectRoot = await getProjectRoot();
+    const changelogPath = path.join(projectRoot, 'CHANGELOG.md');
 
     try {
       let content = await fs.readFile(changelogPath, 'utf-8');
@@ -289,7 +292,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
    * Save detailed version entry
    */
   private async saveVersionEntry(version: string, entry: string): Promise<void> {
-    const changelogDir = path.join(process.cwd(), '.ginko', 'changelog');
+    const projectRoot = await getProjectRoot();
+    const changelogDir = path.join(projectRoot, '.ginko', 'changelog');
     await fs.mkdir(changelogDir, { recursive: true });
 
     const versionFile = path.join(changelogDir, `v${version}.md`);

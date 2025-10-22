@@ -13,7 +13,7 @@ import { SimplePipelineBase, PipelineContext } from '../../core/simple-pipeline-
 import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
-import { getGinkoDir } from '../../utils/helpers.js';
+import { getGinkoDir, getProjectRoot } from '../../utils/helpers.js';
 
 /**
  * Testing pipeline using Simple Builder Pattern
@@ -351,7 +351,8 @@ export class TestingPipeline extends SimplePipelineBase {
   }
 
   private async detectTestFramework(): Promise<string> {
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const projectRoot = await getProjectRoot();
+    const packageJsonPath = path.join(projectRoot, 'package.json');
     if (await fs.pathExists(packageJsonPath)) {
       const pkg = await fs.readJson(packageJsonPath);
       if (pkg.devDependencies?.jest) return 'Jest';
@@ -362,7 +363,8 @@ export class TestingPipeline extends SimplePipelineBase {
   }
 
   private async getPackageJson(): Promise<any> {
-    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const projectRoot = await getProjectRoot();
+    const packageJsonPath = path.join(projectRoot, 'package.json');
     if (await fs.pathExists(packageJsonPath)) {
       return fs.readJson(packageJsonPath);
     }

@@ -18,6 +18,10 @@ export async function getGinkoDir(): Promise<string> {
   return path.join(root, '.ginko');
 }
 
+export async function getProjectRoot(): Promise<string> {
+  return await requireGinkoRoot();
+}
+
 export async function getUserEmail(): Promise<string> {
   try {
     // Try git config first

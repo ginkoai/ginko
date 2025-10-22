@@ -13,7 +13,7 @@ import { SimplePipelineBase, PipelineContext } from '../../core/simple-pipeline-
 import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
-import { getGinkoDir } from '../../utils/helpers.js';
+import { getGinkoDir, getProjectRoot } from '../../utils/helpers.js';
 
 /**
  * Architecture ADR options following ADR-014 Safe Defaults Pattern
@@ -469,7 +469,8 @@ export class EnhancedArchitecturePipeline extends SimplePipelineBase {
 
     console.log(chalk.cyan('💾 Saving ADR...'));
 
-    const adrDir = path.join(process.cwd(), 'docs', 'adr');
+    const projectRoot = await getProjectRoot();
+    const adrDir = path.join(projectRoot, 'docs', 'adr');
     await fs.ensureDir(adrDir);
 
     const adrNumber = this.ctx.context?.adrNumber || 1;
@@ -480,7 +481,7 @@ export class EnhancedArchitecturePipeline extends SimplePipelineBase {
 
     await fs.writeFile(filepath, this.ctx.content, 'utf-8');
 
-    console.log(chalk.green(`  ✅ ADR saved to: ${path.relative(process.cwd(), filepath)}`));
+    console.log(chalk.green(`  ✅ ADR saved to: ${path.relative(projectRoot, filepath)}`));
     if (!this.ctx.metadata) {
       this.ctx.metadata = {};
     }
@@ -563,7 +564,8 @@ export class EnhancedArchitecturePipeline extends SimplePipelineBase {
 
   private async detectConflicts(parsedIntent: any): Promise<any[]> {
     const conflicts: any[] = [];
-    const adrDir = path.join(process.cwd(), 'docs', 'adr');
+    const projectRoot = await getProjectRoot();
+    const adrDir = path.join(projectRoot, 'docs', 'adr');
 
     if (await fs.pathExists(adrDir)) {
       const files = await fs.readdir(adrDir);
@@ -731,7 +733,8 @@ export class EnhancedArchitecturePipeline extends SimplePipelineBase {
 
   private async findRelatedADRs(parsedIntent: any): Promise<string[]> {
     const related: string[] = [];
-    const adrDir = path.join(process.cwd(), 'docs', 'adr');
+    const projectRoot = await getProjectRoot();
+    const adrDir = path.join(projectRoot, 'docs', 'adr');
 
     if (await fs.pathExists(adrDir)) {
       const files = await fs.readdir(adrDir);
@@ -745,7 +748,8 @@ export class EnhancedArchitecturePipeline extends SimplePipelineBase {
   }
 
   private async getNextADRNumber(): Promise<number> {
-    const adrDir = path.join(process.cwd(), 'docs', 'adr');
+    const projectRoot = await getProjectRoot();
+    const adrDir = path.join(projectRoot, 'docs', 'adr');
     if (!await fs.pathExists(adrDir)) {
       return 1;
     }

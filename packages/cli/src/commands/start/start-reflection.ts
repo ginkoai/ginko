@@ -15,7 +15,7 @@ import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { getUserEmail, getGinkoDir, detectWorkMode } from '../../utils/helpers.js';
+import { getUserEmail, getGinkoDir, detectWorkMode, getProjectRoot } from '../../utils/helpers.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
@@ -64,7 +64,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       const userEmail = await getUserEmail();
       const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
       const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
-      const projectRoot = process.cwd();
+      const projectRoot = await getProjectRoot();
 
       // Load session log content before archiving
       const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);

@@ -16,6 +16,7 @@ import chalk from 'chalk';
 import simpleGit from 'simple-git';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 const execAsync = promisify(exec);
 
@@ -44,7 +45,8 @@ export class DocumentationPipeline extends SimplePipelineBase {
     this.git = simpleGit();
 
     // Set up docs directory
-    this.docsDir = path.join(process.cwd(), 'docs');
+    const projectRoot = await getProjectRoot();
+    this.docsDir = path.join(projectRoot, 'docs');
     await fs.ensureDir(this.docsDir);
 
     // Load package.json if available
@@ -524,8 +526,9 @@ export class DocumentationPipeline extends SimplePipelineBase {
         break;
     }
 
+    const projectRoot = await getProjectRoot();
     const filepath = docType === 'readme'
-      ? path.join(process.cwd(), filename)
+      ? path.join(projectRoot, filename)
       : path.join(this.docsDir, filename);
 
     await fs.writeFile(filepath, this.ctx.content, 'utf-8');
@@ -542,7 +545,8 @@ export class DocumentationPipeline extends SimplePipelineBase {
    */
   private async loadPackageInfo(): Promise<void> {
     try {
-      const packagePath = path.join(process.cwd(), 'package.json');
+      const projectRoot = await getProjectRoot();
+      const packagePath = path.join(projectRoot, 'package.json');
       this.packageInfo = await fs.readJson(packagePath);
     } catch {
       this.packageInfo = null;
@@ -562,7 +566,8 @@ export class DocumentationPipeline extends SimplePipelineBase {
 
     // Also check for README in root
     try {
-      const rootFiles = await fs.readdir(process.cwd());
+      const projectRoot = await getProjectRoot();
+      const rootFiles = await fs.readdir(projectRoot);
       const readmes = rootFiles.filter(f => f.toLowerCase().includes('readme'));
       this.existingDocs.push(...readmes);
     } catch {
@@ -582,7 +587,8 @@ export class DocumentationPipeline extends SimplePipelineBase {
     };
 
     try {
-      const files = await fs.readdir(process.cwd());
+      const projectRoot = await getProjectRoot();
+      const files = await fs.readdir(projectRoot);
       structure.hasSrc = files.includes('src');
       structure.hasTests = files.includes('test') || files.includes('tests');
       structure.hasExamples = files.includes('examples');
@@ -604,9 +610,10 @@ export class DocumentationPipeline extends SimplePipelineBase {
     const examples: string[] = [];
 
     try {
+      const projectRoot = await getProjectRoot();
       const testDirs = ['test', 'tests', '__tests__', 'spec'];
       for (const dir of testDirs) {
-        const testPath = path.join(process.cwd(), dir);
+        const testPath = path.join(projectRoot, dir);
         if (await fs.pathExists(testPath)) {
           const files = await fs.readdir(testPath);
           examples.push(...files.filter(f => f.includes('.test.') || f.includes('.spec.')));
@@ -650,7 +657,8 @@ export class DocumentationPipeline extends SimplePipelineBase {
     };
 
     try {
-      const files = await fs.readdir(process.cwd());
+      const projectRoot = await getProjectRoot();
+      const files = await fs.readdir(projectRoot);
       apiDocs.hasTypeScript = files.some(f => f.endsWith('.d.ts'));
       apiDocs.hasOpenAPI = files.some(f => f.includes('openapi') || f.includes('swagger'));
     } catch {

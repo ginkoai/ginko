@@ -14,7 +14,7 @@ import simpleGit from 'simple-git';
 import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
-import { getGinkoDir } from '../../utils/helpers.js';
+import { getGinkoDir, getProjectRoot } from '../../utils/helpers.js';
 
 /**
  * Git pipeline using Simple Builder Pattern
@@ -263,7 +263,8 @@ export class GitPipeline extends SimplePipelineBase {
 
     // If this is a CI workflow, also save as GitHub Actions YAML
     if (this.workflowType === 'workflow' && this.ctx.metadata?.yamlContent) {
-      const actionsDir = path.join(process.cwd(), '.github', 'workflows');
+      const projectRoot = await getProjectRoot();
+      const actionsDir = path.join(projectRoot, '.github', 'workflows');
       await fs.ensureDir(actionsDir);
       const yamlPath = path.join(actionsDir, `generated-${timestamp}.yml`);
       await fs.writeFile(yamlPath, this.ctx.metadata.yamlContent, 'utf-8');
