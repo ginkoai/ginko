@@ -18,9 +18,13 @@ author: chris@watchhill.ai
 
 ## Description
 
-Implement ADR-033 Addendum 2 by removing synthesis-requiring sections (Achievements, Files Affected) from session log template and routing logic.
+Implement ADR-033 Addendum 2 by removing synthesis-requiring sections (Achievements, Files Affected) from session log template while preserving categorical sections (Decisions, Insights, Git Operations) with dual-routing for access optimization.
 
-**Goal**: Enforce "pure capture" philosophy - session logs capture raw facts with zero synthesis requirements. Synthesis happens at `ginko start` under optimal pressure (5-15%).
+**Goal**: Enforce "pure capture" philosophy - session logs capture raw facts with zero synthesis requirements. Remove sections requiring judgment/aggregation, but keep categorical sections with deterministic dual-routing for both narrative coherence and quick reference. Synthesis happens at `ginko start` under optimal pressure (5-15%).
+
+**Key Insight**: Distinguish between synthesis (remove) and categorical access (keep):
+- ❌ Achievements/Files Affected: Require synthesis/aggregation → Remove
+- ✅ Decisions/Insights/Git Ops: Deterministic dual-routing for access optimization → Keep
 
 ## Context
 
@@ -49,9 +53,10 @@ Both require synthesis at session end (potentially 80-95% pressure), contradicti
 ### Phase 2: Routing Logic Updates
 - [ ] Update `logEvent()` routing switch (line ~175-177)
   - Change `case 'achievement':` to route to Timeline only
-  - Remove dual-routing logic for achievements (lines ~197-207)
-  - Simplify: achievement entries go to Timeline like fix/feature
-- [ ] Update section comment explaining routing behavior
+  - **Keep dual-routing logic for categorized entries** (decision/insight/git)
+  - Update dual-routing condition to `['decision', 'insight', 'git'].includes(entry.category)`
+  - Remove achievement from dual-routing list
+- [ ] Update section comment explaining categorical access pattern
 
 ### Phase 3: Testing
 - [ ] Update unit tests in `test/unit/session-log-manager.test.ts`
@@ -101,20 +106,24 @@ case 'achievement':
   sectionMarker = '## Achievements';
   break;
 
-// Later: dual-routing logic
-if (shouldAppendToTimeline) {
-  // Append to Timeline too
-}
+// Later: dual-routing logic for git and achievement
+const shouldAppendToTimeline = entry.category === 'git' || entry.category === 'achievement';
 ```
 
 **After**:
 ```typescript
 case 'achievement':
-  sectionMarker = '## Timeline';  // Simple routing
+  sectionMarker = '## Timeline';  // Route to Timeline only
   break;
 
-// Remove dual-routing logic entirely
+// Updated: dual-routing only for categorized entries (decision/insight/git)
+const shouldAppendToTimeline = ['decision', 'insight', 'git'].includes(entry.category);
 ```
+
+**Rationale**:
+- Achievements require synthesis ("filter for completions") → Remove section
+- Decisions/Insights/Git Ops are deterministic categories → Keep dual-routing for access optimization
+- Dual-routing preserves narrative coherence (Timeline) + quick reference (categorical sections)
 
 ### Example Session Log Output
 
@@ -149,11 +158,12 @@ Completed TASK-009...
 
 - [ ] Session log template has exactly 4 sections: Timeline, Key Decisions, Insights, Git Operations
 - [ ] `[achievement]` entries appear in Timeline only (no duplication)
-- [ ] `[decision]` entries appear in Key Decisions section
-- [ ] `[insight]` entries appear in Insights section
-- [ ] `[git]` entries appear in Git Operations section
+- [ ] `[decision]` entries appear in BOTH Key Decisions AND Timeline (dual-routing)
+- [ ] `[insight]` entries appear in BOTH Insights AND Timeline (dual-routing)
+- [ ] `[git]` entries appear in BOTH Git Operations AND Timeline (dual-routing)
 - [ ] `[fix]` and `[feature]` entries appear in Timeline only
-- [ ] No synthesis sections in template
+- [ ] No synthesis sections (Achievements, Files Affected) in template
+- [ ] Dual-routing preserved for categorical access (decision/insight/git)
 - [ ] All tests passing
 - [ ] Existing session logs parse correctly (backward compatible)
 - [ ] `ginko log --show` displays new template correctly

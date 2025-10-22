@@ -571,6 +571,51 @@ ginko start reads:                       │
 - Fresh AI can filter Timeline mentally: "What got completed?"
 - Synthesis of achievements belongs in `ginko start`, not session log
 
+**Key Distinction: Synthesis vs. Categorical Access**:
+
+After implementation review, we refined the approach to distinguish between two types of duplication:
+
+1. **Synthesis (REMOVE)**: Requires judgment/aggregation under variable pressure
+   - ❌ Achievements: "Filter Timeline for completions" (requires synthesis)
+   - ❌ Files Affected: "Extract and aggregate file references" (requires transformation)
+
+2. **Categorical Access (KEEP)**: Deterministic routing with dual-write for access optimization
+   - ✅ Decisions: Write to both Decisions + Timeline (no judgment, same content)
+   - ✅ Insights: Write to both Insights + Timeline (no judgment, same content)
+   - ✅ Git Operations: Write to both Git Operations + Timeline (no judgment, same content)
+
+**Why Categorical Sections Remain Pure Capture**:
+- Category assigned at write-time (deterministic, no synthesis)
+- Entry written identically to both locations (no transformation)
+- Serves different access patterns without additional cognitive load:
+  - **Timeline**: Complete narrative with causality ("Decision made after insight discovered")
+  - **Categorical sections**: Quick reference ("What strategic choices were made?")
+
+**Example - Narrative Coherence**:
+```markdown
+Timeline (Complete Story):
+10:00 - [feature] Implement enhancement for TASK-000
+10:10 - [git] Commit "Implemented TASK-000"
+10:15 - [fix] Test reveals poor UX due to repetitive steps
+10:30 - [insight] Initial approach created poor UX. Revising to reduce steps
+10:45 - [decision] Simplified UX for TASK-000 per insight
+11:00 - [feature] Re-implement with simplified architecture
+11:15 - [fix] Tests pass with improved UX
+11:30 - [git] Commit "Re-implemented TASK-000 with simplified UX"
+
+Insights (Quick Scan):
+10:30 - [insight] Initial approach created poor UX. Revising to reduce steps
+
+Decisions (Quick Scan):
+10:45 - [decision] Simplified UX for TASK-000 per insight
+
+Git Operations (Quick Scan):
+10:10 - [git] Commit "Implemented TASK-000"
+11:30 - [git] Commit "Re-implemented TASK-000 with simplified UX"
+```
+
+This dual-routing preserves narrative coherence (Timeline shows WHY decision was made) while enabling quick reference (scan 2 decisions vs 8 timeline entries). Both humans and AI benefit from reduced cognitive load when searching for specific information types.
+
 ### Implementation
 
 **Template Changes** (TASK-014):
@@ -585,10 +630,31 @@ ginko start reads:                       │
 
 **Routing Changes**:
 ```typescript
-case 'achievement':
-  sectionMarker = '## Timeline';  // Changed from '## Achievements'
-  // No dual-routing to Timeline anymore
-  break;
+// Categorized entries use dual-routing for categorical access
+const shouldAppendToTimeline = ['decision', 'insight', 'git'].includes(entry.category);
+
+switch (entry.category) {
+  case 'decision':
+    sectionMarker = '## Key Decisions';
+    break;  // Will also write to Timeline
+  case 'insight':
+    sectionMarker = '## Insights';
+    break;  // Will also write to Timeline
+  case 'git':
+    sectionMarker = '## Git Operations';
+    break;  // Will also write to Timeline
+  case 'achievement':
+    sectionMarker = '## Timeline';  // Achievement removed, routes to Timeline only
+    break;
+  default:
+    // fix, feature route to Timeline only
+    sectionMarker = '## Timeline';
+}
+
+// Dual-write categorized entries to Timeline for narrative coherence
+if (shouldAppendToTimeline) {
+  // Write to categorical section first, then Timeline
+}
 ```
 
 ### Consequences
@@ -612,4 +678,8 @@ case 'achievement':
 
 This addendum refines ADR-033's defensive logging philosophy by explicitly separating capture (during session) from synthesis (at session start). Session logs are historians, not strategists. Synthesis under high context pressure yields uneven results; synthesis at fresh session start yields consistent quality.
 
-**Key Principle**: Capture raw facts when quality is good (20-80% pressure), synthesize when quality is optimal (5-15% pressure).
+**Key Principles**:
+1. **Capture raw facts** when quality is good (20-80% pressure), **synthesize** when quality is optimal (5-15% pressure)
+2. **Remove synthesis sections** that require judgment/aggregation (Achievements, Files Affected)
+3. **Keep categorical sections** that enable quick reference via deterministic dual-routing (Decisions, Insights, Git Operations)
+4. **Dual-routing for categorical access** is pure capture (no synthesis), optimizing for both narrative coherence and quick reference

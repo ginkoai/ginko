@@ -88,31 +88,31 @@ branch: ${branch}
 # Session Log: ${sessionId}
 
 ## Timeline
-<!-- Chronological log of all session events (fixes, features) -->
+<!-- Complete chronological log of all session events -->
+<!-- Includes: fixes, features, achievements, and categorized entries (decisions/insights/git also appear in their sections) -->
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
+<!-- These entries also appear in Timeline for narrative coherence -->
 <!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
 <!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
 
-## Files Affected
-<!-- Files modified during session (auto-detected from git status) -->
-
 ## Insights
 <!-- Patterns, gotchas, learnings discovered -->
+<!-- These entries also appear in Timeline for narrative coherence -->
 <!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
 <!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
 
 ## Git Operations
 <!-- Commits, merges, branch changes -->
+<!-- These entries also appear in Timeline for narrative coherence -->
 <!-- Log significant commits with: ginko log "Committed feature X" --category=git -->
-
-## Achievements
-<!-- Features completed, tests passing -->
-<!-- Log milestones with: ginko log "All tests passing" --category=achievement -->
 `;
+
+    // Ensure user directory exists
+    await fs.mkdir(userDir, { recursive: true });
 
     const logPath = this.getSessionLogPath(userDir);
     await fs.writeFile(logPath, logContent, 'utf-8');
@@ -156,10 +156,11 @@ Impact: ${entry.impact}
     const content = await fs.readFile(logPath, 'utf-8');
 
     // Determine sections to append to
-    // Logic: decision/insight go to specific sections only
-    //        fix/feature go to Timeline only
-    //        git/achievement go to both specific section AND Timeline (for chronological view)
-    const shouldAppendToTimeline = entry.category === 'git' || entry.category === 'achievement';
+    // Logic: Categorized entries (decision/insight/git) use dual-routing for categorical access:
+    //        - Written to their categorical section (Decisions/Insights/Git Operations)
+    //        - Also written to Timeline for narrative coherence
+    //        fix/feature/achievement go to Timeline only
+    const shouldAppendToTimeline = ['decision', 'insight', 'git'].includes(entry.category);
 
     let sectionMarker: string;
     switch (entry.category) {
@@ -173,7 +174,7 @@ Impact: ${entry.impact}
         sectionMarker = '## Git Operations';
         break;
       case 'achievement':
-        sectionMarker = '## Achievements';
+        sectionMarker = '## Timeline';  // Achievements section removed per ADR-033 Addendum 2
         break;
       default:
         // fix, feature default to Timeline
@@ -194,7 +195,7 @@ Impact: ${entry.impact}
       entryText +
       (nextSectionIndex === -1 ? '' : '\n' + content.slice(insertPoint));
 
-    // Also append to Timeline if this is git or achievement (for chronological view)
+    // Also append to Timeline for categorized entries (decision/insight/git) to preserve narrative coherence
     if (shouldAppendToTimeline) {
       const timelineIndex = finalContent.indexOf('## Timeline');
       const timelineNextSection = finalContent.indexOf('\n## ', timelineIndex + 11);

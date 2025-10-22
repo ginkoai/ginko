@@ -17,11 +17,9 @@ import { LogEntry } from '../../src/types/session-log.js';
 const TEST_DIR = path.join(__dirname, '..', '..', 'test-temp');
 
 describe('SessionLogManager', () => {
-  let manager: SessionLogManager;
   let originalCwd: string;
 
   beforeEach(async () => {
-    manager = new SessionLogManager();
     originalCwd = process.cwd();
     await fs.ensureDir(TEST_DIR);
     process.chdir(TEST_DIR);
@@ -34,8 +32,10 @@ describe('SessionLogManager', () => {
 
   describe('createSessionLog', () => {
     it('should create log with YAML frontmatter', async () => {
-      const logPath = await manager.createSessionLog('test-user', 'feature/test');
+      const userDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user');
+      await SessionLogManager.createSessionLog(userDir, 'test-user', 'feature/test');
 
+      const logPath = path.join(userDir, 'current-session-log.md');
       expect(await fs.pathExists(logPath)).toBe(true);
 
       const content = await fs.readFile(logPath, 'utf-8');
@@ -46,46 +46,45 @@ describe('SessionLogManager', () => {
       expect(content).toContain('started:');
       expect(content).toContain('user: test-user');
       expect(content).toContain('branch: feature/test');
-      expect(content).toContain('context_pressure_at_start: 0');
-    });
-
-    it('should create log with custom initial pressure', async () => {
-      const logPath = await manager.createSessionLog('test-user', 'main', {
-        initialPressure: 0.42
-      });
-
-      const content = await fs.readFile(logPath, 'utf-8');
-      expect(content).toContain('context_pressure_at_start: 0.42');
     });
 
     it('should create log with all section headers', async () => {
-      const logPath = await manager.createSessionLog('test-user', 'main');
+      const userDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user2');
+      await SessionLogManager.createSessionLog(userDir, 'test-user2', 'main');
 
+      const logPath = path.join(userDir, 'current-session-log.md');
       const content = await fs.readFile(logPath, 'utf-8');
 
       expect(content).toContain('## Timeline');
       expect(content).toContain('## Key Decisions');
-      expect(content).toContain('## Files Affected');
       expect(content).toContain('## Insights');
       expect(content).toContain('## Git Operations');
+      expect(content).not.toContain('## Files Affected');
+      expect(content).not.toContain('## Achievements');
     });
 
     it('should create session directory if it does not exist', async () => {
-      const logPath = await manager.createSessionLog('new-user', 'main');
+      const userDir = path.join(TEST_DIR, '.ginko', 'sessions', 'new-user');
+      await SessionLogManager.createSessionLog(userDir, 'new-user', 'main');
+
+      const logPath = path.join(userDir, 'current-session-log.md');
       expect(await fs.pathExists(logPath)).toBe(true);
     });
 
     it('should generate unique session IDs', async () => {
-      const log1Path = await manager.createSessionLog('user1', 'main');
+      const userDir1 = path.join(TEST_DIR, '.ginko', 'sessions', 'user1');
+      const userDir2 = path.join(TEST_DIR, '.ginko', 'sessions', 'user2');
+
+      await SessionLogManager.createSessionLog(userDir1, 'user1', 'main');
       // Small delay to ensure different timestamp
       await new Promise(resolve => setTimeout(resolve, 10));
-      const log2Path = await manager.createSessionLog('user2', 'main');
+      await SessionLogManager.createSessionLog(userDir2, 'user2', 'main');
 
-      const content1 = await fs.readFile(log1Path, 'utf-8');
-      const content2 = await fs.readFile(log2Path, 'utf-8');
+      const content1 = await fs.readFile(path.join(userDir1, 'current-session-log.md'), 'utf-8');
+      const content2 = await fs.readFile(path.join(userDir2, 'current-session-log.md'), 'utf-8');
 
-      const id1Match = content1.match(/session_id: (session-\d+)/);
-      const id2Match = content2.match(/session_id: (session-\d+)/);
+      const id1Match = content1.match(/session_id: (session-[^\s]+)/);
+      const id2Match = content2.match(/session_id: (session-[^\s]+)/);
 
       expect(id1Match).toBeTruthy();
       expect(id2Match).toBeTruthy();
@@ -97,8 +96,8 @@ describe('SessionLogManager', () => {
     let sessionDir: string;
 
     beforeEach(async () => {
-      await manager.createSessionLog('test-user', 'main');
-      sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user');
+      sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user-append');
+      await SessionLogManager.createSessionLog(sessionDir, 'test-user-append', 'main');
     });
 
     it('should append entry to Timeline section for "feature" category', async () => {
@@ -107,20 +106,18 @@ describe('SessionLogManager', () => {
         category: 'feature',
         description: 'Implemented user authentication',
         impact: 'high',
-        context_pressure: 0.42
       };
 
-      await manager.appendEntry(sessionDir, entry);
+      await SessionLogManager.appendEntry(sessionDir, entry);
 
       const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
+        path.join(sessionDir, 'current-session-log.md'),
         'utf-8'
       );
 
       expect(content).toContain('## Timeline');
-      expect(content).toContain('2025-10-01T12:00:00Z');
-      expect(content).toContain('pressure: 0.42');
-      expect(content).toContain('[high]');
+      expect(content).toContain('08:00'); // Time formatted from timestamp
+      expect(content).toContain('Impact: high');
       expect(content).toContain('Implemented user authentication');
     });
 
@@ -130,13 +127,12 @@ describe('SessionLogManager', () => {
         category: 'decision',
         description: 'Chose PostgreSQL over MongoDB',
         impact: 'high',
-        context_pressure: 0.35
       };
 
-      await manager.appendEntry(sessionDir, entry);
+      await SessionLogManager.appendEntry(sessionDir, entry);
 
       const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
+        path.join(sessionDir, 'current-session-log.md'),
         'utf-8'
       );
 
@@ -150,13 +146,12 @@ describe('SessionLogManager', () => {
         category: 'insight',
         description: 'Discovered that Vercel functions need named exports',
         impact: 'medium',
-        context_pressure: 0.28
       };
 
-      await manager.appendEntry(sessionDir, entry);
+      await SessionLogManager.appendEntry(sessionDir, entry);
 
       const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
+        path.join(sessionDir, 'current-session-log.md'),
         'utf-8'
       );
 
@@ -170,18 +165,115 @@ describe('SessionLogManager', () => {
         category: 'git',
         description: 'Merged feature branch into main',
         impact: 'low',
-        context_pressure: 0.15
       };
 
-      await manager.appendEntry(sessionDir, entry);
+      await SessionLogManager.appendEntry(sessionDir, entry);
 
       const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
+        path.join(sessionDir, 'current-session-log.md'),
         'utf-8'
       );
 
       expect(content).toContain('## Git Operations');
       expect(content).toContain('Merged feature branch into main');
+    });
+
+    it('should dual-route decision entries to both Key Decisions and Timeline', async () => {
+      const entry: LogEntry = {
+        timestamp: '2025-10-01T17:00:00Z',
+        category: 'decision',
+        description: 'Chose REST over GraphQL for API design',
+        impact: 'high',
+      };
+
+      await SessionLogManager.appendEntry(sessionDir, entry);
+
+      const content = await fs.readFile(
+        path.join(sessionDir, 'current-session-log.md'),
+        'utf-8'
+      );
+
+      // Should appear in Key Decisions section
+      const decisionsMatch = content.match(/## Key Decisions[\s\S]*?Chose REST over GraphQL/);
+      expect(decisionsMatch).toBeTruthy();
+
+      // Should also appear in Timeline section
+      const timelineMatch = content.match(/## Timeline[\s\S]*?Chose REST over GraphQL/);
+      expect(timelineMatch).toBeTruthy();
+    });
+
+    it('should dual-route insight entries to both Insights and Timeline', async () => {
+      const entry: LogEntry = {
+        timestamp: '2025-10-01T18:00:00Z',
+        category: 'insight',
+        description: 'Discovered JWT token size impacts mobile performance',
+        impact: 'medium',
+      };
+
+      await SessionLogManager.appendEntry(sessionDir, entry);
+
+      const content = await fs.readFile(
+        path.join(sessionDir, 'current-session-log.md'),
+        'utf-8'
+      );
+
+      // Should appear in Insights section
+      const insightsMatch = content.match(/## Insights[\s\S]*?JWT token size impacts mobile performance/);
+      expect(insightsMatch).toBeTruthy();
+
+      // Should also appear in Timeline section
+      const timelineMatch = content.match(/## Timeline[\s\S]*?JWT token size impacts mobile performance/);
+      expect(timelineMatch).toBeTruthy();
+    });
+
+    it('should dual-route git entries to both Git Operations and Timeline', async () => {
+      const entry: LogEntry = {
+        timestamp: '2025-10-01T19:00:00Z',
+        category: 'git',
+        description: 'Committed feature implementation (abc123)',
+        impact: 'low',
+      };
+
+      await SessionLogManager.appendEntry(sessionDir, entry);
+
+      const content = await fs.readFile(
+        path.join(sessionDir, 'current-session-log.md'),
+        'utf-8'
+      );
+
+      // Should appear in Git Operations section
+      const gitOpsMatch = content.match(/## Git Operations[\s\S]*?Committed feature implementation/);
+      expect(gitOpsMatch).toBeTruthy();
+
+      // Should also appear in Timeline section
+      const timelineMatch = content.match(/## Timeline[\s\S]*?Committed feature implementation/);
+      expect(timelineMatch).toBeTruthy();
+    });
+
+    it('should route achievement entries to Timeline only (not duplicated)', async () => {
+      const entry: LogEntry = {
+        timestamp: '2025-10-01T20:00:00Z',
+        category: 'achievement',
+        description: 'All integration tests passing',
+        impact: 'high',
+      };
+
+      await SessionLogManager.appendEntry(sessionDir, entry);
+
+      const content = await fs.readFile(
+        path.join(sessionDir, 'current-session-log.md'),
+        'utf-8'
+      );
+
+      // Should appear in Timeline
+      expect(content).toContain('All integration tests passing');
+
+      // Should NOT have an Achievements section
+      expect(content).not.toContain('## Achievements');
+
+      // Count occurrences - should only appear once (in Timeline)
+      const matches = content.match(/All integration tests passing/g);
+      expect(matches).toHaveLength(1);
     });
 
     it('should include files in entry when provided', async () => {
@@ -191,56 +283,16 @@ describe('SessionLogManager', () => {
         description: 'Fixed authentication bug',
         files: ['src/auth.ts', 'src/middleware/auth.ts'],
         impact: 'high',
-        context_pressure: 0.52
       };
 
-      await manager.appendEntry(sessionDir, entry);
+      await SessionLogManager.appendEntry(sessionDir, entry);
 
       const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
+        path.join(sessionDir, 'current-session-log.md'),
         'utf-8'
       );
 
       expect(content).toContain('src/auth.ts, src/middleware/auth.ts');
-    });
-
-    it('should perform atomic write by default', async () => {
-      const entry: LogEntry = {
-        timestamp: '2025-10-01T17:00:00Z',
-        category: 'feature',
-        description: 'Test atomic write',
-        impact: 'low',
-        context_pressure: 0.1
-      };
-
-      await manager.appendEntry(sessionDir, entry, true);
-
-      const tempPath = path.join(sessionDir, 'session.log.md.tmp');
-      expect(await fs.pathExists(tempPath)).toBe(false);
-
-      const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
-        'utf-8'
-      );
-      expect(content).toContain('Test atomic write');
-    });
-
-    it('should support non-atomic write for testing', async () => {
-      const entry: LogEntry = {
-        timestamp: '2025-10-01T18:00:00Z',
-        category: 'feature',
-        description: 'Test non-atomic write',
-        impact: 'low',
-        context_pressure: 0.2
-      };
-
-      await manager.appendEntry(sessionDir, entry, false);
-
-      const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
-        'utf-8'
-      );
-      expect(content).toContain('Test non-atomic write');
     });
 
     it('should handle multiple entries in sequence', async () => {
@@ -250,30 +302,27 @@ describe('SessionLogManager', () => {
           category: 'feature',
           description: 'Entry 1',
           impact: 'low',
-          context_pressure: 0.1
         },
         {
           timestamp: '2025-10-01T19:30:00Z',
           category: 'decision',
           description: 'Entry 2',
           impact: 'medium',
-          context_pressure: 0.2
         },
         {
           timestamp: '2025-10-01T20:00:00Z',
           category: 'insight',
           description: 'Entry 3',
           impact: 'high',
-          context_pressure: 0.3
         }
       ];
 
       for (const entry of entries) {
-        await manager.appendEntry(sessionDir, entry);
+        await SessionLogManager.appendEntry(sessionDir, entry);
       }
 
       const content = await fs.readFile(
-        path.join(sessionDir, 'session.log.md'),
+        path.join(sessionDir, 'current-session-log.md'),
         'utf-8'
       );
 
@@ -287,66 +336,46 @@ describe('SessionLogManager', () => {
     let sessionDir: string;
 
     beforeEach(async () => {
-      await manager.createSessionLog('test-user', 'main');
-      sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user');
+      sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user-archive');
+      await SessionLogManager.createSessionLog(sessionDir, 'test-user-archive', 'main');
     });
 
     it('should archive log to default location', async () => {
-      const result = await manager.archiveLog(sessionDir);
+      const archivePath = await SessionLogManager.archiveLog(sessionDir);
 
-      expect(result.success).toBe(true);
-      expect(result.archivePath).toContain('archive');
-      expect(result.archivePath).toContain('session-');
-      expect(await fs.pathExists(result.archivePath)).toBe(true);
+      expect(archivePath).toContain('archive');
+      expect(archivePath).toContain('session-log-');
+      expect(await fs.pathExists(archivePath)).toBe(true);
     });
 
-    it('should archive log to custom location', async () => {
-      const customPath = path.join(sessionDir, 'custom-archive.md');
-      const result = await manager.archiveLog(sessionDir, customPath);
+    it('should archive log with handoff summary', async () => {
+      const archivePath = await SessionLogManager.archiveLog(sessionDir, 'Completed feature X');
 
-      expect(result.success).toBe(true);
-      expect(result.archivePath).toBe(customPath);
-      expect(await fs.pathExists(customPath)).toBe(true);
+      const content = await fs.readFile(archivePath, 'utf-8');
+      expect(content).toContain('## Handoff Summary');
+      expect(content).toContain('Completed feature X');
     });
 
     it('should remove original log after archive', async () => {
-      const logPath = path.join(sessionDir, 'session.log.md');
-      await manager.archiveLog(sessionDir);
+      const logPath = path.join(sessionDir, 'current-session-log.md');
+      await SessionLogManager.archiveLog(sessionDir);
 
       expect(await fs.pathExists(logPath)).toBe(false);
     });
 
     it('should create archive directory if it does not exist', async () => {
-      const result = await manager.archiveLog(sessionDir);
+      const archivePath = await SessionLogManager.archiveLog(sessionDir);
 
-      const archiveDir = path.dirname(result.archivePath);
+      const archiveDir = path.dirname(archivePath);
       expect(await fs.pathExists(archiveDir)).toBe(true);
     });
 
-    it('should return error if log does not exist', async () => {
+    it('should throw error if log does not exist', async () => {
       const nonExistentDir = path.join(TEST_DIR, 'non-existent');
-      const result = await manager.archiveLog(nonExistentDir);
 
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Session log not found');
-    });
-
-    it('should include timestamp in result', async () => {
-      const result = await manager.archiveLog(sessionDir);
-
-      expect(result.timestamp).toBeTruthy();
-      expect(new Date(result.timestamp).getTime()).toBeGreaterThan(0);
-    });
-
-    it('should not overwrite existing archive', async () => {
-      const archivePath = path.join(sessionDir, 'archive', 'existing.md');
-      await fs.ensureDir(path.dirname(archivePath));
-      await fs.writeFile(archivePath, 'existing content', 'utf-8');
-
-      const result = await manager.archiveLog(sessionDir, archivePath);
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBeTruthy();
+      await expect(
+        SessionLogManager.archiveLog(nonExistentDir)
+      ).rejects.toThrow('Failed to archive session log');
     });
   });
 
@@ -354,157 +383,125 @@ describe('SessionLogManager', () => {
     let sessionDir: string;
 
     beforeEach(async () => {
-      await manager.createSessionLog('test-user', 'feature/test', {
-        initialPressure: 0.25
-      });
-      sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user');
+      sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user-load');
+      await SessionLogManager.createSessionLog(sessionDir, 'test-user-load', 'feature/test');
     });
 
-    it('should load and parse session log', async () => {
-      const parsed = await manager.loadSessionLog(sessionDir);
+    it('should load session log content', async () => {
+      const content = await SessionLogManager.loadSessionLog(sessionDir);
 
-      expect(parsed.frontmatter).toBeTruthy();
-      expect(parsed.frontmatter.user).toBe('test-user');
-      expect(parsed.frontmatter.branch).toBe('feature/test');
-      expect(parsed.frontmatter.context_pressure_at_start).toBe(0.25);
-      expect(parsed.content).toBeTruthy();
+      expect(content).toContain('---');
+      expect(content).toContain('user: test-user-load');
+      expect(content).toContain('branch: feature/test');
+      expect(content).toContain('## Timeline');
     });
 
-    it('should parse sections correctly', async () => {
+    it('should load log with appended entries', async () => {
       const entry: LogEntry = {
         timestamp: '2025-10-01T12:00:00Z',
         category: 'feature',
         description: 'Test feature',
-        impact: 'high',
-        context_pressure: 0.42
+        impact: 'high'
       };
 
-      await manager.appendEntry(sessionDir, entry);
+      await SessionLogManager.appendEntry(sessionDir, entry);
 
-      const parsed = await manager.loadSessionLog(sessionDir);
+      const content = await SessionLogManager.loadSessionLog(sessionDir);
 
-      expect(parsed.sections.timeline).toHaveLength(1);
-      expect(parsed.sections.timeline[0].description).toBe('Test feature');
-      expect(parsed.sections.timeline[0].context_pressure).toBe(0.42);
+      expect(content).toContain('Test feature');
+      expect(content).toContain('## Timeline');
     });
 
-    it('should parse multiple entries in different sections', async () => {
+    it('should load log with entries in multiple sections', async () => {
       const entries: LogEntry[] = [
         {
           timestamp: '2025-10-01T12:00:00Z',
           category: 'feature',
           description: 'Feature entry',
-          impact: 'high',
-          context_pressure: 0.3
+          impact: 'high'
         },
         {
           timestamp: '2025-10-01T13:00:00Z',
           category: 'decision',
           description: 'Decision entry',
-          impact: 'medium',
-          context_pressure: 0.4
+          impact: 'medium'
         },
         {
           timestamp: '2025-10-01T14:00:00Z',
           category: 'insight',
           description: 'Insight entry',
-          impact: 'low',
-          context_pressure: 0.5
+          impact: 'low'
         }
       ];
 
       for (const entry of entries) {
-        await manager.appendEntry(sessionDir, entry);
+        await SessionLogManager.appendEntry(sessionDir, entry);
       }
 
-      const parsed = await manager.loadSessionLog(sessionDir);
+      const content = await SessionLogManager.loadSessionLog(sessionDir);
 
-      expect(parsed.sections.timeline).toHaveLength(1);
-      expect(parsed.sections.decisions).toHaveLength(1);
-      expect(parsed.sections.insights).toHaveLength(1);
+      expect(content).toContain('Feature entry');
+      expect(content).toContain('Decision entry');
+      expect(content).toContain('Insight entry');
     });
 
-    it('should parse entries with files', async () => {
-      const entry: LogEntry = {
-        timestamp: '2025-10-01T15:00:00Z',
-        category: 'fix',
-        description: 'Fixed bug',
-        files: ['src/app.ts', 'src/utils.ts'],
-        impact: 'high',
-        context_pressure: 0.6
-      };
-
-      await manager.appendEntry(sessionDir, entry);
-
-      const parsed = await manager.loadSessionLog(sessionDir);
-
-      expect(parsed.sections.timeline[0].files).toEqual([
-        'src/app.ts',
-        'src/utils.ts'
-      ]);
-    });
-
-    it('should throw error if log does not exist', async () => {
+    it('should return empty string if log does not exist', async () => {
       const nonExistentDir = path.join(TEST_DIR, 'non-existent');
+      const content = await SessionLogManager.loadSessionLog(nonExistentDir);
 
-      await expect(
-        manager.loadSessionLog(nonExistentDir)
-      ).rejects.toThrow('Session log not found');
+      expect(content).toBe('');
     });
   });
 
   describe('integration scenarios', () => {
     it('should support full lifecycle: create, append, load, archive', async () => {
       // Create
-      const logPath = await manager.createSessionLog('test-user', 'feature/full-test');
+      const sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user-lifecycle');
+      await SessionLogManager.createSessionLog(sessionDir, 'test-user-lifecycle', 'feature/full-test');
+
+      const logPath = path.join(sessionDir, 'current-session-log.md');
       expect(await fs.pathExists(logPath)).toBe(true);
 
-      const sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user');
-
       // Append
-      await manager.appendEntry(sessionDir, {
+      await SessionLogManager.appendEntry(sessionDir, {
         timestamp: '2025-10-01T12:00:00Z',
         category: 'feature',
         description: 'Lifecycle test',
-        impact: 'high',
-        context_pressure: 0.5
+        impact: 'high'
       });
 
       // Load
-      const parsed = await manager.loadSessionLog(sessionDir);
-      expect(parsed.sections.timeline).toHaveLength(1);
+      const content = await SessionLogManager.loadSessionLog(sessionDir);
+      expect(content).toContain('Lifecycle test');
 
       // Archive
-      const result = await manager.archiveLog(sessionDir);
-      expect(result.success).toBe(true);
+      const archivePath = await SessionLogManager.archiveLog(sessionDir);
       expect(await fs.pathExists(logPath)).toBe(false);
-      expect(await fs.pathExists(result.archivePath)).toBe(true);
+      expect(await fs.pathExists(archivePath)).toBe(true);
     });
 
-
     it('should handle concurrent append operations safely', async () => {
-      await manager.createSessionLog('test-user', 'concurrent-test');
-      const sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user');
+      const sessionDir = path.join(TEST_DIR, '.ginko', 'sessions', 'test-user-concurrent');
+      await SessionLogManager.createSessionLog(sessionDir, 'test-user-concurrent', 'concurrent-test');
 
       const entries: LogEntry[] = Array.from({ length: 5 }, (_, i) => ({
         timestamp: `2025-10-01T1${i}:00:00Z`,
         category: 'feature' as const,
         description: `Concurrent entry ${i}`,
-        impact: 'low' as const,
-        context_pressure: 0.1 * i
+        impact: 'low' as const
       }));
 
       // Concurrent appends may fail on some operations due to race conditions
       const results = await Promise.allSettled(
-        entries.map(entry => manager.appendEntry(sessionDir, entry))
+        entries.map(entry => SessionLogManager.appendEntry(sessionDir, entry))
       );
 
       // At least some should succeed
       const successCount = results.filter(r => r.status === 'fulfilled').length;
       expect(successCount).toBeGreaterThan(0);
 
-      const parsed = await manager.loadSessionLog(sessionDir);
-      expect(parsed.sections.timeline.length).toBeGreaterThan(0);
+      const content = await SessionLogManager.loadSessionLog(sessionDir);
+      expect(content.length).toBeGreaterThan(0);
     });
   });
 });
