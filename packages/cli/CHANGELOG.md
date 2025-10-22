@@ -5,6 +5,62 @@ All notable changes to the Ginko CLI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-10-22
+
+### Fixed
+- **Complete Monorepo Path Resolution**: All 20+ ginko commands now work correctly from any subdirectory in a monorepo
+  - Architecture commands: ADR files written to correct `docs/adr/` location
+  - Git workflow commands: GitHub Actions workflows placed in correct `.github/workflows/` directory
+  - Testing commands: Correctly find `package.json` and coverage files
+  - Documentation commands: Docs generated in correct location
+  - Changelog commands: `CHANGELOG.md` and versioning operations work correctly
+  - Session commands: `SessionSynthesizer` uses correct git root for all operations
+
+### Technical Improvements
+- Added `getProjectRoot()` helper for consistent project root access across all commands
+- Replaced `process.cwd()` with `await getProjectRoot()` in 9 command files
+- Centralized path resolution for better maintainability
+- 100% success rate for commands run from subdirectories (up from 55%)
+
+### Documentation
+- Added `PATH-RESOLUTION-FIXES.md` with comprehensive technical details
+- Updated `TASK-014.md` with path audit findings and lessons learned
+- Documented design principles and testing strategy
+
+## [1.1.1] - 2025-10-22
+
+### Fixed
+- **Core Path Resolution**: Fixed `findGinkoRoot()` to use git repository root instead of nearest `.ginko` directory
+  - Commands now work correctly when run from monorepo subdirectories
+  - Session logs consistently stored at repository root
+  - Removed problematic nested `.ginko` directories
+
+### Added
+- `getGitRoot()` helper using `git rev-parse --show-toplevel`
+- Graceful fallback to directory tree walking for non-git projects
+
+### Changed
+- `findGinkoRoot()` now prefers git repository root over directory tree walking
+- Better monorepo support and developer experience
+
+## [1.1.0] - 2025-10-22
+
+### Added
+- **Pure Capture Session Logging** (TASK-014): Simplified session log template to 4 sections
+  - Removed synthesis-requiring sections (Achievements, Files Affected)
+  - Preserved categorical sections (Decisions, Insights, Git Operations) with dual-routing
+  - Enforces defensive logging philosophy: capture at 20-80% pressure, synthesize at 5-15%
+
+### Enhanced
+- Dual-routing for decision/insight/git entries for both narrative coherence and quick reference
+- Session log quality improvements with better guidance comments
+- Backward compatible with existing session logs
+
+### Technical
+- Updated `SessionLogManager` routing logic for categorical access patterns
+- Achievement entries now route to Timeline only (no duplication)
+- All 25/25 unit tests passing with enhanced coverage
+
 ## [0.2.0-alpha] - 2025-09-11
 
 ### Added

@@ -75,6 +75,25 @@ Handoffs are archived with human-readable names:
 - `2025-08-27-implement-payment.md`
 - `2025-08-27-refactor-database.md`
 
+### Monorepo Compatible
+**NEW in v1.1.2** - All commands work from any subdirectory:
+- Run `ginko` commands from anywhere in your monorepo
+- Automatically detects git repository root
+- Session data stored at repository root for consistency
+- No more "file not found" errors in multi-package repos
+
+```bash
+# Works from any subdirectory
+cd packages/frontend
+ginko start              # ✓ Works perfectly
+
+cd ../backend
+ginko log "Fix API"      # ✓ Same session, correct location
+
+cd ../../
+ginko status             # ✓ Consistent across directories
+```
+
 ## Directory Structure
 
 ```
