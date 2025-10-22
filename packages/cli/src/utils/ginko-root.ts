@@ -11,21 +11,55 @@
 
 import fs from 'fs-extra';
 import path from 'path';
+import { execSync } from 'child_process';
 
 /**
- * Find the ginko root directory by walking up the directory tree
- * Similar to how git finds the .git directory
- * 
+ * Get git repository root using git command
+ *
+ * @param startDir - Directory to start searching from (defaults to cwd)
+ * @returns Path to git root directory, or null if not in a git repo
+ */
+function getGitRoot(startDir?: string): string | null {
+  try {
+    const gitRoot = execSync('git rev-parse --show-toplevel', {
+      encoding: 'utf8',
+      cwd: startDir || process.cwd(),
+      stdio: ['pipe', 'pipe', 'ignore'] // Suppress stderr
+    }).trim();
+    return path.resolve(gitRoot);
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Find the ginko root directory
+ * Prefers git repository root for monorepo compatibility,
+ * falls back to walking up directory tree
+ *
  * @param startDir - Directory to start searching from (defaults to cwd)
  * @returns Path to ginko root directory, or null if not found
  */
 export async function findGinkoRoot(startDir?: string): Promise<string | null> {
+  // First, try to use git repository root (preferred for monorepos)
+  const gitRoot = getGitRoot(startDir);
+  if (gitRoot) {
+    const gitGinkoPath = path.join(gitRoot, '.ginko');
+    if (await fs.pathExists(gitGinkoPath)) {
+      const stats = await fs.stat(gitGinkoPath);
+      if (stats.isDirectory()) {
+        return gitRoot;
+      }
+    }
+  }
+
+  // Fall back to walking up directory tree (for non-git projects)
   let currentDir = startDir || process.cwd();
   const root = path.parse(currentDir).root;
 
   while (currentDir !== root) {
     const ginkoPath = path.join(currentDir, '.ginko');
-    
+
     if (await fs.pathExists(ginkoPath)) {
       const stats = await fs.stat(ginkoPath);
       if (stats.isDirectory()) {
