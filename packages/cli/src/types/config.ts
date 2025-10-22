@@ -1,29 +1,120 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-09-20
- * @tags: [config, schema, types, paths, features]
+ * @updated: 2025-10-22
+ * @tags: [config, schema, types, paths, features, two-tier, adr-037]
  * @related: [config-loader.ts, init.ts]
- * @priority: high
+ * @priority: critical
  * @complexity: medium
  * @dependencies: []
  */
 
 /**
- * Configuration schema for ginko.json
- * Supports path customization and feature toggles
+ * Work mode enumeration
+ */
+export type WorkMode = 'hack-ship' | 'think-build' | 'full-planning';
+
+/**
+ * Configuration schema for ginko.json (team-shared, git-tracked)
+ * All paths are RELATIVE to project root
+ * Per ADR-037: Two-Tier Configuration Architecture
  */
 export interface GinkoConfig {
+  $schema?: string;
   version: string;
-  paths: PathsConfig;
-  features: FeaturesConfig;
-  platform?: PlatformConfig;
-  naming?: NamingConfig;
+  project: ProjectConfig;
+  paths: Record<string, string>;  // All relative paths
+  workMode: WorkModeConfig;
+  contextLoading: ContextLoadingConfig;
 }
 
 /**
+ * Project metadata
+ */
+export interface ProjectConfig {
+  name: string;
+  type: 'monorepo' | 'single' | 'library';
+}
+
+/**
+ * Work mode configuration
+ * Controls documentation depth per mode
+ */
+export interface WorkModeConfig {
+  default: WorkMode;
+  documentationDepth: Record<WorkMode, string[]>;
+}
+
+/**
+ * Context loading configuration
+ */
+export interface ContextLoadingConfig {
+  progressive: boolean;
+  maxDepth: number;
+  followReferences: boolean;
+  priorityOrder: string[];
+}
+
+/**
+ * Local configuration schema for .ginko/local.json (user-specific, git-ignored)
+ * Contains absolute paths and user preferences
+ * Per ADR-037: Two-Tier Configuration Architecture
+ */
+export interface LocalConfig {
+  projectRoot: string;  // Absolute path to project root
+  userEmail: string;
+  userSlug: string;
+  workMode?: WorkMode;
+  lastSession?: string;
+}
+
+/**
+ * Default team-shared configuration
+ * Used when ginko.json doesn't exist
+ */
+export const DEFAULT_GINKO_CONFIG: GinkoConfig = {
+  $schema: "https://ginko.ai/schemas/ginko-config.json",
+  version: "1.0",
+  project: {
+    name: "Project",
+    type: "single"
+  },
+  paths: {
+    docs: "docs",
+    sprints: "docs/sprints",
+    currentSprint: "docs/sprints/CURRENT-SPRINT.md",
+    prds: "docs/PRD",
+    adrs: "docs/adr",
+    architecture: "docs/architecture",
+    backlog: "backlog",
+    context: ".ginko/context/modules",
+    sessions: ".ginko/sessions",
+    bestPractices: ".ginko/best-practices"
+  },
+  workMode: {
+    default: "think-build",
+    documentationDepth: {
+      "hack-ship": ["currentSprint", "sessions"],
+      "think-build": ["currentSprint", "sessions", "adrs", "prds"],
+      "full-planning": ["currentSprint", "sessions", "adrs", "prds", "architecture", "bestPractices"]
+    }
+  },
+  contextLoading: {
+    progressive: true,
+    maxDepth: 3,
+    followReferences: true,
+    priorityOrder: ["sessions", "currentSprint", "prds", "adrs", "context"]
+  }
+};
+
+// ========================================================================
+// LEGACY TYPES (Backward Compatibility)
+// These types are deprecated but maintained for backward compatibility
+// ========================================================================
+
+/**
+ * @deprecated Use GinkoConfig instead
  * Path configuration with variable substitution support
- * Allows customization of documentation and ginko directories
  */
 export interface PathsConfig {
   docs: DocsPathConfig;
@@ -31,18 +122,19 @@ export interface PathsConfig {
 }
 
 /**
+ * @deprecated Use GinkoConfig.paths instead
  * Documentation paths configuration
- * Supports variable substitution like ${docs.root}/adr
  */
 export interface DocsPathConfig {
   root: string;
   adr: string;
   prd: string;
   sprints: string;
-  [key: string]: string; // Allow additional custom paths
+  [key: string]: string;
 }
 
 /**
+ * @deprecated Use GinkoConfig.paths instead
  * Ginko internal paths configuration
  */
 export interface GinkoPathConfig {
@@ -55,7 +147,7 @@ export interface GinkoPathConfig {
 }
 
 /**
- * Feature toggles for ginko functionality
+ * @deprecated Feature toggles no longer used in ADR-037 configuration
  */
 export interface FeaturesConfig {
   autoCapture: boolean;
@@ -66,7 +158,7 @@ export interface FeaturesConfig {
 }
 
 /**
- * Platform-specific configuration
+ * @deprecated Platform config no longer part of main configuration
  */
 export interface PlatformConfig {
   platform: 'windows' | 'macos' | 'linux';
@@ -85,16 +177,16 @@ export interface PlatformConfig {
 }
 
 /**
- * Document naming configuration
+ * @deprecated Document naming moved to separate system
  */
 export interface NamingConfig {
-  format: string; // e.g., "{TYPE}-{NUMBER:03d}-{description}"
-  dateFormat?: string; // e.g., "YYYY-MM-DD"
+  format: string;
+  dateFormat?: string;
   types: DocumentTypeConfig;
 }
 
 /**
- * Document type configurations
+ * @deprecated Document types handled differently in ADR-037
  */
 export interface DocumentTypeConfig {
   [key: string]: {
@@ -104,24 +196,24 @@ export interface DocumentTypeConfig {
 }
 
 /**
- * Default configuration values
+ * @deprecated Use DEFAULT_GINKO_CONFIG instead
  */
-export const DEFAULT_CONFIG: GinkoConfig = {
+export const DEFAULT_CONFIG: any = {
   version: "1.0.0",
   paths: {
     docs: {
       root: "docs",
-      adr: "${docs.root}/adr",
-      prd: "${docs.root}/PRD",
-      sprints: "${docs.root}/sprints"
+      adr: "docs/adr",
+      prd: "docs/PRD",
+      sprints: "docs/sprints"
     },
     ginko: {
       root: ".ginko",
-      context: "${ginko.root}/context",
-      sessions: "${ginko.root}/sessions",
-      backlog: "${ginko.root}/backlog",
-      patterns: "${ginko.root}/patterns",
-      bestPractices: "${ginko.root}/best-practices"
+      context: ".ginko/context",
+      sessions: ".ginko/sessions",
+      backlog: ".ginko/backlog",
+      patterns: ".ginko/patterns",
+      bestPractices: ".ginko/best-practices"
     }
   },
   features: {
@@ -130,15 +222,6 @@ export const DEFAULT_CONFIG: GinkoConfig = {
     aiEnhancement: true,
     documentNaming: true,
     crossPlatform: true
-  },
-  naming: {
-    format: "{TYPE}-{NUMBER:03d}-{description}",
-    dateFormat: "YYYY-MM-DD",
-    types: {
-      ADR: { prefix: "ADR", path: "${docs.adr}" },
-      PRD: { prefix: "PRD", path: "${docs.prd}" },
-      SPRINT: { prefix: "SPRINT", path: "${docs.sprints}" }
-    }
   }
 };
 

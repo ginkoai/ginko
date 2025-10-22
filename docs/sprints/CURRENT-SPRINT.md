@@ -1,1 +1,1 @@
-/Users/cnorton/Development/ginko/docs/SPRINTS/SPRINT-2025-08-28-untitled-sprint.md
+SPRINT-2025-10-22-configuration-system.md

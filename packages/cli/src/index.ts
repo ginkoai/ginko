@@ -35,6 +35,7 @@ import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
 import { backlogCommand } from './commands/backlog/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
+import { teamCommand } from './commands/team.js';
 
 const program = new Command();
 
@@ -49,7 +50,7 @@ const logo = chalk.green(`
 program
   .name('ginko')
   .description('Privacy-first CLI for AI-assisted development')
-  .version('0.1.0-alpha')
+  .version('1.1.0')
   .addHelpText('before', logo);
 
 // Core commands
@@ -92,16 +93,32 @@ program
   .action(statusCommand);
 
 program
-  .command('log <description>')
+  .command('log [description]')
   .description('Log an event to the current session (ADR-033 defensive logging)')
   .option('-c, --category <category>', 'Event category: fix, feature, decision, insight, git, achievement', 'feature')
   .option('-i, --impact <impact>', 'Impact level: high, medium, low', 'medium')
   .option('-f, --files <files>', 'Comma-separated list of files affected')
-  .option('--examples', 'Show logging examples')
+  .option('-s, --show', 'Show current session log with quality score')
+  .option('--validate', 'Check session log quality and get suggestions')
+  .option('--quick', 'Skip interactive prompts for faster logging')
+  .option('--why', 'Force WHY prompt (useful for features)')
+  .option('--examples', 'Show logging examples with quality tips')
   .action((description, options) => {
     if (options.examples) {
       logExamples();
       return;
+    }
+    // --show and --validate don't require description
+    if (options.show || options.validate) {
+      return logCommand('', options);
+    }
+    // Regular logging requires description
+    if (!description) {
+      console.error(chalk.red('❌ Description is required when logging events'));
+      console.error(chalk.dim('   Use `ginko log --show` to view current log with quality score'));
+      console.error(chalk.dim('   Use `ginko log --validate` to check log quality'));
+      console.error(chalk.dim('   Use `ginko log --examples` for usage examples'));
+      process.exit(1);
     }
     return logCommand(description, options);
   });
@@ -286,6 +303,16 @@ program
   .option('--force', 'Skip confirmation prompt')
   .option('--revert-commit', 'Revert the Copilot integration git commit')
   .action((options) => uninstallCopilotCommand(options));
+
+// Team collaboration command
+program
+  .command('team [user]')
+  .description('View team activity from user-namespaced session logs')
+  .option('--timeline', 'Show chronological team events')
+  .option('--files', 'Show file activity across team')
+  .option('--conflicts', 'Show files modified by multiple users')
+  .option('--window <hours>', 'Time window in hours (default: 24)', '24')
+  .action((user, options) => teamCommand(user, options));
 
 // Backlog management command
 program.addCommand(backlogCommand());

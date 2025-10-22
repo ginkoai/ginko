@@ -19,6 +19,7 @@ import { getUserEmail, getGinkoDir, detectWorkMode } from '../../utils/helpers.j
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
+import { loadContextStrategic, formatContextSummary, StrategyContext } from '../../utils/context-loader.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -57,31 +58,46 @@ export class StartReflectionCommand extends ReflectionCommand {
       // 2. Gather context (including handoff)
       const context = await this.gatherContext(parsedIntent);
 
-      // 3. Check for stale session log and auto-archive (ADR-036)
-      spinner.text = 'Checking session log...';
+      // 3. Read previous session log BEFORE archiving (ADR-033: Fresh AI synthesis at optimal pressure)
+      spinner.text = 'Reading previous session log...';
       const ginkoDir = await getGinkoDir();
       const userEmail = await getUserEmail();
       const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
       const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
       const projectRoot = process.cwd();
 
-      const wasArchived = await SessionLogManager.autoArchiveIfStale(sessionDir);
-      if (wasArchived) {
-        spinner.info('Previous session archived (>48h or >50 entries)');
-      }
+      // Load session log content before archiving
+      const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);
+      const hasLog = previousSessionLog.length > 100; // Non-empty log
 
-      // 4. Run session synthesis (ADR-036)
+      // 4. Synthesize from previous session log (at optimal 5-15% pressure)
       spinner.text = 'Synthesizing session context...';
       const synthesizer = new SessionSynthesizer(sessionDir, projectRoot);
       const synthesis = await synthesizer.synthesize();
 
-      // 5. Determine work mode from context and update context manager
+      // 5. Archive previous session log (ALWAYS, not conditionally)
+      if (hasLog) {
+        spinner.text = 'Archiving previous session log...';
+        const archivePath = await SessionLogManager.archiveLog(sessionDir);
+        spinner.info(`Previous session archived: ${path.basename(archivePath)}`);
+      }
+
+      // 6. Determine work mode from context and update context manager
       const workMode = this.determineWorkMode(context, options);
       this.contextManager = new ActiveContextManager(workMode);
 
-      spinner.text = 'Loading context modules...';
+      spinner.text = 'Loading context strategically...';
 
-      // 6. Load initial context using ActiveContextManager
+      // 7. Load context strategically (TASK-011: Progressive Context Loading)
+      const strategyContext = await loadContextStrategic({
+        workMode,
+        maxDepth: 3,
+        followReferences: true,
+        sessionDir,
+        userSlug
+      });
+
+      // 8. Load initial context using ActiveContextManager (legacy compatibility)
       const sessionData = {
         userSlug: context.userSlug || 'unknown',
         branch: context.currentBranch,
@@ -91,18 +107,24 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       const contextLevel = await this.contextManager.loadInitialContext(sessionData);
 
-      // 7. Initialize session logging if needed (ADR-033)
-      spinner.text = 'Creating session log...';
+      // 9. Create fresh session log for new session (ADR-033)
+      spinner.text = 'Creating fresh session log...';
       await this.initializeSessionLog(context, options);
 
       if (!options.noLog) {
         spinner.info('Session logging enabled (use --no-log to disable)');
       }
 
-      // 8. Display session information with synthesis
-      await this.displaySessionInfo(context, contextLevel, synthesis);
+      // 10. Display session information with synthesis and strategy metrics
+      await this.displaySessionInfo(context, contextLevel, synthesis, strategyContext);
 
-      spinner.succeed('Session initialized with synthesis!');
+      // Display strategic context loading summary
+      if (options.verbose) {
+        console.log('');
+        console.log(chalk.dim(formatContextSummary(strategyContext)));
+      }
+
+      spinner.succeed('Session initialized with strategic context!');
 
     } catch (error) {
       spinner.fail('Session initialization failed');
@@ -113,8 +135,14 @@ export class StartReflectionCommand extends ReflectionCommand {
 
   /**
    * Display session information based on synthesis (ADR-036)
+   * Enhanced with strategic context metrics (TASK-011)
    */
-  private async displaySessionInfo(context: any, contextLevel?: ContextLevel, synthesis?: SynthesisOutput): Promise<void> {
+  private async displaySessionInfo(
+    context: any,
+    contextLevel?: ContextLevel,
+    synthesis?: SynthesisOutput,
+    strategyContext?: StrategyContext
+  ): Promise<void> {
     console.log('');
 
     // Display quality tier
@@ -214,8 +242,27 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
     }
 
-    // Show loaded context modules from ActiveContextManager
-    if (contextLevel) {
+    // Show strategic context loading metrics (TASK-011)
+    if (strategyContext) {
+      const { metrics, loadOrder } = strategyContext;
+      console.log(chalk.cyan('📚 Strategic Context Loaded:'));
+      console.log(chalk.green(`   ⚡ ${metrics.documentsLoaded} documents in ${metrics.bootstrapTimeMs}ms`));
+      console.log(chalk.dim(`   📊 ${metrics.totalTokens.toLocaleString()} tokens (${metrics.tokenReductionPercent}% reduction)`));
+
+      if (loadOrder.length > 0) {
+        console.log(chalk.yellow('   📄 Priority Load Order:'));
+        loadOrder.slice(0, 5).forEach((item, index) => {
+          console.log(chalk.dim(`      ${index + 1}. ${item}`));
+        });
+        if (loadOrder.length > 5) {
+          console.log(chalk.dim(`      ... and ${loadOrder.length - 5} more`));
+        }
+      }
+      console.log('');
+    }
+
+    // Show loaded context modules from ActiveContextManager (legacy)
+    if (contextLevel && !strategyContext) {
       console.log(chalk.cyan('📚 Context Modules Loaded:'));
 
       if (contextLevel.immediate.length > 0) {

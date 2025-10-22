@@ -38,7 +38,7 @@ export class ProjectAnalyzer {
     
     // Fill in defaults
     return {
-      projectName: path.basename(this.projectRoot),
+      projectName: this.context.projectName || path.basename(this.projectRoot),
       techStack: this.context.techStack || [],
       projectType: this.context.projectType || 'unknown',
       hasTests: this.context.hasTests || false,
@@ -64,6 +64,11 @@ export class ProjectAnalyzer {
         this.context.packageManager = check.manager;
         return;
       }
+    }
+
+    // Default to npm if package.json exists
+    if (await fs.pathExists(path.join(this.projectRoot, 'package.json'))) {
+      this.context.packageManager = 'npm';
     }
   }
 
@@ -161,13 +166,58 @@ export class ProjectAnalyzer {
     for (const key of keys) {
       if (scripts[key]) {
         const pm = this.context.packageManager || 'npm';
-        return `${pm} ${pm === 'npm' ? 'run' : ''} ${key}`;
+        // npm has shortcuts for 'test', 'start', others need 'run'
+        const npmShortcuts = ['test', 'start'];
+        const needsRun = pm === 'npm' && !npmShortcuts.includes(key);
+        return `${pm}${needsRun ? ' run' : ''} ${key}`;
       }
     }
     return undefined;
   }
 
   private async detectProjectType(): Promise<void> {
+    // Check package.json for project type hints
+    try {
+      const packageJsonPath = path.join(this.projectRoot, 'package.json');
+      if (await fs.pathExists(packageJsonPath)) {
+        const packageJson = await fs.readJSON(packageJsonPath);
+
+        // Check for CLI (has bin property)
+        if (packageJson.bin) {
+          this.context.projectType = 'cli';
+          return;
+        }
+
+        // Check for webapp (React/Vue/Next.js)
+        const deps = {
+          ...packageJson.dependencies,
+          ...packageJson.devDependencies,
+        };
+
+        if (deps['react'] || deps['vue']) {
+          this.context.projectType = 'webapp';
+          return;
+        }
+
+        // Check for API (Express/Fastify/NestJS without frontend frameworks)
+        if (deps['express'] || deps['fastify'] || deps['@nestjs/core']) {
+          if (!deps['react'] && !deps['vue'] && !deps['next']) {
+            this.context.projectType = 'api';
+            return;
+          }
+        }
+
+        // Check for library (has main/types but no bin)
+        if ((packageJson.main || packageJson.types) && !packageJson.bin) {
+          this.context.projectType = 'library';
+          return;
+        }
+      }
+    } catch (error) {
+      // Failed to read package.json, fall back to directory detection
+    }
+
+    // Fall back to directory-based detection
     // Check for Next.js
     if (await fs.pathExists(path.join(this.projectRoot, 'next.config.js')) ||
         await fs.pathExists(path.join(this.projectRoot, 'next.config.mjs'))) {
@@ -218,9 +268,30 @@ export class ProjectAnalyzer {
 
   private async detectLanguages(): Promise<void> {
     const languages: string[] = [];
-    
-    // TypeScript
-    if (await fs.pathExists(path.join(this.projectRoot, 'tsconfig.json'))) {
+
+    // TypeScript - check dependencies first, then config file
+    let hasTypeScript = false;
+    try {
+      const packageJsonPath = path.join(this.projectRoot, 'package.json');
+      if (await fs.pathExists(packageJsonPath)) {
+        const packageJson = await fs.readJSON(packageJsonPath);
+        const deps = {
+          ...packageJson.dependencies,
+          ...packageJson.devDependencies,
+        };
+        if (deps['typescript']) {
+          hasTypeScript = true;
+        }
+      }
+    } catch (error) {
+      // Failed to read package.json, fall back to file check
+    }
+
+    if (!hasTypeScript && await fs.pathExists(path.join(this.projectRoot, 'tsconfig.json'))) {
+      hasTypeScript = true;
+    }
+
+    if (hasTypeScript) {
       languages.push('typescript');
     }
 

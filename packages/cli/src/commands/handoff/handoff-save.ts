@@ -92,8 +92,8 @@ Impact: high
   // Save to archive
   await fs.writeFile(archivePath, finalContent, 'utf-8');
 
-  // Delete current session log to create clean slate
-  await fs.unlink(sessionLogPath);
+  // Note: Session log remains for next 'ginko start' to synthesize from (ADR-033, ADR-036)
+  // It will be archived by 'ginko start', not here
 
   // Get statistics for display
   const stats = SessionLogManager.getSummary(finalContent);

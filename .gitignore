@@ -125,8 +125,10 @@ test-projects/
 .env*.local
 api/_lib/
 
-# Ginko local config (contains preferences)
+# Ginko local config (contains user-specific paths - ADR-037)
 .ginko/config.json
+.ginko/local.json
+.ginko/.temp/
 
 # Claude Code local settings (user-specific permissions)
 .claude/settings.local.json

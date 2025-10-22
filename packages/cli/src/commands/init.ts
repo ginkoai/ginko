@@ -24,6 +24,7 @@ import { CursorAdapter } from '../adapters/cursor-adapter.js';
 import { findGinkoRoot } from '../utils/ginko-root.js';
 import { pathManager } from '../core/utils/paths.js';
 import { getUserEmail } from '../utils/helpers.js';
+import { GinkoConfig, LocalConfig, DEFAULT_GINKO_CONFIG } from '../types/config.js';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();
@@ -72,8 +73,35 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     await fs.ensureDir(userSessionsDir);
     await fs.ensureDir(pathManager.joinPaths(userSessionsDir, 'archive'));
 
-    // Create default configuration (privacy-first)
-    const config = {
+    // Create team-shared ginko.json configuration (ADR-037)
+    spinner.text = 'Creating team-shared configuration (ginko.json)...';
+
+    const ginkoConfig: GinkoConfig = {
+      ...DEFAULT_GINKO_CONFIG,
+      project: {
+        name: path.basename(projectRoot),
+        type: 'single' // Can be updated by user later
+      }
+    };
+
+    const ginkoJsonPath = path.join(projectRoot, 'ginko.json');
+    await fs.writeJSON(ginkoJsonPath, ginkoConfig, { spaces: 2 });
+
+    // Create user-specific local.json configuration (ADR-037)
+    spinner.text = 'Creating user-specific configuration (.ginko/local.json)...';
+
+    const localConfig: LocalConfig = {
+      projectRoot,
+      userEmail,
+      userSlug,
+      workMode: 'think-build'
+    };
+
+    const localJsonPath = pathManager.joinPaths(pathConfig.ginko.root, 'local.json');
+    await fs.writeJSON(localJsonPath, localConfig, { spaces: 2 });
+
+    // Create legacy config.json for backward compatibility
+    const legacyConfig = {
       version: '0.1.0',
       user: {
         email: userEmail
@@ -94,9 +122,9 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       }
     };
 
-    // Save configuration using pathManager
+    // Save legacy configuration using pathManager
     const configPath = pathManager.joinPaths(pathConfig.ginko.root, 'config.json');
-    await fs.writeJSON(configPath, config, { spaces: 2 });
+    await fs.writeJSON(configPath, legacyConfig, { spaces: 2 });
 
     // Project analysis step - skip if quick mode
     if (options.quick) {
@@ -200,13 +228,20 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     // Add .ginko to .gitignore if it doesn't exist
     const gitignorePath = pathManager.joinPaths(projectRoot, '.gitignore');
+    const ginkoIgnoreRules = `
+# Ginko - Keep context, ignore private config (ADR-037)
+.ginko/config.json
+.ginko/local.json
+.ginko/.temp/
+`;
+
     if (await fs.pathExists(gitignorePath)) {
       const gitignore = await fs.readFile(gitignorePath, 'utf8');
-      if (!gitignore.includes('.ginko/config.json')) {
-        await fs.appendFile(gitignorePath, '\n# Ginko - Keep context, ignore private config\n.ginko/config.json\n.ginko/.temp/\n');
+      if (!gitignore.includes('.ginko/local.json')) {
+        await fs.appendFile(gitignorePath, ginkoIgnoreRules);
       }
     } else {
-      await fs.writeFile(gitignorePath, '# Ginko - Keep context, ignore private config\n.ginko/config.json\n.ginko/.temp/\n');
+      await fs.writeFile(gitignorePath, ginkoIgnoreRules);
     }
 
     spinner.succeed('Context management configured');
@@ -245,8 +280,13 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     console.log('\n' + chalk.gray('Files created:'));
     console.log('  📁 ' + chalk.gray(pathManager.getRelativePath(ginkoDir)));
+    console.log('  📄 ' + chalk.gray('ginko.json (team-shared configuration)'));
+    console.log('  📄 ' + chalk.gray('.ginko/local.json (user-specific configuration)'));
     console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
     console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
+    console.log('\n' + chalk.blue('💡 Configuration:'));
+    console.log('  • ginko.json is tracked in git (team-shared structure)');
+    console.log('  • .ginko/local.json is git-ignored (your local paths)');
 
   } catch (error) {
     spinner.fail('Initialization failed');

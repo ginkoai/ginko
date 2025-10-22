@@ -9,6 +9,9 @@ export default {
   moduleNameMapper: {
     '^(\.{1,2}/.*)\.js$': '$1'
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(ora|chalk|cli-spinners|strip-ansi|ansi-regex|is-interactive|is-unicode-supported)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

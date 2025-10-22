@@ -1,12 +1,12 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-10-03
- * @tags: [session-logging, defensive-logging, handoff, continuous-logging]
- * @related: [handoff/handoff-reflection-pipeline.ts, start/index.ts]
+ * @updated: 2025-10-22
+ * @tags: [session-logging, defensive-logging, handoff, continuous-logging, references, task-010]
+ * @related: [handoff/handoff-reflection-pipeline.ts, start/index.ts, ../utils/reference-parser.ts]
  * @priority: high
  * @complexity: high
- * @dependencies: [fs, path, yaml]
+ * @dependencies: [fs, path, yaml, reference-parser]
  */
 
 /**
@@ -14,12 +14,14 @@
  *
  * Manages continuous session logging to capture insights throughout development sessions.
  * Enables high-quality handoffs through event-based defensive logging.
+ * Supports reference linking between session logs, sprints, PRDs, and ADRs (TASK-010)
  *
  * Based on ADR-033: Context Pressure Mitigation Strategy (Event-Based Amendment)
  */
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { extractReferences, type Reference } from '../utils/reference-parser.js';
 
 export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
 export type LogImpact = 'high' | 'medium' | 'low';
@@ -86,22 +88,30 @@ branch: ${branch}
 # Session Log: ${sessionId}
 
 ## Timeline
-<!-- Chronological log of all session events -->
+<!-- Chronological log of all session events (fixes, features) -->
+<!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
+<!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
 ## Key Decisions
-<!-- Important decisions made during session -->
+<!-- Important decisions made during session with alternatives considered -->
+<!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
+<!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
 
 ## Files Affected
-<!-- Files modified during session -->
+<!-- Files modified during session (auto-detected from git status) -->
 
 ## Insights
 <!-- Patterns, gotchas, learnings discovered -->
+<!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
+<!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
 
 ## Git Operations
 <!-- Commits, merges, branch changes -->
+<!-- Log significant commits with: ginko log "Committed feature X" --category=git -->
 
 ## Achievements
 <!-- Features completed, tests passing -->
+<!-- Log milestones with: ginko log "All tests passing" --category=achievement -->
 `;
 
     const logPath = this.getSessionLogPath(userDir);
@@ -375,7 +385,8 @@ Impact: ${entry.impact}
 
   /**
    * Check if session log should be auto-archived
-   * Based on ADR-036: age (>48h) or size (>50 entries)
+   * Based on ADR-036: age (>48h)
+   * Note: Size restriction removed - no technical reason to limit entry count
    */
   static async shouldAutoArchive(userDir: string): Promise<boolean> {
     const hasLog = await this.hasSessionLog(userDir);
@@ -399,9 +410,18 @@ Impact: ${entry.impact}
       return true;
     }
 
-    // Check size: >50 entries
-    const summary = this.getSummary(logContent);
-    if (summary.totalEntries > 50) {
+    return false;
+  }
+
+  /**
+   * Auto-archive if conditions met, return true if archived
+   * Used by ginko start to clean up stale sessions (>48h old)
+   */
+  static async autoArchiveIfStale(userDir: string): Promise<boolean> {
+    const shouldArchive = await this.shouldAutoArchive(userDir);
+
+    if (shouldArchive) {
+      await this.archiveLog(userDir, 'Auto-archived due to age (>48h)');
       return true;
     }
 
@@ -409,17 +429,69 @@ Impact: ${entry.impact}
   }
 
   /**
-   * Auto-archive if conditions met, return true if archived
-   * Used by ginko start to clean up stale sessions
+   * Extract all references from session log (TASK-010)
+   * Returns unique references found in the log
+   *
+   * @param userDir - User session directory
+   * @returns Array of Reference objects
    */
-  static async autoArchiveIfStale(userDir: string): Promise<boolean> {
-    const shouldArchive = await this.shouldAutoArchive(userDir);
+  static async extractReferences(userDir: string): Promise<Reference[]> {
+    const logContent = await this.loadSessionLog(userDir);
 
-    if (shouldArchive) {
-      await this.archiveLog(userDir, 'Auto-archived due to age or size');
-      return true;
+    if (!logContent) {
+      return [];
     }
 
-    return false;
+    return extractReferences(logContent);
+  }
+
+  /**
+   * Get reference summary for session
+   * Groups references by type and provides counts
+   *
+   * @param userDir - User session directory
+   * @returns Summary of references by type
+   */
+  static async getReferenceSummary(userDir: string): Promise<{
+    total: number;
+    byType: Record<string, number>;
+    references: Reference[];
+  }> {
+    const references = await this.extractReferences(userDir);
+
+    const byType: Record<string, number> = {};
+    for (const ref of references) {
+      byType[ref.type] = (byType[ref.type] || 0) + 1;
+    }
+
+    return {
+      total: references.length,
+      byType,
+      references
+    };
+  }
+
+  /**
+   * Get all referenced documents from session
+   * Useful for understanding what documents are linked to this session
+   *
+   * @param userDir - User session directory
+   * @returns Array of unique reference strings
+   */
+  static async getReferencedDocuments(userDir: string): Promise<string[]> {
+    const references = await this.extractReferences(userDir);
+
+    // Deduplicate by rawText
+    const seen = new Set<string>();
+    const unique: string[] = [];
+
+    for (const ref of references) {
+      if (!seen.has(ref.rawText)) {
+        seen.add(ref.rawText);
+        unique.push(ref.rawText);
+      }
+    }
+
+    return unique;
   }
 }

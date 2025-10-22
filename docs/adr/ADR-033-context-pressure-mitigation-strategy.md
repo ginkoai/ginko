@@ -497,3 +497,119 @@ Impact: high
 This amendment preserves the ADR's historical context about why pressure was a concern, while updating the solution to be simpler and more practical. The observation that AI quality degrades as conversations lengthen remains valid; we've simply found a better way to address it.
 
 **Key Learning**: Defensive logging (log after every significant event) achieves the same goal as pressure-aware logging, but with less complexity and better model-agnosticism.
+
+---
+
+## Addendum 2: Session Logs as Pure Capture (2025-10-22)
+
+**Date:** 2025-10-22
+**Context:** SPRINT-2025-10-22, TASK-013 implementation review
+**Related:** TASK-013, TASK-014
+
+### Problem Identified
+
+After implementing TASK-013 (Session Log Quality Enhancements) and observing production usage during SPRINT-2025-10-22, we identified that two sections in the session log template violate defensive logging principles:
+
+1. **Achievements Section**: Duplicates Timeline entries, requiring synthesis under variable/high pressure
+2. **Files Affected Section**: Aggregates file references already captured inline, adding redundant synthesis work
+
+Both sections force AI to perform synthesis when context pressure may be high (80-95%), contradicting ADR-033's core principle of capturing raw facts at low-medium pressure (20-80%) and deferring synthesis to fresh sessions.
+
+### Decision: Pure Capture Only
+
+Session logs must be **pure capture with zero synthesis requirements**.
+
+**KEEP (Capture Sections)**:
+- **Timeline**: Chronological facts with inline file references
+- **Key Decisions**: Decisions with alternatives considered
+- **Insights**: Gotchas, patterns, learnings discovered
+- **Git Operations**: Commits, branches, merges
+
+**REMOVE (Synthesis Sections)**:
+- ❌ **Achievements**: Redundant duplication of Timeline achievements
+- ❌ **Files Affected**: Redundant aggregation of inline file references
+
+### Rationale
+
+**Architectural Clarity**:
+```
+LOW PRESSURE (20-80%)           HIGH PRESSURE (80-95%)
+─────────────────────           ──────────────────────
+Session Log Capture      →      (no synthesis here)
+  - Timeline entries                    │
+  - Decisions logged                    │
+  - Insights noted                      │
+  - Git ops recorded                    ▼
+                                   Save & exit
+                                        │
+                                        ▼
+LOW PRESSURE (5-15%)                Archive log
+─────────────────────                    │
+Next session starts                      │
+ginko start reads:                       │
+  - Session log         ◄────────────────┘
+  - Sprint context
+  - PRDs/ADRs
+  → SYNTHESIZES NOW (fresh, optimal pressure)
+```
+
+**Benefits**:
+1. **Consistent Quality**: Session log quality independent of when session ends
+2. **Lower Cognitive Load**: No synthesis required during logging
+3. **Separation of Concerns**: Historian role (session log) vs Strategist role (synthesis)
+4. **Optimal Synthesis**: Happens once at session start (5-15% pressure), not repeatedly at session end (80-95%)
+
+**Files Inline vs Aggregated**:
+- Inline preserves **causality**: "This change happened BECAUSE we implemented this feature"
+- Inline preserves **temporal context**: Files appear when actually modified
+- Inline preserves **purpose**: WHY each file was touched is immediately adjacent
+- Aggregation breaks narrative flow and requires cross-referencing
+
+**Achievements vs Timeline**:
+- Timeline already contains achievements chronologically
+- Duplicating to separate section creates confusion: "Did I already read this?"
+- Fresh AI can filter Timeline mentally: "What got completed?"
+- Synthesis of achievements belongs in `ginko start`, not session log
+
+### Implementation
+
+**Template Changes** (TASK-014):
+```markdown
+## Timeline              ✅ Keep
+## Key Decisions          ✅ Keep
+## Insights              ✅ Keep
+## Git Operations        ✅ Keep
+## Files Affected        ❌ Remove
+## Achievements          ❌ Remove
+```
+
+**Routing Changes**:
+```typescript
+case 'achievement':
+  sectionMarker = '## Timeline';  // Changed from '## Achievements'
+  // No dual-routing to Timeline anymore
+  break;
+```
+
+### Consequences
+
+**Positive**:
+- ✅ Session logs become pure raw material for synthesis
+- ✅ Quality consistent regardless of session end pressure
+- ✅ Simpler mental model: capture facts, synthesize later
+- ✅ Lower cognitive load during logging
+
+**Neutral**:
+- Session logs no longer have quick "achievements summary"
+- This is acceptable because synthesis happens at `ginko start` with better quality
+
+**Migration**:
+- Existing session logs with Achievements/Files Affected sections remain valid
+- New logs use simplified template
+- Backward compatible parsing
+
+### Conclusion
+
+This addendum refines ADR-033's defensive logging philosophy by explicitly separating capture (during session) from synthesis (at session start). Session logs are historians, not strategists. Synthesis under high context pressure yields uneven results; synthesis at fresh session start yields consistent quality.
+
+**Key Principle**: Capture raw facts when quality is good (20-80% pressure), synthesize when quality is optimal (5-15% pressure).

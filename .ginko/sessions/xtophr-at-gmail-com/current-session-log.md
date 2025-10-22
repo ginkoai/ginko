@@ -1,93 +1,34 @@
 ---
-session_id: session-2025-10-03T19-43-27-939Z
-started: 2025-10-03T19:43:27.941Z
+session_id: session-2025-10-22T20-18-52-775Z
+started: 2025-10-22T20:18:52.775Z
 user: xtophr@gmail.com
 branch: main
-context_pressure_at_start: 0.00
 ---
 
-# Session Log: session-2025-10-03T19-43-27-939Z
+# Session Log: session-2025-10-22T20-18-52-775Z
 
 ## Timeline
-<!-- Chronological log of all session events -->
-
-### 15:43 - [feature]
-Enabled session logging for current session by manually creating log file. ADR-033 implementation complete and functional.
-Files: .ginko/sessions/xtophr-at-gmail-com/current-session-log.md
-Impact: high | Pressure: 19%
-
-### 15:47 - [fix]
-Investigated why session log wasn't auto-created on `ginko start`. Root cause: shell persistence - user ran ginko start before ADR-033 was globally installed. Using /clear keeps shell session with cached old binary.
-Impact: high | Pressure: 22%
-
-### 15:52 - [decision]
-Created FEATURE-032 for shell staleness detection based on /clear usage pattern discovery. Chose Tier 1 (feature detection) as immediate solution with graceful degradation.
-Files: backlog/items/FEATURE-032.md
-Impact: high | Pressure: 25%
-
-### 15:59 - [insight]
-Natural language command processing validated: User typed `backlog "Feature Detection"` and AI correctly interpreted as ginko backlog create, enriched with conversation context, and enhanced generic output with actual technical details. Demonstrates FEATURE-021 magic interface pattern working in practice.
-Files: backlog/items/FEATURE-032.md
-Impact: high | Pressure: 28%
-
-### 16:06 - [fix]
-Discovered SessionLogger.logEvent() bug: events logged to memory but appendEventToFile() silently fails to write. Manual insertion logic works correctly. Possible fs-extra import issue in transpiled dist code.
-Impact: high | Pressure: 29%
-
-### 16:20 - [decision]
-Created TASK-004 (critical bug) for SessionLogger.logEvent() file write failure. Root cause analysis points to fs-extra import issue in transpiled dist code. Proposed fix: switch to native fs/promises with explicit error handling.
-Files: backlog/items/TASK-004.md
-Impact: critical | Pressure: 31%
-
-### 16:28 - [insight]
-Critical architectural gap discovered: PressureMonitor always reports 0% but actual Claude Code context is 75%. No integration between ginko CLI and Claude /context token tracking. All ADR-033 pressure measurements are broken.
-Impact: critical | Pressure: 75%
-
-### 16:35 - [decision]
-Created FEATURE-033 for real context pressure integration. Chose hook-based approach (Option 1) as simplest: Claude Code hook exports GINKO_TOKENS_USED env var, ginko CLI reads on startup and calls PressureMonitor.updateEstimatedTokens().
-Files: backlog/items/FEATURE-033.md
-Impact: critical | Pressure: 76%
+<!-- Chronological log of all session events (fixes, features) -->
+<!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
+<!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
 ## Key Decisions
-<!-- Important decisions made during session -->
-
-### 15:52 - [decision]
-Created FEATURE-032 for shell staleness detection based on /clear usage pattern discovery. Chose Tier 1 (feature detection) as immediate solution with graceful degradation.
-Files: backlog/items/FEATURE-032.md
-Impact: high | Pressure: 25%
-
-### 16:20 - [decision]
-Created TASK-004 (critical bug) for SessionLogger.logEvent() file write failure. Root cause analysis points to fs-extra import issue in transpiled dist code. Proposed fix: switch to native fs/promises with explicit error handling.
-Files: backlog/items/TASK-004.md
-Impact: critical | Pressure: 31%
-
-### 16:35 - [decision]
-Created FEATURE-033 for real context pressure integration. Chose hook-based approach (Option 1) as simplest: Claude Code hook exports GINKO_TOKENS_USED env var, ginko CLI reads on startup and calls PressureMonitor.updateEstimatedTokens().
-Files: backlog/items/FEATURE-033.md
-Impact: critical | Pressure: 76%
+<!-- Important decisions made during session with alternatives considered -->
+<!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
+<!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
 
 ## Files Affected
-<!-- Files modified during session -->
-
-- backlog/items/FEATURE-032.md (created, enhanced)
-- backlog/items/TASK-004.md (created, bug report)
-- backlog/items/FEATURE-033.md (created, enhanced)
-- .ginko/sessions/xtophr-at-gmail-com/current-session-log.md (created, populated)
+<!-- Files modified during session (auto-detected from git status) -->
 
 ## Insights
 <!-- Patterns, gotchas, learnings discovered -->
-
-### 15:59 - [insight]
-Natural language command processing validated: User typed `backlog "Feature Detection"` and AI correctly interpreted as ginko backlog create, enriched with conversation context, and enhanced generic output with actual technical details. Demonstrates FEATURE-021 magic interface pattern working in practice.
-Files: backlog/items/FEATURE-032.md
-Impact: high | Pressure: 28%
-
-### 16:28 - [insight]
-Critical architectural gap discovered: PressureMonitor always reports 0% but actual Claude Code context is 75%. No integration between ginko CLI and Claude /context token tracking. All ADR-033 pressure measurements are broken.
-Impact: critical | Pressure: 75%
+<!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
+<!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
 
 ## Git Operations
 <!-- Commits, merges, branch changes -->
+<!-- Log significant commits with: ginko log "Committed feature X" --category=git -->
 
 ## Achievements
 <!-- Features completed, tests passing -->
+<!-- Log milestones with: ginko log "All tests passing" --category=achievement -->
