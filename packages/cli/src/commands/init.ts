@@ -128,7 +128,7 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     // Project analysis step - skip if quick mode
     if (options.quick) {
-      spinner.text = 'Quick initialization (skipping analysis)...';
+      spinner.text = 'Quick initialization mode (skipping analysis)...';
       spinner.succeed('Quick initialization complete');
     } else if (options.analyze !== false) {
       spinner.text = 'Analyzing project structure...';
@@ -150,11 +150,14 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       }
     }
 
-    // AI instructions generation
-    spinner.start('Generating AI collaboration instructions...');
+    // AI instructions generation - skip in quick mode
+    if (options.quick) {
+      spinner.text = 'Skipping AI instructions generation (quick mode)...';
+    } else {
+      spinner.start('Generating AI collaboration instructions...');
 
-    try {
-      const projectContext: ProjectContext = deepAnalysis || await new ProjectAnalyzer(projectRoot).analyze();
+      try {
+        const projectContext: ProjectContext = deepAnalysis || await new ProjectAnalyzer(projectRoot).analyze();
 
       // Create template variables
       const variables: TemplateVariables = {
@@ -180,9 +183,10 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       await fs.writeFile(instructionsPath, instructions);
 
       spinner.succeed('AI instructions generated');
-    } catch (error) {
-      spinner.warn('AI instructions generation failed');
-      console.warn(chalk.yellow('Instructions error:', error instanceof Error ? error.message : String(error)));
+      } catch (error) {
+        spinner.warn('AI instructions generation failed');
+        console.warn(chalk.yellow('Instructions error:', error instanceof Error ? error.message : String(error)));
+      }
     }
 
     // Context rules

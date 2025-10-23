@@ -208,7 +208,10 @@ export class BacklogBase {
 
     for (const file of files) {
       if (!file.endsWith('.md')) continue;
-      
+
+      // Skip documentation and completion status files
+      if (file.includes('-COMPLETION-STATUS') || file.includes('COMPLETION-STATUS')) continue;
+
       const id = file.replace('.md', '');
       const item = await this.loadItem(id);
       

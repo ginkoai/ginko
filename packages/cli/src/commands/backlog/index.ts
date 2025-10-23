@@ -24,6 +24,7 @@ import { aiCommand } from './ai.js';
 export function backlogCommand() {
   const backlog = new Command('backlog')
     .description('Manage git-native backlog items (features, stories, tasks) with AI enhancement by default')
+    .showHelpAfterError('(use --help for additional information)')
     .addHelpText('after', `
 ${chalk.gray('Examples (AI-enhanced by default):')}
   ${chalk.green('ginko backlog create')} "Add user authentication"  ${chalk.gray('# AI-enhanced creation')}
@@ -37,7 +38,11 @@ ${chalk.gray('Disable AI enhancement:')}
 
 ${chalk.gray('Universal AI mode:')}
   ${chalk.green('ginko')} "Create a new login feature"               ${chalk.gray('# Natural language')}
-`);
+`)
+    .action(() => {
+      // When called without subcommand, show help and exit cleanly
+      backlog.help({ error: false });
+    });
 
   // Subcommands
   backlog
