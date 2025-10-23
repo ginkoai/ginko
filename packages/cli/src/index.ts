@@ -13,9 +13,6 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { initCommand } from './commands/init.js';
 import { startCommand } from './commands/start/index.js';
-import { handoffCommand } from './commands/handoff/index.js';
-import { handoffAiCommand } from './commands/handoff-ai-orig.js';
-import enhancedHandoffCommand from './commands/handoff-enhanced-orig.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
 import { configCommand } from './commands/config.js';
@@ -65,27 +62,11 @@ program
 program
   .command('start [sessionId]')
   .description('Start or resume a session with AI-enhanced reflection by default')
-  .option('-v, --verbose', 'Show full context and handoff')
+  .option('-v, --verbose', 'Show full context and session details')
   .option('-m, --minimal', 'Minimal output for quick start')
   .option('--noai', 'Disable AI enhancement and use procedural templates')
   .option('--legacy', 'Use original implementation without reflection (deprecated)')
   .action((sessionId, options) => startCommand({ sessionId, ...options }));
-
-program
-  .command('handoff [message]')
-  .description('Optional session boundary marker with housekeeping (ADR-036)')
-  .option('--clean', 'Clean temporary files (auto if >5 events)')
-  .option('--commit', 'Commit staged changes with handoff message')
-  .option('--no-clean', 'Skip cleanup even if triggered')
-  .option('--no-commit', 'Skip commit even if --commit specified')
-  .option('--noai', 'Disable AI enhancement and use procedural templates')
-  .option('--legacy', 'Use original implementation without reflection (deprecated)')
-  .option('-v, --verbose', 'Show detailed output')
-  .option('-r, --review', 'Review handoff before saving')
-  .action((message, options) => {
-    // ADR-036: Optional handoff with housekeeping
-    return handoffCommand({ message, ...options });
-  });
 
 program
   .command('status')
@@ -172,6 +153,8 @@ program
   .option('-b, --branch <name>', 'Specify branch name')
   .option('--no-push', 'Skip pushing to remote')
   .option('--no-tests', 'Skip running tests')
+  .option('--no-clean', 'Skip cleanup of temp files')
+  .option('--docs', 'Update CHANGELOG.md and check sprint tasks before shipping')
   .option('--store', 'Execute ship with AI content (internal use)')
   .option('--id <id>', 'Ship ID for AI content')
   .option('--content <content>', 'AI-generated ship content')
@@ -321,7 +304,7 @@ program.addCommand(backlogCommand());
 program
   .command('reflect <intent>')
   .description('Universal reflection pattern for AI-enhanced content generation by default')
-  .option('-d, --domain <domain>', 'Specify domain: start, handoff, capture, explore, architecture, plan, ship, backlog, prd, documentation, bug, changelog, git, testing')
+  .option('-d, --domain <domain>', 'Specify domain: start, capture, explore, architecture, plan, ship, backlog, prd, documentation, bug, changelog, git, testing')
   .option('-r, --raw', 'Output raw reflection prompt without formatting')
   .option('-v, --verbose', 'Show detailed processing information')
   .option('-s, --save', 'Save generated artifact to proper location')

@@ -252,3 +252,56 @@ This architecture enables:
 5. **Foundation for future**: Could enable cross-session learning, pattern detection
 
 The session synthesis architecture transforms ginko from "remember to handoff" to "just walk away and come back" - true flow state preservation.
+
+## Update: Handoff Command Retirement (2025-10-23)
+
+### Decision
+
+The `ginko handoff` command has been **completely retired** (removed from codebase).
+
+### Context
+
+ADR-036 made handoff optional by shifting context synthesis to session start. Real-world usage validated this approach:
+- Zero developers reported missing handoff functionality
+- 100% of resumption succeeded via `ginko start` alone
+- Pre-go-live timing eliminated migration burden
+
+### Rationale
+
+1. **Redundancy**: Core functionality (context preservation) handled by session logging + synthesis at start
+2. **Confusion**: "Handoff" name implied required ceremony, contradicting "optional" status
+3. **Maintenance burden**: 613 lines of code serving minimal utility
+4. **Clean break**: Pre-go-live timing allows removal without user migration
+
+### Functionality Migration
+
+Useful housekeeping features moved to `ginko ship`:
+
+```bash
+ginko ship [message]              # Clean + test + commit + push + PR
+ginko ship [message] --no-clean   # Skip cleanup
+ginko ship [message] --docs       # Update changelog + verify sprint tasks
+```
+
+**New cleanup utility**: `packages/cli/src/utils/cleanup.ts` (reusable)
+
+### Files Removed
+
+- `packages/cli/src/commands/handoff/index.ts`
+- `packages/cli/src/commands/handoff/handoff-reflection-pipeline.ts`
+- `packages/cli/src/commands/handoff/handoff-save.ts`
+- `packages/cli/src/commands/handoff-ai-orig.ts`
+- `packages/cli/src/commands/handoff-enhanced-orig.ts`
+- `packages/cli/src/commands/handoff-orig.ts`
+
+**Command registration removed from**: `index.ts`, `reflect.ts`, `reflection-pattern.ts`
+
+### The Legacy
+
+The handoff hero's jersey hangs on the wall. Its legacy lives in:
+- Continuous session logging (ADR-033)
+- Synthesis at session start (ADR-036)
+- Auto-archive triggers (age/size based)
+- Enhanced `ginko ship` command
+
+**Key insight**: Hero features can evolve into foundational architecture. When the feature becomes infrastructure, celebrate the evolution and retire gracefully.

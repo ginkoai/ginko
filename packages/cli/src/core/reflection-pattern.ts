@@ -46,7 +46,7 @@ export interface ReflectionPattern {
 }
 
 export type ReflectionDomain =
-  | 'start' | 'handoff' | 'prd' | 'backlog' | 'documentation'
+  | 'start' | 'prd' | 'backlog' | 'documentation'
   | 'testing' | 'architecture' | 'debugging' | 'review' | 'refactor'
   | 'pattern' | 'sprint' | 'overview' | 'git' | 'ai-collaboration'
   | 'bug' | 'changelog';
@@ -106,7 +106,6 @@ Please provide a structured response addressing all required sections.
   protected getOutputPath(domain: ReflectionDomain): string {
     const pathMappings: Record<ReflectionDomain, string> = {
       'start': this.pathConfig.ginko.sessions,
-      'handoff': this.pathConfig.ginko.sessions,
       'prd': this.pathConfig.docs.prd,
       'backlog': this.pathConfig.ginko.backlog,
       'documentation': this.pathConfig.docs.root,
@@ -139,16 +138,7 @@ Please provide a structured response addressing all required sections.
         templatePath: 'templates/start.md',
         outputFormat: 'markdown',
         outputLocation: this.getOutputPath('start'),
-        contextGatherers: ['handoff', 'git', 'session']
-      },
-      handoff: {
-        name: 'handoff',
-        description: 'Session state preservation',
-        detectPatterns: [/handoff|stop|pause|save|preserve/i],
-        templatePath: 'templates/handoff.md',
-        outputFormat: 'markdown',
-        outputLocation: this.getOutputPath('handoff'),
-        contextGatherers: ['git', 'session', 'workstream']
+        contextGatherers: ['git', 'session']
       },
       prd: {
         name: 'prd',
@@ -320,7 +310,7 @@ export class ReflectionFactory {
 
   static detectDomain(intent: string): ReflectionDomain | null {
     const domains: ReflectionDomain[] = [
-      'start', 'handoff', 'prd', 'backlog', 'documentation',
+      'start', 'prd', 'backlog', 'documentation',
       'testing', 'architecture', 'debugging', 'review', 'refactor',
       'pattern', 'sprint', 'overview', 'git', 'ai-collaboration',
       'bug', 'changelog'

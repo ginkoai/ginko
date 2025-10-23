@@ -1,7 +1,7 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-08-27
+ * @updated: 2025-10-23
  * @tags: [cli, ship, git, pr, deployment]
  * @priority: medium
  * @complexity: high
@@ -10,21 +10,36 @@
 import chalk from 'chalk';
 import { execSync } from 'child_process';
 import ora from 'ora';
+import { cleanupTempFiles } from '../utils/cleanup.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import * as readline from 'readline/promises';
 
 interface ShipOptions {
   branch?: string;
   message?: string;
   noPush?: boolean;
   noTests?: boolean;
+  noClean?: boolean;
+  docs?: boolean;
 }
 
 export async function shipCommand(message?: string, options: ShipOptions = {}) {
   console.log(chalk.bold('\n🚢 Shipping Changes\n'));
-  
+
   const spinner = ora('Preparing to ship...').start();
-  
+
   try {
-    // 1. Pre-flight checks
+    // 1. Cleanup temp files (before tests)
+    if (!options.noClean) {
+      spinner.stop();
+      await cleanupTempFiles();
+      spinner.start('Preparing to ship...');
+    } else {
+      spinner.info('Skipping cleanup (--no-clean flag)');
+    }
+
+    // 2. Pre-flight checks
     if (!options.noTests) {
       spinner.text = 'Checking for tests...';
       
@@ -54,8 +69,15 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
     } else {
       spinner.info('Skipping tests (--no-tests flag)');
     }
-    
-    // 2. Check for uncommitted changes
+
+    // 3. Update docs (if --docs flag)
+    if (options.docs) {
+      spinner.stop();
+      await updateDocs();
+      spinner.start('Preparing to ship...');
+    }
+
+    // 4. Check for uncommitted changes
     spinner.start('Checking git status...');
     const status = execSync('git status --porcelain', { encoding: 'utf8' });
     
@@ -69,8 +91,8 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
       execSync('git add -A');
       
       const commitMessage = message || 'Ship: Update changes';
-      const commitCmd = `git commit -m "${commitMessage}\n\n🚢 Shipped with Ginko CLI\n\nCo-authored-by: Ginko <ship@ginko.ai>"`;
-      
+      const commitCmd = `git commit -m "${commitMessage}\n\n🚢 Shipped with Ginko CLI\n\nCo-Authored-By: Chris Norton <chris@watchhill.ai>"`;
+
       try {
         execSync(commitCmd, { stdio: 'pipe' });
         spinner.succeed('Changes committed');
@@ -82,8 +104,8 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
     } else {
       spinner.info('No uncommitted changes');
     }
-    
-    // 3. Prepare branch
+
+    // 5. Prepare branch
     spinner.start('Checking branch...');
     const currentBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
     
@@ -104,8 +126,8 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
     } else {
       spinner.succeed(`On branch: ${currentBranch}`);
     }
-    
-    // 4. Push to remote
+
+    // 6. Push to remote
     if (!options.noPush) {
       spinner.start('Pushing to remote...');
       const pushBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
@@ -124,8 +146,8 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
         }
       }
     }
-    
-    // 5. Create PR (if gh CLI available)
+
+    // 7. Create PR (if gh CLI available)
     if (checkCommand('gh --version')) {
       spinner.start('Creating pull request...');
       
@@ -151,15 +173,14 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
       spinner.info('GitHub CLI not found');
       console.log(chalk.dim('Install gh CLI for automatic PR creation'));
     }
-    
-    // 6. Success summary
+
+    // 8. Success summary
     console.log(chalk.green('\n✅ Ship complete!'));
     console.log(chalk.dim('\nNext steps:'));
     console.log(chalk.dim('  • Review PR on GitHub'));
     console.log(chalk.dim('  • Request reviews if needed'));
     console.log(chalk.dim('  • Monitor CI/CD pipeline'));
-    console.log(chalk.dim('  • Create handoff: ginko handoff "Shipped feature"'));
-    
+
   } catch (error) {
     spinner.fail('Ship failed');
     console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
@@ -187,9 +208,95 @@ function generateBranchName(message?: string): string {
       .split(' ')
       .slice(0, 3)
       .join('-');
-    
+
     return `ship/${slug}-${Date.now().toString(36)}`;
   }
-  
+
   return `ship/update-${Date.now().toString(36)}`;
+}
+
+/**
+ * Update documentation (CHANGELOG.md and sprint tasks)
+ */
+async function updateDocs(): Promise<void> {
+  console.log(chalk.bold('\n📝 Updating Documentation\n'));
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  try {
+    // 1. Update CHANGELOG.md
+    const changelogPath = path.join(process.cwd(), 'packages', 'cli', 'CHANGELOG.md');
+
+    try {
+      let changelog = await fs.readFile(changelogPath, 'utf-8');
+
+      // Check if there's an Unreleased section
+      if (!changelog.includes('## [Unreleased]')) {
+        console.log(chalk.yellow('⚠️  No [Unreleased] section in CHANGELOG.md'));
+
+        // Prompt for version and changes
+        const version = await rl.question(chalk.cyan('Enter version (e.g., 1.2.0): '));
+        const changes = await rl.question(chalk.cyan('Enter changes (comma-separated): '));
+
+        if (version && changes) {
+          const date = new Date().toISOString().split('T')[0];
+          const changesList = changes.split(',').map(c => `- ${c.trim()}`).join('\n');
+
+          const newSection = `\n## [Unreleased]\n\n## [${version}] - ${date}\n${changesList}\n`;
+
+          // Insert after first heading
+          const firstHeadingIndex = changelog.indexOf('\n## ');
+          if (firstHeadingIndex !== -1) {
+            changelog = changelog.slice(0, firstHeadingIndex) + newSection + changelog.slice(firstHeadingIndex);
+            await fs.writeFile(changelogPath, changelog, 'utf-8');
+            console.log(chalk.green('✅ Updated CHANGELOG.md'));
+          }
+        }
+      } else {
+        console.log(chalk.green('✅ CHANGELOG.md has [Unreleased] section'));
+      }
+    } catch (error) {
+      console.log(chalk.yellow(`⚠️  Could not update CHANGELOG.md: ${error}`));
+    }
+
+    // 2. Check sprint tasks
+    const sprintPath = path.join(process.cwd(), 'docs', 'sprints', 'CURRENT-SPRINT.md');
+
+    try {
+      const sprintContent = await fs.readFile(sprintPath, 'utf-8');
+
+      // Find incomplete tasks [ ]
+      const incompleteTasks = sprintContent.match(/- \[ \] .+/g) || [];
+
+      if (incompleteTasks.length > 0) {
+        console.log(chalk.yellow(`\n⚠️  Found ${incompleteTasks.length} incomplete tasks in CURRENT-SPRINT.md:`));
+        incompleteTasks.slice(0, 5).forEach(task => {
+          console.log(chalk.dim(`     ${task}`));
+        });
+
+        if (incompleteTasks.length > 5) {
+          console.log(chalk.dim(`     ... and ${incompleteTasks.length - 5} more`));
+        }
+
+        const confirm = await rl.question(chalk.cyan('\nAre these tasks addressed or can be deferred? (y/N): '));
+
+        if (confirm.toLowerCase() !== 'y') {
+          console.log(chalk.red('❌ Please complete or defer sprint tasks before shipping'));
+          process.exit(1);
+        }
+      } else {
+        console.log(chalk.green('✅ All sprint tasks completed'));
+      }
+    } catch (error) {
+      console.log(chalk.dim(`⚠️  Could not read CURRENT-SPRINT.md: ${error}`));
+    }
+
+  } finally {
+    rl.close();
+  }
+
+  console.log();
 }
