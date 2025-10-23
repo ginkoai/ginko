@@ -41,6 +41,7 @@ import {
   resolveProjectPath
 } from './config-loader.js';
 import { GinkoConfig, WorkMode } from '../types/config.js';
+import { BacklogBase, BacklogItem } from '../commands/backlog/base.js';
 
 /**
  * Loaded document with metadata
@@ -99,6 +100,7 @@ export class ContextLoader {
   private startTime: number = 0;
   private cacheHits: number = 0;
   private maxReferenceDepth: number = 0;
+  private backlog: BacklogBase | null = null;
 
   constructor() {
     this.startTime = Date.now();
@@ -106,7 +108,7 @@ export class ContextLoader {
 
   /**
    * Load context strategically with priority ordering
-   * Priority: session log → sprint → references → modules
+   * Priority: session log → sprint → backlog fallback → references → modules
    *
    * @param options - Loading options
    * @returns StrategyContext with loaded documents and metrics
@@ -116,6 +118,15 @@ export class ContextLoader {
     const config = await loadProjectConfig();
     const localConfig = await loadLocalConfig();
     this.config = config;
+
+    // Initialize backlog for task status checking
+    this.backlog = new BacklogBase();
+    try {
+      await this.backlog.init();
+    } catch {
+      // Backlog not available, continue without it
+      this.backlog = null;
+    }
 
     const workMode = options.workMode || config.workMode.default;
     const maxDepth = options.maxDepth ?? config.contextLoading.maxDepth;
@@ -138,7 +149,12 @@ export class ContextLoader {
       loadOrder.push('current-sprint');
     }
 
-    // 3. Extract references from loaded docs
+    // 3. Fallback: If no sprint, load active backlog items
+    if (!sprint && this.backlog) {
+      await this.loadBacklogContext(loadOrder, workMode);
+    }
+
+    // 4. Extract references from loaded docs
     if (followRefs) {
       const combinedContent = [
         sessionLog?.content || '',
@@ -147,7 +163,7 @@ export class ContextLoader {
 
       const extractedRefs = extractReferences(combinedContent);
 
-      // 4. Follow references with depth limit and work mode filtering
+      // 5. Follow references with depth limit, work mode, and status filtering
       const filteredRefs = this.filterByWorkMode(extractedRefs, workMode);
       await this.followReferences(filteredRefs, maxDepth, references, loadOrder);
     }
@@ -195,6 +211,39 @@ export class ContextLoader {
   }
 
   /**
+   * Load active backlog items as fallback when no sprint exists
+   * Only loads in-progress and high-priority items based on work mode
+   */
+  private async loadBacklogContext(loadOrder: string[], workMode: WorkMode): Promise<void> {
+    if (!this.backlog) return;
+
+    try {
+      // Load in-progress items (always relevant)
+      const inProgress = await this.backlog.listItems({ status: 'in-progress' });
+
+      // Load high-priority todo items (limited by work mode)
+      const highPriority = await this.backlog.listItems({
+        status: 'todo',
+        priority: 'critical'
+      });
+
+      // Combine and limit based on work mode
+      const itemsToLoad = [...inProgress, ...highPriority];
+      const limit = workMode === 'hack-ship' ? 1 : workMode === 'think-build' ? 3 : 5;
+
+      for (const item of itemsToLoad.slice(0, limit)) {
+        const itemPath = path.join(this.backlog['itemsDir'], `${item.id}.md`);
+        if (await fs.pathExists(itemPath)) {
+          await this.loadDocument(itemPath, 'backlog-item');
+          loadOrder.push(item.id);
+        }
+      }
+    } catch (error) {
+      // Backlog loading failed, continue without it
+    }
+  }
+
+  /**
    * Follow reference chains recursively with depth limit
    */
   private async followReferences(
@@ -220,6 +269,16 @@ export class ContextLoader {
         continue;
       }
       this.visited.add(refKey);
+
+      // Check backlog status for tasks/features (skip completed)
+      if (this.backlog && (ref.type === 'task' || ref.type === 'feature')) {
+        const item = await this.backlog.loadItem(ref.id);
+        if (item && item.status === 'done') {
+          // Skip completed items - they're not relevant to current work
+          this.visited.add(refKey); // Mark as visited to avoid re-checking
+          continue;
+        }
+      }
 
       // Resolve reference
       const resolved = await resolveReference(ref);

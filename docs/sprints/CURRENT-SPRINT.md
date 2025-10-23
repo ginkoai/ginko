@@ -1,1 +1,0 @@
-SPRINT-2025-10-22-configuration-system.md
