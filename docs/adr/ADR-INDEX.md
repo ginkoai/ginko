@@ -27,6 +27,10 @@ This document maintains the official registry of all Architecture Decision Recor
 | [ADR-032](ADR-032-core-cli-architecture-and-reflection-system.md) | Core CLI Architecture and Reflection System | Accepted | 2025-09-01 | cli, reflection, architecture |
 | [ADR-033](ADR-033-context-pressure-mitigation-strategy.md) | Context Pressure Mitigation Strategy | Accepted | 2025-10-01 | context-pressure, session-logging, handoff |
 | [ADR-034](ADR-034-event-based-defensive-logging-architecture.md) | Event-Based Defensive Logging Architecture | Accepted | 2025-10-03 | defensive-logging, model-agnostic, simplification |
+| [ADR-035](ADR-035-cli-typescript-cleanup-npm-publication.md) | CLI TypeScript Cleanup and NPM Publication | Accepted | 2025-10-15 | cli, typescript, npm, cleanup |
+| [ADR-036](ADR-036-session-synthesis-architecture.md) | Session Synthesis Architecture | Accepted | 2025-10-20 | session-synthesis, handoff, flow-state |
+| [ADR-037](ADR-037-two-tier-configuration-architecture.md) | Two-Tier Configuration Architecture | Accepted | 2025-10-22 | configuration, team-collaboration, path-resolution |
+| [ADR-038](ADR-038-generative-ui-pattern.md) | Generative UI Pattern for AI-Mediated Tools | Accepted | 2025-10-23 | generative-ui, ai-mediated, human-ai-collaboration, accountability |
 
 ## ADR Status Definitions
 
