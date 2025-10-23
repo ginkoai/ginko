@@ -433,9 +433,13 @@ export class SessionSynthesizer {
    * Assess flow state from session log metadata and entries
    */
   private assessFlowState(startedAt: string, timeline: LogEntry[], achievements: LogEntry[]): FlowState {
-    const sessionStart = new Date(startedAt);
+    // Use the most recent activity time, not session start time
+    const lastActivity = timeline.length > 0
+      ? new Date(timeline[timeline.length - 1].timestamp)
+      : new Date(startedAt);
+
     const now = new Date();
-    const hoursAgo = (now.getTime() - sessionStart.getTime()) / (1000 * 60 * 60);
+    const hoursAgo = (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60);
 
     // Calculate score (1-10)
     let score = 7; // Default mid-high score
@@ -486,7 +490,7 @@ export class SessionSynthesizer {
       energy,
       emotionalTone,
       indicators: { positive, negative },
-      timeContext: this.formatTimeAgo(sessionStart)
+      timeContext: this.formatTimeAgo(lastActivity)
     };
   }
 
