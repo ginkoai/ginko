@@ -13,6 +13,12 @@ branch: main
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
+### 13:01 - [achievement]
+Completed TASK-015: Always-load core context module system. Created 7 core modules (4,237 words) providing instant AI productivity. Results: 8 docs, 7,313 tokens (71% reduction), 49ms bootstrap. Enables immediate pattern knowledge without manual loading.
+Files: .ginko/context/core/, ginko.json, packages/cli/src/utils/context-loader.ts
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
