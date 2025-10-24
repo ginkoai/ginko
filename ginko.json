@@ -50,6 +50,35 @@
       "prds",
       "adrs",
       "context"
-    ]
+    ],
+    "alwaysLoad": {
+      "hack-ship": [
+        ".ginko/context/core/project-structure.md",
+        ".ginko/context/core/common-commands.md",
+        ".ginko/context/core/context-pressure.md"
+      ],
+      "think-build": [
+        ".ginko/context/core/project-structure.md",
+        ".ginko/context/core/testing-patterns.md",
+        ".ginko/context/core/code-conventions.md",
+        ".ginko/context/core/common-commands.md",
+        ".ginko/context/core/context-pressure.md"
+      ],
+      "full-planning": [
+        ".ginko/context/core/project-structure.md",
+        ".ginko/context/core/architecture-overview.md",
+        ".ginko/context/core/testing-patterns.md",
+        ".ginko/context/core/code-conventions.md",
+        ".ginko/context/core/common-commands.md",
+        ".ginko/context/core/git-workflow.md",
+        ".ginko/context/core/context-pressure.md"
+      ]
+    },
+    "moduleCategories": {
+      "core": ".ginko/context/core",
+      "patterns": ".ginko/context/patterns",
+      "gotchas": ".ginko/context/gotchas",
+      "archive": ".ginko/context/archive"
+    }
   }
 }

@@ -135,6 +135,9 @@ export class ContextLoader {
     const references = new Map<string, ResolvedReference>();
     const loadOrder: string[] = [];
 
+    // 0. Load always-load core modules (TASK-015)
+    await this.loadAlwaysLoadModules(config, workMode, loadOrder, localConfig.projectRoot);
+
     // 1. Load session log (short-term memory)
     const sessionLog = await this.loadSessionContext(
       options.sessionDir || path.join(localConfig.projectRoot, '.ginko/sessions', localConfig.userSlug)
@@ -207,6 +210,34 @@ export class ContextLoader {
       return this.loadDocument(sprintPath, 'sprint');
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * Load always-load core modules based on work mode (TASK-015)
+   * These provide foundational knowledge for immediate AI productivity
+   */
+  private async loadAlwaysLoadModules(
+    config: GinkoConfig,
+    workMode: WorkMode,
+    loadOrder: string[],
+    projectRoot: string
+  ): Promise<void> {
+    const alwaysLoadConfig = (config.contextLoading as any).alwaysLoad;
+    if (!alwaysLoadConfig) {
+      return; // No always-load configuration
+    }
+
+    const modulePaths = alwaysLoadConfig[workMode] || [];
+
+    for (const modulePath of modulePaths) {
+      const absolutePath = path.join(projectRoot, modulePath);
+      if (await fs.pathExists(absolutePath)) {
+        const doc = await this.loadDocument(absolutePath, 'core-module');
+        if (doc) {
+          loadOrder.push(path.basename(modulePath, '.md'));
+        }
+      }
     }
   }
 
