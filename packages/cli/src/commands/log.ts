@@ -11,6 +11,7 @@
 
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { v4 as uuidv4 } from 'uuid';
 import { SessionLogManager, LogCategory, LogImpact, LogEntry } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
 import {
@@ -27,6 +28,8 @@ import {
   formatReferenceChain,
   getReferenceChain
 } from '../utils/reference-parser.js';
+import { ModuleGenerator } from '../services/module-generator.js';
+import { SessionInsight, InsightType } from '../types/session.js';
 import * as path from 'path';
 
 interface LogOptions {
@@ -244,10 +247,233 @@ export async function logCommand(description: string, options: LogOptions): Prom
       console.log(chalk.dim(`  References: ${references.map(r => r.rawText).join(', ')}`));
     }
 
+    // Check if this entry should be promoted to a context module
+    if (!options.quick) {
+      await promptForContextModule(entry, ginkoDir, sessionDir);
+    }
+
   } catch (error) {
     console.error(chalk.red('Error logging event:'), error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
+}
+
+/**
+ * Prompt user to create a context module from high-value log entry
+ */
+async function promptForContextModule(
+  entry: LogEntry,
+  ginkoDir: string,
+  sessionDir: string
+): Promise<void> {
+  // Step 1: Detect if entry qualifies for promotion
+  const shouldPrompt = detectInsightPromotion(entry);
+
+  if (!shouldPrompt) {
+    return;
+  }
+
+  console.log(chalk.cyan('\n📦 This looks like valuable team knowledge!'));
+
+  const confirmAnswer = await inquirer.prompt([
+    {
+      type: 'confirm',
+      name: 'create',
+      message: 'Create context module?',
+      default: true
+    }
+  ]);
+
+  if (!confirmAnswer.create) {
+    return;
+  }
+
+  // Step 2: Gather additional context from user
+  const answers = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'title',
+      message: 'Module title (brief, descriptive):',
+      default: extractTitle(entry.description),
+      validate: (input: string) => input.length > 0 || 'Title is required'
+    },
+    {
+      type: 'input',
+      name: 'problem',
+      message: 'What problem does this solve?',
+      validate: (input: string) => input.length > 0 || 'Problem description is required'
+    },
+    {
+      type: 'input',
+      name: 'solution',
+      message: 'What is the solution/approach?',
+      validate: (input: string) => input.length > 0 || 'Solution description is required'
+    },
+    {
+      type: 'number',
+      name: 'timeSaving',
+      message: 'Estimated time saving for future use (minutes):',
+      default: 60,
+      validate: (input: number) => input > 0 || 'Time saving must be positive'
+    },
+    {
+      type: 'input',
+      name: 'tags',
+      message: 'Tags (comma-separated):',
+      default: extractTags(entry),
+      filter: (input: string) => input.split(',').map(t => t.trim()).filter(t => t.length > 0)
+    }
+  ]);
+
+  // Step 3: Convert LogEntry to SessionInsight
+  const insight: SessionInsight = {
+    id: uuidv4(),
+    type: mapCategoryToInsightType(entry.category),
+    title: answers.title,
+    problem: answers.problem,
+    solution: answers.solution,
+    impact: entry.description,
+    reusabilityScore: entry.impact === 'high' ? 0.85 : 0.75,
+    timeSavingPotential: answers.timeSaving,
+    relevanceScore: 0.9,
+    tags: answers.tags,
+    relatedFiles: entry.files,
+    sessionId: await getSessionId(sessionDir),
+    timestamp: new Date(entry.timestamp)
+  };
+
+  // Step 4: Generate module using ModuleGenerator
+  try {
+    const generator = new ModuleGenerator(ginkoDir);
+    await generator.initialize();
+
+    const result = await generator.generateModules([insight]);
+
+    if (result.created.length > 0) {
+      const module = result.created[0];
+      console.log(chalk.green(`\n✓ Context module created: ${module.filename}`));
+      console.log(chalk.dim('📚 Available to all team members in next session\n'));
+    } else if (result.skipped.length > 0) {
+      const skip = result.skipped[0];
+      console.log(chalk.yellow(`\n⚠️  Module creation skipped: ${skip.reason}`));
+      if (skip.existingModule) {
+        console.log(chalk.dim(`   Similar module exists: ${skip.existingModule}\n`));
+      }
+    }
+  } catch (error) {
+    console.error(chalk.red('Error creating context module:'), error instanceof Error ? error.message : String(error));
+  }
+}
+
+/**
+ * Detect if log entry should trigger context module promotion
+ */
+function detectInsightPromotion(entry: LogEntry): boolean {
+  // Detect by category
+  const promotionCategories: LogCategory[] = ['insight', 'decision'];
+  if (promotionCategories.includes(entry.category)) {
+    return true;
+  }
+
+  // Detect by impact level
+  if (entry.impact === 'high') {
+    return true;
+  }
+
+  // Detect by keywords in description
+  const keywords = [
+    'discovered',
+    'pattern',
+    'breakthrough',
+    'game changer',
+    'significant',
+    'profound',
+    'brilliant',
+    'critical insight',
+    'key learning',
+    'important finding'
+  ];
+
+  const lowerDesc = entry.description.toLowerCase();
+  return keywords.some(keyword => lowerDesc.includes(keyword));
+}
+
+/**
+ * Extract a title from description (first sentence or key phrase)
+ */
+function extractTitle(description: string): string {
+  // Try to extract first sentence
+  const firstSentence = description.split(/[.!?]/)[0];
+
+  // Truncate if too long
+  if (firstSentence.length > 60) {
+    return firstSentence.substring(0, 57) + '...';
+  }
+
+  return firstSentence;
+}
+
+/**
+ * Extract tags from log entry context
+ */
+function extractTags(entry: LogEntry): string {
+  const tags: string[] = [entry.category];
+
+  // Add impact as tag
+  if (entry.impact !== 'medium') {
+    tags.push(entry.impact);
+  }
+
+  // Extract technology keywords from description
+  const techKeywords = [
+    'typescript', 'javascript', 'react', 'nextjs', 'vercel',
+    'supabase', 'postgres', 'api', 'cli', 'git', 'auth',
+    'testing', 'performance', 'security', 'database'
+  ];
+
+  const lowerDesc = entry.description.toLowerCase();
+  for (const keyword of techKeywords) {
+    if (lowerDesc.includes(keyword)) {
+      tags.push(keyword);
+    }
+  }
+
+  return tags.slice(0, 5).join(', '); // Limit to 5 tags
+}
+
+/**
+ * Map log category to insight type
+ */
+function mapCategoryToInsightType(category: LogCategory): InsightType {
+  const mapping: Record<LogCategory, InsightType> = {
+    insight: 'discovery',
+    decision: 'decision',
+    fix: 'gotcha',
+    feature: 'pattern',
+    git: 'configuration',
+    achievement: 'discovery'
+  };
+
+  return mapping[category] || 'discovery';
+}
+
+/**
+ * Get current session ID from session directory
+ */
+async function getSessionId(sessionDir: string): Promise<string> {
+  try {
+    const logContent = await SessionLogManager.loadSessionLog(sessionDir);
+    const sessionIdMatch = logContent.match(/Session ID: `([^`]+)`/);
+    if (sessionIdMatch) {
+      return sessionIdMatch[1];
+    }
+  } catch {
+    // Fall back to generating from directory
+  }
+
+  // Generate from directory path
+  const sessionName = path.basename(sessionDir);
+  return `session-${sessionName}-${Date.now()}`;
 }
 
 /**
