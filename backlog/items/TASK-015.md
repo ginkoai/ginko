@@ -4,10 +4,10 @@ type: task
 title: Implement Always-Load Core Context Modules System
 parent:
   - STORY-XXX or FEATURE-XXX or null
-status: todo
+status: done
 priority: critical
 created: '2025-10-23T23:43:09.067Z'
-updated: '2025-10-23T23:43:09.069Z'
+updated: '2025-10-24T17:15:00.000Z'
 effort:
   - Hours or points
 tags: []
