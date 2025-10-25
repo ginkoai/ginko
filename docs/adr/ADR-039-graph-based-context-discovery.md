@@ -1,10 +1,72 @@
-# ADR-039: Unified Knowledge Graph with GraphQL Interface
+# ADR-039: Knowledge Discovery Graph for AI-Native Documentation
 
 ## Status
 Proposed
 
 ## Date
 2025-10-24
+
+## Strategic Context
+
+### The Knowledge Silo Problem
+
+Most companies store development knowledge in tools that create AI-hostile silos:
+
+**Current State:**
+```
+Code Repository (GitHub)          Documentation (Confluence/Notion)
+├── src/auth/login.ts            ├── "OAuth Implementation Guide"
+├── src/api/users.ts             ├── "User API Decisions"
+└── tests/auth.test.ts           └── "Testing Strategy"
+      ↕                                    ↕
+   Versioned                          Unversioned
+   AI-readable                        AI-inaccessible
+   Lives with code                    Siloed from code
+                                     Often stale/wrong
+```
+
+**Problems:**
+1. **Documentation drift** - Confluence page says one thing, code does another
+2. **AI blindness** - AI can't read your Confluence/Notion (proprietary formats, no standard linkage)
+3. **Knowledge loss** - Developer leaves, Slack threads disappear, context evaporates
+4. **Version mismatch** - No way to know "what did we decide when we wrote THIS code?"
+5. **Manual linking** - "See PROJ-123 in Jira" → Dead links, external context switches
+
+**Ginko's Solution: Code-Native Knowledge**
+```
+Git Repository (Single Source of Truth)
+├── src/auth/login.ts
+├── tests/auth.test.ts
+├── docs/adr/ADR-012-oauth-strategy.md    ← Versioned WITH code
+├── docs/PRD/PRD-006-auth-system.md       ← AI can read
+└── .ginko/context/modules/
+    └── pattern-oauth-refresh-tokens.md   ← Created BY AI
+```
+
+### Why Git-Native Knowledge Management?
+
+1. ✅ **Zero drift** - Knowledge versioned with code in same commits
+2. ✅ **AI-native format** - Markdown is AI's native language
+3. ✅ **Portable** - Works with any AI model (Claude, GPT, Gemini, local models)
+4. ✅ **AI co-authorship** - AI partners create documentation during development
+5. ✅ **Discoverable** - Graph indexes relationships for fast context loading
+
+**Strategic Positioning:**
+
+Ginko positions as the **vendor-neutral AI collaboration interface**, analogous to how Terraform provides vendor-neutral infrastructure management across cloud providers.
+
+**What Ginko Is:**
+- AI-Native Knowledge Management for development teams
+- Git-Native Documentation versioned with code
+- Knowledge Discovery Graph for AI context
+- Vendor-Neutral AI Interface (works with any AI model)
+
+**What Ginko Is NOT:**
+- Project management tool (use Linear/Jira for work tracking)
+- Real-time collaboration platform (use Slack/Teams)
+- Code repository (use GitHub/GitLab)
+
+**Tagline:** *"Keep your knowledge where your code lives, in a format AI can understand."*
 
 ## Context
 
@@ -40,32 +102,49 @@ Developer starts working on authentication UI feature:
 
 ## Decision
 
-Implement a **three-tier context discovery architecture**:
+Implement a **three-tier context discovery architecture** focused on **knowledge discovery** (not work tracking):
 
-### 1. Unified In-Memory Knowledge Graph
-Build comprehensive graph on `ginko start` from all knowledge sources:
+## Out of Scope
 
-**Node Types:**
+**Work tracking (backlog items, sprints) is explicitly out of scope for this ADR.**
+
+**Rationale:**
+1. **Mature tools exist** - Linear, Jira, and GitHub Projects are established, feature-rich solutions
+2. **Git-native doesn't scale for work tracking** - Sequential ID conflicts in multi-user scenarios
+3. **Real-time expectations** - Modern teams expect live updates, which git-native can't provide
+4. **Ginko's unique value** - AI collaboration and knowledge management, not project management
+
+**Strategic Decision:**
+- Ginko will **integrate** with existing work tracking tools rather than compete
+- Local backlog remains as fallback for solo developers
+- Graph database indexes **knowledge only** (ADRs, PRDs, Modules, Sessions)
+- External work items are **referenced**, not stored in graph
+
+**Future Work:**
+See ADR-040: Work Tracking Integration Strategy (Linear, Jira, GitHub Projects)
+
+### 1. Knowledge-Focused In-Memory Graph
+Build graph on `ginko start` from knowledge sources only:
+
+**Node Types (Knowledge Only):**
 - **ContextModule** - Insights, patterns, gotchas (from `.ginko/context/modules/`)
 - **ADR** - Architecture decisions (from `docs/adr/`)
 - **PRD** - Product requirements (from `docs/PRD/`)
-- **BacklogItem** - Features, tasks, bugs (from `backlog/items/`)
-- **Sprint** - Sprint plans (from `docs/sprints/`)
 - **Session** - Session logs (from `.ginko/sessions/`)
 - **CodeFile** - Source files with metadata (from frontmatter)
 - **Tag** - Shared tags across all node types
+- **ExternalWorkReference** - Links to external work tracking (Linear, Jira, GitHub) - metadata cached, not authoritative
 
-**Edge Types (Relationships):**
-- `references` - Any node referencing another (ADR-038 → TASK-016, PRD-006 → ADR-032)
-- `implements` - Backlog item implements ADR/PRD (TASK-016 → ADR-033, FEATURE-018 → PRD-006)
-- `depends-on` - Dependency relationship (module A → module B, TASK-A → TASK-B)
+**Edge Types (Knowledge Relationships):**
+- `references` - Any node referencing another (ADR-038 → PRD-006, Session → ADR-033)
+- `implements` - Code/ADR implements PRD (ADR-033 → PRD-006)
+- `depends-on` - Dependency relationship (module A → module B, ADR-A → ADR-B)
 - `related-to` - Semantic similarity (pattern A ~> pattern B)
-- `blocks` - Blocking relationship (BUG-001 blocks FEATURE-002)
-- `requires` - Prerequisite (SPRINT-W2 requires TASK-015)
-- `tagged-with` - Tag association (ADR-038 → Tag:ui, TASK-016 → Tag:logging)
-- `affects` - File path relationship (module → src/auth/login.ts)
-- `discovered-in` - Session provenance (insight → session-2025-10-24)
+- `tagged-with` - Tag association (ADR-038 → Tag:ui, Module → Tag:auth)
+- `affects` - File path relationship (ADR → src/auth/login.ts)
+- `discovered-in` - Session provenance (Module → session-2025-10-24)
 - `evolved-from` - Version history (ADR-039 supersedes ADR-021)
+- `tracked-in` - External work reference (ADR-039 tracked-in Linear:LIN-123) - integration only
 
 **Node Properties (Common):**
 ```typescript
@@ -117,7 +196,7 @@ type ContextModule implements KnowledgeNode {
   content: String
   moduleType: ModuleType!  # gotcha, pattern, etc.
   relatedModules: [ContextModule!]!
-  implementedBy: [BacklogItem!]!
+  relatedADRs: [ADR!]!
   discoveredIn: Session
 }
 
@@ -150,33 +229,12 @@ type PRD implements KnowledgeNode {
   relevance: Relevance!
   filePath: String!
   content: String
-  implementedBy: [BacklogItem!]!
+  implementedBy: [ADR!]!  # ADRs that implement this PRD
+  trackedIn: [ExternalWorkReference!]!  # External work items
   relatedADRs: [ADR!]!
 }
 
-type BacklogItem implements KnowledgeNode {
-  id: ID!
-  type: NodeType!
-  title: String!
-  tags: [String!]!
-  created: DateTime!
-  updated: DateTime!
-  status: String!  # todo, in-progress, done, blocked
-  relevance: Relevance!
-  filePath: String!
-  content: String
-  itemType: BacklogItemType!  # feature, task, bug
-  priority: Priority!
-  size: String
-  implements: [KnowledgeNode!]!  # ADR, PRD, Module
-  blocks: [BacklogItem!]!
-  blockedBy: [BacklogItem!]!
-  assignedTo: String
-  parent: BacklogItem
-  children: [BacklogItem!]!
-}
-
-type Sprint implements KnowledgeNode {
+type ExternalWorkReference implements KnowledgeNode {
   id: ID!
   type: NodeType!
   title: String!
@@ -185,12 +243,16 @@ type Sprint implements KnowledgeNode {
   updated: DateTime!
   status: String!
   relevance: Relevance!
-  filePath: String!
+  filePath: String!  # Reference stored in frontmatter
   content: String
-  items: [BacklogItem!]!
-  startDate: DateTime
-  endDate: DateTime
-  velocity: Float
+  provider: WorkProvider!  # linear, jira, github
+  externalId: String!  # LIN-123, PROJ-456, etc.
+  url: String!
+  implements: [KnowledgeNode!]!  # ADR, PRD this work relates to
+  # Cached metadata (not authoritative, synced periodically):
+  cachedStatus: String
+  cachedAssignee: String
+  lastSynced: DateTime
 }
 
 type Session implements KnowledgeNode {
@@ -205,8 +267,9 @@ type Session implements KnowledgeNode {
   filePath: String!
   content: String
   insights: [ContextModule!]!
-  workCompleted: [BacklogItem!]!
+  adrsCreated: [ADR!]!
   references: [KnowledgeNode!]!
+  externalWork: [ExternalWorkReference!]!  # External work referenced during session
 }
 
 # ===== Enums =====
@@ -215,11 +278,10 @@ enum NodeType {
   CONTEXT_MODULE
   ADR
   PRD
-  BACKLOG_ITEM
-  SPRINT
   SESSION
   CODE_FILE
   TAG
+  EXTERNAL_WORK_REFERENCE
 }
 
 enum ModuleType {
@@ -233,17 +295,12 @@ enum ModuleType {
   ARCHITECTURE
 }
 
-enum BacklogItemType {
-  FEATURE
-  TASK
-  BUG
-}
-
-enum Priority {
-  CRITICAL
-  HIGH
-  MEDIUM
-  LOW
+enum WorkProvider {
+  LINEAR
+  JIRA
+  GITHUB
+  ASANA
+  LOCAL  # Fallback for solo devs
 }
 
 enum Relevance {
@@ -302,15 +359,6 @@ type Query {
   prd(id: String!): PRD
   prds(status: String): [PRD!]!
 
-  # Backlog queries
-  backlogItem(id: String!): BacklogItem
-  backlog(
-    status: String
-    priority: Priority
-    assignedTo: String
-    type: BacklogItemType
-  ): [BacklogItem!]!
-
   # Context module queries
   modules(
     type: ModuleType
@@ -318,21 +366,17 @@ type Query {
     tags: [String!]
   ): [ContextModule!]!
 
-  # Sprint queries
-  sprint(id: String!): Sprint
-  sprints(status: String): [Sprint!]!
-  currentSprint: Sprint
+  # External work queries (integration layer)
+  externalWork(provider: WorkProvider!, externalId: String!): ExternalWorkReference
+  externalWorkByUrl(url: String!): ExternalWorkReference
 
   # === Analytical Queries ===
 
   # Show implementation status for an ADR
   adrImplementation(adrNumber: Int!): ADRImplementationStatus!
 
-  # Show all work implementing a PRD
+  # Show all work implementing a PRD (knowledge + external work)
   prdProgress(prdId: String!): PRDProgress!
-
-  # Find blocking dependencies for a backlog item
-  blockingChain(itemId: String!): [BacklogItem!]!
 
   # Find all knowledge created in a session
   sessionKnowledge(sessionId: String!): SessionKnowledge!
@@ -370,42 +414,43 @@ enum EdgeType {
 type ADRImplementationStatus {
   adr: ADR!
   relatedPRDs: [PRD!]!
-  backlogItems: [BacklogItem!]!
-  completedCount: Int!
-  inProgressCount: Int!
-  blockedCount: Int!
-  completionPercentage: Float!
+  relatedModules: [ContextModule!]!
+  externalWork: [ExternalWorkReference!]!  # External tracking
+  completionPercentage: Float  # Based on external work status
 }
 
 type PRDProgress {
   prd: PRD!
   relatedADRs: [ADR!]!
-  backlogItems: [BacklogItem!]!
-  completedCount: Int!
-  totalCount: Int!
+  implementingADRs: [ADR!]!
+  externalWork: [ExternalWorkReference!]!
+  completedCount: Int  # Based on ADR status + external work
+  totalCount: Int
   progress: Float!
 }
 
 type SessionKnowledge {
   session: Session!
   modulesCreated: [ContextModule!]!
-  tasksCompleted: [BacklogItem!]!
   adrsCreated: [ADR!]!
+  prdsCreated: [PRD!]!
   referencedNodes: [KnowledgeNode!]!
+  externalWorkReferenced: [ExternalWorkReference!]!
 }
 ```
 
 **Example Queries:**
 
 ```graphql
-# Find all backlog items implementing ADR-038
+# Find all knowledge implementing ADR-038
 query {
   adr(number: 38) {
     title
-    implementedBy {
-      id
-      title
-      status
+    referencedBy {
+      __typename
+      ... on ContextModule { title relevance }
+      ... on PRD { title status }
+      ... on Session { title created }
     }
   }
 }
@@ -415,20 +460,30 @@ query {
   modules(type: PATTERN, tags: ["auth", "security"]) {
     title
     relevance
-    implementedBy {
+    relatedADRs {
       title
       status
+    }
+    discoveredIn {
+      title
+      created
     }
   }
 }
 
-# Get implementation status for ADR-033
+# Get implementation status for ADR-033 (knowledge + external work)
 query {
   adrImplementation(adrNumber: 33) {
     completionPercentage
-    backlogItems {
+    relatedModules {
       title
-      status
+      moduleType
+    }
+    externalWork {
+      provider
+      externalId
+      url
+      cachedStatus
     }
   }
 }
@@ -436,13 +491,14 @@ query {
 # Find all knowledge from today's session
 query {
   sessionKnowledge(sessionId: "session-2025-10-24") {
-    modulesCreated { title }
-    tasksCompleted { title }
-    adrsCreated { title }
+    modulesCreated { title relevance }
+    adrsCreated { title status }
+    prdsCreated { title }
+    externalWorkReferenced { provider externalId url }
   }
 }
 
-# Show relationship graph around ADR-038
+# Show relationship graph around ADR-038 (knowledge only)
 query {
   nodeGraph(nodeId: "ADR-038", depth: 2) {
     nodes { title type }
@@ -457,11 +513,11 @@ query {
 - Graph is ephemeral cache, files are source of truth
 - Rebuild graph from files on any inconsistency
 
-### CLI Commands (Cross-Knowledge Queries)
+### CLI Commands (Knowledge Discovery Queries)
 ```bash
 # === Universal Search ===
-ginko knowledge search "authentication"  # Search across ALL types
-ginko knowledge search "UI patterns" --types=ADR,Module,Backlog
+ginko knowledge search "authentication"  # Search across ALL knowledge types
+ginko knowledge search "UI patterns" --types=ADR,Module,PRD
 
 # === Tag-based Discovery ===
 ginko knowledge tags ui,generative  # Show all knowledge with these tags
@@ -472,20 +528,18 @@ ginko knowledge relevant  # Auto-detect from current files/branch
 ginko knowledge relevant --files="src/ui/auth.tsx,src/api/login.ts"
 
 # === Relationship Queries ===
-ginko knowledge graph ADR-038  # Show relationship graph
-ginko knowledge implements ADR-033  # Show backlog items implementing ADR
-ginko knowledge references TASK-016  # What references this task?
-ginko knowledge blocks FEATURE-022  # What's blocking this feature?
+ginko knowledge graph ADR-038  # Show knowledge relationship graph
+ginko knowledge implements PRD-006  # Show ADRs implementing PRD
+ginko knowledge references ADR-033  # What knowledge references this ADR?
+ginko knowledge discovered session-2025-10-24  # Knowledge from session
 
 # === Implementation Status ===
-ginko knowledge adr-status 038  # ADR implementation progress
-ginko knowledge prd-status PRD-006  # PRD completion percentage
-ginko knowledge sprint-progress  # Current sprint knowledge graph
+ginko knowledge adr-status 038  # ADR implementation (modules + external work)
+ginko knowledge prd-status PRD-006  # PRD progress (ADRs + external work)
 
 # === Type-Specific Queries ===
 ginko knowledge adrs --status=Proposed
 ginko knowledge prds --status=Active
-ginko knowledge backlog --priority=high --status=blocked
 ginko knowledge modules --type=pattern --relevance=high
 
 # === Session Knowledge ===
@@ -499,25 +553,23 @@ ginko knowledge session 2025-10-24  # Specific session
 # "What patterns exist for authentication?"
 ginko knowledge by-tag auth --types=Pattern,Module
 
-# "Show me all work related to ADR-038"
+# "Show me all knowledge related to ADR-038"
 ginko knowledge graph ADR-038 --depth=2
+# → Returns: ADR-038, related modules, implementing PRDs, sessions where discussed
 
-# "What's blocking the OAuth integration?"
-ginko knowledge blocks FEATURE-022
-
-# "What PRDs need ADR decisions?"
-ginko knowledge prds --missing-adrs
+# "What ADRs implement PRD-006?"
+ginko knowledge implements PRD-006
 
 # "Show knowledge relevant to my current work"
 ginko knowledge relevant
 # → Analyzes: src/ui/generative-form.tsx (modified)
-# → Returns: ADR-038 (generative UI), pattern-dynamic-forms, TASK-042
+# → Returns: ADR-038 (generative UI), pattern-dynamic-forms, related modules
 ```
 
 ### Auto-Loading in `ginko start`
-1. **Build Unified Graph** (10-20ms for 1000+ nodes)
-   - Load from: context index, backlog files, ADR docs, PRD docs, session logs
-   - Build relationships: references, implements, blocks, tags, etc.
+1. **Build Knowledge Graph** (10-20ms for 1000+ nodes)
+   - Load from: context modules, ADR docs, PRD docs, session logs, code files (frontmatter)
+   - Build relationships: references, implements, discovered-in, affects, tags, etc.
 
 2. **Analyze Current Context**
    - Git: branch name, modified files, recent commits
@@ -554,45 +606,45 @@ ginko knowledge relevant
    - As files change during session, re-score relevance
    - Suggest new knowledge: "💡 ADR-041 might be relevant (new file: src/validation.ts)"
 
-## Value Proposition: Unified vs Siloed Knowledge
+## Value Proposition: Knowledge Discovery vs Siloed Documentation
 
-### Current State (Siloed Systems)
+### Current State (Siloed Documentation)
 - **Context Modules**: Stored in `.ginko/context/modules/`, indexed separately
 - **ADRs**: In `docs/adr/`, manually linked via markdown references
-- **PRDs**: In `docs/PRD/`, disconnected from implementation
-- **Backlog**: In `backlog/items/`, no visibility into related decisions
-- **Sprints**: In `docs/sprints/`, isolated from knowledge graph
+- **PRDs**: In `docs/PRD/`, disconnected from ADRs and modules
+- **Sessions**: In `.ginko/sessions/`, no discoverability of created knowledge
 
 **Pain Points:**
-- ❌ "Which backlog items implement ADR-038?" → Manual grep + read multiple files
 - ❌ "What modules are related to authentication?" → Browse 100+ files manually
-- ❌ "Is PRD-006 complete?" → Check backlog, check sprints, check git history
-- ❌ "What decisions support this feature?" → Search ADRs, hope for markdown links
+- ❌ "Which ADRs implement PRD-006?" → Manual grep + read multiple files
+- ❌ "Is this ADR fully implemented?" → Search code, modules, check external work tracking
+- ❌ "What decisions support this code?" → Search ADRs, hope for markdown links
 - ❌ "What was discovered in last session?" → Read session log, no structured access
 
-### Unified Knowledge Graph
-**Single Source of Truth:** All knowledge types in one graph with rich relationships
+### Knowledge Discovery Graph
+**Single Source of Truth:** All knowledge (git-native) + external work references (integration)
 
 **Powerful Queries:**
-- ✅ `adrImplementation(38)` → Shows 3 tasks (2 done, 1 in-progress), 85% complete
-- ✅ `nodesByTag("auth")` → Returns 8 modules, 3 ADRs, 5 tasks, 2 PRDs
-- ✅ `prdProgress("PRD-006")` → 12/15 tasks complete, links to ADRs and modules
-- ✅ `nodeGraph("ADR-038", depth=2)` → Visual graph of all connections
-- ✅ `sessionKnowledge("today")` → 2 modules created, 3 tasks completed, 1 ADR proposed
+- ✅ `adrImplementation(38)` → Shows related modules, external work (Linear), implementation status
+- ✅ `nodesByTag("auth")` → Returns 8 modules, 3 ADRs, 2 PRDs instantly
+- ✅ `prdProgress("PRD-006")` → 3/5 ADRs accepted, links to modules and external work
+- ✅ `nodeGraph("ADR-038", depth=2)` → Visual graph of knowledge connections
+- ✅ `sessionKnowledge("today")` → 2 modules created, 1 ADR proposed, 3 external items referenced
 
 **Emergent Insights:**
 - **Impact Analysis**: "If I deprecate ADR-021, what breaks?" → Query `references(ADR-021)`
 - **Knowledge Gaps**: "PRD-006 has no related modules" → Opportunity to capture learnings
-- **Bottleneck Detection**: "TASK-016 blocks 5 other tasks" → Priority insight
-- **Session Value**: "Today's session created $X knowledge" → Metrics for productivity
-- **Team Alignment**: "Everyone working on 'auth' sees the same context" → Shared understanding
+- **Implementation Tracking**: "ADR-038 mentioned in 5 sessions" → Understand evolution
+- **Session Value**: "Today's session created 3 knowledge artifacts" → Productivity metrics
+- **Team Alignment**: "Everyone working on 'auth' sees same context" → Shared understanding
 
 **AI Partner Benefits:**
-- **Context Awareness**: AI automatically loads relevant ADRs when working on related tasks
-- **Relationship Navigation**: "This task implements ADR-038" → AI reads ADR without being told
+- **Context Awareness**: AI automatically loads relevant ADRs/modules when working on related code
+- **Relationship Navigation**: "This code relates to ADR-038" → AI reads ADR + related modules
 - **Proactive Suggestions**: "You might want to review pattern-jwt-refresh for this work"
-- **Implementation Tracking**: AI knows 85% of ADR-038 is implemented, suggests next steps
-- **Session Continuity**: AI sees what knowledge was created yesterday, builds on it
+- **Knowledge Discovery**: AI finds patterns/gotchas without manual searching
+- **Session Continuity**: AI sees what knowledge was created in previous sessions, builds on it
+- **Cross-Model Portability**: Same knowledge graph works with Claude, GPT, Gemini, local models
 
 ## Considered Alternatives
 
@@ -772,11 +824,24 @@ function calculateRelevance(module: Module, context: WorkContext): number {
 - No schema migrations needed (just rebuild graph)
 
 ## Success Metrics
-1. **Discovery Time**: Reduce "find relevant module" from 2-5 minutes (manual) to <1 second (auto)
-2. **Context Relevance**: AI loads 3-5 relevant modules on 80%+ of sessions
-3. **Query Performance**: Graph queries complete in <50ms
-4. **Adoption**: 10+ queries per session via `ginko context search`
-5. **Team Satisfaction**: Survey shows improved knowledge discovery
+
+### Knowledge Discovery Performance
+1. **Discovery Time**: Reduce "find relevant knowledge" from 2-5 minutes (manual) to <1 second (graph query)
+2. **Context Relevance**: AI loads 3-5 relevant knowledge items on 80%+ of sessions
+3. **Query Performance**: Graph queries complete in <50ms for 1000+ nodes
+
+### AI Co-Authorship & Quality
+4. **AI Co-Authorship**: 30%+ of context modules created by AI during sessions
+5. **Zero Documentation Drift**: Knowledge updated in same commit as related code 90%+ of the time
+6. **Knowledge Completeness**: 80%+ of ADRs have related context modules
+
+### Cross-Model Portability
+7. **Vendor Neutrality**: Graph works identically with Claude, GPT, Gemini, and local models
+8. **Git-Native Integrity**: 100% of knowledge recoverable from git history
+
+### Team Adoption
+9. **Query Adoption**: 5+ knowledge queries per session via `ginko knowledge` commands
+10. **Team Satisfaction**: Survey shows improved knowledge discovery and reduced context switching
 
 ---
 
