@@ -124,24 +124,43 @@ Expected: 5 ADRs, 8 modules, 80% complete
 
 ### Overview
 - **Type**: Relational database with graph extension
-- **Provider**: Existing Supabase PostgreSQL instance
+- **Provider**: Existing Supabase PostgreSQL instance (INCOMPATIBLE - see below)
 - **Query Language**: Cypher (via AGE extension)
 - **Open Source**: Yes (PostgreSQL License)
+- **PostgreSQL Version**: Requires PostgreSQL 13 (AGE limitation)
+
+### ⚠️ CRITICAL COMPATIBILITY ISSUE
+
+**Apache AGE is NOT compatible with Supabase:**
+- AGE only supports PostgreSQL 13
+- Supabase uses PostgreSQL 15 (stable version)
+- AGE is written in C (not a Trusted Language Extension)
+- Cannot be installed on managed Supabase instances
+
+**Workaround Options:**
+1. Self-host PostgreSQL 13 with AGE (defeats "leverage existing infrastructure" benefit)
+2. Use community Docker solution (auxcube/supabase-postgres-age)
+3. Wait for AGE to support PostgreSQL 15+ (no timeline available)
+
+**Impact**: This option is **effectively disqualified** unless we self-host PostgreSQL.
 
 ### Pros
-- ✅ Leverage existing Supabase infrastructure (no new service)
 - ✅ Familiar SQL + graph queries via AGE
-- ✅ Zero additional cost (use existing Supabase plan)
 - ✅ Built-in PostgreSQL features (JSONB, full-text search, RLS)
 - ✅ Strong ACID guarantees
-- ✅ Mature ecosystem
+- ✅ Mature PostgreSQL ecosystem
+- ✅ Open source (no vendor lock-in)
 
-### Cons
+### Cons (Original + New Findings)
+- ❌ **CRITICAL**: Incompatible with Supabase PostgreSQL 15
+- ❌ **CRITICAL**: Requires self-hosting PostgreSQL 13
 - ❌ AGE extension less mature than dedicated graph DBs
-- ❌ Graph query performance may be slower (not optimized)
+- ❌ No official performance benchmarks vs Neo4j (2024-2025)
+- ❌ Sparse community compared to Neo4j
 - ❌ Cypher support incomplete (AGE is subset)
 - ❌ Complex queries can be verbose in SQL
 - ❌ Limited graph-specific optimizations
+- ❌ Would add infrastructure cost (self-hosted PostgreSQL)
 
 ### Installation & Setup
 ```sql
@@ -165,10 +184,17 @@ $$) as (title agtype, status agtype);
 ```
 
 ### Cost Estimate
-- **Current Supabase plan**: $25/mo (existing)
-- **Additional cost**: $0 (use existing database)
-- **Storage**: Included in Supabase plan
-- **Total**: **$0 marginal cost**
+
+**Original Assumption (INVALID due to incompatibility):**
+- ~~Current Supabase plan: $25/mo (existing)~~
+- ~~Additional cost: $0 (use existing database)~~
+
+**Actual Cost (Self-Hosted PostgreSQL 13):**
+- **Hetzner CX21** (4GB RAM, 2 vCPU, 40GB SSD): €6/mo (~$7)
+- **Backups** (Hetzner Volume 10GB): €1/mo
+- **Total**: **~$8/mo** (similar to other self-hosted options)
+
+**Note**: Zero-cost advantage eliminated by incompatibility.
 
 ### Benchmark Results
 _To be filled after testing_
@@ -183,13 +209,57 @@ _To be filled after testing_
 | Q6: Implementation status | - | - | - |
 
 ### Developer Experience
-_To be filled after testing_
+
+**Node.js Client**: `apache-age-client` npm package available
+- Provides connection and Cypher query execution
+- TypeScript support
+- Example usage:
+```javascript
+import ApacheAgeClient from "apache-age-client";
+const client = ApacheAgeClient.connect({
+  database: "postgres", graph: "ginko",
+  host: "localhost", port: 5432,
+  user: "postgres", password: "..."
+});
+const result = await client.executeCypher(`MATCH (n) RETURN n`);
+```
+
+**Query Language**: Cypher (via AGE)
+- Subset of Neo4j Cypher (not full compatibility)
+- Learning curve moderate (similar to Neo4j)
+- SQL knowledge helpful for hybrid queries
+
+**Documentation**: Apache AGE documentation available but sparse
+- Less comprehensive than Neo4j
+- Smaller community (fewer Stack Overflow answers)
+- Limited real-world examples
 
 ### Multi-Tenancy
-_To be filled after testing_
+_Would need testing, but PostgreSQL RLS could handle project isolation_
+
+### Performance Research Findings
+
+**No direct Apache AGE vs Neo4j benchmarks found for 2024-2025.**
+
+Some indirect findings:
+- One study showed 40x performance advantage for SQL recursive CTEs vs AGE graph traversals (specific use case)
+- AGE loading: 725K nodes + 2.8M edges in 83 seconds (Azure PostgreSQL)
+- No comprehensive graph query benchmarks published
+
+**Conclusion**: Performance relative to native graph DBs is uncertain.
 
 ### Recommendation
-_To be filled after evaluation_
+
+**❌ DISQUALIFIED** - Critical compatibility blocker
+
+**Rationale**:
+1. **Incompatible with existing Supabase infrastructure** (main selling point invalid)
+2. **Would require self-hosting PostgreSQL 13** (adds ops overhead)
+3. **No cost advantage** ($8/mo same as DGraph/EdgeDB)
+4. **Uncertain performance** (no benchmarks vs Neo4j)
+5. **Less mature** than dedicated graph databases
+
+**Verdict**: Skip prototyping. Focus evaluation on Neo4j, DGraph, EdgeDB.
 
 ---
 
