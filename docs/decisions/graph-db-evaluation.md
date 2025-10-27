@@ -682,12 +682,20 @@ FILTER .id = 'PRD-006'
 ```
 
 ### Cost Estimate
+
+**Self-Hosted Configuration**:
 - **Hetzner CX21** (4GB RAM, 2 vCPU): €6/mo (~$7)
 - **Backups**: €1/mo
 - **Total**: **~$8/mo**
 
-Alternatively:
-- **EdgeDB Cloud**: $10-50/mo (managed)
+**Minimum Requirements**: 1GB RAM, 1 vCPU (EdgeDB runs lighter than Neo4j/DGraph)
+
+**EdgeDB Cloud (Now "Gel")** - Managed:
+- **Free Tier**: 1/4 compute unit, 1GB storage (suitable for testing, not production)
+- **Paid Tier**: Starting $39/mo (1 compute unit, 10GB storage)
+- **Cost Scaling**: ~$50-150/mo for production workloads
+
+**Note**: Self-hosting significantly cheaper than managed cloud for MVP phase.
 
 ### Benchmark Results
 _To be filled after testing_
@@ -702,13 +710,109 @@ _To be filled after testing_
 | Q6: Implementation status | - | - | - |
 
 ### Developer Experience
-_To be filled after testing_
+
+**Node.js Client**: `edgedb` npm package (official)
+- **Excellent TypeScript support** (first-class TypeScript integration)
+- Query builder with type inference from schema
+- EdgeQL: Modern syntax inspired by TypeScript/GraphQL
+- Requires Node.js 18+
+
+**Example Usage**:
+```typescript
+import { createClient } from "edgedb";
+
+const client = createClient();
+
+// Type-safe query with auto-completion
+const result = await client.query(`
+  SELECT PRD {
+    title,
+    implementedBy := .<implements[IS ADR] {
+      title,
+      status
+    }
+  }
+  FILTER .id = <str>$prdId
+`, { prdId: "PRD-006" });
+```
+
+**Documentation & Community**:
+- ⭐⭐⭐⭐ Very Good - Modern, comprehensive documentation
+- Interactive tutorial and examples
+- Smaller community than Neo4j
+- Active Discord community
+- Growing ecosystem (still maturing)
+
+**EdgeQL Learning Curve**:
+- Syntax similar to TypeScript/SQL hybrid
+- Composable queries (build complex queries from simple ones)
+- Strong type system (catches errors at compile time)
+- Learning curve moderate (new syntax to learn, but logical)
 
 ### Multi-Tenancy
-_To be filled after testing_
+
+✅ **Built-in Support** via property-based tenant isolation
+
+**Implementation Approach**:
+1. **Tenant ID Pattern**: Add `project_id` property to all node types
+2. **Access Control**: EdgeDB built-in access policies enforce tenant filtering
+3. **Automatic Filtering**: Policies apply tenant filter to all queries automatically
+4. **Data Isolation**: Each project's data logically isolated at query level
+
+**Example Schema with Multi-Tenancy**:
+```edgeql
+type PRD {
+  required property project_id -> uuid;
+  required property title -> str;
+
+  # Access policy enforces tenant isolation
+  access policy project_isolation
+    allow all using (.project_id = global current_project_id);
+}
+```
+
+**Security Model**:
+- Set `current_project_id` global variable per authenticated session
+- EdgeDB enforces access policies automatically
+- No manual filtering required in application code
+- Reduces risk of cross-tenant data leaks
+
+**Comparison to Alternatives**:
+- **Better than**: Property-based filtering in DGraph (EdgeDB enforces at DB level)
+- **Similar to**: Neo4j label-based filtering (but more type-safe)
+- **Not as isolated as**: Separate databases per tenant (but acceptable for MVP)
+
+**For MVP**: ✅ Sufficient - Built-in policies provide good tenant isolation with low complexity
 
 ### Recommendation
-_To be filled after evaluation_
+
+✅ **STRONG CANDIDATE** - Modern, TypeScript-friendly, cost-effective
+
+**Strengths**:
+1. **Excellent TypeScript DX** - First-class type safety and modern SDK
+2. **Built-in Multi-Tenancy** - Access policies enforce tenant isolation at DB level
+3. **Lowest Cost** - ~$8/mo self-hosted (lighter resource requirements)
+4. **Modern Architecture** - Built on PostgreSQL, combines relational + graph
+5. **Schema Management** - Built-in migrations and strong type system
+6. **Active Development** - Regular updates, responsive maintainers
+
+**Concerns**:
+1. **Less Battle-Tested** - Newer technology (EdgeDB 1.0 released 2022)
+2. **Smaller Community** - Fewer Stack Overflow answers and examples
+3. **Learning Curve** - EdgeQL is new query language (though well-designed)
+4. **Production Case Studies** - Limited public references compared to Neo4j
+
+**Best Fit For**:
+- Teams prioritizing TypeScript/Node.js developer experience
+- Cost-conscious MVPs with uncertain scale
+- Projects valuing modern tooling and strong type safety
+- Teams willing to learn new query language
+
+**Trade-off vs Neo4j**:
+- EdgeDB: Better DX, lower cost, less proven at scale
+- Neo4j: More mature, larger community, battle-tested
+
+**Verdict**: Compelling modern alternative to Neo4j. If team is comfortable with newer technology and values TypeScript DX, EdgeDB offers significant advantages. Recommend prototyping alongside Neo4j before final decision.
 
 ---
 
@@ -716,13 +820,13 @@ _To be filled after evaluation_
 
 ### Cost Summary (100 projects, 10K nodes)
 
-| Option | Setup Cost | Monthly Cost | Ops Overhead | Scalability |
-|--------|------------|--------------|--------------|-------------|
-| PostgreSQL + AGE | $0 | $0 (existing) | Low (managed) | Medium |
-| Neo4j Self-Hosted | ~$100 | ~$15 | High (self-managed) | Medium |
-| Neo4j AuraDB | $0 | $65+ | None (managed) | High |
-| DGraph | ~$50 | ~$8 | Medium (self-managed) | High |
-| EdgeDB | ~$50 | ~$8 | Medium (self-managed) | Medium |
+| Option | Setup Cost | Monthly Cost | Ops Overhead | Scalability | Status |
+|--------|------------|--------------|--------------|-------------|--------|
+| PostgreSQL + AGE | $0 | $0 (existing) | Low (managed) | Medium | ❌ DISQUALIFIED (incompatible) |
+| Neo4j Self-Hosted | ~$100 | ~$15 | High (self-managed) | Medium | ✅ STRONG CANDIDATE |
+| Neo4j AuraDB | $0 | $65+ | None (managed) | High | ⚠️ Too expensive for MVP |
+| DGraph | ~$50 | ~$19 | Medium (self-managed) | High | ❌ DISQUALIFIED (multi-tenancy) |
+| EdgeDB | ~$50 | ~$8 | Medium (self-managed) | Medium | ✅ STRONG CANDIDATE |
 
 ### Performance Summary (to be filled)
 
@@ -734,14 +838,19 @@ _To be filled after evaluation_
 | DGraph | - | - | - | - |
 | EdgeDB | - | - | - | - |
 
-### Developer Experience Summary (to be filled)
+### Developer Experience Summary
 
-| Option | Query Language | TypeScript SDK | Learning Curve | Docs Quality |
-|--------|----------------|----------------|----------------|--------------|
-| PostgreSQL + AGE | SQL + Cypher | ⭐⭐⭐ | Medium | ⭐⭐⭐⭐ |
-| Neo4j | Cypher | ⭐⭐⭐⭐ | Low | ⭐⭐⭐⭐⭐ |
-| DGraph | GraphQL/DQL | ⭐⭐⭐ | Medium | ⭐⭐⭐ |
-| EdgeDB | EdgeQL | ⭐⭐⭐⭐⭐ | Medium | ⭐⭐⭐⭐ |
+| Option | Query Language | TypeScript SDK | Learning Curve | Docs Quality | Community |
+|--------|----------------|----------------|----------------|--------------|-----------|
+| PostgreSQL + AGE | SQL + Cypher | ⭐⭐⭐ | Medium | ⭐⭐⭐⭐ | ❌ N/A (incompatible) |
+| Neo4j | Cypher | ⭐⭐⭐⭐⭐ | Low | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ Excellent |
+| DGraph | GraphQL/DQL | ⭐⭐⭐ | Medium | ⭐⭐⭐ | ⭐⭐⭐ Good |
+| EdgeDB | EdgeQL | ⭐⭐⭐⭐⭐ | Medium | ⭐⭐⭐⭐ | ⭐⭐⭐ Growing |
+
+**Key Insights**:
+- **Neo4j**: Best documentation and largest community, proven at scale
+- **EdgeDB**: Best TypeScript integration, modern DX, smaller community
+- **DGraph**: GraphQL-native attractive, but multi-tenancy blocker disqualifies
 
 ---
 
@@ -782,16 +891,110 @@ _To be filled after evaluation_
 
 ## Final Decision
 
-_To be completed after evaluation_
+### Research Phase Complete ✅
 
-**Selected Database**: TBD
+After comprehensive research of 5 database options, we've narrowed the field to **2 strong candidates**:
 
-**Rationale**: TBD
+### 🥇 Finalist #1: Neo4j (Self-Hosted Community Edition)
 
-**Next Steps**: TBD
+**Why Neo4j**:
+- ✅ **Battle-tested at scale** - Proven in production at major companies
+- ✅ **Excellent documentation** - GraphAcademy, large Stack Overflow community
+- ✅ **Mature multi-tenancy** - Label-based filtering well-documented
+- ✅ **Low learning curve** - Cypher query language intuitive
+- ✅ **Strong TypeScript support** - Official neo4j-driver with v5.2+ types
+
+**Trade-offs**:
+- ⚠️ Higher cost (~$15/mo vs ~$8/mo)
+- ⚠️ Higher resource requirements (8GB RAM recommended)
+- ⚠️ Self-hosting operational overhead
+
+**Best if**: Team prioritizes **proven reliability** and **community support** over cutting-edge DX
 
 ---
 
-**Status**: In Progress
+### 🥇 Finalist #2: EdgeDB (Self-Hosted)
+
+**Why EdgeDB**:
+- ✅ **Outstanding TypeScript DX** - First-class type safety, modern tooling
+- ✅ **Lowest cost** (~$8/mo, 1GB RAM minimum)
+- ✅ **Built-in multi-tenancy** - Access policies enforce isolation at DB level
+- ✅ **Modern architecture** - Built on PostgreSQL, strong type system
+- ✅ **Excellent migrations** - Schema versioning built-in
+
+**Trade-offs**:
+- ⚠️ Newer technology (v1.0 released 2022)
+- ⚠️ Smaller community (fewer Stack Overflow answers)
+- ⚠️ Learning curve for EdgeQL (new query language)
+
+**Best if**: Team prioritizes **TypeScript DX** and **cost efficiency**, comfortable with newer tech
+
+---
+
+### ❌ Disqualified Options
+
+**PostgreSQL + Apache AGE**:
+- Incompatible with Supabase (AGE requires PostgreSQL 13, Supabase uses 15)
+- Cannot install C extensions on managed Supabase
+
+**DGraph**:
+- Multi-tenancy is Enterprise-only feature (not available in open source)
+- High resource requirements (16 vCPU recommended)
+
+**Neo4j AuraDB**:
+- Too expensive for MVP ($65+/mo vs $8-15/mo self-hosted)
+
+---
+
+### Preliminary Recommendation
+
+**Prototype both Neo4j and EdgeDB** before final decision.
+
+**Week 1 Plan**:
+1. ✅ Complete research (DONE)
+2. **Build side-by-side prototypes** (Days 2-3)
+   - Implement same knowledge graph schema in both
+   - Load identical sample dataset (100 nodes, 200 edges)
+   - Implement 6 test queries in each
+3. **Compare developer experience** (Day 4)
+   - Which is faster to implement?
+   - Which has better error messages?
+   - Which feels more productive?
+4. **Run benchmarks** (Day 5)
+   - Query performance (p50, p95, p99)
+   - Memory usage under load
+5. **Make final decision** (Day 6)
+   - If both perform well → Choose based on team preference (maturity vs modern DX)
+   - If one significantly outperforms → Choose that one
+
+**My Gut Feeling**: EdgeDB's TypeScript DX and lower cost make it attractive for MVP, but Neo4j's maturity provides safety net. Prototyping will reveal which matters more in practice.
+
+---
+
+### Next Steps (This Week)
+
+**Days 2-3**: Build prototypes
+- [ ] Set up Neo4j self-hosted (Docker on Hetzner)
+- [ ] Set up EdgeDB self-hosted (Docker on Hetzner)
+- [ ] Implement knowledge graph schema in both
+- [ ] Load sample dataset (ADRs, PRDs, sessions)
+
+**Day 4**: Developer experience comparison
+- [ ] Implement 6 test queries in each
+- [ ] Document code quality, error messages, debugging
+- [ ] Rate TypeScript integration quality
+
+**Days 5-6**: Benchmarking & decision
+- [ ] Run performance benchmarks (10 iterations each)
+- [ ] Document results in comparison matrix
+- [ ] Make final recommendation with rationale
+- [ ] Update PRD-010 and sprint plan with selected database
+
+**Day 7**: Begin GitHub OAuth implementation (TASK-019)
+
+---
+
+**Status**: Research Phase Complete ✅ - Ready for Prototyping
 **Updated**: 2025-10-27
 **Owner**: Chris Norton & Claude
+**Phase**: Desktop Research Complete / Hands-On Prototyping Next
