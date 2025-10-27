@@ -760,6 +760,12 @@ ginko knowledge relevant
 - [ ] Team documentation: GraphQL query patterns
 
 ## References
+
+### Strategic Context
+- **[Strategic Vision 2025](../strategy/STRATEGIC-VISION-2025.md)** - Cloud-first platform strategy, market positioning
+- **[ADR-040](./ADR-040-work-tracking-integration-strategy.md)** - Work tracking integration (complements knowledge graph)
+
+### Related ADRs
 - ADR-033: Context Pressure Mitigation Strategy (session logging foundation)
 - ADR-038: Generative UI Pattern (example high-value module)
 - TASK-015: Always-Load Core Context Module System (strategic loading)

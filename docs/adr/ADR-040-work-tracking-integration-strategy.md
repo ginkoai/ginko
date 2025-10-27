@@ -240,7 +240,12 @@ SaaS Layer:   Real-time sync, centralized IDs
 3. ⚪ **Learning curve** (teams must configure provider)
 
 ## References
-- ADR-039: Knowledge Discovery Graph for AI-Native Documentation
+
+### Strategic Context
+- **[Strategic Vision 2025](../strategy/STRATEGIC-VISION-2025.md)** - Cloud-first platform strategy, bottom-up GTM
+- **[ADR-039](./ADR-039-graph-based-context-discovery.md)** - Knowledge discovery graph (complements work integration)
+
+### External Resources
 - Terraform's multi-cloud architecture (strategic inspiration)
 - Linear API: https://developers.linear.app/
 - Jira API: https://developer.atlassian.com/cloud/jira/
