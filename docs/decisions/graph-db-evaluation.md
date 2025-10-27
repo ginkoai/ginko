@@ -823,10 +823,10 @@ type PRD {
 | Option | Setup Cost | Monthly Cost | Ops Overhead | Scalability | Status |
 |--------|------------|--------------|--------------|-------------|--------|
 | PostgreSQL + AGE | $0 | $0 (existing) | Low (managed) | Medium | ❌ DISQUALIFIED (incompatible) |
-| Neo4j Self-Hosted | ~$100 | ~$15 | High (self-managed) | Medium | ✅ STRONG CANDIDATE |
+| Neo4j Self-Hosted | ~$100 | ~$15 | High (self-managed) | Medium | ✅ **SELECTED** |
 | Neo4j AuraDB | $0 | $65+ | None (managed) | High | ⚠️ Too expensive for MVP |
 | DGraph | ~$50 | ~$19 | Medium (self-managed) | High | ❌ DISQUALIFIED (multi-tenancy) |
-| EdgeDB | ~$50 | ~$8 | Medium (self-managed) | Medium | ✅ STRONG CANDIDATE |
+| EdgeDB | ~$50 | ~$8 | Medium (self-managed) | Medium | ⚠️ Finalist (not selected) |
 
 ### Performance Summary (to be filled)
 
@@ -946,55 +946,68 @@ After comprehensive research of 5 database options, we've narrowed the field to 
 
 ---
 
-### Preliminary Recommendation
+### Final Selection: Neo4j Community Edition ✅
 
-**Prototype both Neo4j and EdgeDB** before final decision.
+After evaluating both finalists, **Neo4j Community Edition (self-hosted)** selected for MVP.
 
-**Week 1 Plan**:
-1. ✅ Complete research (DONE)
-2. **Build side-by-side prototypes** (Days 2-3)
-   - Implement same knowledge graph schema in both
-   - Load identical sample dataset (100 nodes, 200 edges)
-   - Implement 6 test queries in each
-3. **Compare developer experience** (Day 4)
-   - Which is faster to implement?
-   - Which has better error messages?
-   - Which feels more productive?
-4. **Run benchmarks** (Day 5)
-   - Query performance (p50, p95, p99)
-   - Memory usage under load
-5. **Make final decision** (Day 6)
-   - If both perform well → Choose based on team preference (maturity vs modern DX)
-   - If one significantly outperforms → Choose that one
+**Decision Rationale**:
 
-**My Gut Feeling**: EdgeDB's TypeScript DX and lower cost make it attractive for MVP, but Neo4j's maturity provides safety net. Prototyping will reveal which matters more in practice.
+1. **De-risking Production** - 15+ years of production hardening beats marginal cost savings
+2. **Community Support** - 1000+ Stack Overflow answers when hitting edge cases
+3. **Battle-tested at Scale** - Used by eBay, Walmart, NASA, Cisco
+4. **Hiring & Knowledge** - More developers know Cypher than EdgeQL
+5. **Ecosystem Maturity** - More integrations, monitoring, tools available
+6. **Business Confidence** - Investors/stakeholders recognize Neo4j brand
 
----
+**EdgeDB Advantages Not Compelling Enough**:
+- Cost savings: ~$7/mo ($84/year) - not material for business
+- TypeScript DX: Nice-to-have, but Neo4j TypeScript support is also excellent
+- Multi-tenancy: Both approaches work fine for MVP scale
 
-### Next Steps (This Week)
+**Trade-off Analysis**:
+- Pay $7/mo more for **proven reliability** and **community support**
+- Neo4j's mature ecosystem will save more than $84/year in reduced troubleshooting time
+- When scaling to 100K+ nodes, battle-tested database reduces risk
 
-**Days 2-3**: Build prototypes
-- [ ] Set up Neo4j self-hosted (Docker on Hetzner)
-- [ ] Set up EdgeDB self-hosted (Docker on Hetzner)
-- [ ] Implement knowledge graph schema in both
-- [ ] Load sample dataset (ADRs, PRDs, sessions)
-
-**Day 4**: Developer experience comparison
-- [ ] Implement 6 test queries in each
-- [ ] Document code quality, error messages, debugging
-- [ ] Rate TypeScript integration quality
-
-**Days 5-6**: Benchmarking & decision
-- [ ] Run performance benchmarks (10 iterations each)
-- [ ] Document results in comparison matrix
-- [ ] Make final recommendation with rationale
-- [ ] Update PRD-010 and sprint plan with selected database
-
-**Day 7**: Begin GitHub OAuth implementation (TASK-019)
+**Verdict**: Neo4j is the pragmatic choice for a product that needs to scale reliably.
 
 ---
 
-**Status**: Research Phase Complete ✅ - Ready for Prototyping
+### Implementation Plan (Week 1)
+
+**Days 2-3**: Neo4j Infrastructure Setup
+- [ ] Provision Hetzner CX31 server (8GB RAM, 2 vCPU)
+- [ ] Deploy Neo4j Community Edition via Docker
+- [ ] Configure security (firewall, authentication)
+- [ ] Set up automated backups (Hetzner volumes)
+- [ ] Create staging environment
+
+**Days 3-4**: Knowledge Graph Schema Implementation
+- [ ] Define node types (ADR, PRD, ContextModule, Session, CodeFile)
+- [ ] Define relationships (implements, references, mentions, etc.)
+- [ ] Implement multi-tenancy via labels (`:Project_<uuid>`)
+- [ ] Create TypeScript types matching graph schema
+- [ ] Write schema migration script
+
+**Days 4-5**: TypeScript Client & Basic CRUD
+- [ ] Install `neo4j-driver` npm package (v5.2+)
+- [ ] Create connection pool and configuration
+- [ ] Implement basic CRUD operations (create, read, update, delete)
+- [ ] Add tenant isolation layer (automatic label filtering)
+- [ ] Write integration tests
+
+**Day 6**: Sample Data & Query Testing
+- [ ] Load sample dataset (100 nodes from existing docs)
+- [ ] Implement 6 test queries from evaluation framework
+- [ ] Verify query performance meets targets (<50ms p95)
+- [ ] Document any optimization needed
+
+**Day 7**: Begin GitHub OAuth (TASK-019)
+
+---
+
+**Status**: ✅ DECISION COMPLETE - Neo4j Community Edition Selected
 **Updated**: 2025-10-27
 **Owner**: Chris Norton & Claude
-**Phase**: Desktop Research Complete / Hands-On Prototyping Next
+**Decision**: Neo4j Community Edition (self-hosted) - Proceeding to implementation
+**Next Phase**: Infrastructure setup and schema implementation (Days 2-3)
