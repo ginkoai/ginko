@@ -470,18 +470,21 @@ _To be filled after evaluation_
 - **Open Source**: Yes (Apache 2.0)
 
 ### Pros
-- ✅ GraphQL-native (perfect fit for our API)
+- ✅ GraphQL-native (perfect fit for our GraphQL API)
+- ✅ Auto-generates queries/mutations from schema
 - ✅ Horizontally scalable (clustering built-in)
-- ✅ Good multi-tenancy support
-- ✅ Lower resource requirements than Neo4j
-- ✅ Open source with commercial support available
+- ✅ Open source (Apache 2.0)
 - ✅ Modern, actively developed
+- ✅ Schema-first design (just define schema, Dgraph handles CRUD)
 
 ### Cons
+- ❌ **CRITICAL**: Multi-tenancy is enterprise feature (not open source!)
+- ❌ **CRITICAL**: High resource requirements (recommended: 16 vCPU, 32GB RAM)
 - ❌ Smaller community than Neo4j
 - ❌ Less mature ecosystem
-- ❌ Learning curve for DQL (if not using GraphQL)
+- ❌ Vendor benchmarks questionable (2017, disputed by Neo4j)
 - ❌ Fewer third-party integrations
+- ❌ Learning curve for DQL if GraphQL insufficient
 
 ### Installation & Setup
 ```bash
@@ -507,9 +510,20 @@ query {
 ```
 
 ### Cost Estimate
-- **Hetzner CX21** (4GB RAM, 2 vCPU, 40GB SSD): €6/mo (~$7)
-- **Backups** (Hetzner Volume 10GB): €1/mo
-- **Total**: **~$8/mo**
+
+**Recommended Configuration** (from Dgraph docs):
+- 16 vCPU, 32 GiB RAM per machine
+- 250-750 GB storage (Alpha nodes)
+- For HA: 3 nodes minimum
+
+**Realistic MVP Configuration** (scaled down):
+- **Hetzner CPX31** (4 vCPU, 8GB RAM, 160GB SSD): €16/mo (~$17)
+- **Backups** (Hetzner Volume 20GB): €2/mo
+- **Total**: **~$19/mo**
+
+**Note**: Official recommendations are overkill for MVP. Testing needed to determine minimum viable specs.
+
+**Enterprise Multi-Tenancy**: Requires paid license (cost unknown)
 
 ### Benchmark Results
 _To be filled after testing_
@@ -524,13 +538,101 @@ _To be filled after testing_
 | Q6: Implementation status | - | - | - |
 
 ### Developer Experience
-_To be filled after testing_
+
+**Node.js Client**: `dgraph-js` npm package (official)
+- gRPC and HTTP implementations available
+- TypeScript type definitions included
+- Example usage:
+```typescript
+import { DgraphClient, DgraphClientStub } from "dgraph-js";
+import * as grpc from "@grpc/grpc-js";
+
+const clientStub = new DgraphClientStub("localhost:9080", grpc.credentials.createInsecure());
+const dgraphClient = new DgraphClient(clientStub);
+
+const query = `{
+  queryADR(filter: { status: { eq: "accepted" } }) {
+    title status
+  }
+}`;
+
+const response = await dgraphClient.newTxn().query(query);
+```
+
+**Query Language**: GraphQL (native) + DQL (Dgraph Query Language)
+- **GraphQL**: Auto-generated from schema - just define types
+- **Schema-first**: Define schema, get full CRUD API automatically
+- **Auto-generated operations**: GET, QUERY, ADD, UPDATE, DELETE for each type
+- **Deep mutations**: Nested create/update operations
+- Moderate learning curve (GraphQL is familiar)
+
+**Schema Example**:
+```graphql
+type ADR {
+  id: ID!
+  number: Int! @search
+  title: String! @search(by: [fulltext])
+  status: String! @search
+  content: String
+  implementsPRD: [PRD] @hasInverse(field: implementedBy)
+}
+```
+
+**Documentation & Community**:
+- ⭐⭐⭐ Good - Comprehensive GraphQL docs
+- Smaller community than Neo4j
+- Active Discuss forum
+- Official blog and tutorials
+- Fewer Stack Overflow answers
 
 ### Multi-Tenancy
-_To be filled after testing_
+
+⚠️ **CRITICAL LIMITATION**: Multi-tenancy is an **Enterprise Feature**
+
+**Enterprise Multi-Tenancy**:
+- Built on Access Control Lists (ACL)
+- Namespace-based isolation per tenant
+- **Data-level isolation** (shared compute resources)
+- Requires paid Enterprise license
+
+**Open Source Workarounds**:
+1. **Property-based filtering**: Add `projectId` to all nodes
+   - Requires manual filtering in every query
+   - Risk of developer error (forgetting filter)
+   - Not true isolation
+
+2. **Multiple Dgraph instances**: One cluster per project
+   - Resource-intensive (16 vCPU × N projects)
+   - Cost prohibitive
+
+**For MVP**: Property-based filtering (risky) or pay for Enterprise (cost unknown)
+
+### Performance Claims (Vendor Benchmarks - 2017)
+
+Dgraph published benchmarks vs Neo4j claiming:
+- 3x faster for reads/writes
+- 160x faster for data loading
+- 5x less memory usage
+
+**Caveats**:
+- 2017 benchmarks (outdated)
+- Vendor-provided (not independent)
+- Neo4j disputed methodology
+- No recent independent comparisons available
 
 ### Recommendation
-_To be filled after evaluation_
+
+⚠️ **LIKELY DISQUALIFIED** - Multi-tenancy blocker
+
+**Rationale**:
+1. **Multi-tenancy is Enterprise-only** (paid license, cost unknown)
+2. **Open source workarounds are risky** (property filtering error-prone)
+3. **High resource requirements** (16 vCPU official recommendation)
+4. **GraphQL-native is attractive**, but not worth the limitations
+
+**Verdict**: Unless multi-tenancy becomes open source or we can afford Enterprise license, this option is not viable for multi-tenant SaaS MVP.
+
+**Update**: Check if recent versions open-sourced multi-tenancy before final decision.
 
 ---
 
