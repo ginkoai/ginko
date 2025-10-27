@@ -1,10 +1,39 @@
 # ADR-039: Knowledge Discovery Graph for AI-Native Documentation
 
 ## Status
-Proposed
+Accepted - Cloud-First Implementation (2025-10-27)
 
 ## Date
 2025-10-24
+
+## 🔄 Cloud-First Pivot (2025-10-27)
+
+**Strategic Shift**: This ADR originally proposed a git-native, local-first graph architecture. After further analysis, we've pivoted to a **cloud-first SaaS platform** while preserving the core knowledge discovery vision.
+
+**Key Changes:**
+- **Storage**: Cloud graph database (not local files) as primary source of truth
+- **Collaboration**: Multi-tenant platform with teams, projects, GitHub OAuth
+- **Business Model**: Freemium with free tier for public OSS repositories
+- **Discovery**: Public catalog of OSS project knowledge graphs
+
+**Why Cloud-First:**
+1. **Team Collaboration**: Real-time access requires cloud synchronization
+2. **Cross-Project Discovery**: Query knowledge across multiple repositories
+3. **OSS Opportunity**: Free tier for public repos drives adoption and marketing
+4. **Scalability**: Centralized graph scales better than distributed file syncing
+
+**Preserved from Original Vision:**
+- GraphQL query interface (exact schema from this ADR)
+- Knowledge node types (ADR, PRD, Module, Session, CodeFile)
+- Relationship model (references, implements, depends-on, etc.)
+- CLI-first developer experience (`ginko knowledge` commands)
+- Git export capability (no lock-in)
+
+**Implementation Details**: See **[PRD-010: Cloud-First Knowledge Graph Platform](../PRD/PRD-010-cloud-knowledge-graph.md)**
+
+**Original Git-Native Vision Preserved Below** for context and comparison...
+
+---
 
 ## Strategic Context
 

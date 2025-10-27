@@ -1,34 +1,63 @@
 # Current Sprint Status
 
-**Status**: No active sprint - Ready for new sprint
-**Mode**: Sprint planning
-**Updated**: 2025-10-27
+**Status**: Active Sprint
+**Sprint**: SPRINT-2025-10-27-cloud-knowledge-graph
+**Mode**: Implementation
+**Started**: 2025-10-27
+**Duration**: 4 weeks (ending 2025-11-24)
 
-## Current Work
+## Active Sprint
 
-Sprint cleared and ready for new work. Recent completions archived.
+See: **[SPRINT-2025-10-27: Cloud-First Knowledge Graph Platform](./SPRINT-2025-10-27-cloud-knowledge-graph.md)**
 
-### Recent Completions
+### Sprint Goal
+
+Launch MVP of cloud-first knowledge graph platform with GitHub OAuth, graph database, GraphQL API, and CLI integration.
+
+**Strategic Pivot**: Moving from file-based local knowledge to cloud-first SaaS platform.
+
+### Current Week: Week 1 (Research & Foundation)
+
+**Focus**: Graph database evaluation, GitHub OAuth, multi-tenancy schema
+
+**Active Tasks**:
+- TASK-018: Graph database evaluation (PostgreSQL+AGE, Neo4j, DGraph, EdgeDB)
+- TASK-019: GitHub OAuth implementation
+- TASK-020: Multi-tenancy database schema
+
+**Week 1 Goals**:
+- ✅ Select and deploy graph database (staging)
+- ✅ GitHub OAuth working end-to-end
+- ✅ Users can authenticate via `ginko login`
+
+### Sprint Overview
+
+**Week 1**: Research & Foundation (database selection, auth)
+**Week 2**: Core CRUD + Authorization (knowledge nodes, projects, teams)
+**Week 3**: GraphQL API + CLI Integration (queries, knowledge commands)
+**Week 4**: Public Discovery + Polish (OSS catalog, production deployment)
+
+### Key Deliverables
+
+- Cloud graph database infrastructure
+- Multi-tenant platform (GitHub OAuth, teams, projects)
+- GraphQL API (per ADR-039 schema)
+- CLI integration (`ginko knowledge` commands)
+- Public OSS catalog
+- Production deployment
+
+### Related Documents
+
+- **PRD**: [PRD-010: Cloud-First Knowledge Graph Platform](../PRD/PRD-010-cloud-knowledge-graph.md)
+- **Architecture**: [ADR-039: Knowledge Discovery Graph](../adr/ADR-039-graph-based-context-discovery.md) (cloud-first variant)
+
+## Recent Completions (Pre-Sprint)
 
 - **TASK-017**: Sprint archive cleanup (Oct 24)
-  - Archived 18 old sprints, created CURRENT-SPRINT.md pattern
-
 - **TASK-016**: Real-time insight promotion (Oct 24)
-  - Detects high-impact insights, prompts for context module creation
-
 - **TASK-015**: Core context modules system (Oct 24)
-  - Always-load modules by work mode, reduced context bloat 64k → 2k
-
 - **ADR-039**: Unified Knowledge Graph architecture (Oct 24)
-  - Graph-based context discovery with GraphQL query interface
-
-- **TASK-009 through TASK-013**: Configuration and Reference System sprint (Oct 23)
-  - All tasks completed successfully
-  - See: docs/sprints/archive/SPRINT-2025-10-22-configuration-system.md
-
-## Ready for New Sprint
-
-All previous work completed and archived. Ready to define and start new sprint goals.
+- **TASK-009 through TASK-013**: Configuration sprint (Oct 23)
 
 ## Future Sprint Candidates
 
