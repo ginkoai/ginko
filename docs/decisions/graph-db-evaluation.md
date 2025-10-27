@@ -282,9 +282,14 @@ Some indirect findings:
 ### Cons
 - ❌ Additional infrastructure to manage
 - ❌ Ops overhead (monitoring, backups, updates)
-- ❌ Higher resource requirements (RAM-heavy)
-- ❌ Community edition lacks clustering (Enterprise only)
+- ❌ Higher resource requirements (RAM-heavy: 2-8GB minimum)
+- ❌ Community Edition limitations:
+  - Single-node only (no clustering)
+  - No hot backups
+  - No guaranteed support/fixes
+  - Enterprise Edition required for HA/clustering
 - ❌ Java-based (heap tuning complexity)
+- ❌ Can be memory-intensive (users report 90% RAM usage on large DBs)
 
 ### Installation & Setup
 ```bash
@@ -323,13 +328,81 @@ _To be filled after testing_
 | Q6: Implementation status | - | - | - |
 
 ### Developer Experience
-_To be filled after testing_
+
+**Node.js Driver**: `neo4j-driver` npm package (official)
+- **Excellent TypeScript support** (since v5.2.0)
+- Type definitions for Node, Relationship with generics
+- Requires Node.js 18+
+- Example usage:
+```typescript
+import neo4j from 'neo4j-driver';
+
+const driver = neo4j.driver(
+  'bolt://localhost:7687',
+  neo4j.auth.basic('neo4j', 'password')
+);
+
+const session = driver.session();
+const result = await session.run(
+  'MATCH (n:ADR) WHERE n.status = $status RETURN n',
+  { status: 'accepted' }
+);
+await session.close();
+```
+
+**Query Language**: Cypher (full Neo4j implementation)
+- Industry-standard graph query language
+- Moderate learning curve (SQL-like syntax)
+- Extensive documentation and examples
+- GraphAcademy free courses (including TypeScript-specific)
+
+**Documentation & Community**:
+- ⭐⭐⭐⭐⭐ Excellent - Most comprehensive in graph DB space
+- Large Stack Overflow community
+- Active forums and Discord
+- Official GraphAcademy learning platform
+- Real-world production examples abundant
+
+**Developer Tools**:
+- Neo4j Browser (web-based query UI)
+- Neo4j Desktop (development environment)
+- Bloom (graph visualization)
+- APOC procedures library (extended functions)
 
 ### Multi-Tenancy
-_To be filled after testing_
+
+**Approach**: Database-level isolation or label-based filtering
+
+**Option 1: Multiple databases** (Neo4j 4.0+)
+- Create separate database per project
+- Strong isolation, but resource-intensive
+- Example: `CREATE DATABASE project_abc`
+
+**Option 2: Label/property filtering**
+- Single database, filter by `projectId` property
+- More efficient for many small projects
+- Requires careful index management
+- Example: `MATCH (n {projectId: 'abc'}) RETURN n`
+
+**For MVP**: Label-based filtering sufficient (100 projects)
+**For Scale**: Consider database-per-project or sharding
+
+### Resource Requirements (Research)
+
+**Minimum**:
+- RAM: 2GB (512MB possible in Docker for small datasets)
+- CPU: 1-2 vCPU
+- Storage: Depends on data (rough estimate: 1-2x graph size)
+
+**Recommended for MVP (100 projects, 10K nodes)**:
+- RAM: 8GB (Neo4j is RAM-intensive)
+- CPU: 2-4 vCPU
+- Storage: 20-40GB SSD
+
+**Sizing Tool**: Neo4j provides hardware sizing calculator
 
 ### Recommendation
-_To be filled after evaluation_
+_To be filled after prototyping and benchmarking_
 
 ---
 
@@ -355,9 +428,21 @@ _To be filled after evaluation_
 - ❌ Limited customization
 
 ### Cost Estimate
-- **AuraDB Free**: 200K nodes, 400K relationships (limited)
-- **AuraDB Professional**: $65/mo (1M nodes, 2M relationships)
-- **Total**: **$65/mo** (minimum)
+
+**AuraDB Free Tier**:
+- **Limits**: 50K nodes, 175K relationships (conflicting reports: some sources say 200K nodes)
+- **Features**: Fully managed, 24/7 availability, no time limit
+- **Limitations**: Suitable for prototyping/learning only
+- **Cost**: **$0**
+
+**AuraDB Professional**:
+- **Starting**: $65/mo (8GB RAM minimum)
+- **Example**: 4GB RAM instance = $259/mo
+- **Features**: Enhanced performance, best-effort support, production-ready
+- **Pay-as-you-go** pricing model available
+
+**For MVP (100 projects, 10K nodes)**: Free tier too small, Professional required
+**Cost**: **$65/mo minimum**
 
 ### Benchmark Results
 _To be filled after testing (using free tier)_
