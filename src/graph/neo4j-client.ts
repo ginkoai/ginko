@@ -124,8 +124,16 @@ export class Neo4jClient {
     // Split by semicolon, filter out empty statements and comments
     const statements = cypher
       .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0 && !s.startsWith('//'));
+      .map(s => {
+        // Remove comment lines from each statement
+        const lines = s.split('\n')
+          .filter(line => !line.trim().startsWith('//'))
+          .join('\n');
+        return lines.trim();
+      })
+      .filter(s => s.length > 0);
+
+    console.log(`📝 Found ${statements.length} statements to execute\n`);
 
     for (const statement of statements) {
       if (statement) {

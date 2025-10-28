@@ -25,8 +25,13 @@ async function setupSchema() {
     // Connect to Neo4j
     await neo4jClient.connect();
 
-    // Run initial schema migration
+    // Run schema migrations
     await neo4jClient.runMigration('001-initial-schema.cypher');
+    await neo4jClient.runMigration('002-pattern-gotcha-nodes.cypher');
+    await neo4jClient.runMigration('003-session-codefile-nodes.cypher');
+    await neo4jClient.runMigration('004-contextmodule-nodes.cypher');
+    await neo4jClient.runMigration('005-semantic-relationships.cypher');
+    await neo4jClient.runMigration('006-temporal-relationships.cypher');
 
     // Verify schema
     await neo4jClient.verifySchema();
