@@ -10,7 +10,10 @@
     "build:shared": "npm run build -w @ginko/shared",
     "build:mcp": "npm run build -w @ginko/mcp-server",
     "prepare:api": "bash scripts/prepare-api.sh",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present && npm run test:graph",
+    "test:graph": "jest --config jest.config.js",
+    "test:graph:watch": "jest --config jest.config.js --watch",
+    "test:graph:coverage": "jest --config jest.config.js --coverage",
     "dev": "vercel dev",
     "deploy": "vercel --prod",
     "check-deps": "npm ls",
@@ -20,7 +23,10 @@
     "graph:test-query": "tsx src/graph/scripts/test-context-query.ts"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
+    "jest": "^30.1.3",
+    "ts-jest": "^29.4.5",
     "tsx": "^4.20.6",
     "turbo": "^1.10.0",
     "typescript": "^5.0.0"

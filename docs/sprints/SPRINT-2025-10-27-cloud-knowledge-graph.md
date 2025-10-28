@@ -242,20 +242,148 @@ async function canManageProject(userId: UUID, projectId: UUID): Promise<boolean>
 
 ---
 
-### Week 1 Deliverables
-- ✅ Graph database selected and deployed (staging)
-- ✅ GitHub OAuth working end-to-end
-- ✅ Multi-tenancy schema implemented
-- ✅ User can authenticate via CLI (`ginko login`)
+#### TASK-018.5: Graph Retrieval Architecture & Planning
+**Priority**: Critical
+**Effort**: M (8 hours)
+**Status**: ✅ COMPLETE
+
+**Objective**: Design comprehensive migration plan from file-based to cloud graph retrieval
+
+**Deliverables**:
+- [x] Graph retrieval migration plan (docs/planning/graph-retrieval-migration.md)
+- [x] Cloud-first architecture design (docs/planning/cloud-graph-architecture.md)
+- [x] Vector embeddings pipeline design
+- [x] Hetzner deployment plan
+- [x] 14-day aggressive implementation roadmap
+
+**Outcomes**:
+- ✅ Validated <100ms query performance (10-20x faster than file-based)
+- ✅ Designed CloudGraphClient with API key authentication
+- ✅ Planned vector embeddings using OpenAI (text-embedding-3-large)
+- ✅ Estimated costs: $7/month hosting, $0.013 initial embeddings
+- ✅ Created Jest test suite (46 tests passing)
+
+**Related**: ADR-039, PRD-010, TASK-018
 
 ---
 
-## Week 2: Core CRUD + Authorization (Nov 3 - Nov 9)
+### Week 1 Deliverables
+- ✅ Graph database selected and deployed (staging) - **Neo4j 5.15**
+- ✅ Graph retrieval architecture designed - **COMPLETE**
+- ✅ Neo4j schema with vector embeddings - **COMPLETE (7 node types, 39 indexes)**
+- ✅ Jest test suite - **COMPLETE (46 tests)**
+- [ ] GitHub OAuth working end-to-end
+- [ ] Multi-tenancy schema implemented
+- [ ] User can authenticate via CLI (`ginko login`)
+
+---
+
+## Week 2: Vector Embeddings + Core CRUD (Nov 3 - Nov 9)
 
 ### Goal
-Implement knowledge node CRUD operations, project management, team collaboration
+Implement vector embeddings, CloudGraphClient, knowledge node CRUD, project management
 
 ### Tasks
+
+#### TASK-020.5: Vector Embeddings Pipeline
+**Priority**: Critical
+**Effort**: L (12 hours)
+**Status**: PLANNED
+
+**Objective**: Implement server-side vector embeddings for semantic search
+
+**Technical Approach**:
+- OpenAI API: `text-embedding-3-large` (3072 dimensions)
+- Batch processing: 60 ADRs + 29 PRDs = ~103.5k tokens
+- Cost: $0.013 for initial batch
+- Storage: Neo4j vector index
+- Similarity search: <15ms (estimated)
+
+**Implementation**:
+```typescript
+// Generate embeddings
+async function embedDocument(docId: string, content: string): Promise<void> {
+  const response = await openai.embeddings.create({
+    model: 'text-embedding-3-large',
+    input: content,
+    dimensions: 3072
+  });
+
+  const embedding = response.data[0].embedding;
+
+  await neo4j.query(`
+    MATCH (doc {id: $docId})
+    SET doc.embedding = $embedding
+  `, { docId, embedding });
+}
+```
+
+**Deliverables**:
+- [ ] OpenAI integration service
+- [ ] Batch embedding generation script
+- [ ] Vector index in Neo4j
+- [ ] Similarity search query (`findSimilar()`)
+- [ ] CLI command: `ginko context similar <doc-id>`
+
+**Acceptance Criteria**:
+- ✅ All 89 documents embedded
+- ✅ Similarity search returns relevant results
+- ✅ Query performance <50ms
+- ✅ Cost tracked and documented
+
+---
+
+#### TASK-020.6: CloudGraphClient Implementation
+**Priority**: Critical
+**Effort**: M (10 hours)
+**Status**: PLANNED
+
+**Objective**: Create cloud-enabled Neo4j client with API key authentication
+
+**Features**:
+- Extends existing Neo4jClient
+- Bearer token authentication
+- Multi-tenant project scoping
+- Connection pooling (lower limits for cloud)
+- Graceful error handling
+
+**Implementation**:
+```typescript
+export class CloudGraphClient extends Neo4jClient {
+  private apiKey: string;
+  private projectId: string;
+
+  async connect(): Promise<void> {
+    this.driver = neo4j.driver(
+      'bolt://graph.ginko.ai:7687',
+      neo4j.auth.bearer(this.apiKey),
+      {
+        encrypted: 'ENCRYPTION_ON',
+        maxConnectionPoolSize: 10
+      }
+    );
+  }
+
+  async query(cypher: string, params: any): Promise<Result> {
+    // Auto-inject project_id for multi-tenancy
+    return super.query(cypher, { ...params, projectId: this.projectId });
+  }
+}
+```
+
+**Deliverables**:
+- [ ] CloudGraphClient class
+- [ ] API key configuration (.ginko/config.yml)
+- [ ] Connection tests
+- [ ] Migration from local to cloud client
+
+**Acceptance Criteria**:
+- ✅ Connects to cloud Neo4j with API key
+- ✅ All queries scoped to project_id
+- ✅ Compatible with existing ContextLoader interface
+- ✅ Tests passing (local + cloud)
+
+---
 
 #### TASK-021: Knowledge Node CRUD Operations
 **Priority**: Critical
@@ -481,10 +609,13 @@ ginko team add-to-project backend-team my-app
 ---
 
 ### Week 2 Deliverables
-- ✅ Knowledge node CRUD working
-- ✅ Project and team management APIs live
-- ✅ CLI commands for projects/teams functional
-- ✅ Authorization enforced across all operations
+- [ ] Vector embeddings pipeline functional
+- [ ] CloudGraphClient implemented
+- [ ] Context loader migrated to use cloud graph
+- [ ] Knowledge node CRUD working
+- [ ] Project and team management APIs live
+- [ ] CLI commands for projects/teams functional
+- [ ] Authorization enforced across all operations
 
 ---
 
