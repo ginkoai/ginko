@@ -14,14 +14,19 @@
     "dev": "vercel dev",
     "deploy": "vercel --prod",
     "check-deps": "npm ls",
-    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules"
+    "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
+    "graph:setup": "tsx src/graph/scripts/setup-schema.ts",
+    "graph:load-sample": "tsx src/graph/scripts/load-sample-data.ts",
+    "graph:test-query": "tsx src/graph/scripts/test-context-query.ts"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "tsx": "^4.20.6",
     "turbo": "^1.10.0",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "ginko-mcp-client": "file:mcp-client/ginkoai-mcp-client-0.6.1.tgz"
+    "ginko-mcp-client": "file:mcp-client/ginkoai-mcp-client-0.6.1.tgz",
+    "neo4j-driver": "^6.0.0"
   }
 }
