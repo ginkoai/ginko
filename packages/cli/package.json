@@ -58,6 +58,7 @@
     "inquirer": "^9.3.7",
     "marked": "^15.0.12",
     "marked-terminal": "^7.3.0",
+    "open": "^10.2.0",
     "ora": "^8.2.0",
     "simple-git": "^3.28.0",
     "typescript": "^5.9.2",

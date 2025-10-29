@@ -33,6 +33,9 @@ import { backlogCommand } from './commands/backlog/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
 import { teamCommand } from './commands/team.js';
+import { loginCommand } from './commands/login.js';
+import { logoutCommand } from './commands/logout.js';
+import { whoamiCommand } from './commands/whoami.js';
 
 const program = new Command();
 
@@ -121,6 +124,23 @@ program
   .option('--set', 'Set configuration value')
   .option('--list', 'List all configuration')
   .action(configCommand);
+
+// Authentication commands
+program
+  .command('login')
+  .description('Authenticate CLI with GitHub via Supabase OAuth')
+  .option('--force', 'Force re-authentication even if already logged in')
+  .action((options) => loginCommand(options));
+
+program
+  .command('logout')
+  .description('Clear local authentication session')
+  .action(logoutCommand);
+
+program
+  .command('whoami')
+  .description('Display current authentication status and user information')
+  .action(whoamiCommand);
 
 program
   .command('vibecheck [concern]')
