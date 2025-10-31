@@ -20,7 +20,10 @@
     "clean": "rm -rf packages/*/dist packages/*/node_modules node_modules",
     "graph:setup": "tsx src/graph/scripts/setup-schema.ts",
     "graph:load-sample": "tsx src/graph/scripts/load-sample-data.ts",
-    "graph:test-query": "tsx src/graph/scripts/test-context-query.ts"
+    "graph:test-query": "tsx src/graph/scripts/test-context-query.ts",
+    "graph:load-docs": "tsx src/graph/scripts/load-all-documents.ts",
+    "graph:embed": "tsx src/graph/scripts/generate-embeddings.ts",
+    "graph:test-embeddings": "tsx src/graph/scripts/test-embeddings.ts"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -32,6 +35,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@xenova/transformers": "^2.17.2",
     "ginko-mcp-client": "file:mcp-client/ginkoai-mcp-client-0.6.1.tgz",
     "neo4j-driver": "^6.0.0"
   }
