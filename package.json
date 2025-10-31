@@ -22,8 +22,11 @@
     "graph:load-sample": "tsx src/graph/scripts/load-sample-data.ts",
     "graph:test-query": "tsx src/graph/scripts/test-context-query.ts",
     "graph:load-docs": "tsx src/graph/scripts/load-all-documents.ts",
+    "graph:load-extended": "tsx src/graph/scripts/load-extended-documents.ts",
     "graph:embed": "tsx src/graph/scripts/generate-embeddings.ts",
-    "graph:test-embeddings": "tsx src/graph/scripts/test-embeddings.ts"
+    "graph:test-embeddings": "tsx src/graph/scripts/test-embeddings.ts",
+    "graph:extract-relationships": "tsx src/graph/scripts/extract-semantic-relationships.ts",
+    "graph:create-semantic-rels": "tsx src/graph/scripts/create-semantic-relationships.ts"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
