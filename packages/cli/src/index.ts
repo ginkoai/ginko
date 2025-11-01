@@ -30,6 +30,7 @@ import { uninstallCursorCommand } from './commands/uninstall-cursor.js';
 import { initCopilotCommand } from './commands/init-copilot.js';
 import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
 import { backlogCommand } from './commands/backlog/index.js';
+import { graphCommand } from './commands/graph/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
 import { teamCommand } from './commands/team.js';
@@ -319,6 +320,9 @@ program
 
 // Backlog management command
 program.addCommand(backlogCommand());
+
+// Knowledge graph command
+program.addCommand(graphCommand());
 
 // Universal Reflection Pattern command
 program

@@ -2,47 +2,51 @@
 
 ## Executive Summary
 
-The Ginko knowledge graph will use a **cloud-first architecture** where users connect to a managed Ginko Cloud instance through an API. This eliminates Neo4j setup complexity and enables instant onboarding.
+The Ginko knowledge graph uses a **self-hosted architecture** where users connect to a centralized Neo4j instance hosted on Hetzner. This provides 77-92x cost savings vs Neo4j AuraDS while maintaining full control and performance.
 
-## Architecture Decision
+## Architecture Decision (Updated 2025-10-31)
 
-### ✅ Chosen: Cloud API Model
+### ✅ REVISED: Self-Hosted Neo4j on Hetzner
+
+**Cost Analysis:**
+- Neo4j AuraDS: $2,304-4,608/month ($27K-55K/year)
+- Hetzner VPS: $30-50/month ($360-600/year)
+- **Savings: $27,000-55,000 annually (77-92x cheaper)**
 
 **User Flow:**
 ```bash
 ginko login                    # OAuth via GitHub (already exists)
 ginko graph init              # Scans project, creates namespace
-ginko graph load              # Uploads documents to cloud
-ginko graph query "search"    # Queries via API
+ginko graph load              # Uploads documents to hosted Neo4j
+ginko graph query "search"    # Queries hosted Neo4j directly
 ```
 
 **Benefits:**
-- ✅ Zero setup (no Neo4j installation)
-- ✅ Faster processing (cloud GPUs vs local CPU)
-- ✅ No model downloads (420MB saved locally)
+- ✅ 77-92x cost savings vs AuraDS
+- ✅ Full control over infrastructure
+- ✅ Better margins (90%+ vs 50%)
 - ✅ Team sharing by default
-- ✅ Automatic backup and maintenance
-- ✅ Better security (centralized auth, audit logs)
+- ✅ Scales to 100K+ documents
+- ✅ Direct Neo4j connection (faster than API middleware)
+- ✅ No vendor lock-in
 
-### ❌ Rejected: Local Neo4j Model
+**Infrastructure:**
+- **Phase 1-2**: Hetzner CCX23 VPS (4 vCPU, 16GB RAM, $30/month)
+- **Phase 3+**: Hetzner Dedicated Server ($50-100/month)
 
-**Would require:**
-```bash
-# Complex setup
-docker-compose up neo4j
-export NEO4J_URI=...
-export NEO4J_PASSWORD=...
-ginko graph setup-schema
-ginko graph load-docs
-# Wait 5+ minutes for local embedding generation
-```
+### ❌ Rejected: Neo4j AuraDS Cloud
+
+**Pricing:**
+- $0.40/GB/hour = $288/GB/month
+- Minimum 8-16GB = $2,304-4,608/month
+- Annual cost: $27,648-55,296
 
 **Drawbacks:**
-- Complex onboarding
-- 420MB model download
-- Slow local processing
-- No team sharing without manual setup
-- User manages database upgrades
+- 77-92x more expensive than self-hosted
+- Vendor lock-in to Neo4j
+- Lower margins (need to pass costs to users)
+- Less control over infrastructure
+- Overkill for MVP/early stage
 
 ## Implementation Phases
 
@@ -340,27 +344,32 @@ Already exists from `ginko login`:
 
 ### Namespace Isolation
 ```
-Ginko Cloud Neo4j (AuraDS)
-├─ /watchhill-ai/
+Hetzner Neo4j Instance (Self-Hosted)
+├─ /user-123/
 │  ├─ /ginko/
 │  │  ├─ ADR-001, ADR-002, ...
 │  │  └─ relationships...
 │  └─ /other-project/
 │     └─ ...
-└─ /other-org/
+└─ /user-456/
    └─ /their-project/
        └─ ...
 ```
 
 **Query Isolation:**
-- All Cypher queries automatically scoped by namespace
-- Users can only query their own org's data
-- Example: `MATCH (n:ADR {namespace: '/watchhill-ai/ginko'})`
+- All Cypher queries automatically scoped by userId and projectName
+- Users authenticated via JWT token (Supabase)
+- Example: `MATCH (n:ADR {userId: 'user-123', project: 'ginko'})`
+
+**Storage Efficiency:**
+- 10K docs = ~300MB storage
+- 16GB RAM supports 50-100K docs comfortably
+- Multiple users share same instance (multi-tenant)
 
 ### Sharing Levels
 1. **Private (default)** - Only you
-2. **Organization** - Your GitHub org members
-3. **Public** - Anyone (for open-source projects)
+2. **Organization** - Team members (future)
+3. **Public** - Anyone (for open-source)
 
 ## Migration Path
 
