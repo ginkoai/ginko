@@ -10,7 +10,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import prompts from 'prompts';
 import fs from 'fs-extra';
 import path from 'path';
 import { GraphApiClient } from './api-client.js';
@@ -69,12 +69,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
     if (await isGraphInitialized()) {
       console.log(chalk.yellow('⚠️  Graph already initialized'));
 
-      const { reinit } = await inquirer.prompt([{
+      const { reinit } = await prompts({
         type: 'confirm',
         name: 'reinit',
         message: 'Do you want to reinitialize? This will create a new graph.',
-        default: false,
-      }]);
+        initial: false,
+      });
 
       if (!reinit) {
         console.log(chalk.dim('Keeping existing graph configuration'));
@@ -135,12 +135,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
       console.log('  • Create intelligent relationships');
       console.log('  • Enable semantic search');
 
-      const { proceed } = await inquirer.prompt([{
+      const { proceed } = await prompts({
         type: 'confirm',
         name: 'proceed',
         message: 'Proceed?',
-        default: true,
-      }]);
+        initial: true,
+      });
 
       if (!proceed) {
         console.log(chalk.dim('\nInitialization cancelled'));
