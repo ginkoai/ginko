@@ -18,7 +18,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed. Use POST.' },
@@ -26,7 +26,7 @@ export default async function handler(
   }
 
   try {
-    // TODO: Verify authentication
+    // Verify authentication
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
       return res.status(401).json({
@@ -34,6 +34,7 @@ export default async function handler(
       });
     }
 
+    const token = authHeader.substring(7);
     const { graphId, query, limit = 10, threshold = 0.70, types } = req.body;
 
     if (!graphId || !query) {
@@ -52,22 +53,55 @@ export default async function handler(
       });
     }
 
-    // TODO: Generate embedding for query
-    // const queryEmbedding = await generateEmbedding(query);
+    const startTime = Date.now();
 
-    // TODO: Perform vector similarity search in Neo4j
-    // const results = await searchDocuments(graphId, queryEmbedding, limit, threshold, types);
+    try {
+      // Import embeddings service (lazy load)
+      const { EmbeddingsService } = await import('../../../src/graph/embeddings-service.js');
 
-    // Mock response
-    return res.status(200).json({
-      results: [],
-      totalResults: 0,
-      queryTime: 45,
-      embedding: {
-        model: 'all-mpnet-base-v2',
-        dimensions: 768,
-      },
-    });
+      // Initialize service (cached across requests)
+      if (!global.__embeddingsService) {
+        global.__embeddingsService = new EmbeddingsService();
+        await global.__embeddingsService.initialize();
+      }
+
+      const embedder = global.__embeddingsService;
+
+      // Generate embedding for query
+      const embeddingResult = await embedder.embed(query);
+      const queryEmbedding = embeddingResult.embedding;
+
+      // Import CloudGraphClient for Neo4j queries
+      const { CloudGraphClient } = await import('./_cloud-graph-client.js');
+      const client = await CloudGraphClient.fromBearerToken(token, graphId);
+
+      // Perform vector similarity search
+      const results = await client.semanticSearch(queryEmbedding, {
+        limit,
+        threshold,
+        types,
+      });
+
+      const queryTime = Date.now() - startTime;
+
+      return res.status(200).json({
+        results,
+        totalResults: results.length,
+        queryTime,
+        embedding: {
+          model: 'all-mpnet-base-v2',
+          dimensions: 768,
+        },
+      });
+    } catch (embedError: any) {
+      console.error('Embedding or search error:', embedError);
+      return res.status(500).json({
+        error: {
+          code: 'SEARCH_FAILED',
+          message: `Semantic search failed: ${embedError.message}`,
+        },
+      });
+    }
 
   } catch (error) {
     console.error('Error in /api/v1/graph/query:', error);
