@@ -426,19 +426,22 @@ export class CloudGraphClient {
 
     // Perform vector similarity search across all node types
     // Neo4j's db.index.vector.queryNodes returns nodes sorted by similarity
+    // Filter by Graph → CONTAINS relationship (multi-tenant structure)
     const cypher = `
       CALL {
         ${types && types.length > 0
           ? types.map(type => `
             CALL db.index.vector.queryNodes('${type.toLowerCase()}_embedding_index', $limit, $queryEmbedding)
             YIELD node, score
-            WHERE node.graph_id = $graphId
+            WITH node, score
+            MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(node)
             RETURN node, score, '${type}' as type
           `).join(' UNION ALL ')
           : `
             CALL db.index.vector.queryNodes('adr_embedding_index', $limit, $queryEmbedding)
             YIELD node, score
-            WHERE node.graph_id = $graphId
+            WITH node, score
+            MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(node)
             RETURN node, score, 'ADR' as type
           `
         }
@@ -465,6 +468,19 @@ export class CloudGraphClient {
       score: record.score,
       type: record.type,
     }));
+  }
+
+  /**
+   * Convert Neo4j Integer/BigInt to JavaScript number
+   */
+  private toNumber(value: any): number {
+    if (typeof value === 'bigint') {
+      return Number(value);
+    }
+    if (typeof value === 'object' && value !== null && 'toNumber' in value) {
+      return value.toNumber();
+    }
+    return Number(value);
   }
 
   /**
@@ -502,8 +518,9 @@ export class CloudGraphClient {
     let totalNodes = 0;
 
     nodeCountResult.forEach((r: any) => {
-      nodesByType[r.type] = r.count;
-      totalNodes += r.count;
+      const count = this.toNumber(r.count);
+      nodesByType[r.type] = count;
+      totalNodes += count;
     });
 
     // Get embedding count
@@ -527,8 +544,9 @@ export class CloudGraphClient {
     let totalRels = 0;
 
     relCountResult.forEach((r: any) => {
-      relsByType[r.type] = r.count;
-      totalRels += r.count;
+      const count = this.toNumber(r.count);
+      relsByType[r.type] = count;
+      totalRels += count;
     });
 
     return {
@@ -538,7 +556,9 @@ export class CloudGraphClient {
       nodes: {
         total: totalNodes,
         byType: nodesByType,
-        withEmbeddings: embeddingResult[0]?.count || 0,
+        withEmbeddings: embeddingResult[0]?.count
+          ? this.toNumber(embeddingResult[0].count)
+          : 0,
       },
       relationships: {
         total: totalRels,
