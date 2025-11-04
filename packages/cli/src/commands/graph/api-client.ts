@@ -278,4 +278,32 @@ export class GraphApiClient {
 
     throw new Error('Job polling timeout');
   }
+
+  /**
+   * Create events in the graph (for event stream)
+   */
+  async createEvents(graphId: string, events: any[]): Promise<{ created: number }> {
+    return this.request<{ created: number }>('POST', '/api/v1/graph/events', {
+      graphId,
+      events
+    });
+  }
+}
+
+/**
+ * Helper function to create graph events with default client
+ * Used by event-queue for async syncing
+ */
+export async function createGraphEvents(events: any[]): Promise<void> {
+  if (!isAuthenticated()) {
+    throw new Error('Not authenticated. Run `ginko graph init` first.');
+  }
+
+  const client = new GraphApiClient();
+
+  // TODO: Get graphId from config or session context
+  // For now, use a placeholder that will be replaced in integration
+  const graphId = process.env.GINKO_GRAPH_ID || 'default';
+
+  await client.createEvents(graphId, events);
 }

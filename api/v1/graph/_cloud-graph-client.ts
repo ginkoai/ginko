@@ -83,6 +83,44 @@ export interface GraphStats {
 }
 
 /**
+ * Event Stream Types (ADR-043)
+ */
+export type EventCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
+
+export interface Event {
+  id: string;              // 'event_1730736293000_abc123'
+  user_id: string;         // Who logged this
+  organization_id: string; // Multi-tenant scoping
+  project_id: string;      // Which project
+  timestamp: Date | string; // When it happened
+  category: EventCategory; // fix|feature|decision|insight|git|achievement
+  description: string;     // Rich context (WHY, not just WHAT)
+  files: string[];         // Files mentioned
+  impact: 'high' | 'medium' | 'low';
+  pressure: number;        // Context pressure when logged (0-1)
+  branch: string;          // Git branch context
+  tags: string[];          // For filtering
+
+  // Team collaboration
+  shared: boolean;         // Team visibility (default: false)
+  commit_hash?: string;    // Git commit reference (if applicable)
+}
+
+export interface SessionCursor {
+  id: string;              // 'cursor_feature_auth'
+  user_id: string;         // Cursor owner
+  organization_id: string; // Multi-tenant scoping
+  project_id: string;      // Project context
+  branch: string;          // Git branch
+  current_event_id: string; // Position in stream
+  last_loaded_event_id: string; // What AI last saw
+  started: Date | string;  // When cursor created
+  last_active: Date | string; // Last activity
+  status: 'active' | 'paused'; // No 'ended' - just paused
+  context_snapshot?: Record<string, any>; // Optional: cached context
+}
+
+/**
  * CloudGraphClient
  *
  * Multi-tenant Neo4j client that automatically scopes all queries to user's graph.
@@ -603,6 +641,337 @@ export class CloudGraphClient {
       result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return result;
+  }
+
+  /**
+   * ============================================================
+   * Event Stream Methods (ADR-043)
+   * ============================================================
+   */
+
+  /**
+   * Create an Event in the stream
+   * Automatically links to User and previous Event (temporal chain)
+   * Multi-tenant scoped by organization_id and project_id
+   *
+   * @param event - Event data (id auto-generated if not provided)
+   * @returns Created event with generated ID
+   */
+  async createEvent(event: Omit<Event, 'id'> & { id?: string }): Promise<Event> {
+    // Auto-generate ID if not provided
+    const eventId = event.id || `event_${Date.now()}_${this.randomString(6)}`;
+
+    // Ensure multi-tenant scoping
+    if (!event.organization_id || !event.project_id) {
+      throw new Error('Event must include organization_id and project_id for multi-tenant scoping');
+    }
+
+    // Create event and link to temporal chain
+    const result = await runQuery<any>(
+      `
+      // Create event node
+      CREATE (e:Event {
+        id: $id,
+        user_id: $user_id,
+        organization_id: $organization_id,
+        project_id: $project_id,
+        timestamp: datetime($timestamp),
+        category: $category,
+        description: $description,
+        files: $files,
+        impact: $impact,
+        pressure: $pressure,
+        branch: $branch,
+        tags: $tags,
+        shared: $shared,
+        commit_hash: $commit_hash
+      })
+      WITH e
+
+      // Link to User (if exists)
+      OPTIONAL MATCH (u:User {id: $user_id})
+      FOREACH (user IN CASE WHEN u IS NOT NULL THEN [u] ELSE [] END |
+        CREATE (user)-[:LOGGED]->(e)
+      )
+
+      // Link to previous event (temporal chain)
+      WITH e
+      CALL {
+        WITH e
+        MATCH (prev:Event)
+        WHERE prev.user_id = e.user_id
+          AND prev.organization_id = e.organization_id
+          AND prev.project_id = e.project_id
+          AND prev.branch = e.branch
+          AND prev.id <> e.id
+        RETURN prev
+        ORDER BY prev.timestamp DESC
+        LIMIT 1
+      }
+      WITH e, prev
+      FOREACH (p IN CASE WHEN prev IS NOT NULL THEN [prev] ELSE [] END |
+        CREATE (p)-[:NEXT]->(e)
+      )
+
+      RETURN e
+      `,
+      {
+        id: eventId,
+        user_id: event.user_id,
+        organization_id: event.organization_id,
+        project_id: event.project_id,
+        timestamp: event.timestamp instanceof Date ? event.timestamp.toISOString() : event.timestamp,
+        category: event.category,
+        description: event.description,
+        files: event.files || [],
+        impact: event.impact,
+        pressure: event.pressure,
+        branch: event.branch,
+        tags: event.tags || [],
+        shared: event.shared || false,
+        commit_hash: event.commit_hash || null,
+      }
+    );
+
+    if (result.length === 0) {
+      throw new Error('Failed to create event');
+    }
+
+    const createdEvent = result[0].e.properties;
+    return {
+      ...createdEvent,
+      timestamp: new Date(createdEvent.timestamp),
+    };
+  }
+
+  /**
+   * Create a SessionCursor
+   * Cursors track position in event stream for context loading
+   *
+   * @param cursor - Cursor data (id auto-generated if not provided)
+   * @returns Created cursor with generated ID
+   */
+  async createSessionCursor(
+    cursor: Omit<SessionCursor, 'id'> & { id?: string }
+  ): Promise<SessionCursor> {
+    // Auto-generate ID if not provided
+    const cursorId = cursor.id || `cursor_${cursor.branch}_${this.randomString(6)}`;
+
+    // Ensure multi-tenant scoping
+    if (!cursor.organization_id || !cursor.project_id) {
+      throw new Error('SessionCursor must include organization_id and project_id for multi-tenant scoping');
+    }
+
+    // Create cursor and link to current event
+    const result = await runQuery<any>(
+      `
+      // Create cursor node
+      CREATE (c:SessionCursor {
+        id: $id,
+        user_id: $user_id,
+        organization_id: $organization_id,
+        project_id: $project_id,
+        branch: $branch,
+        current_event_id: $current_event_id,
+        last_loaded_event_id: $last_loaded_event_id,
+        started: datetime($started),
+        last_active: datetime($last_active),
+        status: $status
+      })
+      WITH c
+
+      // Link to User (if exists)
+      OPTIONAL MATCH (u:User {id: $user_id})
+      FOREACH (user IN CASE WHEN u IS NOT NULL THEN [u] ELSE [] END |
+        CREATE (user)-[:HAS_CURSOR]->(c)
+      )
+
+      // Link to current event position
+      WITH c
+      MATCH (e:Event {id: $current_event_id})
+      WHERE e.organization_id = $organization_id
+        AND e.project_id = $project_id
+      CREATE (c)-[:POSITIONED_AT]->(e)
+
+      RETURN c
+      `,
+      {
+        id: cursorId,
+        user_id: cursor.user_id,
+        organization_id: cursor.organization_id,
+        project_id: cursor.project_id,
+        branch: cursor.branch,
+        current_event_id: cursor.current_event_id,
+        last_loaded_event_id: cursor.last_loaded_event_id,
+        started: cursor.started instanceof Date ? cursor.started.toISOString() : cursor.started,
+        last_active: cursor.last_active instanceof Date ? cursor.last_active.toISOString() : cursor.last_active,
+        status: cursor.status,
+      }
+    );
+
+    if (result.length === 0) {
+      throw new Error('Failed to create session cursor. Ensure current_event_id exists.');
+    }
+
+    const createdCursor = result[0].c.properties;
+    return {
+      ...createdCursor,
+      started: new Date(createdCursor.started),
+      last_active: new Date(createdCursor.last_active),
+    };
+  }
+
+  /**
+   * Update SessionCursor position or status
+   * Used when advancing cursor or pausing/resuming work
+   *
+   * @param cursorId - Cursor ID to update
+   * @param updates - Partial cursor updates
+   * @returns Updated cursor
+   */
+  async updateSessionCursor(
+    cursorId: string,
+    updates: Partial<Omit<SessionCursor, 'id' | 'user_id' | 'organization_id' | 'project_id'>>
+  ): Promise<SessionCursor> {
+    // Build update properties
+    const updateProps: Record<string, any> = {};
+
+    if (updates.current_event_id !== undefined) {
+      updateProps.current_event_id = updates.current_event_id;
+    }
+    if (updates.last_loaded_event_id !== undefined) {
+      updateProps.last_loaded_event_id = updates.last_loaded_event_id;
+    }
+    if (updates.status !== undefined) {
+      updateProps.status = updates.status;
+    }
+    if (updates.context_snapshot !== undefined) {
+      updateProps.context_snapshot = updates.context_snapshot;
+    }
+
+    // Always update last_active
+    updateProps.last_active = updates.last_active instanceof Date
+      ? updates.last_active.toISOString()
+      : (updates.last_active || new Date().toISOString());
+
+    const result = await runQuery<any>(
+      `
+      MATCH (c:SessionCursor {id: $cursorId})
+      WHERE c.user_id = $userId
+      SET c += $updateProps,
+          c.last_active = datetime($last_active)
+
+      // Update POSITIONED_AT relationship if current_event_id changed
+      WITH c
+      ${updates.current_event_id ? `
+        OPTIONAL MATCH (c)-[old:POSITIONED_AT]->()
+        DELETE old
+        WITH c
+        MATCH (e:Event {id: $new_event_id})
+        WHERE e.organization_id = c.organization_id
+          AND e.project_id = c.project_id
+        CREATE (c)-[:POSITIONED_AT]->(e)
+      ` : ''}
+
+      RETURN c
+      `,
+      {
+        cursorId,
+        userId: this.context.userId,
+        updateProps,
+        last_active: updateProps.last_active,
+        new_event_id: updates.current_event_id || null,
+      }
+    );
+
+    if (result.length === 0) {
+      throw new Error(`SessionCursor ${cursorId} not found or access denied`);
+    }
+
+    const updatedCursor = result[0].c.properties;
+    return {
+      ...updatedCursor,
+      started: new Date(updatedCursor.started),
+      last_active: new Date(updatedCursor.last_active),
+    };
+  }
+
+  /**
+   * Get SessionCursor by user, project, and branch
+   * Multi-tenant safe - scoped to user's project
+   *
+   * @param userId - User ID
+   * @param projectId - Project ID
+   * @param branch - Git branch
+   * @returns Cursor or null if not found
+   */
+  async getSessionCursor(
+    userId: string,
+    projectId: string,
+    branch: string
+  ): Promise<SessionCursor | null> {
+    const result = await runQuery<any>(
+      `
+      MATCH (c:SessionCursor)
+      WHERE c.user_id = $userId
+        AND c.project_id = $projectId
+        AND c.branch = $branch
+      RETURN c
+      ORDER BY c.last_active DESC
+      LIMIT 1
+      `,
+      { userId, projectId, branch }
+    );
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    const cursor = result[0].c.properties;
+    return {
+      ...cursor,
+      started: new Date(cursor.started),
+      last_active: new Date(cursor.last_active),
+    };
+  }
+
+  /**
+   * Read events backwards from cursor position
+   * Implements ADR-043 context loading pattern
+   *
+   * @param cursorId - Cursor ID to read from
+   * @param limit - Maximum number of events to read (default: 50)
+   * @returns Array of events in reverse chronological order
+   */
+  async readEventsBackward(cursorId: string, limit: number = 50): Promise<Event[]> {
+    const result = await runQuery<any>(
+      `
+      MATCH (cursor:SessionCursor {id: $cursorId})-[:POSITIONED_AT]->(current:Event)
+      WHERE cursor.user_id = $userId
+
+      // Read backwards via NEXT relationships (variable-length path)
+      MATCH path = (e:Event)-[:NEXT*0..${limit}]->(current)
+      WHERE e.organization_id = cursor.organization_id
+        AND e.project_id = cursor.project_id
+        AND (e.branch = cursor.branch OR cursor.branch IS NULL)
+
+      WITH DISTINCT e
+      ORDER BY e.timestamp DESC
+      LIMIT $limit
+
+      RETURN e
+      `,
+      {
+        cursorId,
+        userId: this.context.userId,
+        limit: neo4j.int(limit),
+      }
+    );
+
+    return result.map((r: any) => ({
+      ...r.e.properties,
+      timestamp: new Date(r.e.properties.timestamp),
+    }));
   }
 }
 

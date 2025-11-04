@@ -37,6 +37,7 @@ import { teamCommand } from './commands/team.js';
 import { loginCommand } from './commands/login.js';
 import { logoutCommand } from './commands/logout.js';
 import { whoamiCommand } from './commands/whoami.js';
+import { handoffCommand } from './commands/handoff.js';
 
 const program = new Command();
 
@@ -75,7 +76,14 @@ program
 program
   .command('status')
   .description('Show current session status')
+  .option('--all', 'Show all session cursors')
   .action(statusCommand);
+
+program
+  .command('handoff')
+  .description('Pause current session and update cursor (ADR-043)')
+  .option('-v, --verbose', 'Show detailed cursor and sync information')
+  .action(handoffCommand);
 
 program
   .command('log [description]')
@@ -87,6 +95,7 @@ program
   .option('--validate', 'Check session log quality and get suggestions')
   .option('--quick', 'Skip interactive prompts for faster logging')
   .option('--why', 'Force WHY prompt (useful for features)')
+  .option('--shared', 'Mark event for team visibility (synced to graph)')
   .option('--examples', 'Show logging examples with quality tips')
   .action((description, options) => {
     if (options.examples) {

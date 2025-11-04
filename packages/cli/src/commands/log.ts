@@ -30,6 +30,8 @@ import {
 } from '../utils/reference-parser.js';
 import { ModuleGenerator } from '../services/module-generator.js';
 import { SessionInsight, InsightType } from '../types/session.js';
+import { initializeWriteDispatcher, appendLogEntry } from '../utils/dispatcher-logger.js';
+import { logEvent as logEventToStream, EventEntry } from '../lib/event-logger.js';
 import * as path from 'path';
 
 interface LogOptions {
@@ -41,6 +43,7 @@ interface LogOptions {
   why?: boolean;
   quick?: boolean;
   refs?: boolean;
+  shared?: boolean;
 }
 
 /**
@@ -62,6 +65,9 @@ export async function logCommand(description: string, options: LogOptions): Prom
       console.error(chalk.dim('   Run `ginko start` first to create a session.'));
       process.exit(1);
     }
+
+    // Initialize WriteDispatcher for graph writes (if enabled)
+    await initializeWriteDispatcher(ginkoDir);
 
     // Handle --validate flag: check log quality
     if (options.validate) {
@@ -223,8 +229,24 @@ export async function logCommand(description: string, options: LogOptions): Prom
       }
     }
 
-    // Append to session log
-    await SessionLogManager.appendEntry(sessionDir, entry);
+    // Append to session log (via dispatcher if enabled, local fallback)
+    await appendLogEntry(sessionDir, entry, userEmail);
+
+    // ALSO log to event stream (ADR-043 dual-write)
+    try {
+      const eventEntry: EventEntry = {
+        category,
+        description: enhancedDescription,
+        files,
+        impact,
+        shared: options.shared || false
+      };
+      await logEventToStream(eventEntry);
+    } catch (error) {
+      // Event stream logging is non-critical, don't block on failure
+      console.warn(chalk.yellow('⚠ Event stream logging failed (session log preserved)'));
+      console.warn(chalk.dim(`  ${error instanceof Error ? error.message : String(error)}`));
+    }
 
     console.log(chalk.green(`\n✓ Logged ${category} event`));
     if (files && files.length > 0) {
@@ -725,6 +747,7 @@ export function logExamples(): void {
   console.log(chalk.dim('  --files      - Comma-separated file paths (or auto-detected)'));
   console.log(chalk.dim('  --quick      - Skip interactive prompts for speed'));
   console.log(chalk.dim('  --why        - Force WHY prompt (useful for features)'));
+  console.log(chalk.dim('  --shared     - Mark event for team visibility (synced to graph)'));
   console.log(chalk.dim('  --show       - Display current log with quality score'));
   console.log(chalk.dim('  --validate   - Check log quality and get suggestions'));
   console.log(chalk.dim('  --refs       - Show all references in session with validation\n'));
