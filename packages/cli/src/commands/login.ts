@@ -1,19 +1,18 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-10-28
- * @tags: [cli, auth, oauth, login, github]
- * @related: [logout.ts, auth-storage.ts, api/auth/cli/route.ts]
+ * @updated: 2025-11-04
+ * @tags: [cli, auth, oauth, login, github, production]
+ * @related: [logout.ts, auth-storage.ts, api/auth/cli/session/route.ts]
  * @priority: critical
  * @complexity: high
- * @dependencies: [http, open, chalk, ora]
+ * @dependencies: [open, chalk, ora, crypto]
  */
 
-import http from 'http';
-import { URL } from 'url';
+import { randomUUID } from 'crypto';
 import open from 'open';
 import chalk from 'chalk';
-import ora from 'ora';
+import ora, { type Ora } from 'ora';
 import {
   saveAuthSession,
   isAuthenticated,
@@ -21,15 +20,19 @@ import {
   type AuthSession
 } from '../utils/auth-storage.js';
 
-const CALLBACK_PORT = 8765;
-const CALLBACK_PATH = '/callback';
-
 interface LoginOptions {
   force?: boolean;
 }
 
 /**
  * Login command - Authenticate CLI with GitHub via Supabase OAuth
+ *
+ * Production OAuth Flow:
+ * 1. Generate unique session_id
+ * 2. Open browser to dashboard authorize page
+ * 3. Dashboard handles OAuth and stores session
+ * 4. CLI polls dashboard for session tokens
+ * 5. Save tokens locally
  */
 export async function loginCommand(options: LoginOptions = {}): Promise<void> {
   // Check if already authenticated
@@ -46,59 +49,36 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
   const spinner = ora('Starting authentication flow...').start();
 
   try {
-    // Start localhost callback server
-    const { server, codePromise } = await startCallbackServer();
+    // Generate unique session ID for this login attempt
+    const sessionId = randomUUID();
 
-    spinner.succeed('Local callback server started');
-    spinner.start('Getting OAuth configuration...');
-
-    // Get OAuth URL from API
     const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
-    const redirectUri = `http://localhost:${CALLBACK_PORT}${CALLBACK_PATH}`;
+    const authorizeUrl = `${apiUrl}/auth/cli/authorize?session_id=${sessionId}`;
 
-    const configResponse = await fetch(
-      `${apiUrl}/api/auth/cli/config?redirect_uri=${encodeURIComponent(redirectUri)}`
-    );
-
-    if (!configResponse.ok) {
-      throw new Error('Failed to get OAuth configuration');
-    }
-
-    const { oauth_url: oauthUrl } = await configResponse.json() as { oauth_url: string };
-
-    spinner.succeed('OAuth configuration retrieved');
+    spinner.succeed('Session initialized');
     spinner.start('Opening browser for authentication...');
 
-    // Open browser
-    await open(oauthUrl);
+    // Open browser to dashboard authorize page
+    await open(authorizeUrl);
 
-    spinner.text = 'Waiting for authentication in browser...';
+    spinner.succeed('Browser opened');
+    spinner.start('Waiting for authentication...');
+    spinner.text = 'Complete authentication in your browser...';
 
-    // Wait for callback with timeout
-    const code = await Promise.race([
-      codePromise,
-      new Promise<string>((_, reject) =>
-        setTimeout(() => reject(new Error('Authentication timeout')), 120000) // 2 minute timeout
-      )
-    ]);
+    // Poll dashboard for session tokens
+    const session = await pollForSession(sessionId, apiUrl, spinner);
 
-    spinner.text = 'Exchanging code for tokens...';
-
-    // Exchange code for session tokens
-    const session = await exchangeCodeForSession(code, apiUrl);
-
-    // Save session
+    // Save session locally
     await saveAuthSession(session);
 
     spinner.succeed(chalk.green('Authentication successful!'));
 
     console.log(chalk.green('\n✓ Successfully authenticated'));
     console.log(chalk.dim(`  User: ${session.user.email || session.user.github_username}`));
-    console.log(chalk.dim(`  GitHub: @${session.user.github_username || 'N/A'}`));
+    if (session.user.github_username) {
+      console.log(chalk.dim(`  GitHub: @${session.user.github_username}`));
+    }
     console.log(chalk.dim('\n  Your credentials are stored in ~/.ginko/auth.json'));
-
-    // Close server
-    server.close();
 
   } catch (error) {
     spinner.fail('Authentication failed');
@@ -106,11 +86,10 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     if (error instanceof Error) {
       if (error.message.includes('timeout')) {
         console.error(chalk.red('\n✗ Authentication timed out'));
-        console.error(chalk.dim('  Please try again and complete authentication within 2 minutes'));
-      } else if (error.message.includes('EADDRINUSE')) {
-        console.error(chalk.red('\n✗ Port already in use'));
-        console.error(chalk.dim(`  Another process is using port ${CALLBACK_PORT}`));
-        console.error(chalk.dim('  Please close any other Ginko login attempts and try again'));
+        console.error(chalk.dim('  Please try again and complete authentication within 5 minutes'));
+      } else if (error.message.includes('User denied')) {
+        console.error(chalk.red('\n✗ Authentication was cancelled'));
+        console.error(chalk.dim('  You cancelled the authentication request'));
       } else {
         console.error(chalk.red(`\n✗ ${error.message}`));
       }
@@ -123,121 +102,66 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
 }
 
 /**
- * Start localhost server to capture OAuth callback
+ * Poll dashboard API for session tokens
+ *
+ * Polls every 2 seconds for up to 5 minutes
  */
-function startCallbackServer(): Promise<{
-  server: http.Server;
-  codePromise: Promise<string>;
-}> {
-  return new Promise((resolve, reject) => {
-    let codeResolver: (code: string) => void;
-    let codeRejecter: (error: Error) => void;
+async function pollForSession(
+  sessionId: string,
+  apiUrl: string,
+  spinner: Ora
+): Promise<AuthSession> {
+  const pollInterval = 2000; // 2 seconds
+  const maxAttempts = 150; // 5 minutes total (150 * 2s = 300s)
+  let attempts = 0;
 
-    const codePromise = new Promise<string>((res, rej) => {
-      codeResolver = res;
-      codeRejecter = rej;
-    });
+  while (attempts < maxAttempts) {
+    attempts++;
 
-    const server = http.createServer((req, res) => {
-      const url = new URL(req.url!, `http://localhost:${CALLBACK_PORT}`);
+    try {
+      const response = await fetch(
+        `${apiUrl}/api/auth/cli/session?session_id=${sessionId}`
+      );
 
-      if (url.pathname === CALLBACK_PATH) {
-        const code = url.searchParams.get('code');
-        const error = url.searchParams.get('error');
-        const errorDescription = url.searchParams.get('error_description');
-
-        if (error) {
-          // Send error response to browser
-          res.writeHead(400, { 'Content-Type': 'text/html' });
-          res.end(`
-            <html>
-              <body style="font-family: sans-serif; text-align: center; padding: 50px;">
-                <h1 style="color: #dc2626;">Authentication Failed</h1>
-                <p>${errorDescription || error}</p>
-                <p style="color: #6b7280;">You can close this window and return to your terminal.</p>
-              </body>
-            </html>
-          `);
-
-          codeRejecter(new Error(errorDescription || error));
-          return;
-        }
-
-        if (!code) {
-          res.writeHead(400, { 'Content-Type': 'text/html' });
-          res.end(`
-            <html>
-              <body style="font-family: sans-serif; text-align: center; padding: 50px;">
-                <h1 style="color: #dc2626;">Missing Code</h1>
-                <p>No authorization code received</p>
-                <p style="color: #6b7280;">You can close this window and return to your terminal.</p>
-              </body>
-            </html>
-          `);
-
-          codeRejecter(new Error('No authorization code received'));
-          return;
-        }
-
-        // Send success response to browser
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`
-          <html>
-            <body style="font-family: sans-serif; text-align: center; padding: 50px;">
-              <h1 style="color: #10b981;">Authentication Successful!</h1>
-              <p>You can close this window and return to your terminal.</p>
-              <script>setTimeout(() => window.close(), 2000);</script>
-            </body>
-          </html>
-        `);
-
-        // Resolve with code
-        codeResolver(code);
-      } else {
-        // Unknown path
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('Not Found');
+      if (response.status === 200) {
+        const data = await response.json() as AuthSession;
+        return data;
       }
-    });
 
-    server.on('error', (error) => {
-      reject(error);
-    });
+      if (response.status === 404) {
+        // Session not ready yet, continue polling
+        const timeRemaining = Math.floor((maxAttempts - attempts) * pollInterval / 1000);
+        spinner.text = `Waiting for authentication... (${timeRemaining}s remaining)`;
+        await sleep(pollInterval);
+        continue;
+      }
 
-    server.listen(CALLBACK_PORT, 'localhost', () => {
-      resolve({ server, codePromise });
-    });
-  });
+      if (response.status === 410) {
+        // Session expired or denied
+        const error = await response.json().catch(() => ({ error: 'Session expired' })) as { error: string };
+        throw new Error(error.error || 'Session expired');
+      }
+
+      // Other error
+      const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error: string };
+      throw new Error(error.error || 'Failed to retrieve session');
+
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('fetch')) {
+        // Network error, continue polling
+        await sleep(pollInterval);
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error('Authentication timeout - please try again');
 }
 
 /**
- * Exchange authorization code for session tokens
+ * Sleep helper
  */
-async function exchangeCodeForSession(code: string, apiUrl: string): Promise<AuthSession> {
-  const response = await fetch(`${apiUrl}/api/auth/cli`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ code }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error?: string; details?: string };
-    throw new Error(error.error || error.details || 'Failed to exchange code for session');
-  }
-
-  const data = await response.json() as {
-    access_token: string;
-    refresh_token: string;
-    expires_at: number;
-    user: AuthSession['user'];
-  };
-
-  return {
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-    expires_at: data.expires_at,
-    user: data.user,
-  };
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
