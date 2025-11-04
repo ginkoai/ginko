@@ -1062,13 +1062,59 @@ LIMIT 10
 - ✅ 1,892 relationships connecting 83 knowledge documents
 
 **Next Session Focus** (Priority Order):
-1. **Implement event stream infrastructure (TASK-023.5)** - Foundational: Event/SessionCursor schema, dual-write logging, async sync
-2. **Context loading from event streams** - Read backwards from cursor, solo + team modes
-3. **Migrate context loader to cloud graph** - Replace file-based loading with graph queries
-4. **Add CLI semantic search** - `ginko graph query "search term" --semantic`
-5. **GitHub OAuth implementation** - Replace Bearer token with GitHub authentication
 
-**Strategic Note:** ADR-043 (Event Stream Session Model) is now the foundation for all session management. Implementing TASK-023.5 first enables the other features to build on event streams rather than legacy session files.
+## 🎯 TOP PRIORITY: ADR-043 Event Stream Implementation
+
+**Status**: Phase 1 Complete (88%) → Phase 2-5 Needed
+
+**Critical Path**: ADR-043 (Event Stream Session Model) is the **architectural foundation** for all session management. Must complete before other Week 3 tasks.
+
+### Phase 2: Context Loading from Event Streams (NEXT)
+**Effort**: M (8 hours)
+**Priority**: Critical
+
+**Objective**: Replace file-based session loading with event stream queries
+
+**Tasks**:
+1. **Implement `loadContextFromCursor()`**
+   - Read backwards 50 events from cursor position
+   - Extract document references from events
+   - Load mentioned documents
+   - Follow typed relationships (ADR-042)
+   - Get active sprint context
+
+2. **Update `ginko start` command**
+   - Find or create cursor for branch/project
+   - Load context from event stream (not files)
+   - Display event count and token estimate
+   - Resume work seamlessly (<30 sec vs 5-10 min)
+
+3. **Solo + Team Context Loading**
+   - Solo mode: My events only (~5K tokens)
+   - Team mode: Add high-signal team events (~3K tokens)
+   - Query patterns from ADR-043
+
+**Deliverables**:
+- [ ] `loadContextFromCursor()` implemented in context loader
+- [ ] `ginko start` uses event stream (not session files)
+- [ ] Solo context loading working
+- [ ] Team context loading working (optional mode)
+- [ ] Token budget: ~30K vs 88K (65% reduction validated)
+
+**Acceptance Criteria**:
+- ✅ Starting work reads from event stream cursor
+- ✅ Context loaded in <30 seconds
+- ✅ No session file dependency
+- ✅ Team events optionally included
+- ✅ Graph relationships followed (2-3 depth)
+
+### Phase 3-5: Deferred to Next Session
+3. **Migrate context loader to cloud graph** - Replace file-based loading with graph queries
+4. **Git hooks for auto-logging** - Post-commit events
+5. **Add CLI semantic search** - `ginko graph query "search term" --semantic`
+6. **GitHub OAuth implementation** - Replace Bearer token with GitHub authentication
+
+**Strategic Rationale**: Completing ADR-043 context loading eliminates the core UX problem (context pressure) while enabling all downstream features. Other Week 3 tasks (GraphQL, multi-tenancy) can proceed in parallel once this foundation is solid.
 
 ---
 
