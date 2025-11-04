@@ -1042,3 +1042,109 @@ function calculateRelevance(module: Module, context: WorkContext): number {
 **Proposed by:** Chris Norton & Claude (Session: 2025-10-24)
 **Decision Date:** TBD (awaiting review)
 **Implementation Start:** TBD
+
+---
+
+## 📋 Addendum: On-Platform Knowledge Management Strategy (2025-11-02)
+
+**Status:** Accepted
+
+### Strategic Decision: Lightweight On-Platform First, Integrations as Roadmap
+
+Following analysis of CRUD implementation approaches, we've decided to proceed with **on-platform knowledge management** for MVP, with third-party integrations (Linear, Jira, Azure DevOps) as a Q2 2025 roadmap item.
+
+### Decision Rationale
+
+**Option A (Selected): On-Platform Management First**
+- ✅ **Faster to MVP** - 2-3 weeks vs 6-8 weeks with integrations
+- ✅ **Validates core value prop** - Prove knowledge graph + semantic search is valuable *before* adding integration complexity
+- ✅ **Foundation already exists** - We have data model, CLI commands, ontology, and templates for ADR/PRD/Pattern/Gotcha
+- ✅ **Broader initial TAM** - Solo developers, small teams, OSS projects (no PM tool required)
+- ✅ **Faster iteration** - Learn from users without external API constraints
+- ✅ **Lower risk** - Don't bet on external APIs staying stable
+- ✅ **Fallback for edge cases** - Not every team uses Linear/Jira/Azure DevOps
+
+**Option B (Deferred): Direct Integration Strategy**
+- ⏸️ Significantly longer time to market
+- ⏸️ Complex OAuth flows for 3+ tools
+- ⏸️ Harder to validate core value (is it the graph or the integration?)
+- ⏸️ External dependencies (API changes, rate limits, downtime)
+
+### Implementation Plan
+
+**Phase 1 (Week 2-3): On-Platform CRUD**
+```bash
+# These CLI commands already exist, wire to cloud graph:
+ginko adr create "Use JWT tokens"           # → POST /api/v1/graph/nodes (ADR)
+ginko adr list --status=accepted            # → GET /api/v1/graph/nodes?type=ADR
+ginko adr update ADR-039 --status=accepted  # → PATCH /api/v1/graph/nodes/ADR-039
+ginko pattern add "OAuth refresh flow"      # → POST /api/v1/graph/nodes (Pattern)
+ginko knowledge search "authentication"     # → POST /api/v1/graph/query
+```
+
+**Phase 2 (Week 4): Initial Users**
+- Dog-food internally (Chris, team)
+- 5-10 OSS projects (freemium model)
+- Collect feedback: "Would you pay for Linear/Jira integration?"
+
+**Phase 3 (Q2 2025): Data-Driven Integration Strategy**
+- Survey early users: "Which PM tool do you use?"
+- If 60%+ request Linear integration → build it
+- If demand is split → adapter strategy for top 3
+- If users happy with on-platform → delay integrations
+
+### Integration Roadmap (Post-MVP)
+
+**Tier 1 Priority** (based on dev tool market share):
+1. **Linear** - Developer-focused, modern API, Y Combinator ecosystem
+2. **Jira** - Enterprise standard, massive install base, Atlassian ecosystem
+
+**Tier 2 Priority**:
+3. **GitHub Issues** - Built-in to GitHub (our OAuth provider), simple API
+4. **Azure DevOps** - Microsoft enterprise customers
+
+### Positioning Strategy
+
+> "Ginko Knowledge Graph - Start with our lightweight knowledge management, connect your Linear/Jira workspace when ready"
+
+This gives us:
+- Fast time to market (2-3 weeks)
+- Validated core value prop
+- Data-driven integration priorities
+- Fallback for teams using niche PM tools
+
+### Technical Impact
+
+**No Change to Core Architecture:**
+- Node types remain the same (ADR, PRD, Pattern, Gotcha, Session, CodeFile, ContextModule)
+- Cloud graph CRUD operations proceed as designed
+- Integration adapters will be additive (no breaking changes)
+
+**Benefits:**
+- Simpler initial implementation (no OAuth, no external API complexity)
+- Users can immediately create and manage knowledge
+- Foundation ready for integrations when market validates demand
+
+### Success Metrics
+
+**MVP Phase (Week 4-8):**
+1. 100% of knowledge document types (ADR, PRD, Pattern, Gotcha) have working CRUD
+2. CLI commands fully functional against cloud API
+3. 10+ OSS projects using on-platform management
+4. Collect integration demand data (which tools do users want?)
+
+**Integration Phase (Q2 2025):**
+5. If 60%+ users request integrations → build top 2 (Linear, Jira)
+6. Integration adapters maintain 100% feature parity with on-platform
+7. Zero breaking changes to existing on-platform users
+
+### References
+
+- **[ADR-040: Work Tracking Integration Strategy](./ADR-040-work-tracking-integration-strategy.md)** - Updated with new timeline
+- **[SPRINT-2025-10-27: Cloud Knowledge Graph](../sprints/SPRINT-2025-10-27-cloud-knowledge-graph.md)** - Week 2 implementation focus
+
+---
+
+**Addendum By:** Chris Norton & Claude (Session: 2025-11-02)
+**Status:** Accepted
+**Implementation:** Proceeding with Week 2 on-platform CRUD
