@@ -19,7 +19,7 @@ import { runQuery, verifyConnection } from './_neo4j.js';
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   if (req.method !== 'GET') {
     return res.status(405).json({
       error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed. Use GET.' },

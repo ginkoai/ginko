@@ -18,7 +18,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse
-): Promise<void> {
+) {
   if (req.method !== 'GET') {
     return res.status(405).json({
       error: { code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed. Use GET.' },
