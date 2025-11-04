@@ -143,7 +143,7 @@ export class GraphApiClient {
 
   constructor(apiUrl?: string) {
     // Use GINKO_GRAPH_API_URL for graph operations (separate from auth API)
-    this.apiUrl = apiUrl || process.env.GINKO_GRAPH_API_URL || process.env.GINKO_API_URL || 'https://api.ginko.ai';
+    this.apiUrl = apiUrl || process.env.GINKO_GRAPH_API_URL || process.env.GINKO_API_URL || 'https://app.ginkoai.com';
   }
 
   /**
