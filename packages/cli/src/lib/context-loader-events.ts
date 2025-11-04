@@ -226,17 +226,32 @@ async function readEventsBackward(
 ): Promise<Event[]> {
   console.log(`📖 Reading ${limit} events backwards from ${fromEventId} for user ${userId}`);
 
-  // Query events using graph traversal
-  // This will be implemented via API call to /api/v1/events/read endpoint
-  // which uses CloudGraphClient internally
+  try {
+    const { GraphApiClient } = await import('../commands/graph/api-client.js');
+    const client = new GraphApiClient();
 
-  // For Phase 1: Return empty array until API endpoint is created
-  // Phase 2 will add:
-  // - POST /api/v1/events/read with cursor-based pagination
-  // - CloudGraphClient query using NEXT relationship traversal
-  // - Multi-tenant filtering via project_id
+    // Build query parameters
+    const params = new URLSearchParams({
+      cursorId: fromEventId,
+      limit: limit.toString(),
+    });
 
-  return [];
+    if (filters?.categories && filters.categories.length > 0) {
+      params.append('categories', filters.categories.join(','));
+    }
+
+    if (filters?.branch) {
+      params.append('branch', filters.branch);
+    }
+
+    // Call API endpoint
+    const response = await (client as any).request('GET', `/api/v1/events/read?${params.toString()}`);
+
+    return response.events;
+  } catch (error) {
+    console.error('Failed to read events:', error);
+    return [];
+  }
 }
 
 /**
@@ -256,20 +271,27 @@ async function loadTeamEvents(
 ): Promise<Event[]> {
   console.log(`👥 Loading ${limit} team events from last ${days} days (excluding ${excludeUserId})`);
 
-  // Query team high-signal events
-  // This will be implemented via API call to /api/v1/events/team endpoint
-  //
-  // Cypher query used internally:
-  // MATCH (user:User)-[:LOGGED]->(e:Event)
-  // WHERE e.project_id = $projectId
-  //   AND e.user_id <> $excludeUserId
-  //   AND e.shared = true
-  //   AND e.category IN ['decision', 'achievement', 'git']
-  //   AND e.timestamp > datetime() - duration({days: $days})
-  // ORDER BY e.timestamp DESC
-  // LIMIT $limit
+  try {
+    const { GraphApiClient } = await import('../commands/graph/api-client.js');
+    const client = new GraphApiClient();
 
-  return [];
+    // Build query parameters
+    const params = new URLSearchParams({
+      projectId,
+      graphId: '', // Will be populated from context
+      limit: limit.toString(),
+      days: days.toString(),
+      categories: 'decision,achievement,git',
+    });
+
+    // Call API endpoint
+    const response = await (client as any).request('GET', `/api/v1/events/team?${params.toString()}`);
+
+    return response.events;
+  } catch (error) {
+    console.error('Failed to load team events:', error);
+    return [];
+  }
 }
 
 /**
@@ -324,15 +346,28 @@ async function loadDocuments(documentIds: string[]): Promise<KnowledgeNode[]> {
 
   console.log(`📚 Loading ${documentIds.length} documents: ${documentIds.slice(0, 5).join(', ')}...`);
 
-  // Load documents via API call to /api/v1/graph/documents/batch
-  // This uses CloudGraphClient's queryNodes with id filtering
-  //
-  // Cypher query used internally:
-  // MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(doc)
-  // WHERE doc.id IN $documentIds
-  // RETURN doc
+  try {
+    const { GraphApiClient } = await import('../commands/graph/api-client.js');
+    const client = new GraphApiClient();
 
-  return [];
+    // Get graphId from environment or config
+    const graphId = process.env.GINKO_GRAPH_ID || '';
+
+    // Call batch documents API
+    const response = await (client as any).request('POST', '/api/v1/graph/documents/batch', {
+      graphId,
+      documentIds,
+    });
+
+    if (response.notFound && response.notFound.length > 0) {
+      console.log(`⚠️  ${response.notFound.length} documents not found: ${response.notFound.slice(0, 3).join(', ')}...`);
+    }
+
+    return response.documents;
+  } catch (error) {
+    console.error('Failed to load documents:', error);
+    return [];
+  }
 }
 
 /**
@@ -357,17 +392,51 @@ async function followTypedRelationships(
 
   console.log(`🔗 Following relationships ${depth} hops from ${documents.length} documents`);
 
-  // Load related documents via API call to /api/v1/graph/explore/{documentId}
-  // This uses CloudGraphClient's relationship traversal
-  //
-  // Cypher query used internally:
-  // MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(start)
-  // WHERE start.id IN $documentIds
-  // MATCH path = (start)-[:IMPLEMENTS|REFERENCES|DEPENDS_ON*1..${depth}]-(related)
-  // WHERE related.id IS NOT NULL
-  // RETURN DISTINCT related
+  try {
+    const { GraphApiClient } = await import('../commands/graph/api-client.js');
+    const client = new GraphApiClient();
 
-  return [];
+    const relatedDocs = new Set<KnowledgeNode>();
+
+    // For each starting document, explore its relationships
+    for (const doc of documents.slice(0, 10)) { // Limit to first 10 to avoid too many API calls
+      try {
+        const response = await (client as any).request('GET', `/api/v1/graph/explore/${doc.id}`);
+
+        // Collect all related documents from typed relationships
+        const relationships = response.relationships;
+
+        if (relationships.implements) {
+          relationships.implements.forEach((rel: any) => {
+            relatedDocs.add({
+              id: rel.id,
+              type: rel.type,
+              title: rel.title,
+            });
+          });
+        }
+
+        if (relationships.referencedBy) {
+          relationships.referencedBy.forEach((rel: any) => {
+            relatedDocs.add({
+              id: rel.id,
+              type: rel.type,
+              title: rel.title,
+            });
+          });
+        }
+
+        // Skip SIMILAR_TO as these are lower signal
+      } catch (error) {
+        console.log(`  ⚠️  Could not explore ${doc.id}:`, (error as Error).message);
+      }
+    }
+
+    return Array.from(relatedDocs);
+  } catch (error) {
+    console.error('Failed to follow relationships:', error);
+    return [];
+  }
 }
 
 /**
@@ -379,17 +448,47 @@ async function followTypedRelationships(
 async function getActiveSprint(projectId: string): Promise<Sprint | undefined> {
   console.log(`🎯 Loading active sprint for project ${projectId}`);
 
-  // Load sprint from filesystem
-  // Look for: docs/sprints/SPRINT-YYYY-MM-DD-*.md with status "active"
-  //
-  // Implementation options:
-  // 1. Query graph for Sprint nodes with status="active"
-  // 2. Read from filesystem directly (current approach in context-loader.ts)
-  //
-  // For consistency with existing code, we'll use filesystem reading
-  // until sprints are fully migrated to graph
+  try {
+    // Look for sprint files in docs/sprints/
+    const sprintDir = path.join(process.cwd(), 'docs', 'sprints');
 
-  return undefined;
+    if (!await fs.pathExists(sprintDir)) {
+      return undefined;
+    }
+
+    const files = await fs.readdir(sprintDir);
+    const sprintFiles = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md'));
+
+    // Read each sprint file to find active sprint
+    for (const file of sprintFiles) {
+      const filePath = path.join(sprintDir, file);
+      const content = await fs.readFile(filePath, 'utf-8');
+
+      // Check if sprint mentions "active" or "in progress"
+      // This is a simple heuristic - could be improved
+      if (content.toLowerCase().includes('status**: active') ||
+          content.toLowerCase().includes('sprint status: active')) {
+
+        // Extract title from first heading
+        const titleMatch = content.match(/^#\s+(.+)$/m);
+        const title = titleMatch ? titleMatch[1] : file.replace('.md', '');
+
+        // Extract basic info
+        return {
+          id: file.replace('.md', ''),
+          title,
+          goals: [], // Would need more parsing
+          progress: 0, // Would need more parsing
+          started: new Date(), // Would need more parsing
+        };
+      }
+    }
+
+    return undefined;
+  } catch (error) {
+    console.log('Could not load sprint:', (error as Error).message);
+    return undefined;
+  }
 }
 
 /**

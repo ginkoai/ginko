@@ -66,11 +66,13 @@ program
 
 program
   .command('start [sessionId]')
-  .description('Start or resume a session with AI-enhanced reflection by default')
+  .description('Start or resume a session with event-based context loading (ADR-043)')
   .option('-v, --verbose', 'Show full context and session details')
   .option('-m, --minimal', 'Minimal output for quick start')
   .option('--noai', 'Disable AI enhancement and use procedural templates')
   .option('--legacy', 'Use original implementation without reflection (deprecated)')
+  .option('--strategic', 'Use strategic context loading instead of event-based (fallback mode)')
+  .option('--team', 'Include team events in context loading')
   .action((sessionId, options) => startCommand({ sessionId, ...options }));
 
 program

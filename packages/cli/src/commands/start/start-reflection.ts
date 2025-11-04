@@ -22,6 +22,7 @@ import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
 import { loadContextStrategic, formatContextSummary, StrategyContext } from '../../utils/context-loader.js';
 import { getOrCreateCursor, SessionCursor } from '../../lib/session-cursor.js';
 import { initializeQueue } from '../../lib/event-queue.js';
+import { loadContextFromCursor, formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -111,13 +112,81 @@ export class StartReflectionCommand extends ReflectionCommand {
       spinner.text = 'Loading context strategically...';
 
       // 8. Load context strategically (TASK-011: Progressive Context Loading)
-      const strategyContext = await loadContextStrategic({
-        workMode,
-        maxDepth: 3,
-        followReferences: true,
-        sessionDir,
-        userSlug
-      });
+      // ADR-043 Phase 3: Event-based context loading is now the default
+      // Falls back to strategic loading if event loading fails
+      let strategyContext: StrategyContext;
+      let eventContext: LoadedContext | undefined;
+
+      // Allow disabling event-based loading with env var or --strategic flag
+      const useEventBasedLoading = process.env.GINKO_USE_EVENT_CONTEXT !== 'false' && !options.strategic;
+
+      if (useEventBasedLoading && cursor) {
+        spinner.text = 'Loading context from event stream (ADR-043)...';
+        try {
+          eventContext = await loadContextFromCursor(cursor, {
+            eventLimit: 50,
+            includeTeam: options.team || false,
+            teamEventLimit: 20,
+            documentDepth: 2,
+            teamDays: 7,
+          });
+
+          // Display event-based context summary
+          spinner.succeed('Event stream context loaded');
+          console.log(chalk.dim(formatEventContextSummary(eventContext)));
+
+          // Convert to strategy context for compatibility
+          const documentsMap = new Map<string, any>();
+          const allDocs = [...eventContext.documents, ...eventContext.relatedDocs];
+          allDocs.forEach(d => {
+            documentsMap.set(d.id, {
+              path: d.id,
+              relativePath: d.id,
+              content: d.content || '',
+              type: d.type,
+              tokens: d.content ? Math.ceil(d.content.length / 4) : 0,
+              loadedAt: Date.now(),
+              referencedBy: [],
+            });
+          });
+
+          strategyContext = {
+            documents: documentsMap,
+            references: new Map(),
+            loadOrder: allDocs.map(d => d.id),
+            workMode: workMode,
+            metrics: {
+              documentsLoaded: allDocs.length,
+              totalTokens: eventContext.token_estimate,
+              bootstrapTimeMs: 0,
+              cacheHits: 0,
+              referenceDepth: 2,
+              tokenReductionPercent: Math.round((1 - eventContext.token_estimate / 88000) * 100),
+            },
+          };
+        } catch (error) {
+          spinner.warn(chalk.yellow('Event-based loading failed, falling back to strategic loading'));
+          console.error(chalk.dim((error as Error).message));
+
+          // Fallback to strategic loading
+          strategyContext = await loadContextStrategic({
+            workMode,
+            maxDepth: 3,
+            followReferences: true,
+            sessionDir,
+            userSlug
+          });
+        }
+      } else {
+        // Use strategic loading (traditional approach)
+        strategyContext = await loadContextStrategic({
+          workMode,
+          maxDepth: 3,
+          followReferences: true,
+          sessionDir,
+          userSlug
+        });
+      }
 
       // 9. Load initial context using ActiveContextManager (legacy compatibility)
       const sessionData = {
