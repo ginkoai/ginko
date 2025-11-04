@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "cursors": {
+    "93b6e58e-34bb-4c8a-a6d5-1e17a63cb1dc": {
+      "id": "93b6e58e-34bb-4c8a-a6d5-1e17a63cb1dc",
+      "user_id": "xtophr@gmail.com",
+      "organization_id": "org_xtophr",
+      "project_id": "ginko",
+      "branch": "feature/sprint-2025-10-27-cloud-graph",
+      "current_event_id": "evt_1762276440209_0k1cxs",
+      "started": "2025-11-04T17:14:00.209Z",
+      "last_active": "2025-11-04T17:14:00.209Z",
+      "status": "active"
+    }
+  },
+  "last_updated": "2025-11-04T17:14:00.293Z"
+}
