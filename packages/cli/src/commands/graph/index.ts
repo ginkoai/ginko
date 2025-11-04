@@ -87,6 +87,8 @@ ${chalk.gray('Learn More:')}
     .option('-l, --limit <number>', 'Maximum results to return', '10')
     .option('-t, --threshold <number>', 'Minimum similarity score (0-1)', '0.70')
     .option('--types <types>', 'Filter by document types (comma-separated)', '')
+    .option('--table', 'Display results in table format')
+    .option('--semantic', 'Use semantic search (enabled by default)')
     .action(async (text, options) => {
       const limit = parseInt(options.limit, 10);
       const threshold = parseFloat(options.threshold);

@@ -1,22 +1,25 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-10-31
- * @tags: [graph, query, search, cli]
+ * @updated: 2025-11-03
+ * @tags: [graph, query, search, cli, semantic-search]
  * @related: [api-client.ts, config.ts]
  * @priority: high
  * @complexity: medium
- * @dependencies: [chalk, api-client, config]
+ * @dependencies: [chalk, api-client, config, cli-table3]
  */
 
 import chalk from 'chalk';
-import { GraphApiClient } from './api-client.js';
+import Table from 'cli-table3';
+import { GraphApiClient, QueryResult } from './api-client.js';
 import { loadGraphConfig, isGraphInitialized } from './config.js';
 
 interface QueryOptions {
   limit?: number;
   threshold?: number;
   types?: string;
+  table?: boolean;
+  semantic?: boolean; // Alias for consistency
 }
 
 /**
@@ -69,29 +72,11 @@ export async function queryCommand(searchText: string, options: QueryOptions): P
     }
 
     // Display results
-    results.results.forEach((result, index) => {
-      const emoji =
-        result.document.type === 'ADR' ? '📄' :
-        result.document.type === 'PRD' ? '📋' :
-        result.document.type === 'Pattern' ? '🎨' :
-        result.document.type === 'Gotcha' ? '⚠️' :
-        result.document.type === 'Session' ? '📝' : '📁';
-
-      console.log(`${index + 1}. ${emoji} ${chalk.bold(`[${result.document.type}] ${result.document.title}`)} ${chalk.dim(`(similarity: ${(result.similarity * 100).toFixed(0)}%)`)}`);
-      console.log(`   ${chalk.dim(result.document.summary)}`);
-
-      if (result.matchContext) {
-        console.log(`   ${chalk.italic(chalk.gray('"' + result.matchContext.substring(0, 100) + '..."'))}`);
-      }
-
-      console.log(`   ${chalk.dim(`→ View: ginko graph explore ${result.document.id}`)}`);
-
-      if (result.connections > 0) {
-        console.log(`   ${chalk.dim(`↔ ${result.connections} connections`)}`);
-      }
-
-      console.log(); // blank line between results
-    });
+    if (options.table) {
+      displayTable(results.results);
+    } else {
+      displayList(results.results);
+    }
 
     console.log(chalk.gray('─'.repeat(50)));
     console.log(chalk.dim(`Found ${results.totalResults} results (showing ${results.results.length})`));
@@ -114,4 +99,80 @@ export async function queryCommand(searchText: string, options: QueryOptions): P
     }
     process.exit(1);
   }
+}
+
+/**
+ * Display results in list format (default)
+ */
+function displayList(results: QueryResult[]): void {
+  results.forEach((result, index) => {
+    const emoji =
+      result.document.type === 'ADR' ? '📄' :
+      result.document.type === 'PRD' ? '📋' :
+      result.document.type === 'Pattern' ? '🎨' :
+      result.document.type === 'Gotcha' ? '⚠️' :
+      result.document.type === 'Session' ? '📝' : '📁';
+
+    console.log(`${index + 1}. ${emoji} ${chalk.bold(`[${result.document.type}] ${result.document.title}`)} ${chalk.dim(`(similarity: ${(result.similarity * 100).toFixed(0)}%)`)}`);
+    console.log(`   ${chalk.dim(result.document.summary)}`);
+
+    if (result.matchContext) {
+      console.log(`   ${chalk.italic(chalk.gray('"' + result.matchContext.substring(0, 100) + '..."'))}`);
+    }
+
+    console.log(`   ${chalk.dim(`→ View: ginko graph explore ${result.document.id}`)}`);
+
+    if (result.connections > 0) {
+      console.log(`   ${chalk.dim(`↔ ${result.connections} connections`)}`);
+    }
+
+    console.log(); // blank line between results
+  });
+}
+
+/**
+ * Display results in table format
+ */
+function displayTable(results: QueryResult[]): void {
+  const table = new Table({
+    head: ['Type', 'Title', 'Score', 'Tags', 'Connections'],
+    style: {
+      head: ['cyan'],
+      border: ['gray']
+    },
+    colWidths: [10, 45, 8, 30, 12],
+    wordWrap: true
+  });
+
+  results.forEach((result) => {
+    // Color-code similarity scores
+    const similarity = result.similarity * 100;
+    const scoreColor =
+      similarity >= 80 ? chalk.green :
+      similarity >= 70 ? chalk.yellow :
+      chalk.gray;
+
+    const scoreText = scoreColor(`${similarity.toFixed(0)}%`);
+
+    // Format tags (limit to 3 for readability)
+    const tagsText = result.document.tags.slice(0, 3).join(', ');
+
+    // Type emoji
+    const typeEmoji =
+      result.document.type === 'ADR' ? '📄' :
+      result.document.type === 'PRD' ? '📋' :
+      result.document.type === 'Pattern' ? '🎨' :
+      result.document.type === 'Gotcha' ? '⚠️' :
+      result.document.type === 'Session' ? '📝' : '📁';
+
+    table.push([
+      `${typeEmoji} ${result.document.type}`,
+      result.document.title,
+      scoreText,
+      chalk.dim(tagsText),
+      result.connections > 0 ? chalk.cyan(`${result.connections}`) : chalk.gray('0')
+    ]);
+  });
+
+  console.log(table.toString());
 }
