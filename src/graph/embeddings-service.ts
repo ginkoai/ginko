@@ -9,16 +9,14 @@
  * @dependencies: [@xenova/transformers]
  */
 
-import { pipeline, Pipeline } from '@xenova/transformers';
-
 /**
  * Embeddings configuration
  */
 interface EmbeddingsConfig {
+  apiUrl: string;
   model: string;
   dimensions: number;
-  pooling: 'mean' | 'cls';
-  normalize: boolean;
+  timeout: number;
 }
 
 /**
@@ -31,62 +29,70 @@ interface EmbeddingResult {
 }
 
 /**
- * Embeddings service using all-mpnet-base-v2
+ * Embeddings service using self-hosted all-mpnet-base-v2 on Hetzner
  *
  * Self-hosted sentence embeddings for semantic search in Neo4j knowledge graph.
  *
  * Features:
  * - 768-dimensional embeddings
- * - Local inference (no API calls)
+ * - Self-hosted on Hetzner (zero API costs)
  * - Batch processing support
  * - Compatible with Neo4j vector indexes
  *
  * Performance:
- * - Model size: ~420MB (auto-downloaded on first use)
- * - Inference speed: ~50-100 sentences/sec on CPU
- * - Memory: ~1GB during inference
+ * - Inference speed: ~50-100ms per request
+ * - Model: sentence-transformers/all-mpnet-base-v2
+ * - Endpoint: http://178.156.182.99:8080
+ *
+ * Architecture:
+ * - Python Flask API with sentence-transformers library
+ * - Docker container on Hetzner VM (same server as Neo4j)
+ * - Low latency server-to-server communication
  */
 export class EmbeddingsService {
-  private embedder: Pipeline | null = null;
   private config: EmbeddingsConfig;
   private isInitialized = false;
 
   constructor(config?: Partial<EmbeddingsConfig>) {
     this.config = {
-      model: config?.model || 'Xenova/all-mpnet-base-v2',
+      apiUrl: config?.apiUrl || process.env.EMBEDDINGS_API_URL || 'http://178.156.182.99:8080',
+      model: config?.model || 'sentence-transformers/all-mpnet-base-v2',
       dimensions: config?.dimensions || 768,
-      pooling: config?.pooling || 'mean',
-      normalize: config?.normalize ?? true,
+      timeout: config?.timeout || 10000,
     };
   }
 
   /**
-   * Initialize the embeddings model
-   * Downloads model on first use (~420MB)
+   * Initialize the embeddings service
+   * Validates connection to self-hosted API
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
       return;
     }
 
-    console.log(`Loading embeddings model: ${this.config.model}...`);
-    console.log('(First run will download ~420MB model - this may take a minute)');
+    console.log(`Connecting to embeddings API: ${this.config.apiUrl}...`);
 
     const startTime = Date.now();
 
-    this.embedder = await pipeline(
-      'feature-extraction',
-      this.config.model,
-      {
-        // Cache model locally for faster subsequent loads
-        cache_dir: process.env.TRANSFORMERS_CACHE || './.cache/transformers',
+    try {
+      // Test connection with health check
+      const response = await fetch(`${this.config.apiUrl}/health`, {
+        signal: AbortSignal.timeout(this.config.timeout),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Health check failed: ${response.status}`);
       }
-    );
 
-    const loadTime = Date.now() - startTime;
-    console.log(`✓ Model loaded in ${loadTime}ms`);
+      const health: any = await response.json();
+      console.log(`✓ Connected to embeddings API in ${Date.now() - startTime}ms`);
+      console.log(`  Model: ${health.model}, Dimensions: ${health.dimensions}`);
 
-    this.isInitialized = true;
+      this.isInitialized = true;
+    } catch (error: any) {
+      throw new Error(`Failed to connect to embeddings API: ${error.message}`);
+    }
   }
 
   /**
@@ -106,7 +112,7 @@ export class EmbeddingsService {
    * ```
    */
   async embed(text: string): Promise<EmbeddingResult> {
-    if (!this.embedder) {
+    if (!this.isInitialized) {
       throw new Error('EmbeddingsService not initialized. Call initialize() first.');
     }
 
@@ -116,27 +122,37 @@ export class EmbeddingsService {
 
     const startTime = Date.now();
 
-    // Generate embedding
-    const output = await this.embedder(text, {
-      pooling: this.config.pooling,
-      normalize: this.config.normalize,
-    });
+    try {
+      const response = await fetch(`${this.config.apiUrl}/embed`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ inputs: text }),
+        signal: AbortSignal.timeout(this.config.timeout),
+      });
 
-    // Extract embedding array from output
-    // Transformers.js returns a Tensor, we need to convert to array
-    const embedding = Array.from(output.data as Float32Array);
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
 
-    const inferenceTime = Date.now() - startTime;
+      const data: any = await response.json();
+      const embedding = Array.isArray(data[0]) ? data[0] : data;
 
-    if (process.env.DEBUG) {
-      console.log(`Embedding generated in ${inferenceTime}ms (${text.substring(0, 50)}...)`);
+      const inferenceTime = Date.now() - startTime;
+
+      if (process.env.DEBUG) {
+        console.log(`Embedding generated in ${inferenceTime}ms (${text.substring(0, 50)}...)`);
+      }
+
+      return {
+        embedding,
+        dimensions: embedding.length,
+        model: this.config.model,
+      };
+    } catch (error: any) {
+      throw new Error(`Embedding generation failed: ${error.message}`);
     }
-
-    return {
-      embedding,
-      dimensions: embedding.length,
-      model: this.config.model,
-    };
   }
 
   /**
@@ -159,7 +175,7 @@ export class EmbeddingsService {
    * ```
    */
   async embedBatch(texts: string[]): Promise<EmbeddingResult[]> {
-    if (!this.embedder) {
+    if (!this.isInitialized) {
       throw new Error('EmbeddingsService not initialized. Call initialize() first.');
     }
 
@@ -170,8 +186,8 @@ export class EmbeddingsService {
     console.log(`Generating embeddings for ${texts.length} texts...`);
     const startTime = Date.now();
 
-    // Process in batches to avoid memory issues
-    const BATCH_SIZE = 32;
+    // Process in batches to avoid overwhelming the API
+    const BATCH_SIZE = 10;
     const results: EmbeddingResult[] = [];
 
     for (let i = 0; i < texts.length; i += BATCH_SIZE) {
@@ -239,7 +255,6 @@ export class EmbeddingsService {
    * Clean up resources
    */
   async dispose(): Promise<void> {
-    this.embedder = null;
     this.isInitialized = false;
     console.log('✓ Embeddings service disposed');
   }
