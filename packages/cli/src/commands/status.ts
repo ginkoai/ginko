@@ -15,8 +15,9 @@ import simpleGit from 'simple-git';
 import { getUserEmail, getGinkoDir, formatTimeAgo, getProjectInfo } from '../utils/helpers.js';
 import { ProgressiveLearning } from '../utils/progressive-learning.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
+import { listCursors, SessionCursor } from '../lib/session-cursor.js';
 
-export async function statusCommand() {
+export async function statusCommand(options: any = {}) {
   try {
     const git = simpleGit();
     const ginkoDir = await getGinkoDir();
@@ -128,8 +129,54 @@ export async function statusCommand() {
       console.log(ProgressiveLearning.formatSuggestions(suggestions));
     }
 
+    // Show all cursors if --all flag is used (ADR-043)
+    if (options.all) {
+      await displayAllCursors();
+    }
+
   } catch (error) {
     console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
     process.exit(1);
+  }
+}
+
+/**
+ * Display all session cursors (ADR-043)
+ */
+async function displayAllCursors(): Promise<void> {
+  try {
+    const cursors = await listCursors();
+
+    if (cursors.length === 0) {
+      console.log(chalk.cyan('\n📍 Session Cursors'));
+      console.log(chalk.dim('  No session cursors found'));
+      return;
+    }
+
+    console.log(chalk.cyan('\n📍 Session Cursors'));
+    console.log(chalk.dim(`  Total: ${cursors.length}\n`));
+
+    for (const cursor of cursors) {
+      const statusColor = cursor.status === 'active' ? chalk.green : chalk.yellow;
+      const statusEmoji = cursor.status === 'active' ? '🟢' : '⏸️ ';
+
+      console.log(statusColor(`${statusEmoji} ${cursor.branch}`));
+      console.log(chalk.dim(`   Project: ${cursor.project_id}`));
+      console.log(chalk.dim(`   Status: ${cursor.status}`));
+      console.log(chalk.dim(`   Position: ${cursor.current_event_id}`));
+      console.log(chalk.dim(`   Last active: ${formatTimeAgo(cursor.last_active)}`));
+      console.log(chalk.dim(`   Started: ${formatTimeAgo(cursor.started)}`));
+      console.log('');
+    }
+
+    // Show helpful tips
+    const activeCursors = cursors.filter(c => c.status === 'active');
+    if (activeCursors.length > 1) {
+      console.log(chalk.yellow('⚠️  Multiple active cursors detected'));
+      console.log(chalk.dim('   Consider pausing unused sessions with: ginko handoff'));
+    }
+
+  } catch (error) {
+    console.warn(chalk.yellow('Failed to load cursors:'), error instanceof Error ? error.message : String(error));
   }
 }

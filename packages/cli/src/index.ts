@@ -30,9 +30,14 @@ import { uninstallCursorCommand } from './commands/uninstall-cursor.js';
 import { initCopilotCommand } from './commands/init-copilot.js';
 import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
 import { backlogCommand } from './commands/backlog/index.js';
+import { graphCommand } from './commands/graph/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
 import { teamCommand } from './commands/team.js';
+import { loginCommand } from './commands/login.js';
+import { logoutCommand } from './commands/logout.js';
+import { whoamiCommand } from './commands/whoami.js';
+import { handoffCommand } from './commands/handoff.js';
 
 const program = new Command();
 
@@ -71,7 +76,14 @@ program
 program
   .command('status')
   .description('Show current session status')
+  .option('--all', 'Show all session cursors')
   .action(statusCommand);
+
+program
+  .command('handoff')
+  .description('Pause current session and update cursor (ADR-043)')
+  .option('-v, --verbose', 'Show detailed cursor and sync information')
+  .action(handoffCommand);
 
 program
   .command('log [description]')
@@ -83,6 +95,7 @@ program
   .option('--validate', 'Check session log quality and get suggestions')
   .option('--quick', 'Skip interactive prompts for faster logging')
   .option('--why', 'Force WHY prompt (useful for features)')
+  .option('--shared', 'Mark event for team visibility (synced to graph)')
   .option('--examples', 'Show logging examples with quality tips')
   .action((description, options) => {
     if (options.examples) {
@@ -121,6 +134,23 @@ program
   .option('--set', 'Set configuration value')
   .option('--list', 'List all configuration')
   .action(configCommand);
+
+// Authentication commands
+program
+  .command('login')
+  .description('Authenticate CLI with GitHub via Supabase OAuth')
+  .option('--force', 'Force re-authentication even if already logged in')
+  .action((options) => loginCommand(options));
+
+program
+  .command('logout')
+  .description('Clear local authentication session')
+  .action(logoutCommand);
+
+program
+  .command('whoami')
+  .description('Display current authentication status and user information')
+  .action(whoamiCommand);
 
 program
   .command('vibecheck [concern]')
@@ -299,6 +329,9 @@ program
 
 // Backlog management command
 program.addCommand(backlogCommand());
+
+// Knowledge graph command
+program.addCommand(graphCommand());
 
 // Universal Reflection Pattern command
 program

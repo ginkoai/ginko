@@ -10,7 +10,7 @@
  */
 
 import chalk from 'chalk';
-import inquirer from 'inquirer';
+import prompts from 'prompts';
 import { v4 as uuidv4 } from 'uuid';
 import { SessionLogManager, LogCategory, LogImpact, LogEntry } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
@@ -30,6 +30,8 @@ import {
 } from '../utils/reference-parser.js';
 import { ModuleGenerator } from '../services/module-generator.js';
 import { SessionInsight, InsightType } from '../types/session.js';
+import { initializeWriteDispatcher, appendLogEntry } from '../utils/dispatcher-logger.js';
+import { logEvent as logEventToStream, EventEntry } from '../lib/event-logger.js';
 import * as path from 'path';
 
 interface LogOptions {
@@ -41,6 +43,7 @@ interface LogOptions {
   why?: boolean;
   quick?: boolean;
   refs?: boolean;
+  shared?: boolean;
 }
 
 /**
@@ -62,6 +65,9 @@ export async function logCommand(description: string, options: LogOptions): Prom
       console.error(chalk.dim('   Run `ginko start` first to create a session.'));
       process.exit(1);
     }
+
+    // Initialize WriteDispatcher for graph writes (if enabled)
+    await initializeWriteDispatcher(ginkoDir);
 
     // Handle --validate flag: check log quality
     if (options.validate) {
@@ -107,14 +113,12 @@ export async function logCommand(description: string, options: LogOptions): Prom
       if (category === 'feature' && options.why !== false) {
         console.log(chalk.cyan('\n💡 Quality Tip: Feature entries should explain WHY (what problem it solves)\n'));
 
-        const answer = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'why',
-            message: 'What problem does this feature solve?',
-            default: ''
-          }
-        ]);
+        const answer = await prompts({
+          type: 'text',
+          name: 'why',
+          message: 'What problem does this feature solve?',
+          initial: ''
+        });
 
         if (answer.why && answer.why.trim()) {
           enhancedDescription += `\nProblem: ${answer.why.trim()}`;
@@ -125,14 +129,12 @@ export async function logCommand(description: string, options: LogOptions): Prom
       if (category === 'decision') {
         console.log(chalk.cyan('\n💡 Quality Tip: Decision entries should mention alternatives considered\n'));
 
-        const answer = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'alternatives',
-            message: 'What alternatives were considered?',
-            default: ''
-          }
-        ]);
+        const answer = await prompts({
+          type: 'text',
+          name: 'alternatives',
+          message: 'What alternatives were considered?',
+          initial: ''
+        });
 
         if (answer.alternatives && answer.alternatives.trim()) {
           enhancedDescription += `\nAlternatives: ${answer.alternatives.trim()}`;
@@ -143,14 +145,12 @@ export async function logCommand(description: string, options: LogOptions): Prom
       if (category === 'fix') {
         console.log(chalk.cyan('\n💡 Quality Tip: Fix entries should include root cause\n'));
 
-        const answer = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'rootCause',
-            message: 'What was the root cause?',
-            default: ''
-          }
-        ]);
+        const answer = await prompts({
+          type: 'text',
+          name: 'rootCause',
+          message: 'What was the root cause?',
+          initial: ''
+        });
 
         if (answer.rootCause && answer.rootCause.trim()) {
           enhancedDescription += `\nRoot cause: ${answer.rootCause.trim()}`;
@@ -168,14 +168,12 @@ export async function logCommand(description: string, options: LogOptions): Prom
       if (detectedFiles.length > 0 && !options.quick) {
         console.log(chalk.cyan(`\n📁 Detected ${detectedFiles.length} modified files from git\n`));
 
-        const answer = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'useDetected',
-            message: 'Include these files in the log entry?',
-            default: true
-          }
-        ]);
+        const answer = await prompts({
+          type: 'confirm',
+          name: 'useDetected',
+          message: 'Include these files in the log entry?',
+          initial: true
+        });
 
         if (answer.useDetected) {
           files = detectedFiles.slice(0, 5); // Limit to 5 most relevant
@@ -218,14 +216,12 @@ export async function logCommand(description: string, options: LogOptions): Prom
         console.log(chalk.dim(`   - ${warning}`));
       }
 
-      const answer = await inquirer.prompt([
-        {
-          type: 'confirm',
-          name: 'continue',
-          message: 'Continue with this entry?',
-          default: true
-        }
-      ]);
+      const answer = await prompts({
+        type: 'confirm',
+        name: 'continue',
+        message: 'Continue with this entry?',
+        initial: true
+      });
 
       if (!answer.continue) {
         console.log(chalk.yellow('Entry cancelled.'));
@@ -233,8 +229,24 @@ export async function logCommand(description: string, options: LogOptions): Prom
       }
     }
 
-    // Append to session log
-    await SessionLogManager.appendEntry(sessionDir, entry);
+    // Append to session log (via dispatcher if enabled, local fallback)
+    await appendLogEntry(sessionDir, entry, userEmail);
+
+    // ALSO log to event stream (ADR-043 dual-write)
+    try {
+      const eventEntry: EventEntry = {
+        category,
+        description: enhancedDescription,
+        files,
+        impact,
+        shared: options.shared || false
+      };
+      await logEventToStream(eventEntry);
+    } catch (error) {
+      // Event stream logging is non-critical, don't block on failure
+      console.warn(chalk.yellow('⚠ Event stream logging failed (session log preserved)'));
+      console.warn(chalk.dim(`  ${error instanceof Error ? error.message : String(error)}`));
+    }
 
     console.log(chalk.green(`\n✓ Logged ${category} event`));
     if (files && files.length > 0) {
@@ -275,36 +287,34 @@ async function promptForContextModule(
 
   console.log(chalk.cyan('\n📦 This looks like valuable team knowledge!'));
 
-  const confirmAnswer = await inquirer.prompt([
-    {
-      type: 'confirm',
-      name: 'create',
-      message: 'Create context module?',
-      default: true
-    }
-  ]);
+  const confirmAnswer = await prompts({
+    type: 'confirm',
+    name: 'create',
+    message: 'Create context module?',
+    initial: true
+  });
 
   if (!confirmAnswer.create) {
     return;
   }
 
   // Step 2: Gather additional context from user
-  const answers = await inquirer.prompt([
+  const answers = await prompts([
     {
-      type: 'input',
+      type: 'text',
       name: 'title',
       message: 'Module title (brief, descriptive):',
-      default: extractTitle(entry.description),
+      initial: extractTitle(entry.description),
       validate: (input: string) => input.length > 0 || 'Title is required'
     },
     {
-      type: 'input',
+      type: 'text',
       name: 'problem',
       message: 'What problem does this solve?',
       validate: (input: string) => input.length > 0 || 'Problem description is required'
     },
     {
-      type: 'input',
+      type: 'text',
       name: 'solution',
       message: 'What is the solution/approach?',
       validate: (input: string) => input.length > 0 || 'Solution description is required'
@@ -313,17 +323,21 @@ async function promptForContextModule(
       type: 'number',
       name: 'timeSaving',
       message: 'Estimated time saving for future use (minutes):',
-      default: 60,
+      initial: 60,
       validate: (input: number) => input > 0 || 'Time saving must be positive'
     },
     {
-      type: 'input',
+      type: 'text',
       name: 'tags',
       message: 'Tags (comma-separated):',
-      default: extractTags(entry),
-      filter: (input: string) => input.split(',').map(t => t.trim()).filter(t => t.length > 0)
+      initial: extractTags(entry)
     }
   ]);
+
+  // Process tags manually since prompts doesn't have a filter option
+  const tags = typeof answers.tags === 'string'
+    ? answers.tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+    : answers.tags;
 
   // Step 3: Convert LogEntry to SessionInsight
   const insight: SessionInsight = {
@@ -336,7 +350,7 @@ async function promptForContextModule(
     reusabilityScore: entry.impact === 'high' ? 0.85 : 0.75,
     timeSavingPotential: answers.timeSaving,
     relevanceScore: 0.9,
-    tags: answers.tags,
+    tags: tags,
     relatedFiles: entry.files,
     sessionId: await getSessionId(sessionDir),
     timestamp: new Date(entry.timestamp)
@@ -733,6 +747,7 @@ export function logExamples(): void {
   console.log(chalk.dim('  --files      - Comma-separated file paths (or auto-detected)'));
   console.log(chalk.dim('  --quick      - Skip interactive prompts for speed'));
   console.log(chalk.dim('  --why        - Force WHY prompt (useful for features)'));
+  console.log(chalk.dim('  --shared     - Mark event for team visibility (synced to graph)'));
   console.log(chalk.dim('  --show       - Display current log with quality score'));
   console.log(chalk.dim('  --validate   - Check log quality and get suggestions'));
   console.log(chalk.dim('  --refs       - Show all references in session with validation\n'));

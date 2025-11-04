@@ -20,6 +20,8 @@ import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/act
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
 import { loadContextStrategic, formatContextSummary, StrategyContext } from '../../utils/context-loader.js';
+import { getOrCreateCursor, SessionCursor } from '../../lib/session-cursor.js';
+import { initializeQueue } from '../../lib/event-queue.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -55,10 +57,30 @@ export class StartReflectionCommand extends ReflectionCommand {
       // 1. Parse intent
       const parsedIntent = this.parseIntent(intent);
 
-      // 2. Gather context (including handoff)
-      const context = await this.gatherContext(parsedIntent);
+      // 2. Initialize event queue for background sync (ADR-043)
+      spinner.text = 'Starting event sync queue...';
+      try {
+        initializeQueue({
+          syncIntervalMs: 5 * 60 * 1000,  // 5 minutes
+          syncThreshold: 5,                 // 5 events
+          maxBatchSize: 20                  // 20 events max
+        });
+        spinner.succeed(chalk.dim('Event sync queue started'));
+      } catch (error) {
+        // Non-critical - continue without sync
+        spinner.warn(chalk.yellow('Event sync queue unavailable (offline mode)'));
+      }
 
-      // 3. Read previous session log BEFORE archiving (ADR-033: Fresh AI synthesis at optimal pressure)
+      // 3. Create or resume session cursor (ADR-043)
+      spinner.text = 'Creating session cursor...';
+      const { cursor, isNew } = await getOrCreateCursor({});
+
+      // 4. Gather context (including handoff)
+      const context = await this.gatherContext(parsedIntent);
+      context.cursor = cursor;
+      context.isNewSession = isNew;
+
+      // 4. Read previous session log BEFORE archiving (ADR-033: Fresh AI synthesis at optimal pressure)
       spinner.text = 'Reading previous session log...';
       const ginkoDir = await getGinkoDir();
       const userEmail = await getUserEmail();
@@ -70,25 +92,25 @@ export class StartReflectionCommand extends ReflectionCommand {
       const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);
       const hasLog = previousSessionLog.length > 100; // Non-empty log
 
-      // 4. Synthesize from previous session log (at optimal 5-15% pressure)
+      // 5. Synthesize from previous session log (at optimal 5-15% pressure)
       spinner.text = 'Synthesizing session context...';
       const synthesizer = new SessionSynthesizer(sessionDir, projectRoot);
       const synthesis = await synthesizer.synthesize();
 
-      // 5. Archive previous session log (ALWAYS, not conditionally)
+      // 6. Archive previous session log (ALWAYS, not conditionally)
       if (hasLog) {
         spinner.text = 'Archiving previous session log...';
         const archivePath = await SessionLogManager.archiveLog(sessionDir);
         spinner.info(`Previous session archived: ${path.basename(archivePath)}`);
       }
 
-      // 6. Determine work mode from context and update context manager
+      // 7. Determine work mode from context and update context manager
       const workMode = this.determineWorkMode(context, options);
       this.contextManager = new ActiveContextManager(workMode);
 
       spinner.text = 'Loading context strategically...';
 
-      // 7. Load context strategically (TASK-011: Progressive Context Loading)
+      // 8. Load context strategically (TASK-011: Progressive Context Loading)
       const strategyContext = await loadContextStrategic({
         workMode,
         maxDepth: 3,
@@ -97,7 +119,7 @@ export class StartReflectionCommand extends ReflectionCommand {
         userSlug
       });
 
-      // 8. Load initial context using ActiveContextManager (legacy compatibility)
+      // 9. Load initial context using ActiveContextManager (legacy compatibility)
       const sessionData = {
         userSlug: context.userSlug || 'unknown',
         branch: context.currentBranch,
@@ -107,7 +129,7 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       const contextLevel = await this.contextManager.loadInitialContext(sessionData);
 
-      // 9. Create fresh session log for new session (ADR-033)
+      // 10. Create fresh session log for new session (ADR-033)
       spinner.text = 'Creating fresh session log...';
       await this.initializeSessionLog(context, options);
 
@@ -115,7 +137,7 @@ export class StartReflectionCommand extends ReflectionCommand {
         spinner.info('Session logging enabled (use --no-log to disable)');
       }
 
-      // 10. Display session information with synthesis and strategy metrics
+      // 11. Display session information with synthesis and strategy metrics
       await this.displaySessionInfo(context, contextLevel, synthesis, strategyContext);
 
       // Display strategic context loading summary
@@ -144,6 +166,20 @@ export class StartReflectionCommand extends ReflectionCommand {
     strategyContext?: StrategyContext
   ): Promise<void> {
     console.log('');
+
+    // Display cursor information (ADR-043)
+    if (context.cursor) {
+      const cursor = context.cursor as SessionCursor;
+      const statusEmoji = context.isNewSession ? '🆕' : '🔄';
+      const statusText = context.isNewSession ? 'New session' : 'Resumed session';
+      console.log(chalk.cyan(`${statusEmoji} Session Cursor:`));
+      console.log(chalk.dim(`   ${statusText} on ${chalk.bold(cursor.branch)}`));
+      console.log(chalk.dim(`   Project: ${cursor.project_id}`));
+      if (!context.isNewSession) {
+        console.log(chalk.dim(`   Position: ${cursor.current_event_id}`));
+      }
+      console.log('');
+    }
 
     // Display quality tier
     if (synthesis) {

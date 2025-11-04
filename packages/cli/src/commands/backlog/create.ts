@@ -11,7 +11,7 @@
 
 import chalk from 'chalk';
 import ora from 'ora';
-import inquirer from 'inquirer';
+import prompts from 'prompts';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { BacklogBase, ItemType, ItemPriority, ItemSize, BacklogItem } from './base.js';
@@ -41,47 +41,47 @@ export async function createCommand(description?: string, options: CreateOptions
     // Interactive mode if no description provided
     if (!description) {
       spinner.stop();
-      const answers = await inquirer.prompt([
+      const answers = await prompts([
         {
-          type: 'input',
+          type: 'text',
           name: 'description',
           message: 'What would you like to add to the backlog?',
           validate: (input: string) => input.trim().length > 0 || 'Description is required'
         },
         {
-          type: 'list',
+          type: 'select',
           name: 'type',
           message: 'What type of item is this?',
           choices: [
-            { name: '✨ Feature - New capability or enhancement', value: 'feature' },
-            { name: '📖 Story - User-facing functionality', value: 'story' },
-            { name: '✅ Task - Technical work item', value: 'task' }
+            { title: '✨ Feature - New capability or enhancement', value: 'feature' },
+            { title: '📖 Story - User-facing functionality', value: 'story' },
+            { title: '✅ Task - Technical work item', value: 'task' }
           ],
-          default: options.type || 'feature'
+          initial: options.type === 'story' ? 1 : options.type === 'task' ? 2 : 0
         },
         {
-          type: 'list',
+          type: 'select',
           name: 'priority',
           message: 'Priority:',
           choices: [
-            { name: '🔴 Critical - Must have, blocking', value: 'critical' },
-            { name: '🟠 High - Important, needed soon', value: 'high' },
-            { name: '🟡 Medium - Nice to have', value: 'medium' },
-            { name: '⚪ Low - Future consideration', value: 'low' }
+            { title: '🔴 Critical - Must have, blocking', value: 'critical' },
+            { title: '🟠 High - Important, needed soon', value: 'high' },
+            { title: '🟡 Medium - Nice to have', value: 'medium' },
+            { title: '⚪ Low - Future consideration', value: 'low' }
           ],
-          default: options.priority || 'medium'
+          initial: options.priority === 'critical' ? 0 : options.priority === 'high' ? 1 : options.priority === 'low' ? 3 : 2
         },
         {
-          type: 'list',
+          type: 'select',
           name: 'size',
           message: 'Estimated size:',
           choices: [
-            { name: 'S - Small (< 1 day)', value: 'S' },
-            { name: 'M - Medium (1-3 days)', value: 'M' },
-            { name: 'L - Large (3-5 days)', value: 'L' },
-            { name: 'XL - Extra Large (> 5 days)', value: 'XL' }
+            { title: 'S - Small (< 1 day)', value: 'S' },
+            { title: 'M - Medium (1-3 days)', value: 'M' },
+            { title: 'L - Large (3-5 days)', value: 'L' },
+            { title: 'XL - Extra Large (> 5 days)', value: 'XL' }
           ],
-          default: options.size || 'M'
+          initial: options.size === 'S' ? 0 : options.size === 'L' ? 2 : options.size === 'XL' ? 3 : 1
         }
       ]);
 
