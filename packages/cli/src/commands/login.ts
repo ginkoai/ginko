@@ -53,7 +53,7 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     spinner.start('Getting OAuth configuration...');
 
     // Get OAuth URL from API
-    const apiUrl = process.env.GINKO_API_URL || 'https://app.ginko.ai';
+    const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
     const redirectUri = `http://localhost:${CALLBACK_PORT}${CALLBACK_PATH}`;
 
     const configResponse = await fetch(
