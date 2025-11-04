@@ -1,0 +1,74 @@
+# Systemd Service Unit for Text Embeddings Inference
+#
+# Installation:
+#   sudo cp embeddings-service.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable embeddings-service
+#   sudo systemctl start embeddings-service
+#
+# Management:
+#   sudo systemctl status embeddings-service
+#   sudo systemctl restart embeddings-service
+#   sudo systemctl stop embeddings-service
+#   sudo journalctl -u embeddings-service -f
+#
+# This service runs the Hugging Face text-embeddings-inference container
+# with the all-mpnet-base-v2 model for generating 768-dimensional embeddings.
+
+[Unit]
+Description=Text Embeddings Inference Service
+Documentation=https://github.com/huggingface/text-embeddings-inference
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+TimeoutStartSec=0
+TimeoutStopSec=30
+
+# Stop and remove existing container before starting
+ExecStartPre=-/usr/bin/docker stop embeddings-service
+ExecStartPre=-/usr/bin/docker rm embeddings-service
+
+# Pull latest image (optional - comment out to use local cached version)
+# ExecStartPre=/usr/bin/docker pull ghcr.io/huggingface/text-embeddings-inference:cpu-1.2
+
+# Start the embeddings service container
+ExecStart=/usr/bin/docker run --rm \
+  --name embeddings-service \
+  -p 8080:80 \
+  -v /root/models/embeddings:/data \
+  --log-driver=json-file \
+  --log-opt max-size=10m \
+  --log-opt max-file=3 \
+  ghcr.io/huggingface/text-embeddings-inference:cpu-1.2 \
+  --model-id sentence-transformers/all-mpnet-base-v2 \
+  --revision main \
+  --max-concurrent-requests 32 \
+  --max-batch-tokens 16384
+
+# Stop container gracefully
+ExecStop=/usr/bin/docker stop -t 10 embeddings-service
+
+# Security settings
+# Run as root (required for Docker socket access)
+User=root
+Group=root
+
+# Resource limits
+# Limit memory to 4GB (adjust based on your server capacity)
+MemoryLimit=4G
+MemoryAccounting=yes
+
+# CPU accounting
+CPUAccounting=yes
+
+# Restart on failure
+RestartPreventExitStatus=0
+SuccessExitStatus=0 143
+
+[Install]
+WantedBy=multi-user.target
