@@ -146,7 +146,7 @@ export async function getAccessToken(): Promise<string | null> {
  */
 async function refreshAccessToken(refreshToken: string): Promise<AuthSession | null> {
   try {
-    const apiUrl = process.env.GINKO_API_URL || 'https://app.ginko.ai';
+    const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
 
     const response = await fetch(`${apiUrl}/api/auth/cli`, {
       method: 'PUT',
