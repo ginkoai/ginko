@@ -245,7 +245,7 @@ async function readEventsBackward(
     }
 
     // Call API endpoint
-    const response = await (client as any).request('GET', `/api/v1/events/read?${params.toString()}`);
+    const response = await (client as any).request('GET', `/api/v1/events?${params.toString()}`);
 
     return response.events;
   } catch (error) {
