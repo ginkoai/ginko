@@ -22,6 +22,11 @@ export function getDriver(): Driver {
     const user = process.env.NEO4J_USER || 'neo4j';
     const password = process.env.NEO4J_PASSWORD || 'neo4j';
 
+    // DEBUG: Log connection attempt
+    console.log('[Neo4j] Connecting to:', uri);
+    console.log('[Neo4j] User:', user);
+    console.log('[Neo4j] Password length:', password?.length || 0);
+
     driver = neo4j.driver(
       uri,
       neo4j.auth.basic(user, password),
