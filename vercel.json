@@ -1,7 +1,4 @@
 {
-  "buildCommand": "npm run build",
-  "framework": null,
-  "installCommand": "npm install --production=false",
   "functions": {
     "api/**/*.ts": {
       "maxDuration": 30
