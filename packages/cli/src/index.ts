@@ -3,11 +3,22 @@
 /**
  * @fileType: cli
  * @status: current
- * @updated: 2025-08-27
+ * @updated: 2025-11-05
  * @tags: [cli, privacy, git-native, entry-point]
  * @priority: critical
  * @complexity: medium
  */
+
+// Load environment variables from .env file
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load .env from project root (3 levels up from dist/index.js)
+dotenv.config({ path: resolve(__dirname, '../../../.env') });
 
 import { Command } from 'commander';
 import chalk from 'chalk';

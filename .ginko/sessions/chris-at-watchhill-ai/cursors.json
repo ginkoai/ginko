@@ -1,0 +1,61 @@
+{
+  "version": "1.0",
+  "cursors": {
+    "c1a6c408-3b22-43c0-a4d7-e5e73ec07a74": {
+      "id": "c1a6c408-3b22-43c0-a4d7-e5e73ec07a74",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1762356439119_49fng1",
+      "started": "2025-11-05T15:27:19.119Z",
+      "last_active": "2025-11-05T15:27:19.119Z",
+      "status": "active"
+    },
+    "f8896f00-328d-4871-94ca-0567ad83d559": {
+      "id": "f8896f00-328d-4871-94ca-0567ad83d559",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1762357237237_bct395",
+      "started": "2025-11-05T15:40:37.237Z",
+      "last_active": "2025-11-05T15:40:37.237Z",
+      "status": "active"
+    },
+    "62cc7f01-4ef1-4df1-bf5e-b39cb861e36a": {
+      "id": "62cc7f01-4ef1-4df1-bf5e-b39cb861e36a",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1762357403218_b28sdb",
+      "started": "2025-11-05T15:43:23.218Z",
+      "last_active": "2025-11-05T15:43:23.218Z",
+      "status": "active"
+    },
+    "b1fd49ee-0112-49b5-9c9c-2ecdd007757e": {
+      "id": "b1fd49ee-0112-49b5-9c9c-2ecdd007757e",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1762358478126_e5zm6w",
+      "started": "2025-11-05T16:01:18.126Z",
+      "last_active": "2025-11-05T16:01:18.126Z",
+      "status": "active"
+    },
+    "1dbfd391-dc4f-4bb2-9a25-c07d786ba71f": {
+      "id": "1dbfd391-dc4f-4bb2-9a25-c07d786ba71f",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1762358534369_0m77kb",
+      "started": "2025-11-05T16:02:14.369Z",
+      "last_active": "2025-11-05T16:02:14.369Z",
+      "status": "active"
+    }
+  },
+  "last_updated": "2025-11-05T16:02:14.431Z"
+}
