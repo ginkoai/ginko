@@ -48,6 +48,11 @@ interface Event {
 }
 
 export async function GET(request: NextRequest) {
+  // DEBUG: Log environment variables
+  console.log('[Events API] NEO4J_URI:', process.env.NEO4J_URI);
+  console.log('[Events API] NEO4J_USER:', process.env.NEO4J_USER);
+  console.log('[Events API] NEO4J_PASSWORD:', process.env.NEO4J_PASSWORD ? '***' : undefined);
+
   try {
     // Extract Bearer token
     const authHeader = request.headers.get('authorization');
