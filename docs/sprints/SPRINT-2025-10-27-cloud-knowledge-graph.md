@@ -813,6 +813,91 @@ interface Event {
 
 ### Week 2 Progress Update (Nov 2, 2025)
 
+#### ✅ Neo4j AuraDB Migration - COMPLETE (2025-11-06)
+
+**Objective**: Migrate from Hetzner self-hosted Neo4j to Neo4j AuraDB Free Tier for sustainable, zero-cost infrastructure
+
+**Strategic Decision**: Per ADR-044, migrated to AuraDB Free Tier (200K nodes) with event lifecycle management to extend capacity to 43 users at $0 monthly cost.
+
+**Infrastructure**:
+- **Previous**: Hetzner VPS (bolt://178.156.182.99:7687, $7.26/mo)
+- **Current**: Neo4j AuraDB Free (neo4j+s://7ae3e759.databases.neo4j.io, $0/mo)
+- **Dashboard API**: https://app.ginkoai.com/api/v1/graph/events
+- **Capacity**: 200K nodes (4.3x extension via event lifecycle)
+
+**Completed Tasks**:
+
+1. **✅ Data Export from Hetzner**
+   - Exported 118 nodes and 1,069 relationships (6.5MB)
+   - Created `scripts/export-neo4j-data.ts` with Cypher generation
+   - Generated JSON backup and import instructions
+
+2. **✅ AuraDB Import**
+   - Created import script with batch processing
+   - Fixed Neo4j temporal type conversion issues
+   - Achieved 100% verification (118/118 nodes, 1,069/1,069 relationships)
+   - Import completed in 127 seconds
+
+3. **✅ Authentication Fix**
+   - **Root Cause**: Vercel environment variables contained trailing `\n` characters
+   - **Issue**: `echo` command added literal newlines, causing auth failures
+   - **Solution**: Used `echo -n` to prevent newlines
+   - **Result**: Neo4j authentication working perfectly
+
+4. **✅ Dashboard Deployment**
+   - Updated all Neo4j environment variables (NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+   - Deployed dashboard to production: https://app.ginkoai.com
+   - Graph API now operational with AuraDB
+
+**Testing Results**:
+```bash
+curl -X POST "https://app.ginkoai.com/api/v1/graph/events" \
+  -H "Authorization: Bearer test" \
+  -d '{"graphId":"test","events":[...]}'
+
+Response: {"created":1,"events":[{"id":"test1","timestamp":"2025-11-06T00:00:00Z"}]}
+✅ Event creation successful
+```
+
+**Performance Metrics**:
+- Data export: ~30 seconds for 118 nodes
+- Data import: 127 seconds with 100% verification
+- Authentication latency: <200ms
+- Event creation: ~150ms
+
+**Issues Resolved**:
+1. ❌→✅ Neo4j temporal type import errors (added `cleanProperties()` function)
+2. ❌→✅ Authentication failures (removed trailing `\n` from env vars)
+3. ❌→✅ Dashboard deployment configuration (Git-triggered deployment)
+
+**Acceptance Criteria Results**:
+- ✅ All 118 nodes migrated successfully
+- ✅ All 1,069 relationships preserved
+- ✅ Graph API operational on AuraDB
+- ✅ Event creation working end-to-end
+- ✅ Zero data loss during migration
+- ⏳ GitHub Actions for lifecycle automation (Week 2 carryover)
+- ⏳ 7-day validation period before Hetzner decommission
+
+**Cost Impact**:
+- Previous: $7.26/month (Hetzner VPS)
+- Current: $0/month (AuraDB Free Tier)
+- **Annual Savings**: $87.12
+
+**Related Files**:
+- `scripts/export-neo4j-data.ts` - Export tooling
+- `scripts/import-neo4j-data.ts` - Import with batch processing
+- `dashboard/src/app/api/v1/graph/_neo4j.ts` - Connection management
+- `dashboard/src/app/api/v1/graph/events/route.ts` - Event API
+- `docs/adr/ADR-044-neo4j-auradb-migration.md` - Migration decision
+
+**Next Steps**:
+- 🔄 Set up GitHub Actions for weekly event lifecycle pruning
+- 🔄 Monitor migration for 7 days before decommissioning Hetzner
+- 🔄 Implement event archive/synthesize automation
+
+---
+
 #### ✅ Completed: WriteDispatcher System (ADR-041)
 **Status**: Implementation Complete, Testing In Progress
 
