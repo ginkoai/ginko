@@ -13,8 +13,7 @@ import chalk from 'chalk';
 import {
   isAuthenticated,
   getCurrentUser,
-  loadAuthSession,
-  isSessionExpired
+  loadAuthSession
 } from '../utils/auth-storage.js';
 
 /**
@@ -29,7 +28,6 @@ export async function whoamiCommand(): Promise<void> {
 
   const user = await getCurrentUser();
   const session = await loadAuthSession();
-  const expired = await isSessionExpired();
 
   console.log(chalk.cyan('🔐 Authentication Status\n'));
 
@@ -40,21 +38,11 @@ export async function whoamiCommand(): Promise<void> {
   console.log(chalk.dim(`  Name:           ${user?.full_name || 'N/A'}`));
   console.log(chalk.dim(`  User ID:        ${user?.id || 'N/A'}`));
 
-  console.log(chalk.bold('\nSession Status:'));
+  console.log(chalk.bold('\nAPI Key:'));
 
   if (session) {
-    const expiresAt = new Date(session.expires_at * 1000);
-    const now = new Date();
-    const timeRemaining = Math.floor((expiresAt.getTime() - now.getTime()) / 1000 / 60); // minutes
-
-    if (expired) {
-      console.log(chalk.yellow(`  Status:         Expired (will auto-refresh on next use)`));
-    } else {
-      console.log(chalk.green(`  Status:         Valid`));
-      console.log(chalk.dim(`  Expires in:     ${timeRemaining} minutes`));
-    }
-
-    console.log(chalk.dim(`  Token prefix:   ${session.access_token.substring(0, 20)}...`));
+    console.log(chalk.green(`  Status:         Active`));
+    console.log(chalk.dim(`  Key prefix:     ${session.api_key.substring(0, 20)}...`));
   }
 
   console.log(chalk.dim('\n  Use `ginko logout` to clear authentication'));

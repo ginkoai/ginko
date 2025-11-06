@@ -32,7 +32,8 @@ interface LoginOptions {
  * 2. Open browser to dashboard authorize page
  * 3. Dashboard handles OAuth and stores session
  * 4. CLI polls dashboard for session tokens
- * 5. Save tokens locally
+ * 5. Generate long-lived API key from session
+ * 6. Save API key locally
  */
 export async function loginCommand(options: LoginOptions = {}): Promise<void> {
   // Check if already authenticated
@@ -66,17 +67,22 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     spinner.text = 'Complete authentication in your browser...';
 
     // Poll dashboard for session tokens
-    const session = await pollForSession(sessionId, apiUrl, spinner);
+    const oauthSession = await pollForSession(sessionId, apiUrl, spinner);
 
-    // Save session locally
-    await saveAuthSession(session);
+    spinner.text = 'Generating API key...';
+
+    // Generate long-lived API key
+    const apiKeySession = await generateApiKey(oauthSession.access_token, apiUrl, oauthSession.user);
+
+    // Save API key session locally
+    await saveAuthSession(apiKeySession);
 
     spinner.succeed(chalk.green('Authentication successful!'));
 
     console.log(chalk.green('\n✓ Successfully authenticated'));
-    console.log(chalk.dim(`  User: ${session.user.email || session.user.github_username}`));
-    if (session.user.github_username) {
-      console.log(chalk.dim(`  GitHub: @${session.user.github_username}`));
+    console.log(chalk.dim(`  User: ${apiKeySession.user.email || apiKeySession.user.github_username}`));
+    if (apiKeySession.user.github_username) {
+      console.log(chalk.dim(`  GitHub: @${apiKeySession.user.github_username}`));
     }
     console.log(chalk.dim('\n  Your credentials are stored in ~/.ginko/auth.json'));
 
@@ -102,6 +108,22 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
 }
 
 /**
+ * OAuth session returned from dashboard (temporary tokens)
+ */
+interface OAuthSession {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  user: {
+    id: string;
+    email: string;
+    github_username?: string;
+    github_id?: string;
+    full_name?: string;
+  };
+}
+
+/**
  * Poll dashboard API for session tokens
  *
  * Polls every 2 seconds for up to 5 minutes
@@ -110,7 +132,7 @@ async function pollForSession(
   sessionId: string,
   apiUrl: string,
   spinner: Ora
-): Promise<AuthSession> {
+): Promise<OAuthSession> {
   const pollInterval = 2000; // 2 seconds
   const maxAttempts = 150; // 5 minutes total (150 * 2s = 300s)
   let attempts = 0;
@@ -124,7 +146,7 @@ async function pollForSession(
       );
 
       if (response.status === 200) {
-        const data = await response.json() as AuthSession;
+        const data = await response.json() as OAuthSession;
         return data;
       }
 
@@ -157,6 +179,35 @@ async function pollForSession(
   }
 
   throw new Error('Authentication timeout - please try again');
+}
+
+/**
+ * Generate long-lived API key from OAuth session
+ */
+async function generateApiKey(
+  accessToken: string,
+  apiUrl: string,
+  user: OAuthSession['user']
+): Promise<AuthSession> {
+  const response = await fetch(`${apiUrl}/api/generate-api-key`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to generate API key' })) as { error: string };
+    throw new Error(error.error || 'Failed to generate API key');
+  }
+
+  const data = await response.json() as { api_key: string };
+
+  return {
+    api_key: data.api_key,
+    user,
+  };
 }
 
 /**

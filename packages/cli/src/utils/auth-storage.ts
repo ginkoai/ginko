@@ -1,11 +1,11 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-10-28
- * @tags: [auth, storage, token, cli, security]
+ * @updated: 2025-11-06
+ * @tags: [auth, storage, api-key, cli, security]
  * @related: [commands/login.ts, commands/logout.ts]
  * @priority: critical
- * @complexity: medium
+ * @complexity: low
  * @dependencies: [fs-extra, os]
  */
 
@@ -14,9 +14,7 @@ import path from 'path';
 import os from 'os';
 
 export interface AuthSession {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
+  api_key: string;  // Long-lived gk_ key
   user: {
     id: string;
     email: string;
@@ -102,24 +100,7 @@ export async function isAuthenticated(): Promise<boolean> {
 }
 
 /**
- * Check if the current session is expired
- */
-export async function isSessionExpired(): Promise<boolean> {
-  const session = await loadAuthSession();
-
-  if (!session) {
-    return true;
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  const expiresAt = session.expires_at;
-
-  // Consider expired if less than 5 minutes remaining
-  return (expiresAt - now) < 300;
-}
-
-/**
- * Get the current access token (refresh if needed)
+ * Get the current API key
  */
 export async function getAccessToken(): Promise<string | null> {
   const session = await loadAuthSession();
@@ -128,68 +109,7 @@ export async function getAccessToken(): Promise<string | null> {
     return null;
   }
 
-  // Check if token is expired
-  if (await isSessionExpired()) {
-    // Token is expired, need to refresh
-    const refreshed = await refreshAccessToken(session.refresh_token);
-    if (refreshed) {
-      return refreshed.access_token;
-    }
-    return null;
-  }
-
-  return session.access_token;
-}
-
-/**
- * Refresh the access token using refresh token
- */
-async function refreshAccessToken(refreshToken: string): Promise<AuthSession | null> {
-  try {
-    const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
-
-    const response = await fetch(`${apiUrl}/api/auth/cli`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        refresh_token: refreshToken,
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('Failed to refresh token:', response.statusText);
-      return null;
-    }
-
-    const data = await response.json() as {
-      access_token: string;
-      refresh_token: string;
-      expires_at: number;
-    };
-
-    // Load current session to preserve user info
-    const currentSession = await loadAuthSession();
-
-    if (!currentSession) {
-      return null;
-    }
-
-    const newSession: AuthSession = {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: data.expires_at,
-      user: currentSession.user,
-    };
-
-    await saveAuthSession(newSession);
-
-    return newSession;
-  } catch (error) {
-    console.error('Error refreshing token:', error);
-    return null;
-  }
+  return session.api_key;
 }
 
 /**

@@ -1,16 +1,17 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-10-28
- * @tags: [auth, middleware, api, token-verification, security]
+ * @updated: 2025-11-06
+ * @tags: [auth, middleware, api, token-verification, api-key, security]
  * @related: [api/auth/cli/route.ts, supabase/server.ts]
  * @priority: critical
  * @complexity: medium
- * @dependencies: [@supabase/ssr, next/server]
+ * @dependencies: [@supabase/ssr, next/server, bcryptjs]
  */
 
 import { createServerClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
+import * as bcrypt from 'bcryptjs';
 
 export interface AuthenticatedUser {
   id: string;
@@ -23,9 +24,10 @@ export interface AuthenticatedUser {
 /**
  * Verify authentication token from request headers
  *
- * Supports both:
+ * Supports:
  * - Cookie-based auth (dashboard users)
- * - Bearer token auth (CLI users)
+ * - Bearer token auth (CLI OAuth users)
+ * - API key auth (CLI long-lived keys with gk_ prefix)
  */
 export async function verifyAuth(
   request: NextRequest
@@ -39,7 +41,59 @@ export async function verifyAuth(
     if (authHeader?.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
 
-      // Verify token with Supabase
+      // Check if this is an API key (gk_ prefix)
+      if (token.startsWith('gk_')) {
+        // Query all users with API keys
+        const { data: profiles, error: queryError } = await supabase
+          .from('user_profiles')
+          .select('id, api_key_hash, email, github_username, github_id, full_name')
+          .not('api_key_hash', 'is', null);
+
+        if (queryError) {
+          console.error('[AUTH] API key query error:', queryError);
+          return {
+            error: 'Internal server error',
+            status: 500
+          };
+        }
+
+        if (!profiles || profiles.length === 0) {
+          return {
+            error: 'Invalid API key',
+            status: 401
+          };
+        }
+
+        // Validate API key against stored hashes
+        for (const profile of profiles) {
+          try {
+            const isValid = await bcrypt.compare(token, profile.api_key_hash);
+            if (isValid) {
+              return {
+                user: {
+                  id: profile.id,
+                  email: profile.email || '',
+                  github_username: profile.github_username,
+                  github_id: profile.github_id,
+                  full_name: profile.full_name,
+                },
+                supabase
+              };
+            }
+          } catch (bcryptError) {
+            console.error('[AUTH] Bcrypt comparison error:', bcryptError);
+            // Continue to next profile
+          }
+        }
+
+        // No matching API key found
+        return {
+          error: 'Invalid API key',
+          status: 401
+        };
+      }
+
+      // Standard OAuth token verification
       const { data: { user }, error } = await supabase.auth.getUser(token);
 
       if (error || !user) {
