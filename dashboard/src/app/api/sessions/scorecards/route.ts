@@ -292,8 +292,12 @@ export async function GET(request: NextRequest) {
     
   } catch (error) {
     console.error('Error fetching scorecards:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace')
     return NextResponse.json(
-      { error: 'Failed to fetch collaboration data' },
+      {
+        error: 'Failed to fetch collaboration data',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     )
   }

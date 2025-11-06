@@ -50,6 +50,7 @@ export function useCollaborationData(userId: string) {
         setError(null)
         
         const response = await fetch(`/api/sessions/scorecards?userId=${userId}`, {
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
