@@ -78,11 +78,15 @@ export class EventQueue {
     console.log(`[EventQueue] Starting sync queue (interval: ${this.config.syncIntervalMs / 1000}s, threshold: ${this.config.syncThreshold} events)`);
 
     // Schedule periodic sync
+    // Use unref() to allow process to exit if no other work pending
     this.syncTimer = setInterval(() => {
       this.syncToGraph().catch(error => {
         console.error('[EventQueue] Scheduled sync failed:', error instanceof Error ? error.message : String(error));
       });
     }, this.config.syncIntervalMs);
+
+    // Don't keep process alive just for this timer
+    this.syncTimer.unref();
 
     // Initial sync on start
     this.syncToGraph().catch(error => {

@@ -27,7 +27,11 @@
     "graph:batch-embed": "tsx scripts/batch-embed-nodes.ts",
     "graph:test-embeddings": "tsx src/graph/scripts/test-embeddings.ts",
     "graph:extract-relationships": "tsx src/graph/scripts/extract-semantic-relationships.ts",
-    "graph:create-semantic-rels": "tsx src/graph/scripts/create-semantic-relationships.ts"
+    "graph:create-semantic-rels": "tsx src/graph/scripts/create-semantic-relationships.ts",
+    "migrate:export": "tsx scripts/export-neo4j-data.ts",
+    "migrate:import": "tsx scripts/import-neo4j-data.ts",
+    "lifecycle:run": "tsx scripts/event-lifecycle-manager.ts",
+    "lifecycle:prune": "tsx scripts/prune-events.ts"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
