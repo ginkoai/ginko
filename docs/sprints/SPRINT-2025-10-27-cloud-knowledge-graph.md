@@ -61,13 +61,17 @@ This sprint represents a **major architectural pivot** from file-based local kno
 - ✅ **Performance**: <690ms session start (44x faster than 30s target!)
 
 ### Active Blockers
-None - sprint on track
+- **Dashboard 500 Errors**: `/api/sessions/scorecards` returning 500, blocking dashboard load
+- **API Keys Navigation**: `/dashboard/settings/api-keys` redirecting to login (auth issue)
+- **Testing Blocked**: Cannot generate API key via UI until dashboard auth fixed
 
 ### Next Steps
-1. Implement vector embeddings pipeline (TASK-020.5)
-2. Complete knowledge node CRUD operations (TASK-021)
-3. Build project management API (TASK-022)
-4. Integrate CLI project commands (TASK-023)
+1. **IMMEDIATE**: Debug dashboard 500 errors and auth issues (fresh session recommended)
+2. Test API key generation via fixed dashboard UI
+3. Test `ginko login --force` with new API key flow
+4. Verify API key authentication works end-to-end
+5. **THEN**: Implement vector embeddings pipeline (TASK-020.5)
+6. Complete knowledge node CRUD operations (TASK-021)
 
 ---
 
@@ -329,12 +333,20 @@ The CLI was using Supabase OAuth tokens that expire after 1 hour, requiring comp
 
 ### Testing Requirements
 
-1. User generates API key via dashboard: `https://app.ginkoai.com/dashboard/settings/api-keys`
-2. CLI login generates and stores API key: `ginko login`
-3. API operations work with API key: `ginko start`, Graph API calls
-4. Manual testing after Vercel deployment (Root Directory config needs fix)
+**Status**: ⏸️ BLOCKED - Dashboard auth issues preventing testing
 
-**Git Commits**: Ready for commit (multiple subagents completed in parallel)
+**Blockers Found**:
+- Dashboard `/api/sessions/scorecards` endpoint returning 500 errors
+- `/dashboard/settings/api-keys` page redirects to login (Supabase auth issue)
+- Cannot generate API key via UI until dashboard authentication fixed
+
+**Once Unblocked**:
+1. User generates API key via dashboard: `https://app.ginkoai.com/dashboard/settings/api-keys`
+2. CLI login generates and stores API key: `ginko login --force`
+3. Test API operations work with API key: `ginko start`, Graph API calls
+4. Verify long-lived API key persists (no expiry errors)
+
+**Git Commits**: ✅ Committed and pushed (78575fe)
 
 ---
 
