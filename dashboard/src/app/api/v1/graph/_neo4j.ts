@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-10-31
- * @tags: [neo4j, graph, api, serverless]
+ * @updated: 2025-11-05
+ * @tags: [neo4j, graph, api, serverless, auradb, adr-044]
  * @related: [init.ts, documents.ts, query.ts, status.ts]
  * @priority: critical
  * @complexity: medium
@@ -15,6 +15,9 @@ let driver: Driver | null = null;
 
 /**
  * Get Neo4j driver instance (singleton for serverless)
+ *
+ * Migrated to Neo4j AuraDB Free Tier (ADR-044)
+ * Connection: neo4j+s://7ae3e759.databases.neo4j.io
  */
 export function getDriver(): Driver {
   if (!driver) {
