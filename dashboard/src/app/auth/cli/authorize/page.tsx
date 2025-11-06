@@ -33,7 +33,11 @@ function AuthorizeContent() {
       return
     }
 
-    // Store session_id in sessionStorage for callback
+    // Store session_id in cookie for server-side callback to read
+    // Cookie expires in 10 minutes (longer than the 5min session TTL)
+    document.cookie = `cli_session_id=${sessionId}; path=/; max-age=600; samesite=lax`
+
+    // Also store in sessionStorage as backup
     sessionStorage.setItem('cli_session_id', sessionId)
 
     // Initiate OAuth flow
@@ -46,7 +50,8 @@ function AuthorizeContent() {
       return supabase.auth.signInWithOAuth({
         provider: 'github',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?cli_session_id=${sessionId}`,
+          // No query parameters needed - callback will read cookie
+          redirectTo: `${window.location.origin}/auth/callback`,
           skipBrowserRedirect: false,
         }
       })
