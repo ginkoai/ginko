@@ -18,7 +18,7 @@ let driver: Driver | null = null;
  *
  * Migrated to Neo4j AuraDB Free Tier (ADR-044)
  * Connection: neo4j+s://7ae3e759.databases.neo4j.io
- * Password updated: 2025-11-06
+ * Credentials fixed: 2025-11-06 (removed trailing \\n from env vars)
  */
 export function getDriver(): Driver {
   if (!driver) {
