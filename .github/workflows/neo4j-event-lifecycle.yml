@@ -1,0 +1,247 @@
+name: Neo4j Event Lifecycle Management
+
+on:
+  # Weekly automated execution (Sundays at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * 0'
+
+  # Manual trigger with configuration options
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Execution mode'
+        required: true
+        default: 'dry-run'
+        type: choice
+        options:
+          - dry-run
+          - full
+      retention_days:
+        description: 'Event retention period (days)'
+        required: false
+        default: '90'
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  event-lifecycle:
+    name: Event Lifecycle Management
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm install tsx neo4j-driver --save-dev
+        env:
+          NODE_ENV: production
+
+      - name: Verify Neo4j connection
+        id: neo4j-check
+        run: |
+          node -e "
+            const neo4j = require('neo4j-driver');
+            const driver = neo4j.driver(
+              process.env.NEO4J_URI,
+              neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD)
+            );
+            driver.verifyConnectivity()
+              .then(() => {
+                console.log('✓ Neo4j connection successful');
+                driver.close();
+                process.exit(0);
+              })
+              .catch(err => {
+                console.error('✗ Neo4j connection failed:', err.message);
+                driver.close();
+                process.exit(1);
+              });
+          "
+        env:
+          NEO4J_URI: ${{ secrets.NEO4J_URI }}
+          NEO4J_USER: ${{ secrets.NEO4J_USER }}
+          NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
+        continue-on-error: false
+
+      - name: Run event lifecycle (Dry Run)
+        if: ${{ github.event.inputs.mode == 'dry-run' || github.event.inputs.mode == '' }}
+        run: |
+          npx tsx scripts/event-lifecycle-manager.ts \
+            --retention-days=${{ github.event.inputs.retention_days || '90' }} \
+            --dry-run
+        env:
+          NEO4J_URI: ${{ secrets.NEO4J_URI }}
+          NEO4J_USER: ${{ secrets.NEO4J_USER }}
+          NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
+
+      - name: Run event lifecycle (Full Execution)
+        if: ${{ github.event.inputs.mode == 'full' }}
+        run: |
+          npx tsx scripts/event-lifecycle-manager.ts \
+            --retention-days=${{ github.event.inputs.retention_days || '90' }} \
+            --execute
+        env:
+          NEO4J_URI: ${{ secrets.NEO4J_URI }}
+          NEO4J_USER: ${{ secrets.NEO4J_USER }}
+          NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
+          ARCHIVE_DIR: ./.ginko/archives
+
+      - name: Commit archived events
+        if: ${{ github.event.inputs.mode == 'full' }}
+        run: |
+          git config --global user.name 'Event Lifecycle Bot'
+          git config --global user.email 'noreply@ginko.dev'
+
+          if [ -d ".ginko/archives/events" ]; then
+            git add .ginko/archives/events/
+
+            if git diff --staged --quiet; then
+              echo "No new archives to commit"
+            else
+              git commit -m "chore: Archive events from lifecycle management
+
+              Automated weekly event archiving.
+
+              Archive location: .ginko/archives/events/
+              Triggered by: GitHub Actions (${{ github.workflow }})
+              Retention: ${{ github.event.inputs.retention_days || '90' }} days
+
+              🤖 Generated with GitHub Actions"
+
+              git push origin main
+            fi
+          else
+            echo "No archives directory found, skipping commit"
+          fi
+
+      - name: Generate lifecycle report
+        id: report
+        run: |
+          echo "# Event Lifecycle Report" > lifecycle-report.md
+          echo "" >> lifecycle-report.md
+          echo "**Date**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> lifecycle-report.md
+          echo "**Mode**: ${{ github.event.inputs.mode || 'dry-run' }}" >> lifecycle-report.md
+          echo "**Retention**: ${{ github.event.inputs.retention_days || '90' }} days" >> lifecycle-report.md
+          echo "" >> lifecycle-report.md
+
+          cat lifecycle-report.md
+
+      - name: Upload lifecycle report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifecycle-report-${{ github.run_number }}
+          path: lifecycle-report.md
+          retention-days: 90
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Event Lifecycle Management Failed',
+              body: `The event lifecycle workflow failed.
+
+              **Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              **Branch**: ${{ github.ref }}
+              **Mode**: ${{ github.event.inputs.mode || 'scheduled' }}
+
+              Please investigate the failure and re-run manually if needed.`,
+              labels: ['automation', 'infrastructure', 'bug']
+            })
+
+  capacity-monitoring:
+    name: Capacity Monitoring
+    runs-on: ubuntu-latest
+    needs: event-lifecycle
+    if: success()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install neo4j-driver
+        run: npm install neo4j-driver
+
+      - name: Query current capacity
+        id: capacity
+        run: |
+          node -e "
+            const neo4j = require('neo4j-driver');
+            const driver = neo4j.driver(
+              process.env.NEO4J_URI,
+              neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD)
+            );
+
+            (async () => {
+              const session = driver.session();
+              try {
+                const result = await session.run(\`
+                  MATCH (n)
+                  RETURN count(n) as totalNodes
+                \`);
+
+                const nodeCount = result.records[0].get('totalNodes').toNumber();
+                const capacity = (nodeCount / 200000) * 100;
+
+                console.log(\`Total Nodes: \${nodeCount}\`);
+                console.log(\`Capacity: \${capacity.toFixed(2)}%\`);
+
+                // Set outputs for GitHub Actions
+                console.log(\`event_count=\${nodeCount}\` >> process.env.GITHUB_OUTPUT);
+                console.log(\`capacity_percent=\${capacity.toFixed(2)}\` >> process.env.GITHUB_OUTPUT);
+
+              } finally {
+                await session.close();
+                await driver.close();
+              }
+            })();
+          "
+        env:
+          NEO4J_URI: ${{ secrets.NEO4J_URI }}
+          NEO4J_USER: ${{ secrets.NEO4J_USER }}
+          NEO4J_PASSWORD: ${{ secrets.NEO4J_PASSWORD }}
+
+      - name: Capacity alert (>80%)
+        if: ${{ steps.capacity.outputs.capacity_percent > 80 }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '⚠️ Neo4j Capacity Warning: ${{ steps.capacity.outputs.capacity_percent }}%',
+              body: `Neo4j AuraDB Free Tier capacity is approaching limits.
+
+              **Current Capacity**: ${{ steps.capacity.outputs.capacity_percent }}%
+              **Node Count**: ${{ steps.capacity.outputs.event_count }}
+              **Limit**: 200,000 nodes
+
+              **Recommended Actions**:
+              - Review event lifecycle thresholds
+              - Consider more aggressive pruning
+              - Evaluate upgrade to Professional tier at 43+ users
+
+              See [ADR-044](docs/adr/ADR-044-neo4j-auradb-migration.md) for capacity planning.`,
+              labels: ['infrastructure', 'capacity-planning', 'warning']
+            })
