@@ -82,6 +82,22 @@ export async function getGraphId(): Promise<string | null> {
 }
 
 /**
+ * Helper: Get config (alias for loadGraphConfig)
+ */
+export async function getConfig(): Promise<Partial<GraphConfig> & { graphId?: string; apiUrl?: string }> {
+  const config = await loadGraphConfig();
+  return config ? { ...config, apiUrl: config.apiEndpoint } : { apiUrl: process.env.GINKO_API_URL };
+}
+
+/**
+ * Helper: Get API token from auth storage
+ */
+export async function getApiToken(): Promise<string | null> {
+  const { getAccessToken } = await import('../../utils/auth-storage.js');
+  return getAccessToken();
+}
+
+/**
  * Update document hash
  */
 export async function updateDocumentHash(filePath: string, hash: string): Promise<void> {

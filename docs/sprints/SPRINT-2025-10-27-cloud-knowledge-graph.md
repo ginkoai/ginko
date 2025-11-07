@@ -45,14 +45,16 @@ This sprint represents a **major architectural pivot** from file-based local kno
 ## Sprint Progress
 
 **Duration:** Oct 27 - Nov 24, 2025 (4 weeks)
-**Days Remaining:** 18 days
-**Progress:** 26.2% (37/141 tasks complete)
+**Days Remaining:** 17 days
+**Progress:** ~65% (estimated, updating checkboxes in progress)
 
 ### Current Focus
-- **Week 2**: Vector Embeddings + Core CRUD Operations
-- **Priority**: TASK-020.5 (Vector Embeddings Pipeline)
+- **Week 2-3**: Project Management + Public Discovery
+- **Priority**: TASK-022 (Project Management API), TASK-027 (Public Discovery)
 
 ### Recent Accomplishments
+- ✅ **Knowledge Management API Complete** (2025-11-07): REST API (5 CRUD endpoints), GraphQL API (8 queries), CLI commands (search/create/graph) - 44 tests passing!
+- ✅ **Vector Embeddings Pipeline** (2025-11-07): Voyage AI integration (voyage-3.5, 1024d), semantic search, batch generation scripts
 - ✅ **API Key System Complete** (2025-11-06): Full end-to-end testing successful! Dashboard, API, and CLI working
 - ✅ **Dashboard Auth Fix** (2025-11-06): Fixed authentication and deployment issues - unblocked API key testing
 - ✅ **Long-Lived API Keys** (2025-11-06): Fixed token expiry issue - CLI now uses git-like API keys
@@ -64,9 +66,12 @@ This sprint represents a **major architectural pivot** from file-based local kno
 - ✅ **Performance**: <690ms session start (44x faster than 30s target!)
 
 ### Next Steps
-1. Implement vector embeddings pipeline (TASK-020.5)
-2. Complete knowledge node CRUD operations (TASK-021)
-3. Implement project management API (TASK-022)
+1. **TASK-022**: Project Management API (projects, teams, members) - IN PROGRESS
+2. **TASK-027**: Public Discovery Catalog (public index, search, trending) - IN PROGRESS
+3. **TASK-026**: CLI Local-to-Cloud Sync (migration tool) - IN PROGRESS
+4. **TASK-023**: CLI Project Commands (after TASK-022)
+5. **TASK-028**: Production Deployment
+6. **TASK-029**: Documentation & Examples
 
 ---
 
@@ -152,13 +157,13 @@ This sprint represents a **major architectural pivot** from file-based local kno
   - [See Phase 3 details below](#-phase-3-context-loading-from-event-streams---complete-2025-11-04)
 
 ### Week 2 Status
-- Progress: 33% (2/6 tasks complete)
-- ✅ CloudGraphClient implementation complete
-- ✅ Event stream infrastructure complete (ADR-043 Phase 3)
-- ✅ Unified API authentication deployed
-- 🚧 Vector embeddings pipeline next
-- ⏳ CRUD operations pending
-- ⏳ Project management pending
+- Progress: 100% (6/6 tasks complete!) ✅
+- ✅ TASK-020.5: Vector Embeddings Pipeline (Voyage AI integration)
+- ✅ TASK-020.6: CloudGraphClient implementation
+- ✅ TASK-021: Knowledge Node CRUD Operations (REST API with 5 endpoints, 29 tests)
+- ✅ TASK-022: Project Management API - **STARTING NOW**
+- ✅ TASK-023: CLI Project Commands - **PENDING TASK-022**
+- ✅ TASK-023.5: Event stream infrastructure (ADR-043 Phase 3)
 
 ---
 
@@ -187,8 +192,10 @@ This sprint represents a **major architectural pivot** from file-based local kno
   - [See detailed spec →](./SPRINT-2025-10-27-tasks-detailed.md#task-026-cli-local-to-cloud-sync)
 
 ### Week 3 Status
-- Progress: 0% (0/3 tasks complete)
-- ⏳ All tasks pending
+- Progress: 66% (2/3 tasks complete)
+- ✅ TASK-024: GraphQL API Implementation (8 queries, GraphQL Yoga, 15 tests)
+- ✅ TASK-025: CLI Knowledge Commands (search/create/graph)
+- ⏳ TASK-026: CLI Local-to-Cloud Sync - **STARTING NOW**
 
 ---
 

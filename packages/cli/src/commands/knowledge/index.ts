@@ -23,6 +23,7 @@ import chalk from 'chalk';
 import { searchCommand } from './search.js';
 import { createCommand } from './create.js';
 import { graphCommand } from './graph.js';
+import { syncCommand, rollbackCommand } from './sync.js';
 
 /**
  * Main knowledge command with subcommands
@@ -41,6 +42,7 @@ ${chalk.gray('Usage Examples:')}
   ${chalk.green('ginko knowledge search')} "authentication" -l 5     ${chalk.gray('# Search with limit')}
   ${chalk.green('ginko knowledge create')} --type ADR --title "..."  ${chalk.gray('# Create ADR')}
   ${chalk.green('ginko knowledge graph')} adr_123 --depth 2          ${chalk.gray('# Visualize connections')}
+  ${chalk.green('ginko knowledge sync')} --dry-run                   ${chalk.gray('# Preview local→cloud sync')}
 
 ${chalk.gray('Features:')}
   ${chalk.cyan('🔍 Semantic Search')}  - Find relevant docs by meaning
@@ -96,6 +98,29 @@ ${chalk.gray('Learn More:')}
     .action(async (nodeId, options) => {
       const depth = parseInt(options.depth, 10);
       await graphCommand(nodeId, { ...options, depth });
+    });
+
+  // Sync command
+  knowledge
+    .command('sync')
+    .description('Sync local knowledge files (ADRs, PRDs) to cloud graph')
+    .option('--dry-run', 'Preview changes without executing')
+    .option('--force', 'Overwrite existing nodes (destructive)')
+    .option('--skip', 'Skip existing nodes (safe, default)', true)
+    .option('--path <path>', 'Base path to scan (default: current directory)')
+    .option('--project <id>', 'Target project/graph ID')
+    .option('--interactive', 'Interactive conflict resolution')
+    .option('--local-only', 'Skip cloud checks (for testing scanner)')
+    .action(async (options) => {
+      await syncCommand(options);
+    });
+
+  // Rollback command
+  knowledge
+    .command('sync:rollback <syncId>')
+    .description('Rollback a previous sync operation')
+    .action(async (syncId) => {
+      await rollbackCommand(syncId);
     });
 
   return knowledge;

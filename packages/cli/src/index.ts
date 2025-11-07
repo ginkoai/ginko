@@ -43,6 +43,8 @@ import { uninstallCopilotCommand } from './commands/uninstall-copilot.js';
 import { backlogCommand } from './commands/backlog/index.js';
 import { graphCommand } from './commands/graph/index.js';
 import { knowledgeCommand } from './commands/knowledge/index.js';
+import { projectCommand } from './commands/project/index.js';
+import { teamManagementCommand } from './commands/team/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
 import { teamCommand } from './commands/team.js';
@@ -349,6 +351,12 @@ program.addCommand(graphCommand());
 
 // Knowledge management commands (TASK-025)
 program.addCommand(knowledgeCommand());
+
+// Project management commands (TASK-023)
+program.addCommand(projectCommand());
+
+// Team management commands (TASK-023)
+program.addCommand(teamManagementCommand());
 
 // Universal Reflection Pattern command
 program
