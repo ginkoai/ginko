@@ -16,14 +16,16 @@ This directory contains **Ginko automation scripts** for database management, de
 ### Key Files & Structure
 ```
 scripts/
-├── prepare-api.sh              # API deployment preparation
-├── create-test-users.js        # Production test user setup
-├── create-adr.sh              # Architecture Decision Record creation
-├── migrate-best-practices.js   # Best practices migration
-├── migrate-legacy-context.js   # Legacy context migration
-├── seed-ai-best-practices.js   # AI best practices seeding
-├── test-ai-attribution.js     # AI attribution testing
-└── pre-migration-check.js     # Migration safety checks
+├── prepare-api.sh                          # API deployment preparation
+├── create-test-users.js                    # Production test user setup
+├── create-adr.sh                          # Architecture Decision Record creation
+├── generate-embeddings.ts                  # Generate Voyage AI embeddings (ADR-045 Phase 2)
+├── generate-similarity-relationships.ts    # Generate typed similarity relationships (ADR-045 Phase 4)
+├── migrate-best-practices.js               # Best practices migration
+├── migrate-legacy-context.js               # Legacy context migration
+├── seed-ai-best-practices.js               # AI best practices seeding
+├── test-ai-attribution.js                  # AI attribution testing
+└── pre-migration-check.js                 # Migration safety checks
 ```
 
 ## Script Categories
@@ -60,11 +62,23 @@ async function migrateBestPractices() {
 
 ### 4. Development Utilities
 ```bash
-# create-adr.sh - ADR creation automation  
+# create-adr.sh - ADR creation automation
 #!/bin/bash
 DOCS_DIR="docs/reference/architecture"
 # Creates new Architecture Decision Record
 # Updates ADR index and documentation
+```
+
+### 5. Embedding & Similarity Scripts (ADR-045)
+```typescript
+// generate-embeddings.ts - Generate Voyage AI embeddings
+// Batch processes knowledge nodes to generate 1024-dim embeddings
+// Usage: npm run embeddings:generate
+
+// generate-similarity-relationships.ts - Create typed similarity relationships
+// Uses multi-layer filtering to prevent over-connected graphs
+// Usage: npm run similarity:generate
+// Options: --min-score 0.75 --top-k 10 --project-id my-project --resume
 ```
 
 ## Development Patterns
@@ -145,6 +159,28 @@ if (process.env.NODE_ENV === 'production') {
 - Pre-migration validation
 - Rollback capabilities
 - Production database safe operations
+
+### generate-embeddings.ts
+**Purpose**: Generate Voyage AI embeddings for knowledge nodes (ADR-045 Phase 2)
+**Usage**: `npm run embeddings:generate` or `npx tsx scripts/generate-embeddings.ts`
+**What it does**:
+- Batch processes knowledge nodes without embeddings
+- Generates 1024-dim vectors using Voyage AI voyage-3.5
+- Saves embeddings to Neo4j with metadata
+- Checkpoint/resume capability every 100 nodes
+**Options**: `--batch-size 128 --limit 1000 --resume`
+**Guide**: See `scripts/GENERATE-EMBEDDINGS-GUIDE.md`
+
+### generate-similarity-relationships.ts
+**Purpose**: Create typed similarity relationships between nodes (ADR-045 Phase 4)
+**Usage**: `npm run similarity:generate` or `npx tsx scripts/generate-similarity-relationships.ts`
+**What it does**:
+- Uses multi-layer filtering to find similar nodes (Top-K, score thresholds)
+- Creates typed relationships (DUPLICATE_OF, HIGHLY_RELATED_TO, RELATED_TO)
+- Quality gate: skips nodes with avg similarity < 0.80
+- Validates relationship quality (5-15 rels/node, >0.80 avg score)
+**Options**: `--min-score 0.75 --top-k 10 --project-id my-project --resume`
+**Guide**: See `scripts/GENERATE-SIMILARITY-RELATIONSHIPS-GUIDE.md`
 
 ## Testing & Debugging
 

@@ -31,6 +31,13 @@ This document maintains the official registry of all Architecture Decision Recor
 | [ADR-036](ADR-036-session-synthesis-architecture.md) | Session Synthesis Architecture | Accepted | 2025-10-20 | session-synthesis, handoff, flow-state |
 | [ADR-037](ADR-037-two-tier-configuration-architecture.md) | Two-Tier Configuration Architecture | Accepted | 2025-10-22 | configuration, team-collaboration, path-resolution |
 | [ADR-038](ADR-038-generative-ui-pattern.md) | Generative UI Pattern for AI-Mediated Tools | Accepted | 2025-10-23 | generative-ui, ai-mediated, human-ai-collaboration, accountability |
+| [ADR-039](ADR-039-graph-based-context-discovery.md) | Knowledge Discovery Graph for AI-Native Documentation | Approved | 2025-10-24 | knowledge-graph, cloud-first, semantic-search |
+| [ADR-040](ADR-040-work-tracking-integration-strategy.md) | Work Tracking Integration Strategy | Proposed | 2025-10-24 | work-tracking, integration, teams |
+| [ADR-041](ADR-041-graph-migration-write-dispatch.md) | Graph Migration Strategy and Write Dispatch Architecture | Accepted | 2025-11-02 | migration, write-dispatch, dual-write |
+| [ADR-042](ADR-042-ai-assisted-knowledge-graph-quality.md) | AI-Assisted Knowledge Graph Quality Through Typed Relationships | Proposed | 2025-11-03 | knowledge-graph, ai-assistance, typed-relationships |
+| [ADR-043](ADR-043-event-stream-session-model.md) | Event Stream Session Model with Read Cursors | Proposed | 2025-11-04 | sessions, event-stream, context-pressure, cursor |
+| [ADR-044](ADR-044-neo4j-auradb-migration.md) | Migrate to Neo4j AuraDB Free Tier for Production Deployment | Accepted | 2025-11-05 | infrastructure, database, saas, cost-optimization |
+| [ADR-045](ADR-045-voyage-ai-embedding-provider.md) | Voyage AI as Vector Embedding Provider | Proposed | 2025-11-07 | embeddings, vector-search, voyage-ai, semantic-search |
 
 ## ADR Status Definitions
 
@@ -119,8 +126,8 @@ ADRs are never deleted, only deprecated or superseded. This maintains a complete
 
 ---
 
-**Last Updated:** 2025-10-03
-**Next Available Number:** ADR-035
+**Last Updated:** 2025-11-07
+**Next Available Number:** ADR-046
 **Maintainer:** Architecture Team
 - [ADR-025: Context Preservation System Architecture](./ADR-025-context-preservation-system-architecture.md)
 
