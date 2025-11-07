@@ -13,11 +13,36 @@ import { createServerClient } from '@/lib/supabase/server'
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[SCORECARDS] Request received')
+    console.log('[SCORECARDS] Environment check:', {
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30)
+    })
+
     // Get authenticated user from Supabase
-    const supabase = await createServerClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
+    let supabase
+    try {
+      supabase = await createServerClient()
+      console.log('[SCORECARDS] Supabase client created')
+    } catch (error) {
+      console.error('[SCORECARDS] Failed to create Supabase client:', error)
+      console.error('[SCORECARDS] Error details:', error instanceof Error ? error.message : String(error))
+      throw error
+    }
+
+    let user
+    try {
+      const result = await supabase.auth.getUser()
+      user = result.data?.user
+      console.log('[SCORECARDS] User retrieved:', user ? user.id : 'none')
+    } catch (error) {
+      console.error('[SCORECARDS] Failed to get user:', error)
+      throw error
+    }
+
     if (!user) {
+      console.log('[SCORECARDS] No user - returning 401')
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -37,7 +62,9 @@ export async function GET(request: NextRequest) {
     // Query scorecards directly from Supabase
     const dateLimit = new Date()
     dateLimit.setDate(dateLimit.getDate() - days)
-    
+
+    console.log('[SCORECARDS] Querying with params:', { userId, teamId, dateLimit: dateLimit.toISOString(), limit })
+
     // Query scorecards with proper filters
     let query = supabase
       .from('session_scorecards')
@@ -49,13 +76,23 @@ export async function GET(request: NextRequest) {
       .limit(limit)
 
     const { data: scorecards, error } = await query
+    console.log('[SCORECARDS] Query result:', { recordCount: scorecards?.length, error: error?.message })
 
     if (error) {
       console.error('Failed to fetch scorecards from Supabase:', error)
       console.error('Query details:', { teamId, dateLimit: dateLimit.toISOString(), limit })
-      
-      // If table doesn't exist, return empty data instead of error
-      if (error.message.includes('relation') && error.message.includes('does not exist')) {
+
+      // If table doesn't exist, return empty data with 200 status (this is expected for new users)
+      const tableNotFoundMessages = [
+        'relation',
+        'does not exist',
+        'Could not find the table',
+        'schema cache'
+      ]
+      const isTableNotFound = tableNotFoundMessages.some(msg => error.message?.includes(msg))
+
+      if (isTableNotFound) {
+        console.log('[SCORECARDS] Table does not exist yet - returning empty data')
         return NextResponse.json({
           scorecards: [],
           summary: {
@@ -69,7 +106,7 @@ export async function GET(request: NextRequest) {
           message: 'No sessions recorded yet'
         })
       }
-      
+
       // Return error with more detail for other errors
       return NextResponse.json({
         error: 'Database query failed',
