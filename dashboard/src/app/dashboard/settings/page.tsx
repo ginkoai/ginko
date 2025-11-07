@@ -13,6 +13,7 @@
 
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 
 interface UserProfile {
@@ -26,6 +27,7 @@ interface UserProfile {
 }
 
 export default function SettingsPage() {
+  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
@@ -100,7 +102,7 @@ export default function SettingsPage() {
             </p>
             <div className="space-x-3">
               <button
-                onClick={() => window.location.href = '/dashboard/settings/api-keys'}
+                onClick={() => router.push('/dashboard/settings/api-keys')}
                 className="inline-flex items-center px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               >
                 🔑 Manage API Keys

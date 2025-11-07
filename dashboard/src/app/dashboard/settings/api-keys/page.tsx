@@ -42,22 +42,27 @@ export default function ApiKeysPage() {
   useEffect(() => {
     async function loadUserData() {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        console.log('[API_KEYS] Loading user data')
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        console.log('[API_KEYS] User loaded:', user ? user.id : 'none', 'Error:', userError?.message)
         setUser(user)
 
         if (user) {
-          const { data: profile } = await supabase
+          console.log('[API_KEYS] Fetching user profile')
+          const { data: profile, error: profileError } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('id', user.id)
             .single()
-          
+
+          console.log('[API_KEYS] Profile loaded:', !!profile, 'Error:', profileError?.message)
           setProfile(profile)
         }
       } catch (error) {
-        console.error('Error loading user data:', error)
+        console.error('[API_KEYS] Error loading user data:', error)
         setError('Failed to load user data')
       } finally {
+        console.log('[API_KEYS] Loading complete')
         setLoading(false)
       }
     }
