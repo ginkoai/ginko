@@ -378,13 +378,9 @@ export class SessionSynthesizer {
         await fs.access(currentSprintPath);
         const content = await fs.readFile(currentSprintPath, 'utf-8');
 
-        // Parse the reference to actual sprint
-        const match = content.match(/SPRINT-[\w-]+\.md/);
-        if (match) {
-          const actualSprintPath = path.join(sprintsDir, match[0]);
-          const sprintContent = await fs.readFile(actualSprintPath, 'utf-8');
-          return this.parseSprintContent(sprintContent);
-        }
+        // CURRENT-SPRINT.md has all readiness info (WHY, WHAT, HOW, status)
+        // No need to read full sprint file - parse CURRENT-SPRINT.md directly
+        return this.parseSprintContent(content);
       } catch {
         // No CURRENT-SPRINT.md, look for most recent sprint
         const files = await fs.readdir(sprintsDir);
@@ -407,17 +403,20 @@ export class SessionSynthesizer {
    * Parse sprint markdown content
    */
   private parseSprintContent(content: string): SprintContext | null {
-    const goalMatch = content.match(/##\s+Overview[\s\S]*?Goal:\s*(.+)/i) ||
+    // Extract goal from "Sprint Goal" or "Overview" sections
+    const goalMatch = content.match(/##\s+Sprint Goal[\s\S]*?\n\n([^\n]+)/i) ||
+                      content.match(/##\s+Overview[\s\S]*?Goal:\s*(.+)/i) ||
                       content.match(/##\s+Success Criteria[\s\S]*?-\s+\[.\]\s+(.+)/i);
 
     const goal = goalMatch ? goalMatch[1].trim() : 'Continue sprint work';
 
-    // Count completed vs total tasks
+    // Count completed vs total tasks (support both [x] and ✅ styles)
     const taskMatches = content.match(/- \[.\]/g);
     const completedMatches = content.match(/- \[x\]/gi);
+    const emojiCompletedMatches = content.match(/- ✅/g);
 
     const total = taskMatches?.length || 0;
-    const completed = completedMatches?.length || 0;
+    const completed = (completedMatches?.length || 0) + (emojiCompletedMatches?.length || 0);
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return {

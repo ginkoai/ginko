@@ -121,6 +121,79 @@ export interface LoadedContext {
 }
 
 /**
+ * Load context using consolidated API endpoint (performance optimized)
+ *
+ * Single API call that performs all operations server-side:
+ * - Read events backward
+ * - Load team events
+ * - Extract & load documents
+ * - Follow relationships
+ * - Get active sprint
+ *
+ * Performance: ~2-3s vs ~10-15s (4-5 sequential calls)
+ */
+async function loadContextConsolidated(
+  cursor: SessionCursor,
+  options: ContextLoadOptions = {}
+): Promise<LoadedContext> {
+  const {
+    eventLimit = 50,
+    includeTeam = false,
+    teamEventLimit = 20,
+    categories,
+    documentDepth = 2,
+    teamDays = 7
+  } = options;
+
+  try {
+    const { GraphApiClient } = await import('../commands/graph/api-client.js');
+    const client = new GraphApiClient();
+
+    // Build query parameters
+    const params = new URLSearchParams({
+      cursorId: cursor.current_event_id,
+      userId: cursor.user_id,
+      projectId: cursor.project_id,
+      eventLimit: eventLimit.toString(),
+      includeTeam: includeTeam.toString(),
+      teamEventLimit: teamEventLimit.toString(),
+      teamDays: teamDays.toString(),
+      documentDepth: documentDepth.toString(),
+    });
+
+    if (categories && categories.length > 0) {
+      params.append('categories', categories.join(','));
+    }
+
+    if (cursor.branch) {
+      params.append('branch', cursor.branch);
+    }
+
+    console.log('📡 Using consolidated API endpoint (single call)');
+
+    // Single API call for all context loading
+    const response = await (client as any).request('GET', `/api/v1/context/initial-load?${params.toString()}`);
+
+    console.log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
+
+    return {
+      cursor,
+      myEvents: response.myEvents,
+      teamEvents: response.teamEvents,
+      documents: response.documents,
+      relatedDocs: response.relatedDocs,
+      sprint: response.sprint,
+      loaded_at: new Date(response.loaded_at),
+      event_count: response.event_count,
+      token_estimate: response.token_estimate,
+    };
+  } catch (error) {
+    console.log(`⚠️  Consolidated endpoint failed: ${(error as Error).message}`);
+    throw error; // Re-throw to trigger fallback
+  }
+}
+
+/**
  * Load context from cursor position by reading events backwards
  *
  * @param cursor - Session cursor with current position
@@ -142,6 +215,14 @@ export async function loadContextFromCursor(
     teamDays = 7
   } = options;
 
+  // Try consolidated endpoint first (performance optimized)
+  try {
+    return await loadContextConsolidated(cursor, options);
+  } catch (error) {
+    console.log('⚠️  Falling back to multi-call approach');
+  }
+
+  // Fallback: Multi-call approach (original behavior)
   // 1. Read my events backwards from cursor
   const myEvents = await readEventsBackward(
     cursor.current_event_id,
@@ -456,30 +537,56 @@ async function getActiveSprint(projectId: string): Promise<Sprint | undefined> {
       return undefined;
     }
 
+    // Read CURRENT-SPRINT.md first (optimized for readiness - ADR-043)
+    const currentSprintPath = path.join(sprintDir, 'CURRENT-SPRINT.md');
+
+    if (await fs.pathExists(currentSprintPath)) {
+      const content = await fs.readFile(currentSprintPath, 'utf-8');
+
+      // CURRENT-SPRINT.md contains all readiness info (WHY, WHAT, HOW, status)
+      // No need to read the full sprint file during startup
+
+      // Extract sprint reference (e.g., "**Sprint**: SPRINT-2025-10-27-cloud-knowledge-graph")
+      const sprintMatch = content.match(/\*\*Sprint\*\*:\s*(SPRINT-[\w-]+)/);
+      const sprintId = sprintMatch ? sprintMatch[1] : 'unknown';
+
+      // Extract title from "Sprint Goal" section
+      const titleMatch = content.match(/##\s+Sprint Goal\s+(.+?)(?=\n\n|\*\*|$)/s);
+      const title = titleMatch ? titleMatch[1].trim() : 'Active Sprint';
+
+      // Extract progress if available
+      const progressMatch = content.match(/\*\*Progress\*\*:\s*(\d+)%/);
+      const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
+
+      return {
+        id: sprintId,
+        title,
+        goals: [], // Available in CURRENT-SPRINT.md if needed
+        progress,
+        started: new Date(), // Could parse from CURRENT-SPRINT.md if needed
+      };
+    }
+
+    // Fallback: scan all sprint files (legacy behavior)
     const files = await fs.readdir(sprintDir);
     const sprintFiles = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md'));
 
-    // Read each sprint file to find active sprint
     for (const file of sprintFiles) {
       const filePath = path.join(sprintDir, file);
       const content = await fs.readFile(filePath, 'utf-8');
 
-      // Check if sprint mentions "active" or "in progress"
-      // This is a simple heuristic - could be improved
       if (content.toLowerCase().includes('status**: active') ||
           content.toLowerCase().includes('sprint status: active')) {
 
-        // Extract title from first heading
         const titleMatch = content.match(/^#\s+(.+)$/m);
         const title = titleMatch ? titleMatch[1] : file.replace('.md', '');
 
-        // Extract basic info
         return {
           id: file.replace('.md', ''),
           title,
-          goals: [], // Would need more parsing
-          progress: 0, // Would need more parsing
-          started: new Date(), // Would need more parsing
+          goals: [],
+          progress: 0,
+          started: new Date(),
         };
       }
     }
