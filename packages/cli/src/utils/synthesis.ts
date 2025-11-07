@@ -103,6 +103,249 @@ export class SessionSynthesizer {
   }
 
   /**
+   * Synthesize from event-based LoadedContext (ADR-043)
+   *
+   * When using event-based context loading, this method converts the loaded events
+   * into a SynthesisOutput for display during session startup.
+   *
+   * @param eventContext - Loaded context from event stream (API)
+   * @param projectRoot - Project root directory for git operations
+   * @returns Synthesis output with resume point based on loaded events
+   */
+  static async synthesizeFromEvents(
+    eventContext: any, // LoadedContext from context-loader-events.ts
+    projectRoot: string
+  ): Promise<SynthesisOutput> {
+    const { myEvents = [], sprint, cursor } = eventContext;
+
+    // Convert API events to LogEntry format
+    const timeline: LogEntry[] = myEvents.map((event: any) => ({
+      timestamp: event.timestamp,
+      category: event.category,
+      description: event.description,
+      files: event.files || [],
+      impact: event.impact || 'medium',
+      pressure: event.pressure,
+    }));
+
+    // Extract events by category
+    const decisions = timeline.filter(e => e.category === 'decision');
+    const insights = timeline.filter(e => e.category === 'insight');
+    const achievements = timeline.filter(e => e.category === 'achievement');
+    const gitOps = timeline.filter(e => e.category === 'git');
+
+    // Analyze work performed
+    const workPerformed = SessionSynthesizer.analyzeWorkPerformed(timeline, achievements);
+
+    // Build discoveries
+    const discoveries: Discoveries = {
+      decisions,
+      insights,
+      gotchas: insights
+        .filter(i => i.description.toLowerCase().includes('gotcha') ||
+                    i.description.toLowerCase().includes('watch out') ||
+                    i.description.toLowerCase().includes('careful'))
+        .map(i => i.description)
+    };
+
+    // Convert sprint to SprintContext
+    const sprintContext: SprintContext | null = sprint ? {
+      goal: sprint.title,
+      progress: sprint.progress || 0,
+      tasksCompleted: [],
+      tasksRemaining: [],
+      estimatedCompletion: 'Unknown',
+    } : null;
+
+    // Assess flow state
+    const flowState = SessionSynthesizer.assessFlowStateFromEvents(cursor?.last_active, timeline, achievements);
+
+    // Generate resume point
+    const resumePoint = SessionSynthesizer.generateResumePointFromEvents(timeline, workPerformed, sprintContext);
+
+    // Check for warnings (git operations)
+    const warnings = await SessionSynthesizer.checkWarningsFromGit(projectRoot);
+
+    return {
+      qualityTier: 'rich',
+      workPerformed,
+      discoveries,
+      sprintContext,
+      flowState,
+      resumePoint,
+      warnings
+    };
+  }
+
+  /**
+   * Analyze work performed (static helper for event-based synthesis)
+   */
+  private static analyzeWorkPerformed(timeline: LogEntry[], achievements: LogEntry[]): WorkContext {
+    const completed: string[] = [];
+    const inProgress: string[] = [];
+    const blocked: string[] = [];
+
+    for (const entry of timeline) {
+      if (entry.category === 'achievement' || entry.category === 'fix') {
+        completed.push(entry.description);
+      } else if (entry.category === 'feature') {
+        inProgress.push(entry.description);
+      }
+
+      // Check for blocked indicators
+      if (entry.description.toLowerCase().includes('block') ||
+          entry.description.toLowerCase().includes('stuck') ||
+          entry.description.toLowerCase().includes('waiting')) {
+        blocked.push(entry.description);
+      }
+    }
+
+    return { completed, inProgress, blocked };
+  }
+
+  /**
+   * Assess flow state from events (static helper)
+   */
+  private static assessFlowStateFromEvents(
+    lastActive: Date | undefined,
+    timeline: LogEntry[],
+    achievements: LogEntry[]
+  ): FlowState {
+    const now = new Date();
+    const lastActivityTime = lastActive || (timeline.length > 0 ? timeline[timeline.length - 1]?.timestamp : undefined);
+    const minutesAgo = lastActivityTime
+      ? Math.round((now.getTime() - new Date(lastActivityTime).getTime()) / (1000 * 60))
+      : 10000;
+
+    // Flow score based on recency and achievements
+    let score = 5;
+    if (minutesAgo < 5) score = 10;
+    else if (minutesAgo < 30) score = 8;
+    else if (minutesAgo < 120) score = 7;
+    else if (minutesAgo < 1440) score = 5;
+    else if (minutesAgo < 10080) score = 3;
+    else score = 1;
+
+    // Boost for recent achievements
+    if (achievements.length > 0) {
+      const recentAchievement = achievements[achievements.length - 1];
+      const achievementMinutesAgo = Math.round((now.getTime() - new Date(recentAchievement.timestamp).getTime()) / (1000 * 60));
+      if (achievementMinutesAgo < 60) score = Math.min(10, score + 1);
+    }
+
+    // Energy assessment
+    let energy: string;
+    if (score >= 8) energy = 'Hot';
+    else if (score >= 5) energy = 'Warm';
+    else if (score >= 3) energy = 'Cool';
+    else energy = 'Cold';
+
+    const emotionalTone = score >= 7 ? 'Mid-stride' : score >= 4 ? 'Fresh start' : 'Needs context';
+
+    return {
+      score,
+      energy,
+      emotionalTone,
+      indicators: {
+        positive: score >= 7 ? ['Recent activity', 'Good momentum'] : [],
+        negative: score < 4 ? ['Long gap since last activity'] : []
+      },
+      timeContext: SessionSynthesizer.formatTimeAgoStatic(minutesAgo)
+    };
+  }
+
+  /**
+   * Generate resume point from events (static helper)
+   */
+  private static generateResumePointFromEvents(
+    timeline: LogEntry[],
+    workPerformed: WorkContext,
+    sprintContext: SprintContext | null
+  ): ResumePoint {
+    const latest = timeline[timeline.length - 1];
+
+    if (!latest) {
+      return {
+        summary: 'No recent work logged',
+        nextAction: 'Review sprint goals and begin work',
+        suggestedCommand: 'git status',
+        contextFiles: []
+      };
+    }
+
+    // Generate summary
+    let summary = latest.description;
+    if (latest.files && latest.files.length > 0) {
+      summary += ` (${latest.files[0]})`;
+    }
+
+    // Determine next action based on latest entry
+    let nextAction: string;
+    let suggestedCommand: string;
+
+    if (latest.category === 'achievement') {
+      nextAction = sprintContext
+        ? `Begin next task: ${sprintContext.goal}`
+        : 'Review backlog for next task';
+      suggestedCommand = 'git status';
+    } else if (latest.category === 'fix') {
+      nextAction = 'Verify fix and run tests';
+      suggestedCommand = 'npm test';
+    } else if (latest.category === 'feature') {
+      nextAction = 'Continue implementing feature';
+      suggestedCommand = latest.files?.[0]
+        ? `code ${latest.files[0]}`
+        : 'git status';
+    } else {
+      nextAction = 'Continue where you left off';
+      suggestedCommand = 'git status';
+    }
+
+    const contextFiles = latest.files || [];
+
+    return {
+      summary,
+      nextAction,
+      suggestedCommand,
+      contextFiles: contextFiles.slice(0, 3)
+    };
+  }
+
+  /**
+   * Format time ago (static helper)
+   */
+  private static formatTimeAgoStatic(minutes: number): string {
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+
+  /**
+   * Check warnings from git (static helper)
+   */
+  private static async checkWarningsFromGit(projectRoot: string): Promise<string[]> {
+    const warnings: string[] = [];
+    try {
+      const git = simpleGit(projectRoot);
+      const status = await git.status();
+
+      if (status.files.length > 10) {
+        warnings.push(`${status.files.length} uncommitted files - consider committing`);
+      }
+
+      if (status.conflicted.length > 0) {
+        warnings.push(`${status.conflicted.length} merge conflicts need resolution`);
+      }
+    } catch (error) {
+      // Ignore git errors
+    }
+    return warnings;
+  }
+
+  /**
    * Main synthesis method with progressive fail-safe
    */
   async synthesize(): Promise<SynthesisOutput> {

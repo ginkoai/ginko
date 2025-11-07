@@ -116,6 +116,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Falls back to strategic loading if event loading fails
       let strategyContext: StrategyContext;
       let eventContext: LoadedContext | undefined;
+      let eventSynthesis: SynthesisOutput | undefined;
 
       // Allow disabling event-based loading with env var or --strategic flag
       const useEventBasedLoading = process.env.GINKO_USE_EVENT_CONTEXT !== 'false' && !options.strategic;
@@ -134,6 +135,9 @@ export class StartReflectionCommand extends ReflectionCommand {
           // Display event-based context summary
           spinner.succeed('Event stream context loaded');
           console.log(chalk.dim(formatEventContextSummary(eventContext)));
+
+          // Generate synthesis from loaded events (replaces file-based synthesis)
+          eventSynthesis = await SessionSynthesizer.synthesizeFromEvents(eventContext, projectRoot);
 
           // Convert to strategy context for compatibility
           const documentsMap = new Map<string, any>();
@@ -188,6 +192,9 @@ export class StartReflectionCommand extends ReflectionCommand {
         });
       }
 
+      // Use event-based synthesis if available (ADR-043), otherwise fall back to session log synthesis
+      const activeSynthesis = eventSynthesis || synthesis;
+
       // 9. Load initial context using ActiveContextManager (legacy compatibility)
       const sessionData = {
         userSlug: context.userSlug || 'unknown',
@@ -207,7 +214,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
 
       // 11. Display session information with synthesis and strategy metrics
-      await this.displaySessionInfo(context, contextLevel, synthesis, strategyContext);
+      await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext);
 
       // Display strategic context loading summary
       if (options.verbose) {
