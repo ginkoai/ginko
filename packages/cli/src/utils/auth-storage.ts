@@ -101,8 +101,15 @@ export async function isAuthenticated(): Promise<boolean> {
 
 /**
  * Get the current API key
+ * Checks environment variable first, then falls back to stored session
  */
 export async function getAccessToken(): Promise<string | null> {
+  // Check environment variable first (takes precedence)
+  if (process.env.GINKO_API_KEY) {
+    return process.env.GINKO_API_KEY;
+  }
+
+  // Fall back to stored session
   const session = await loadAuthSession();
 
   if (!session) {
