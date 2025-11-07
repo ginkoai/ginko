@@ -178,8 +178,8 @@ async function loadContextConsolidated(
 
     return {
       cursor,
-      myEvents: response.myEvents,
-      teamEvents: response.teamEvents,
+      myEvents: normalizeEvents(response.myEvents || []),
+      teamEvents: response.teamEvents ? normalizeEvents(response.teamEvents) : undefined,
       documents: response.documents,
       relatedDocs: response.relatedDocs,
       sprint: response.sprint,
@@ -328,7 +328,7 @@ async function readEventsBackward(
     // Call API endpoint
     const response = await (client as any).request('GET', `/api/v1/events?${params.toString()}`);
 
-    return response.events;
+    return normalizeEvents(response.events || []);
   } catch (error) {
     console.error('Failed to read events:', error);
     return [];
@@ -368,7 +368,7 @@ async function loadTeamEvents(
     // Call API endpoint
     const response = await (client as any).request('GET', `/api/v1/events/team?${params.toString()}`);
 
-    return response.events;
+    return normalizeEvents(response.events || []);
   } catch (error) {
     console.error('Failed to load team events:', error);
     return [];
@@ -661,6 +661,23 @@ export function formatContextSummary(context: LoadedContext): string {
   lines.push(`   - Estimated tokens: ${context.token_estimate.toLocaleString()}`);
 
   return lines.join('\n');
+}
+
+/**
+ * Normalize event data from API (convert timestamp strings to Date objects)
+ */
+function normalizeEvent(event: any): Event {
+  return {
+    ...event,
+    timestamp: event.timestamp ? new Date(event.timestamp) : new Date(),
+  };
+}
+
+/**
+ * Normalize array of events from API
+ */
+function normalizeEvents(events: any[]): Event[] {
+  return events.map(normalizeEvent);
 }
 
 /**

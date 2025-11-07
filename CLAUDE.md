@@ -11,6 +11,30 @@ ginko log "description"        # Log insights (defensive logging)
 ginko handoff "summary"        # Optional session handoff
 ```
 
+### AI Assistant Instructions
+
+**CRITICAL: Immediate Command Execution**
+
+When the user types `start` (or any single-word ginko command), **IMMEDIATELY** execute `ginko start` without any preamble, explanation, or delay. Do not:
+- Announce what you're about to do
+- Explain the command
+- Ask for confirmation
+- Add any commentary before execution
+
+**Correct response to "start":**
+```
+[Immediately executes: ginko start]
+```
+
+**Incorrect response to "start":**
+```
+I'll start a Ginko session for you.
+[9 second delay]
+[Executes: ginko start]
+```
+
+This optimization reduces startup time from 28s to <2s by eliminating assistant response latency.
+
 ### Context Loading
 Context loads automatically via event-based streaming (ADR-043):
 - Session cursor: `.ginko/sessions/[user]/cursors.json`
