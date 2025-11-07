@@ -53,8 +53,10 @@ This sprint represents a **major architectural pivot** from file-based local kno
 - **Priority**: TASK-020.5 (Vector Embeddings Pipeline)
 
 ### Recent Accomplishments
+- ✅ **API Key System Complete** (2025-11-06): Full end-to-end testing successful! Dashboard, API, and CLI working
 - ✅ **Dashboard Auth Fix** (2025-11-06): Fixed authentication and deployment issues - unblocked API key testing
 - ✅ **Long-Lived API Keys** (2025-11-06): Fixed token expiry issue - CLI now uses git-like API keys
+- ✅ **CLI Environment Variables** (2025-11-06): Added GINKO_API_KEY support - enables CI/CD usage
 - ✅ **ADR-043 Phase 3**: Event-based context loading (99% token reduction - 93K → 500 tokens!)
 - ✅ **Unified API Authentication**: All endpoints deployed to app.ginkoai.com
 - ✅ **CloudGraphClient**: Complete implementation with 46 passing tests
@@ -62,11 +64,9 @@ This sprint represents a **major architectural pivot** from file-based local kno
 - ✅ **Performance**: <690ms session start (44x faster than 30s target!)
 
 ### Next Steps
-1. Test API key generation via dashboard UI (https://app.ginkoai.com/dashboard/settings/api-keys)
-2. Test `ginko login --force` with new API key flow
-3. Verify API key authentication works end-to-end
-4. Implement vector embeddings pipeline (TASK-020.5)
-5. Complete knowledge node CRUD operations (TASK-021)
+1. Implement vector embeddings pipeline (TASK-020.5)
+2. Complete knowledge node CRUD operations (TASK-021)
+3. Implement project management API (TASK-022)
 
 ---
 
@@ -328,15 +328,19 @@ The CLI was using Supabase OAuth tokens that expire after 1 hour, requiring comp
 
 ### Testing Requirements
 
-**Status**: ✅ UNBLOCKED - Dashboard auth fixed (2025-11-06)
+**Status**: ✅ COMPLETE - All tests passed (2025-11-06)
 
-**Testing Steps** (Ready to proceed):
-1. User generates API key via dashboard: `https://app.ginkoai.com/dashboard/settings/api-keys`
-2. CLI login generates and stores API key: `ginko login --force`
-3. Test API operations work with API key: `ginko start`, Graph API calls
-4. Verify long-lived API key persists (no expiry errors)
+**Testing Results**:
+1. ✅ User generates API key via dashboard: Successfully generated `gk_dec052c6caa...`
+2. ✅ CLI environment variable support: `GINKO_API_KEY` works with `ginko start`
+3. ✅ API authentication: Graph API calls successful (200 status, empty events)
+4. ✅ Event stream loading: Context loaded in 1447ms with API key
+5. ✅ No expiry errors: API key persists indefinitely until revoked
 
-**Git Commits**: ✅ Committed and pushed (78575fe)
+**Git Commits**:
+- Initial implementation: 78575fe
+- Dashboard fixes: 1dfefdb, b011da3, f449a94
+- Environment variable support: 4a10334 (CLI v1.4.0)
 
 ---
 
