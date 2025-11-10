@@ -1,90 +1,121 @@
 # User Acceptance Testing Script - Ginko v1.4.1
+## AI-Mediated Development Environment Testing
 
 **Version**: 1.4.1
 **Date**: 2025-11-10
 **Tester**: Chris Norton
-**Focus Areas**: Charter system, Init integration, Bug fixes
+**AI Partner**: Claude Code (or other AI environment)
+**Focus Areas**: Charter system, Init integration, Natural language interaction, Bug fixes
+
+---
+
+## Testing Philosophy
+
+Ginko is designed for **AI-mediated development**:
+- **Human**: Provides natural language requests
+- **AI Partner**: Interprets intent and executes appropriate ginko commands
+- **Ginko**: Captures context and maintains session state
+
+This UAT tests the **complete interaction loop**, not just command execution.
 
 ---
 
 ## Pre-Test Setup
 
-### Environment Preparation
+**Human Action**: Create a clean test environment
+
+**Expected AI Response**:
+AI should execute these commands proactively:
+
 ```bash
-# 1. Create clean test directory
 mkdir -p ~/ginko-uat-test
 cd ~/ginko-uat-test
-
-# 2. Verify Ginko version
-ginko --version
-# Expected: 1.4.1
-
-# 3. Initialize git (required for ginko)
 git init
 git config user.name "Test User"
 git config user.email "test@example.com"
 echo "# UAT Test Project" > README.md
 git add . && git commit -m "Initial commit"
+ginko --version
 ```
 
-**Pre-test Checklist:**
-- [ ] Clean test directory created
-- [ ] Ginko v1.4.1 verified
-- [ ] Git repository initialized
+**Evaluation Criteria:**
+- [ ] AI executed commands without being told specific syntax
+- [ ] AI verified version proactively
+- [ ] AI confirmed setup complete with summary
+- [ ] No manual command-line work required from human
+
+**Notes:**
 
 ---
 
-## Test Suite 1: Charter Command (New Feature)
+## Test Suite 1: Charter Creation Flow
 
-### Test 1.1: Charter Creation with Skip Flag
-**Purpose**: Test charter creation with mock data
+### Test 1.1: Natural Language Charter Request
+**Purpose**: Test AI interpretation of charter creation request
 
-```bash
-ginko charter --skip-conversation
-```
+**Human Request**:
+> "I want to create a project charter for this project"
 
-**Expected Results:**
-- [ ] Command completes without errors
+**Expected AI Behavior:**
+- AI recognizes charter creation intent
+- AI explains what a charter is and its purpose
+- AI executes `ginko charter --skip-conversation` (for UAT speed)
+- AI summarizes the charter that was created
+- AI explains next steps (how to view/edit)
+
+**Evaluation Criteria:**
+- [ ] AI executed appropriate ginko command
+- [ ] AI explained the charter concept naturally
+- [ ] AI proactively showed how to view the charter
 - [ ] File created at `docs/PROJECT-CHARTER.md`
-- [ ] Success message displays file path and version
-- [ ] Next steps shown (ginko start, ginko charter --view)
+- [ ] Conversational flow felt natural (not robotic)
 
 **Notes:**
-_Record any unexpected behavior:_
 
 ---
 
-### Test 1.2: Charter Viewing (Bug Fix Validation)
-**Purpose**: Verify regex bug fix in charter --view
+### Test 1.2: Viewing Charter (Bug Fix Validation)
+**Purpose**: Test AI-mediated charter viewing and regex bug fix
 
-```bash
-ginko charter --view
-```
+**Human Request**:
+> "Show me the charter we just created"
 
-**Expected Results:**
-- [ ] Command completes without errors (previously crashed with regex error)
-- [ ] Formatted charter displays in terminal
-- [ ] Shows: Status, Version, Work Mode, Confidence
-- [ ] Shows: Purpose, Users, Success Criteria, Scope
-- [ ] No "Invalid regular expression" error
+**Expected AI Behavior:**
+- AI executes `ginko charter --view`
+- AI doesn't encounter regex errors (bug fix validation)
+- AI summarizes key points from the charter
+- AI offers to explain any section in detail
+
+**Evaluation Criteria:**
+- [ ] Command completed without errors (no regex crash)
+- [ ] AI provided useful summary of charter content
+- [ ] AI offered follow-up actions naturally
+- [ ] Display was readable and well-formatted
 
 **Notes:**
-_Record display quality and readability:_
 
 ---
 
-### Test 1.3: Charter Help and Examples
-**Purpose**: Validate documentation and help text
+### Test 1.3: Charter Inquiry and Help
+**Purpose**: Test AI's ability to explain charter features
 
-```bash
-ginko charter --help
-ginko charter --examples
-```
+**Human Request**:
+> "What can I do with the charter? What are my options?"
 
-**Expected Results:**
-- [ ] Help shows all options (--view, --edit, --mode, --skip-conversation, --output-path)
-- [ ] Examples show clear usage patterns
-- [ ] No errors or warnings
+**Expected AI Behavior:**
+- AI may execute `ginko charter --help` or `--examples`
+- AI explains charter capabilities in natural language:
+  - Viewing (--view)
+  - Editing (--edit)
+  - Work modes (hack-ship, think-build, full-planning)
+  - Custom output paths
+- AI relates features to user's workflow
+
+**Evaluation Criteria:**
+- [ ] AI provided comprehensive explanation
+- [ ] AI used help commands appropriately
+- [ ] AI translated technical options into user benefits
+- [ ] AI anticipated follow-up questions
 
 **Notes:**
 
@@ -92,228 +123,282 @@ ginko charter --examples
 
 ## Test Suite 2: Init with Charter Integration
 
-### Test 2.1: Quick Init (Charter Skipped)
-**Purpose**: Test init --quick mode skips charter
+### Test 2.1: Quick Project Setup
+**Purpose**: Test AI-guided quick init without charter
 
-```bash
-# Clean slate
-cd ..
-mkdir ginko-uat-quickinit
-cd ginko-uat-quickinit
-git init && echo "test" > README.md && git add . && git commit -m "init"
+**Human Request**:
+> "Set up a new project quickly in a new directory called 'quicktest'"
 
-ginko init --quick
-```
+**Expected AI Behavior:**
+- AI creates new directory and initializes git
+- AI recognizes "quickly" intent → uses `ginko init --quick`
+- AI explains that quick mode skips charter creation
+- AI mentions charter can be added later with `ginko charter`
+- AI confirms setup complete
 
-**Expected Results:**
-- [ ] Init completes successfully
-- [ ] NO charter created (docs/PROJECT-CHARTER.md should NOT exist)
-- [ ] Output mentions "ginko charter" as next step
-- [ ] Directory structure created (.ginko/, ginko.json, CLAUDE.md)
-- [ ] No errors
-
-**Verification:**
-```bash
-ls docs/PROJECT-CHARTER.md 2>/dev/null && echo "FAIL: Charter exists" || echo "PASS: No charter"
-```
+**Evaluation Criteria:**
+- [ ] AI created directory and initialized git automatically
+- [ ] AI used `--quick` flag appropriately
+- [ ] NO charter file created (verify docs/ doesn't exist or is empty)
+- [ ] AI explained what was skipped and why
+- [ ] AI provided clear next steps
 
 **Notes:**
 
 ---
 
-### Test 2.2: Normal Init with Charter Conversation
-**Purpose**: Test charter integration in normal init flow
+### Test 2.2: Full Project Initialization
+**Purpose**: Test AI navigation of init with charter prompt
 
-```bash
-# Clean slate
-cd ..
-mkdir ginko-uat-normalinit
-cd ginko-uat-normalinit
-git init && echo "test" > README.md && git add . && git commit -m "init"
+**Human Request**:
+> "Set up Ginko for a new project in directory 'fulltest'. I don't need a charter right now."
 
-# Run init (will be interactive)
-ginko init
-```
+**Expected AI Behavior:**
+- AI creates directory and initializes git
+- AI runs `ginko init` (without --quick)
+- AI anticipates charter prompt and either:
+  - Option A: Mentions the prompt will appear and suggests declining
+  - Option B: Automatically declines based on user's "I don't need a charter" statement
+- AI confirms init completed without charter
 
-**Interactive Steps:**
-1. When prompted "Create project charter through conversation?", respond `n` (no)
-
-**Expected Results:**
-- [ ] Prompt appears asking about charter creation
-- [ ] Selecting "no" skips charter gracefully
-- [ ] Message displayed: "Skipping charter (you can create one later with `ginko charter`)"
-- [ ] Init completes successfully
+**Evaluation Criteria:**
+- [ ] AI correctly interpreted user's charter preference
+- [ ] AI handled the initialization flow smoothly
 - [ ] No charter file created
-
-**Notes:**
-_Record the quality of the prompt and messaging:_
-
----
-
-## Test Suite 3: Charter File Validation
-
-### Test 3.1: Charter File Structure
-**Purpose**: Validate charter markdown format
-
-```bash
-cd ~/ginko-uat-test
-cat docs/PROJECT-CHARTER.md | head -40
-```
-
-**Expected Results:**
-- [ ] YAML frontmatter present (id, projectId, status, workMode, version, etc.)
-- [ ] Markdown headers properly formatted (# Project Charter, ## Purpose, etc.)
-- [ ] Success criteria as checkboxes (- [ ])
-- [ ] Scope sections present (In Scope, Out of Scope, TBD)
-- [ ] Changelog section present
-- [ ] No formatting errors or broken markdown
-
-**Notes:**
-_Record any formatting issues:_
-
----
-
-### Test 3.2: Charter Storage Locations
-**Purpose**: Verify file storage working
-
-```bash
-cd ~/ginko-uat-test
-
-# Check file exists and is readable
-ls -lh docs/PROJECT-CHARTER.md
-cat docs/PROJECT-CHARTER.md | wc -l
-# Should be ~50 lines for mock charter
-```
-
-**Expected Results:**
-- [ ] File exists at docs/PROJECT-CHARTER.md
-- [ ] File is readable (not empty)
-- [ ] File size reasonable (~1-2KB for mock)
-- [ ] File contains valid content
+- [ ] AI confirmed what was created (.ginko/, ginko.json, CLAUDE.md)
+- [ ] AI's interpretation of user intent was accurate
 
 **Notes:**
 
 ---
 
-## Test Suite 4: Integration and Workflow
+## Test Suite 3: Charter Content Quality
 
-### Test 4.1: Start Command with Charter
-**Purpose**: Test ginko start with existing charter
+### Test 3.1: Charter File Inspection
+**Purpose**: Test AI's ability to validate charter quality
 
-```bash
-cd ~/ginko-uat-test
-ginko start --no-log
-```
+**Human Request**:
+> "Check the charter file and tell me if it looks correct. What's in it?"
 
-**Expected Results:**
-- [ ] Start command completes successfully
-- [ ] Session initializes without errors
-- [ ] Readiness message appears (new feature)
-- [ ] Readiness message is concise (≤6 lines)
-- [ ] Flow state and work mode displayed
-- [ ] Resume point shown
+**Expected AI Behavior:**
+- AI reads `docs/PROJECT-CHARTER.md`
+- AI validates structure (YAML frontmatter, markdown sections)
+- AI summarizes key sections:
+  - Purpose & value proposition
+  - Users/personas
+  - Success criteria (checkboxes)
+  - Scope boundaries
+- AI identifies any formatting issues
+- AI confirms file location and size
 
-**Notes:**
-_Evaluate readiness message quality and usefulness:_
-
----
-
-### Test 4.2: Charter Edit Flow
-**Purpose**: Test charter modification workflow
-
-```bash
-cd ~/ginko-uat-test
-
-# View current charter
-ginko charter --view
-
-# Note: --edit requires conversational flow, skip for UAT
-# Instead verify command is available
-ginko charter --help | grep "edit"
-```
-
-**Expected Results:**
-- [ ] --edit option listed in help
-- [ ] View command works consistently (no crashes)
+**Evaluation Criteria:**
+- [ ] AI proactively validated file structure
+- [ ] AI provided clear summary of content
+- [ ] AI identified key sections correctly
+- [ ] AI noticed if any formatting issues exist
+- [ ] AI explained charter structure naturally
 
 **Notes:**
 
 ---
 
-## Test Suite 5: Error Handling and Edge Cases
+### Test 3.2: Charter Verification
+**Purpose**: Test AI's ability to confirm charter storage
 
-### Test 5.1: Charter in Non-Git Directory
-**Purpose**: Test error handling for missing git
+**Human Request**:
+> "Is the charter saved in the right place? Can I commit it to git?"
 
-```bash
-cd /tmp
-mkdir ginko-uat-nogit
-cd ginko-uat-nogit
+**Expected AI Behavior:**
+- AI verifies file location (`docs/PROJECT-CHARTER.md`)
+- AI confirms file is git-trackable (not in .gitignore)
+- AI explains that charter is team-shared
+- AI may proactively check git status
+- AI offers to commit the charter if appropriate
 
-ginko charter --skip-conversation
-```
-
-**Expected Results:**
-- [ ] Graceful error message (git required)
-- [ ] OR command succeeds (creates docs/ regardless)
-- [ ] No crash or stack trace
-
-**Notes:**
-_Record the error message quality:_
-
----
-
-### Test 5.2: Duplicate Charter Creation
-**Purpose**: Test behavior when charter already exists
-
-```bash
-cd ~/ginko-uat-test
-
-# Charter already exists from Test 1.1
-ginko charter --skip-conversation
-```
-
-**Expected Results:**
-- [ ] Command handles existing charter gracefully
-- [ ] Either: (a) Overwrites with warning, or (b) Errors with helpful message
-- [ ] No data corruption or crashes
-
-**Notes:**
-_Record the behavior:_
-
----
-
-### Test 5.3: Charter View with No Charter
-**Purpose**: Test error handling when charter doesn't exist
-
-```bash
-cd ~/ginko-uat-quickinit  # No charter created here
-ginko charter --view
-```
-
-**Expected Results:**
-- [ ] Clear error message: "No charter found"
-- [ ] Helpful next step: "Run `ginko charter` to create one"
-- [ ] No crash or confusing error
+**Evaluation Criteria:**
+- [ ] AI confirmed correct file location
+- [ ] AI validated git tracking status
+- [ ] AI explained team-sharing concept
+- [ ] AI's explanation was clear and helpful
 
 **Notes:**
 
 ---
 
-## Test Suite 6: Version and Compatibility
+## Test Suite 4: Session Integration
 
-### Test 6.1: Version Consistency
-**Purpose**: Verify version is consistent everywhere
+### Test 4.1: Starting Session with Charter
+**Purpose**: Test session initialization with charter context (new feature validation)
 
-```bash
-ginko --version
-cat ~/ginko-uat-test/ginko.json | grep -A1 '"cli"'
-```
+**Human Request**:
+> "Start a ginko session"
 
-**Expected Results:**
-- [ ] `ginko --version` returns 1.4.1
-- [ ] Config files reference correct version
-- [ ] No version mismatch warnings
+**Expected AI Behavior:**
+- AI executes `ginko start` (or `ginko start --no-log` for UAT)
+- AI notices the session readiness message (new feature)
+- AI relays key information from readiness:
+  - Flow state (Hot/Mid-stride/Cold)
+  - Work mode (Think & Build)
+  - Resume point
+- AI confirms session is ready
+- Readiness message should be concise (≤6 lines)
+
+**Evaluation Criteria:**
+- [ ] Session started without errors
+- [ ] AI communicated session state clearly
+- [ ] Readiness message appeared and was concise
+- [ ] AI explained what "ready" means for next steps
+- [ ] Flow state and work mode were mentioned
+
+**Notes:**
+
+---
+
+### Test 4.2: Working with Charter During Session
+**Purpose**: Test AI's charter awareness during active development
+
+**Human Request**:
+> "What should we work on? What does the charter say?"
+
+**Expected AI Behavior:**
+- AI views charter (`ginko charter --view`)
+- AI summarizes success criteria from charter
+- AI suggests work items aligned with charter scope
+- AI references charter context in recommendations
+- AI demonstrates charter-aware guidance
+
+**Evaluation Criteria:**
+- [ ] AI referenced charter proactively
+- [ ] AI's suggestions aligned with charter content
+- [ ] AI demonstrated understanding of charter purpose
+- [ ] Conversation felt guided by charter context
+
+**Notes:**
+
+---
+
+## Test Suite 5: Error Handling and Recovery
+
+### Test 5.1: Missing Prerequisites
+**Purpose**: Test AI's handling of environment errors
+
+**Human Request**:
+> "Create a charter in /tmp/nogit without setting up git first"
+
+**Expected AI Behavior:**
+- AI attempts charter creation
+- AI encounters error (git required OR succeeds anyway)
+- AI explains the error clearly
+- AI suggests remediation (initialize git first)
+- AI offers to fix the issue
+- No crash or technical stack traces shown to user
+
+**Evaluation Criteria:**
+- [ ] AI handled error gracefully
+- [ ] AI explained problem in user-friendly terms
+- [ ] AI offered actionable solution
+- [ ] AI maintained conversational tone
+- [ ] No technical jargon or stack traces
+
+**Notes:**
+
+---
+
+### Test 5.2: Duplicate Charter Handling
+**Purpose**: Test AI's handling of existing charter
+
+**Human Request**:
+> "Create another charter" (when one already exists)
+
+**Expected AI Behavior:**
+- AI notices charter already exists
+- AI explains the situation
+- AI offers options:
+  - View existing charter
+  - Edit existing charter
+  - Overwrite (with warning)
+  - Cancel
+- AI respects user's choice
+
+**Evaluation Criteria:**
+- [ ] AI detected existing charter
+- [ ] AI provided clear options
+- [ ] AI warned about overwriting if chosen
+- [ ] AI's guidance was helpful and non-destructive
+
+**Notes:**
+
+---
+
+### Test 5.3: Charter Not Found
+**Purpose**: Test AI's handling of missing charter
+
+**Human Request**:
+> "Show me the project charter" (in a project without one)
+
+**Expected AI Behavior:**
+- AI attempts to view charter
+- AI discovers no charter exists
+- AI explains clearly: "No charter found"
+- AI suggests creating one: `ginko charter`
+- AI offers to create one immediately
+
+**Evaluation Criteria:**
+- [ ] AI handled missing charter gracefully
+- [ ] AI provided clear next steps
+- [ ] AI offered proactive help
+- [ ] Error message was user-friendly
+
+**Notes:**
+
+---
+
+## Test Suite 6: AI Partner Capabilities
+
+### Test 6.1: Version Awareness
+**Purpose**: Test AI's ability to check and report version
+
+**Human Request**:
+> "What version of Ginko are we using?"
+
+**Expected AI Behavior:**
+- AI executes `ginko --version`
+- AI reports version clearly: "1.4.1"
+- AI may check config files for consistency
+- AI explains what's new in this version (if prompted)
+
+**Evaluation Criteria:**
+- [ ] AI checked version proactively
+- [ ] AI reported version clearly
+- [ ] No version mismatch issues
+- [ ] AI demonstrated version awareness
+
+**Notes:**
+
+---
+
+### Test 6.2: Contextual Awareness
+**Purpose**: Test AI's understanding of charter in development context
+
+**Human Request**:
+> "We have a charter now. How should we use it during development?"
+
+**Expected AI Behavior:**
+- AI explains charter's role in development:
+  - Alignment tool for human-AI collaboration
+  - Reference for scope and priorities
+  - Guide for decision-making
+- AI suggests integration points:
+  - Session starts
+  - Before major features
+  - During handoffs
+- AI demonstrates understanding of charter purpose
+
+**Evaluation Criteria:**
+- [ ] AI explained charter value clearly
+- [ ] AI suggested practical use cases
+- [ ] AI demonstrated understanding of workflow
+- [ ] AI's guidance felt actionable
 
 **Notes:**
 
@@ -323,48 +408,97 @@ cat ~/ginko-uat-test/ginko.json | grep -A1 '"cli"'
 
 ### Test Results Matrix
 
-| Test Suite | Pass | Fail | Skip | Notes |
-|------------|------|------|------|-------|
-| 1. Charter Command | __/3 | __/3 | __/3 | |
-| 2. Init Integration | __/2 | __/2 | __/2 | |
-| 3. File Validation | __/2 | __/2 | __/2 | |
-| 4. Integration | __/2 | __/2 | __/2 | |
-| 5. Error Handling | __/3 | __/3 | __/3 | |
-| 6. Version Check | __/1 | __/1 | __/1 | |
-| **TOTAL** | __/13 | __/13 | __/13 | |
+| Test Suite | Pass | Fail | Notes |
+|------------|------|------|-------|
+| 1. Charter Creation Flow | __/3 | __/3 | |
+| 2. Init Integration | __/2 | __/2 | |
+| 3. Content Quality | __/2 | __/2 | |
+| 4. Session Integration | __/2 | __/2 | |
+| 5. Error Handling | __/3 | __/3 | |
+| 6. AI Capabilities | __/2 | __/2 | |
+| **TOTAL** | __/14 | __/14 | |
+
+---
+
+## AI Partner Evaluation
+
+**Conversational Quality:**
+- [ ] Excellent - Natural, helpful, contextual
+- [ ] Good - Mostly natural with minor awkwardness
+- [ ] Fair - Functional but robotic
+- [ ] Poor - Confusing or unhelpful
+
+**Command Interpretation:**
+- [ ] Excellent - Consistently chose correct commands
+- [ ] Good - Mostly correct with minor missteps
+- [ ] Fair - Several incorrect interpretations
+- [ ] Poor - Frequently misunderstood intent
+
+**Error Recovery:**
+- [ ] Excellent - Graceful, helpful, proactive
+- [ ] Good - Handled errors adequately
+- [ ] Fair - Some confusion in error situations
+- [ ] Poor - Crashed or provided unhelpful messages
+
+**Overall AI Integration:**
+- [ ] Excellent - Felt like natural collaboration
+- [ ] Good - Productive with minor friction
+- [ ] Fair - Functional but limited
+- [ ] Poor - More hindrance than help
 
 ---
 
 ## Critical Issues Found
 
 **Priority 1 (Blockers):**
-- [ ] None found / List issues below
+_Issues that prevent release:_
 
 **Priority 2 (Major):**
-- [ ] None found / List issues below
+_Issues that significantly impact UX:_
 
 **Priority 3 (Minor):**
-- [ ] None found / List issues below
+_Issues that are annoying but not critical:_
+
+**AI-Specific Issues:**
+_Problems with AI interpretation or integration:_
 
 ---
 
 ## Overall Assessment
 
-**Release Readiness:** ⬜ APPROVED / ⬜ APPROVED WITH MINOR ISSUES / ⬜ NOT APPROVED
+**Release Readiness:**
+- [ ] ✅ APPROVED - Ready for release
+- [ ] ⚠️ APPROVED WITH MINOR ISSUES - Release with known limitations
+- [ ] ❌ NOT APPROVED - Major issues must be fixed
+
+**Charter Feature:**
+- [ ] Meets requirements
+- [ ] User-friendly and valuable
+- [ ] Well-integrated with AI workflow
+- [ ] Concerns: ___________________________
+
+**AI Integration:**
+- [ ] AI interprets commands correctly
+- [ ] AI provides helpful guidance
+- [ ] AI handles errors gracefully
+- [ ] Concerns: ___________________________
 
 **Summary:**
-_Overall impression and recommendation:_
+_Overall impression, key findings, and release recommendation:_
 
 
-**Tester Signature:** _________________ **Date:** _________
+**Tester:** _________________ **Date:** _________ **AI Partner:** _________________
 
 ---
 
-## Cleanup
+## Post-Test Cleanup
 
+**Human Request**:
+> "Clean up the UAT test directories"
+
+**Expected AI Behavior:**
+AI should remove test directories safely:
 ```bash
-# Remove test directories
-cd ~
-rm -rf ginko-uat-test ginko-uat-quickinit ginko-uat-normalinit
-rm -rf /tmp/ginko-uat-nogit
+rm -rf ~/ginko-uat-test ~/quicktest ~/fulltest
+rm -rf /tmp/nogit
 ```
