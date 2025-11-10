@@ -16,10 +16,25 @@ import * as bcrypt from 'bcryptjs'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerClient()
-    
-    // Get the authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    
+
+    // Support both cookie-based (browser) and token-based (CLI) auth
+    let user = null
+    let authError = null
+
+    // Try Authorization header first (for CLI)
+    const authHeader = request.headers.get('authorization')
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.substring(7)
+      const { data, error } = await supabase.auth.getUser(token)
+      user = data.user
+      authError = error
+    } else {
+      // Fall back to cookie-based auth (for browser)
+      const { data, error } = await supabase.auth.getUser()
+      user = data.user
+      authError = error
+    }
+
     if (authError || !user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
