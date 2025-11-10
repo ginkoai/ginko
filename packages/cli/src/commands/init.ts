@@ -25,6 +25,12 @@ import { findGinkoRoot } from '../utils/ginko-root.js';
 import { pathManager } from '../core/utils/paths.js';
 import { getUserEmail } from '../utils/helpers.js';
 import { GinkoConfig, LocalConfig, DEFAULT_GINKO_CONFIG } from '../types/config.js';
+import { ConversationFacilitator } from '../lib/charter/conversation-facilitator.js';
+import { CharterStorageManager } from '../lib/charter/charter-storage.js';
+import { createInitialVersion, createInitialChangelog } from '../lib/charter/charter-versioning.js';
+import type { Charter } from '../types/charter.js';
+import { v4 as uuidv4 } from 'uuid';
+import prompts from 'prompts';
 
 export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
   const spinner = ora('Initializing Ginko...').start();
@@ -250,8 +256,71 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     spinner.succeed('Context management configured');
 
+    // Charter creation (TASK-005) - Seamless conversational flow
+    let charterCreated = false;
+    if (!options.quick) {
+      spinner.stop(); // Stop spinner for conversation
+
+      console.log(''); // Blank line for spacing
+      console.log(chalk.green('💡 What would you like to build?\n'));
+      console.log(chalk.dim('(This helps both you and your AI partner stay aligned)\n'));
+
+      try {
+        // Check if user wants to skip
+        const { proceed } = await prompts({
+          type: 'confirm',
+          name: 'proceed',
+          message: 'Create project charter through conversation?',
+          initial: true,
+        });
+
+        if (proceed) {
+          // Conversational charter creation
+          const facilitator = new ConversationFacilitator();
+          const result = await facilitator.facilitate();
+
+          // Build charter from conversation
+          const projectName = path.basename(projectRoot);
+          const charter: Charter = {
+            id: `charter-${uuidv4()}`,
+            projectId: projectName,
+            status: 'active',
+            workMode: result.workMode,
+            version: createInitialVersion(),
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            content: result.content,
+            confidence: result.confidence,
+            changelog: [],
+          };
+
+          // Add initial changelog entry
+          charter.changelog = [createInitialChangelog(charter, [userEmail])];
+
+          // Save charter
+          const storage = new CharterStorageManager(projectRoot);
+          const saveResult = await storage.save(charter);
+
+          if (saveResult.success) {
+            charterCreated = true;
+            console.log(chalk.green('\n✅ Charter created!'));
+            console.log(chalk.dim('   📄 docs/PROJECT-CHARTER.md\n'));
+          } else {
+            console.warn(chalk.yellow('\n⚠️  Charter creation failed (continuing init)'));
+          }
+        } else {
+          console.log(chalk.dim('\n💡 Skipping charter (you can create one later with `ginko charter`)\n'));
+        }
+      } catch (charterError) {
+        console.warn(chalk.yellow('\n⚠️  Charter creation failed (continuing init)'));
+        console.warn(chalk.dim('   You can create one later with `ginko charter`\n'));
+      }
+
+      spinner.start('Completing setup...'); // Resume spinner
+    }
+
     // Final setup
-    spinner.start('Completing setup...');
+    spinner.text = 'Completing setup...';
 
     // Create initial session marker
     const sessionMarker = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug, '.session-start');
@@ -268,6 +337,9 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     console.log('\n' + chalk.blue('Quick start:'));
     console.log('  ' + chalk.cyan('ginko start') + ' - Begin your first session');
+    if (!charterCreated) {
+      console.log('  ' + chalk.cyan('ginko charter') + ' - Create project charter');
+    }
     console.log('  ' + chalk.cyan('ginko handoff "Initial setup complete"') + ' - Save your progress');
 
     if (deepAnalysis) {
@@ -287,6 +359,9 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     console.log('  📄 ' + chalk.gray('ginko.json (team-shared configuration)'));
     console.log('  📄 ' + chalk.gray('.ginko/local.json (user-specific configuration)'));
     console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
+    if (charterCreated) {
+      console.log('  📄 ' + chalk.gray('docs/PROJECT-CHARTER.md (project charter)'));
+    }
     console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
     console.log('\n' + chalk.blue('💡 Configuration:'));
     console.log('  • ginko.json is tracked in git (team-shared structure)');

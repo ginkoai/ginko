@@ -52,6 +52,7 @@ import { loginCommand } from './commands/login.js';
 import { logoutCommand } from './commands/logout.js';
 import { whoamiCommand } from './commands/whoami.js';
 import { handoffCommand } from './commands/handoff.js';
+import { charterCommand, charterExamples } from './commands/charter.js';
 
 const program = new Command();
 
@@ -100,6 +101,27 @@ program
   .description('Pause current session and update cursor (ADR-043)')
   .option('-v, --verbose', 'Show detailed cursor and sync information')
   .action(handoffCommand);
+
+program
+  .command('charter')
+  .description('Create and manage project charter through natural conversation')
+  .option('--view', 'View existing charter')
+  .option('--edit', 'Edit charter conversationally')
+  .option('--mode <mode>', 'Specify work mode: hack-ship, think-build, full-planning')
+  .option('--skip-conversation', 'Skip conversation (testing/automation)')
+  .option('--output-path <path>', 'Custom charter file path')
+  .option('--examples', 'Show charter command examples')
+  .action((options) => {
+    if (options.examples) {
+      console.log(chalk.green('\n📋 Charter Command Examples:\n'));
+      charterExamples.forEach(example => {
+        console.log(chalk.dim(`  ${example}`));
+      });
+      console.log('');
+      return;
+    }
+    return charterCommand(options);
+  });
 
 program
   .command('log [description]')
