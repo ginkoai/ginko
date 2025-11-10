@@ -66,7 +66,7 @@ export class VoyageAPIError extends Error {
 export class VoyageEmbeddingClient {
   private apiKey: string;
   private baseURL: string;
-  private model: string;
+  private model: 'voyage-3.5' | 'voyage-3.5-lite';
   private defaultDimension: EmbeddingDimension;
 
   constructor(
@@ -251,7 +251,7 @@ export class VoyageEmbeddingClient {
       );
     }
 
-    return await response.json();
+    return (await response.json()) as EmbeddingResponse;
   }
 
   /**

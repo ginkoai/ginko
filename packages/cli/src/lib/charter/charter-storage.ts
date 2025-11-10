@@ -551,7 +551,9 @@ export class CharterStorageManager {
   }
 
   private extractInline(content: string, label: string): string | undefined {
-    const regex = new RegExp(`${label}\\s*(.+)`, 'm');
+    // Escape special regex characters in the label
+    const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`${escapedLabel}\\s*(.+)`, 'm');
     const match = content.match(regex);
     return match ? match[1].trim() : undefined;
   }
