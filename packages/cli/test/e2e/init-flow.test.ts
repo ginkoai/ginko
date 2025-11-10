@@ -343,4 +343,24 @@ describe('Init Flow E2E Tests', () => {
       expect(bestPracticesContent).toContain('ginko vibecheck');
     });
   });
+
+  describe('Charter Integration', () => {
+    it('should skip charter creation in quick mode', async () => {
+      await runGinko("init --quick", tempDir);
+
+      // Charter should NOT be created in quick mode
+      const charterPath = path.join(tempDir, 'docs', 'PROJECT-CHARTER.md');
+      expect(await fs.pathExists(charterPath)).toBe(false);
+
+      // Init should still complete successfully
+      expect(await fs.pathExists(path.join(tempDir, '.ginko'))).toBe(true);
+    });
+
+    it('should mention charter command in quick mode output', async () => {
+      const result = await runGinko("init --quick", tempDir);
+
+      // Output should mention charter as next step
+      expect(result.stdout).toContain('ginko charter');
+    });
+  });
 });
