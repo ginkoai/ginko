@@ -289,9 +289,6 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     console.log('  📄 ' + chalk.gray('ginko.json (team-shared configuration)'));
     console.log('  📄 ' + chalk.gray('.ginko/local.json (user-specific configuration)'));
     console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
-    if (charterCreated) {
-      console.log('  📄 ' + chalk.gray('docs/PROJECT-CHARTER.md (project charter)'));
-    }
     console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
     console.log('\n' + chalk.blue('💡 Configuration:'));
     console.log('  • ginko.json is tracked in git (team-shared structure)');
