@@ -9,7 +9,7 @@
  * @dependencies: [next/server, supabase, crypto, bcryptjs]
  */
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server'
 import { randomBytes } from 'crypto'
 import * as bcrypt from 'bcryptjs'
 
@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Use service role client for database operations (bypasses RLS)
+    const adminSupabase = createServiceRoleClient()
+
     // Generate a new API key with Ginko format: gk_{hex}
     const keySecret = randomBytes(32).toString('hex')
     const apiKey = `gk_${keySecret}`
@@ -52,8 +55,8 @@ export async function POST(request: NextRequest) {
     // Extract prefix for display (gk_ + first 8 chars of the secret)
     const apiKeyPrefix = `gk_${keySecret.substring(0, 8)}`
     
-    // Check if user profile exists
-    const { data: existingProfile } = await supabase
+    // Check if user profile exists (using admin client)
+    const { data: existingProfile } = await adminSupabase
       .from('user_profiles')
       .select('id')
       .eq('id', user.id)
@@ -61,7 +64,7 @@ export async function POST(request: NextRequest) {
 
     if (existingProfile) {
       // Update existing profile with hashed API key (MVP schema)
-      const { data: profile, error: updateError } = await supabase
+      const { data: profile, error: updateError } = await adminSupabase
         .from('user_profiles')
         .update({
           api_key_hash: apiKeyHash,
@@ -97,7 +100,7 @@ export async function POST(request: NextRequest) {
       })
     } else {
       // Create new profile with hashed API key (MVP schema)
-      const { data: profile, error: createError } = await supabase
+      const { data: profile, error: createError } = await adminSupabase
         .from('user_profiles')
         .insert({
           id: user.id,
