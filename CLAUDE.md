@@ -24,6 +24,7 @@ When the user types `start` (or any single-word ginko command), **IMMEDIATELY** 
 **Correct response to "start":**
 ```
 [Immediately executes: ginko start]
+[After completion: Provide concise readiness message]
 ```
 
 **Incorrect response to "start":**
@@ -34,6 +35,38 @@ I'll start a Ginko session for you.
 ```
 
 This optimization reduces startup time from 28s to <2s by eliminating assistant response latency.
+
+**After Execution: Concise Readiness Message**
+
+After `ginko start` completes, provide a brief readiness message (max 6 lines) that preserves flow:
+
+**Template:**
+```
+Ready | [Flow State] | [Work Mode]
+Resume: [One-line resume point summary]
+
+[Key context if relevant - 1-2 lines]
+
+[Next immediate action or question]
+```
+
+**Example:**
+```
+Ready | Hot (10/10) | Think & Build mode
+Resume: Removed deprecated ginko-mcp tools and references
+
+19 uncommitted files, 2 commits ahead of origin
+
+What would you like to work on?
+```
+
+**Guidelines:**
+- Maximum 6 lines total
+- Highlight flow state and work mode in first line
+- Summarize resume point concisely
+- Include critical alerts (uncommitted changes, blockers)
+- End with clear next action or open question
+- Preserve momentum and flow continuity
 
 ### Context Loading
 Context loads automatically via event-based streaming (ADR-043):
