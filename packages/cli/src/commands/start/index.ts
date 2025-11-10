@@ -10,12 +10,16 @@
  */
 
 import { StartReflectionCommand } from './start-reflection.js';
+import { requireAuth } from '../../utils/auth-storage.js';
 
 /**
  * Start command router
  * Routes between AI-enhanced reflection and legacy implementations
  */
 export async function startCommand(options: any = {}) {
+  // Require authentication
+  await requireAuth('start');
+
   // ADR-033: Session synthesis now happens in StartReflectionCommand.execute()
   // at optimal 5-15% pressure (fresh AI reads log BEFORE archiving)
 

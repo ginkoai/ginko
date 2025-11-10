@@ -16,6 +16,7 @@ import { SessionLogManager } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
 import { isQueueInitialized, getQueue } from '../lib/event-queue.js';
 import path from 'path';
+import { requireAuth } from '../utils/auth-storage.js';
 
 /**
  * Handoff command - Pause current session and update cursor
@@ -24,6 +25,9 @@ import path from 'path';
  * Context loading happens on resume via reading backwards from cursor.
  */
 export async function handoffCommand(options: any = {}) {
+  // Require authentication
+  await requireAuth('handoff');
+
   const spinner = ora('Pausing work...').start();
 
   try {

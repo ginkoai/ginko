@@ -137,3 +137,28 @@ export async function getCurrentUser(): Promise<AuthSession['user'] | null> {
   const session = await loadAuthSession();
   return session?.user || null;
 }
+
+/**
+ * Require authentication for command execution
+ * Exits process with error if not authenticated
+ * Returns session if authenticated
+ */
+export async function requireAuth(commandName?: string): Promise<AuthSession> {
+  const session = await loadAuthSession();
+
+  if (!session) {
+    const chalk = (await import('chalk')).default;
+
+    console.error(chalk.red('\n✗ Authentication required'));
+    console.error(chalk.dim('  You must be logged in to use this command'));
+    console.error(chalk.dim('\n  Run `ginko login` to authenticate with GitHub'));
+
+    if (commandName) {
+      console.error(chalk.dim(`  Then try \`ginko ${commandName}\` again\n`));
+    }
+
+    process.exit(1);
+  }
+
+  return session;
+}

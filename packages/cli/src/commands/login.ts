@@ -164,9 +164,21 @@ async function pollForSession(
         throw new Error(error.error || 'Session expired');
       }
 
-      // Other error
-      const error = await response.json().catch(() => ({ error: 'Unknown error' })) as { error: string };
-      throw new Error(error.error || 'Failed to retrieve session');
+      // Other error - log details for debugging
+      const errorBody = await response.text();
+      console.error(`\nDebug: HTTP ${response.status} from ${apiUrl}/api/auth/cli/session`);
+      console.error(`Response: ${errorBody}`);
+
+      let errorMessage = 'Failed to retrieve session';
+      try {
+        const errorJson = JSON.parse(errorBody) as { error: string };
+        errorMessage = errorJson.error || errorMessage;
+      } catch {
+        // Not JSON, use status text
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+
+      throw new Error(errorMessage);
 
     } catch (error) {
       if (error instanceof Error && error.message.includes('fetch')) {
@@ -189,7 +201,9 @@ async function generateApiKey(
   apiUrl: string,
   user: OAuthSession['user']
 ): Promise<AuthSession> {
-  const response = await fetch(`${apiUrl}/api/generate-api-key`, {
+  const url = `${apiUrl}/api/generate-api-key`;
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -198,8 +212,17 @@ async function generateApiKey(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Failed to generate API key' })) as { error: string };
-    throw new Error(error.error || 'Failed to generate API key');
+    const errorBody = await response.text();
+
+    let errorMessage = 'Failed to generate API key';
+    try {
+      const errorJson = JSON.parse(errorBody) as { error: string };
+      errorMessage = errorJson.error || errorMessage;
+    } catch {
+      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+    }
+
+    throw new Error(errorMessage);
   }
 
   const data = await response.json() as { api_key: string };

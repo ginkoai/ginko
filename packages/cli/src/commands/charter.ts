@@ -27,6 +27,7 @@ import {
 } from '../lib/charter/charter-versioning.js';
 import type { Charter, CharterContent, CharterConfidence, WorkMode } from '../types/charter.js';
 import { getUserEmail } from '../utils/helpers.js';
+import { requireAuth } from '../utils/auth-storage.js';
 
 // ============================================================================
 // Types
@@ -52,6 +53,9 @@ interface CharterOptions {
  *   ginko charter --edit      - Edit charter conversationally
  */
 export async function charterCommand(options: CharterOptions = {}): Promise<void> {
+  // Require authentication
+  await requireAuth('charter');
+
   try {
     const projectRoot = process.cwd();
     const storage = new CharterStorageManager(projectRoot, options.outputPath);

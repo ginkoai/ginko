@@ -33,6 +33,7 @@ import { SessionInsight, InsightType } from '../types/session.js';
 import { initializeWriteDispatcher, appendLogEntry } from '../utils/dispatcher-logger.js';
 import { logEvent as logEventToStream, EventEntry } from '../lib/event-logger.js';
 import * as path from 'path';
+import { requireAuth } from '../utils/auth-storage.js';
 
 interface LogOptions {
   files?: string;
@@ -52,6 +53,9 @@ interface LogOptions {
  */
 export async function logCommand(description: string, options: LogOptions): Promise<void> {
   try {
+    // Require authentication
+    await requireAuth('log');
+
     // Get session directory
     const ginkoDir = await getGinkoDir();
     const userEmail = await getUserEmail();
