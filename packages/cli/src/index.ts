@@ -67,7 +67,7 @@ const logo = chalk.green(`
 program
   .name('ginko')
   .description('Privacy-first CLI for AI-assisted development')
-  .version('1.3.0')
+  .version('1.4.1')
   .addHelpText('before', logo);
 
 // Core commands
