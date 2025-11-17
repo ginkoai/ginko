@@ -65,14 +65,14 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
-    const cursorId = searchParams.get('cursorId');
+    const cursorId = searchParams.get('cursorId'); // This is actually an event ID (cursor position)
     const limit = searchParams.get('limit') || '50';
     const categories = searchParams.get('categories');
     const branch = searchParams.get('branch');
 
     if (!cursorId) {
       return NextResponse.json(
-        { error: 'Missing required parameter: cursorId' },
+        { error: 'Missing required parameter: cursorId (event ID)' },
         { status: 400 }
       );
     }
@@ -85,16 +85,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Read events backward from cursor
+    // Read events backward from cursor position (event ID)
     const result = await runQuery<any>(
       `
-      MATCH (cursor:SessionCursor {id: $cursorId})-[:POSITIONED_AT]->(current:Event)
+      MATCH (current:Event {id: $eventId})
 
       // Read backwards via NEXT relationships
       MATCH path = (e:Event)-[:NEXT*0..${eventLimit}]->(current)
-      WHERE e.organization_id = cursor.organization_id
-        AND e.project_id = cursor.project_id
-        AND (e.branch = cursor.branch OR cursor.branch IS NULL)
+      WHERE e.organization_id = current.organization_id
+        AND e.project_id = current.project_id
 
       WITH DISTINCT e
       ORDER BY e.timestamp DESC
@@ -103,7 +102,7 @@ export async function GET(request: NextRequest) {
       RETURN e
       `,
       {
-        cursorId,
+        eventId: cursorId, // cursorId is actually the event ID
         limit: neo4j.int(eventLimit),
       }
     );
@@ -123,10 +122,10 @@ export async function GET(request: NextRequest) {
       events = events.filter(e => e.branch === branch);
     }
 
-    // Get cursor info
+    // Get cursor info (if cursor ID matches event ID)
     const cursorResult = await runQuery<any>(
-      `MATCH (cursor:SessionCursor {id: $cursorId}) RETURN cursor`,
-      { cursorId }
+      `MATCH (cursor:SessionCursor {current_event_id: $eventId}) RETURN cursor LIMIT 1`,
+      { eventId: cursorId }
     );
 
     const cursor = cursorResult.length > 0 ? cursorResult[0].cursor.properties : null;
