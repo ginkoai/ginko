@@ -42,7 +42,7 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     console.log(chalk.green('✓ Already authenticated'));
     console.log(chalk.dim(`  User: ${user?.email || user?.github_username || 'Unknown'}`));
     console.log(chalk.dim('\n  Use `ginko login --force` to re-authenticate'));
-    return;
+    process.exit(0);
   }
 
   console.log(chalk.cyan('🔐 Authenticating Ginko CLI\n'));
@@ -85,6 +85,9 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
       console.log(chalk.dim(`  GitHub: @${apiKeySession.user.github_username}`));
     }
     console.log(chalk.dim('\n  Your credentials are stored in ~/.ginko/auth.json'));
+
+    // Exit cleanly after successful authentication
+    process.exit(0);
 
   } catch (error) {
     spinner.fail('Authentication failed');
