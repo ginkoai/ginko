@@ -847,7 +847,8 @@ Example output structure:
    * Update gatherContext to include userSlug
    */
   async gatherContext(parsedIntent: any): Promise<any> {
-    const git = simpleGit();
+    const projectRoot = await getProjectRoot();
+    const git = simpleGit(projectRoot);
     const ginkoDir = await getGinkoDir();
     const userEmail = await getUserEmail();
     const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');

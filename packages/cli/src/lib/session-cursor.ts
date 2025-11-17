@@ -13,7 +13,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import simpleGit from 'simple-git';
-import { getGinkoDir, getUserEmail, getProjectInfo } from '../utils/helpers.js';
+import { getGinkoDir, getUserEmail, getProjectInfo, getProjectRoot } from '../utils/helpers.js';
 
 /**
  * Session cursor interface (ADR-043)
@@ -106,7 +106,8 @@ function generateEventId(): string {
  */
 async function getCurrentBranch(): Promise<string> {
   try {
-    const git = simpleGit();
+    const projectRoot = await getProjectRoot();
+    const git = simpleGit(projectRoot);
     const status = await git.status();
     return status.current || 'main';
   } catch (error) {
