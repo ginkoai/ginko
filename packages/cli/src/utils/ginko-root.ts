@@ -36,11 +36,20 @@ function getGitRoot(startDir?: string): string | null {
  * Check if a .ginko directory is a project root (not just global auth)
  * Project .ginko must contain at least one of: config.yml, ginko.json, or sessions/<user>/
  *
+ * CRITICAL: ~/.ginko/ (home directory) is NEVER a project root, only global auth storage
+ *
  * @param ginkoPath - Path to .ginko directory
- * @returns true if this is a project .ginko, false if it's just global auth
+ * @returns true if this is a project .ginko, false if it's global auth or home directory
  */
 async function isProjectGinko(ginkoPath: string): Promise<boolean> {
   try {
+    // NEVER treat home directory .ginko as project root (global auth only)
+    const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+    const homeGinkoPath = path.join(homeDir, '.ginko');
+    if (path.resolve(ginkoPath) === path.resolve(homeGinkoPath)) {
+      return false; // This is global auth directory, not a project
+    }
+
     // Check for project markers
     const configYml = path.join(ginkoPath, 'config.yml');
     const ginkoJson = path.join(ginkoPath, '../ginko.json'); // Team config at root
