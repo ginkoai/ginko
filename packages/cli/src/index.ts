@@ -13,6 +13,10 @@
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const packageJson = require('../package.json');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -56,26 +60,32 @@ import { charterCommand, charterExamples } from './commands/charter.js';
 
 const program = new Command();
 
-// ASCII art logo for fun
+// ASCII art logo
 const logo = chalk.green(`
-╔═══════════════════════════════════╗
-║   🌿 Ginko CLI - Privacy First    ║
-║   Your code never leaves home     ║
-╚═══════════════════════════════════╝
+╔═══════════════════════════════════════════╗
+║   🌿 Ginko - AI-Native Collaboration      ║
+║   AI Collaboration for Vibe Tribes        ║
+╚═══════════════════════════════════════════╝
 `);
 
 program
   .name('ginko')
-  .description('Privacy-first CLI for AI-assisted development')
-  .version('1.4.1')
-  .addHelpText('before', logo);
+  .description('Git-native session management and cloud context for AI-mediated development')
+  .version(packageJson.version)
+  .addHelpText('before', logo)
+  .addHelpText('after', `
+${chalk.bold('Quick Start:')}
+  ${chalk.cyan('ginko login')}              Authenticate with Ginko Cloud
+  ${chalk.cyan('ginko init')}               Initialize project (local + cloud graph)
+  ${chalk.cyan('ginko start')}              Start your first session
+
+${chalk.dim('Designed for AI-mediated development - your AI partner interprets commands naturally')}
+`);
 
 // Core commands
 program
   .command('init')
-  .description('Initialize Ginko in your project with AI-optimized setup')
-  .option('--quick', 'Quick initialization without project analysis')
-  .option('--analyze', 'Deep analysis mode for comprehensive setup')
+  .description('Initialize Ginko in your project (sets up local structure + cloud graph)')
   .option('--model <model>', 'Specify AI model (claude, gpt, generic)')
   .action((options) => initCommand(options));
 

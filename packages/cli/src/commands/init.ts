@@ -250,6 +250,37 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     spinner.succeed('Context management configured');
 
+    // Cloud graph initialization (automatic, with graceful degradation)
+    spinner.start('Initializing cloud knowledge graph...');
+
+    try {
+      const { getCurrentUser } = await import('../utils/auth-storage.js');
+      const user = await getCurrentUser();
+
+      if (user) {
+        // Auto-init graph with minimal prompts
+        const { initCommand: graphInit } = await import('./graph/init.js');
+        await graphInit({
+          quick: true,        // No confirmation prompts during init
+          skipLoad: false     // Auto-load documents if they exist
+        });
+
+        spinner.succeed('Cloud knowledge graph initialized');
+      } else {
+        spinner.info('Graph initialization skipped (not authenticated)');
+        console.log(chalk.dim('  Run "ginko login" then "ginko graph init" to enable cloud features'));
+      }
+    } catch (error) {
+      // Graceful degradation - don't fail init if graph fails
+      spinner.warn('Graph initialization skipped');
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      if (errorMsg.includes('ENOTFOUND') || errorMsg.includes('ECONNREFUSED')) {
+        console.log(chalk.dim('  (Offline - run "ginko graph init" when connected)'));
+      } else {
+        console.log(chalk.dim(`  (${errorMsg})`));
+      }
+    }
+
     // Final setup
     spinner.text = 'Completing setup...';
 
@@ -260,17 +291,9 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     spinner.succeed('Ginko initialized successfully!');
 
     // Success message
-    console.log('\n' + chalk.green('🎉 Ginko is ready!'));
-
-    if (options.quick) {
-      console.log(chalk.dim('\n💨 Quick mode: Skipped project analysis. Run ') + chalk.cyan('ginko init --analyze') + chalk.dim(' anytime to analyze your project.'));
-    }
-
-    console.log('\n' + chalk.blue('Next steps:'));
-    console.log('  1. ' + chalk.cyan('Open your AI environment') + ' (Claude Code, Cursor, Aider, etc.)');
-    console.log('  2. ' + chalk.dim('Ask your AI:') + ' ' + chalk.yellow('"Create a project charter"'));
-    console.log('  3. ' + chalk.cyan('ginko start') + ' - Begin your first session');
-    console.log('\n' + chalk.dim('💡 Ginko commands are designed for AI-mediated development'));
+    console.log('\n' + chalk.green('✅ Initialization complete!'));
+    console.log('\n' + chalk.bold('Next step: ') + chalk.cyan('ginko start'));
+    console.log(chalk.dim('  Start your first session and begin building\n'));
 
     if (deepAnalysis) {
       console.log('\n' + chalk.blue('Project analysis:'));

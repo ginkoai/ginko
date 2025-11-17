@@ -484,6 +484,7 @@ export class StartReflectionCommand extends ReflectionCommand {
     }
 
     console.log('');
+    console.log(chalk.bold('Ready to build! ') + chalk.dim('Start working and I\'ll help track context.'));
     console.log(chalk.dim('💡 Tip: `ginko handoff` is optional - just walk away and come back anytime'));
   }
 
