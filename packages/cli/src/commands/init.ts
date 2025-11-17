@@ -68,7 +68,7 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     }
 
     // Create user session directory using pathManager
-    const userSlug = userEmail.replace('@', '-at-').replace(/\\./g, '-');
+    const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');
     const userSessionsDir = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug);
     await fs.ensureDir(userSessionsDir);
     await fs.ensureDir(pathManager.joinPaths(userSessionsDir, 'archive'));

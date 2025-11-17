@@ -1,6 +1,6 @@
 {
   "name": "@ginkoai/cli",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "description": "Privacy-first CLI for AI-assisted development. Your code never leaves your machine.",
   "main": "dist/index.js",
   "bin": {
