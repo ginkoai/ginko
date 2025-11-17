@@ -1,7 +1,7 @@
 {
   "name": "@ginkoai/cli",
-  "version": "1.4.7",
-  "description": "Privacy-first CLI for AI-assisted development. Your code never leaves your machine.",
+  "version": "1.4.8",
+  "description": "Git-native session management and cloud context for AI-mediated development. AI Collaboration for Vibe Tribes.",
   "main": "dist/index.js",
   "bin": {
     "ginko": "./dist/index.js"
