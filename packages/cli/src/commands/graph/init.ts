@@ -97,10 +97,27 @@ export async function initCommand(options: InitOptions): Promise<void> {
     console.log(`  📝 Sessions: ${chalk.cyan(documents.sessions)} documents in .ginko/sessions/`);
     console.log(`\n  ${chalk.bold('Total')}: ${chalk.green(documents.total)} documents`);
 
-    if (documents.total === 0) {
+    if (documents.total === 0 && !options.quick) {
       console.log(chalk.yellow('\n⚠️  No documents found'));
-      console.log(chalk.dim('Make sure your project has ADRs, PRDs, or other documentation'));
-      return;
+      console.log(chalk.dim('You can still initialize the graph and add documents later'));
+      console.log(chalk.dim('Or add ADRs, PRDs, or other documentation first\n'));
+
+      const { proceed } = await prompts({
+        type: 'confirm',
+        name: 'proceed',
+        message: 'Initialize empty graph anyway?',
+        initial: true,
+      });
+
+      if (!proceed) {
+        console.log(chalk.dim('\nGraph initialization cancelled'));
+        return;
+      }
+    }
+
+    // Quick mode with 0 docs: proceed silently (called from ginko init)
+    if (documents.total === 0 && options.quick) {
+      console.log(chalk.dim('  No documents to load yet - graph will be ready when you add them'));
     }
 
     const estimatedTime = Math.ceil(documents.total * 0.5); // Rough estimate
