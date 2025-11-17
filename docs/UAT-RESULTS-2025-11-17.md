@@ -305,17 +305,169 @@ docs/
 | v1.4.5 | Git working directory fix | ✅ Published |
 | v1.4.6 | Global/project separation + home exclusion | ✅ Published |
 | v1.4.7 | Session slug consistency | ✅ Published |
+| v1.4.8 | UX optimization for first-time users | ✅ Published |
 
-**Current Stable Version: v1.4.7** 🚀
+**Current Stable Version: v1.4.8** 🚀
+
+---
+
+## v1.4.8: UX Optimization for First-Time Users
+**Date:** 2025-11-17
+**Focus:** Onboarding friction reduction
+**Target:** "Slightly interested, easily distracted first-time user"
+
+### Enhancement Summary
+
+Based on UAT feedback, identified and eliminated onboarding friction. **Reduced setup from 4 steps to 3 (25% reduction)** by integrating graph initialization into `ginko init`.
+
+### Enhancement #1: Automatic Graph Initialization
+**Impact:** High - Eliminates forgotten step
+**Version:** v1.4.8
+
+**Problem:**
+```bash
+# Old flow - 4 steps, easy to forget graph init
+ginko login
+ginko init
+ginko graph init    # ← Often forgotten!
+ginko start
+```
+
+**Solution:**
+```bash
+# New flow - 3 steps, graph "just works"
+ginko login
+ginko init          # ← Now includes graph init
+ginko start
+```
+
+**Implementation:**
+- **File:** `src/commands/init.ts:253-282`
+- Graph initialization happens automatically during `ginko init`
+- Graceful degradation: works offline, without auth, handles edge cases
+- Removed `--quick` and `--offline` flags (YAGNI for AI-mediated usage)
+
+**Benefits:**
+- ✅ Zero friction - graph features work immediately
+- ✅ Increased discoverability - users naturally encounter graph capabilities
+- ✅ Aligns with "cloud-first" architecture
+- ✅ Prevents "half-initialized" projects
+
+---
+
+### Enhancement #2: Clear "Next Step" Messaging
+**Impact:** Medium - Reduces cognitive load
+**Version:** v1.4.8
+
+**Problem:**
+Users complete a command but don't know what to do next.
+
+**Solution:**
+Every command now shows actionable next steps:
+
+**ginko login** (`src/commands/login.ts:44, 89-90`):
+```
+✓ Successfully authenticated
+
+Next step: ginko init
+  (Run this in your project directory)
+```
+
+**ginko init** (`src/commands/init.ts:294-296`):
+```
+✅ Initialization complete!
+
+Next step: ginko start
+  Start your first session and begin building
+```
+
+**ginko start** (`src/commands/start/start-reflection.ts:487-488`):
+```
+Ready to build! Start working and I'll help track context.
+💡 Tip: `ginko handoff` is optional - just walk away and come back anytime
+```
+
+**Benefits:**
+- ✅ Clear guidance at every step
+- ✅ Reduced drop-off between commands
+- ✅ Better user confidence
+
+---
+
+### Enhancement #3: AI-Optimized Help Text
+**Impact:** Medium - Improves AI partner integration
+**Version:** v1.4.8
+
+**Changes:**
+- **File:** `src/index.ts:64-83`
+
+**Updated Header:**
+```
+╔═══════════════════════════════════════════╗
+║   🌿 Ginko - AI-Native Collaboration      ║
+║   AI Collaboration for Vibe Tribes        ║
+╚═══════════════════════════════════════════╝
+```
+
+**Updated Description:**
+"Git-native session management and cloud context for AI-mediated development"
+
+**Added Quick Start Section:**
+```
+Quick Start:
+  ginko login              Authenticate with Ginko Cloud
+  ginko init               Initialize project (local + cloud graph)
+  ginko start              Start your first session
+
+Designed for AI-mediated development - your AI partner interprets commands naturally
+```
+
+**Benefits:**
+- ✅ Scannable by AI partners
+- ✅ Human-readable
+- ✅ Shows essential 3-command flow prominently
+- ✅ Accurate positioning ("AI-Native Collaboration")
+
+---
+
+### UAT Testing Results - v1.4.8
+
+**Test Scenario:** Fresh project initialization
+**Test Environment:** Test workstation (separate from development)
+**Tester:** Chris Norton + Claude Code (AI partner)
+
+| Test Case | Status | Notes |
+|-----------|--------|-------|
+| Graph auto-init during `ginko init` | ✅ PASS | Graph initializes without separate command |
+| Graceful degradation (offline) | ✅ PASS | Init completes, shows helpful message |
+| Graceful degradation (no auth) | ✅ PASS | Init completes, suggests login + graph init |
+| Next step messaging (login) | ✅ PASS | Clear "Next step: ginko init" shown |
+| Next step messaging (init) | ✅ PASS | Clear "Next step: ginko start" shown |
+| Next step messaging (start) | ✅ PASS | "Ready to build!" message shown |
+| Help text Quick Start section | ✅ PASS | 3-command flow visible at bottom |
+| Updated branding in help | ✅ PASS | "AI-Native Collaboration" displayed |
+| Build and publish | ✅ PASS | TypeScript compilation successful |
+
+**Overall Result:** ✅ ALL TESTS PASSED
+
+**Impact Metrics:**
+- **Onboarding steps:** 4 → 3 (25% reduction)
+- **Cognitive load:** Significantly reduced with next-step guidance
+- **Feature discovery:** Graph features now discoverable by default
+- **AI integration:** Help text optimized for AI partner consumption
 
 ---
 
 ## Recommendations
 
 ### For Production Release
-✅ **v1.4.7 is production-ready**
-- All critical bugs resolved
+✅ **v1.4.8 is production-ready**
+- All critical bugs resolved (v1.4.3 → v1.4.7)
 - Clean separation between global auth and project directories
+- **UX optimized for first-time users (v1.4.8)**
+- Automatic graph initialization - zero friction onboarding
+- Clear next-step messaging at every command
+- AI-optimized help text with Quick Start section
 - Full workflow tested and verified
 - Compatible with AI development tools (Claude Code, Cursor, etc.)
 
@@ -344,12 +496,21 @@ ls -la .ginko/sessions/
 **Development:** Claude Code + Chris Norton
 **Environment:** Separate UAT workstation (clean installation)
 
-**Test Duration:** 2 hours
-**Bugs Found:** 4 critical
-**Bugs Fixed:** 4/4 (100%)
-**UAT Result:** ✅ PASS
+**v1.4.3 → v1.4.7 (Bug Fixes):**
+- Test Duration: 2 hours
+- Bugs Found: 4 critical
+- Bugs Fixed: 4/4 (100%)
+- Result: ✅ PASS
+
+**v1.4.8 (UX Enhancements):**
+- Test Duration: 1 hour
+- Enhancements: 3 major (auto graph init, next-step messaging, help optimization)
+- Test Cases: 9/9 passed (100%)
+- Result: ✅ PASS
+
+**Overall UAT Result:** ✅ ALL TESTS PASSED
 
 ---
 
-*Generated: 2025-11-17*
-*Ginko CLI v1.4.7*
+*Updated: 2025-11-17*
+*Ginko CLI v1.4.8*
