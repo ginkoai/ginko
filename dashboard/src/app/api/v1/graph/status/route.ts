@@ -195,6 +195,12 @@ export async function GET(request: NextRequest) {
         }
       : { id: 'none', connections: 0 };
 
+    // Convert Neo4j DateTime to ISO string
+    const lastSyncValue = project.updatedAt || project.createdAt;
+    const lastSyncStr = lastSyncValue?.toString
+      ? lastSyncValue.toString()
+      : new Date().toISOString();
+
     const response: GraphStatusResponse = {
       namespace: project.namespace || '',
       graphId: project.graphId,
@@ -208,7 +214,7 @@ export async function GET(request: NextRequest) {
         total: totalRels,
         byType: relByType,
       },
-      lastSync: project.updatedAt || project.createdAt,
+      lastSync: lastSyncStr,
       health: 'healthy',
       stats: {
         averageConnections,

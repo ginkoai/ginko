@@ -74,7 +74,13 @@ export async function statusCommand(): Promise<void> {
 
     // Display health and sync info
     console.log(`\n${chalk.bold('Health')}: ${status.health === 'healthy' ? chalk.green('✓ Healthy') : chalk.yellow('⚠ Issues detected')}`);
-    console.log(`${chalk.bold('Last sync')}: ${chalk.dim(new Date(status.lastSync).toLocaleString())}`);
+
+    // Parse and display last sync time
+    const lastSyncDate = status.lastSync ? new Date(status.lastSync) : null;
+    const lastSyncStr = lastSyncDate && !isNaN(lastSyncDate.getTime())
+      ? lastSyncDate.toLocaleString()
+      : 'Never';
+    console.log(`${chalk.bold('Last sync')}: ${chalk.dim(lastSyncStr)}`);
 
     // Display statistics if available
     if (status.stats) {
@@ -83,7 +89,7 @@ export async function statusCommand(): Promise<void> {
       console.log(`  Most connected: ${chalk.cyan(status.stats.mostConnected.id)} (${status.stats.mostConnected.connections} connections)`);
     }
 
-    console.log(chalk.gray('\n─'.repeat(50)));
+    console.log(chalk.gray('\n' + '─'.repeat(50)));
 
   } catch (error) {
     if (error instanceof Error) {
