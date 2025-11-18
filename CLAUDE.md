@@ -13,13 +13,22 @@ ginko handoff "summary"        # Optional session handoff
 
 ### AI Assistant Instructions
 
-**CRITICAL: Immediate Command Execution**
+**🚨 CRITICAL: Single-Word Command Execution**
 
-When the user types `start` (or any single-word ginko command), **IMMEDIATELY** execute `ginko start` without any preamble, explanation, or delay. Do not:
+When the user types a **single word** that matches a ginko command (`start`, `handoff`, `log`, `status`, etc.), **IMMEDIATELY** execute the corresponding ginko command without ANY preamble, explanation, or delay.
+
+**Pattern Recognition:**
+- User input: `start` → Execute: `ginko start`
+- User input: `handoff` → Execute: `ginko handoff`
+- User input: `status` → Execute: `ginko status`
+- User input: `log` → Ask for description, then execute
+
+**DO NOT:**
 - Announce what you're about to do
-- Explain the command
+- Explain the command first
 - Ask for confirmation
 - Add any commentary before execution
+- Wait for additional input
 
 **Correct response to "start":**
 ```
@@ -34,7 +43,61 @@ I'll start a Ginko session for you.
 [Executes: ginko start]
 ```
 
-This optimization reduces startup time from 28s to <2s by eliminating assistant response latency.
+**Why this matters:** Eliminates 9+ seconds of assistant response latency, reducing startup from 28s to <2s.
+
+---
+
+**🎯 ONBOARDING: New Project Setup Flow**
+
+When working with a **newly initialized project** (fresh `ginko init`, no charter exists), proactively guide the user through onboarding:
+
+**Detection:**
+- Project has `.ginko/` directory (ginko initialized)
+- No `docs/PROJECT-CHARTER.md` file exists
+- User is in early stages (few/no commits, minimal files)
+
+**Action Sequence:**
+1. **After first `ginko start`**, check for charter
+2. **If no charter exists**, proactively suggest:
+   ```
+   I notice this is a new project without a charter. Would you like to create one?
+
+   A charter helps us:
+   - Align on project goals and scope
+   - Define success criteria
+   - Guide development decisions
+
+   We can create it with: ginko charter
+   ```
+3. **If user agrees**, execute: `ginko charter --skip-conversation` (for speed in fresh projects)
+4. **After charter created**, briefly summarize key sections and confirm next steps
+
+**Example interaction:**
+```
+User: start
+AI: [Executes ginko start immediately]
+AI: Ready | Cold | Think & Build mode
+    New project detected
+
+    I notice this is a new project. Would you like to create a project charter?
+    This will help us align on goals and scope.
+
+User: yes
+AI: [Executes: ginko charter --skip-conversation]
+AI: ✓ Charter created at docs/PROJECT-CHARTER.md
+
+    Key sections:
+    - Purpose: [summarize]
+    - Success criteria: [list 2-3 top items]
+
+    What would you like to work on first?
+```
+
+**Important:**
+- Only suggest charter ONCE per project (check if file exists)
+- Don't be pushy - accept "no" gracefully
+- Use `--skip-conversation` flag for speed in new projects
+- After charter is created, reference it naturally during development
 
 **After Execution: Concise Readiness Message**
 

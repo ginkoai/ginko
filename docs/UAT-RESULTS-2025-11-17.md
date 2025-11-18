@@ -512,5 +512,228 @@ ls -la .ginko/sessions/
 
 ---
 
-*Updated: 2025-11-17*
-*Ginko CLI v1.4.8*
+## v1.4.9-v1.4.11: Graph API Endpoints & Integration
+**Date:** 2025-11-18
+**Focus:** Cloud Knowledge Graph initialization endpoints
+**Target:** Magical onboarding with automatic graph setup
+
+### Feature Summary
+
+**v1.4.9-v1.4.11** introduced cloud-based Knowledge Graph APIs for seamless project initialization:
+- **v1.4.9:** Event ID handling improvements
+- **v1.4.10:** Graph initialization with zero documents
+- **v1.4.11:** Graph status and init API endpoints
+
+### Test Results
+
+#### Test 1: Graph Init API Endpoint (`/api/v1/graph/init`)
+**Status:** ✅ PASS
+
+**Test Case:**
+```bash
+ginko graph init --quick --skip-load
+```
+
+**Result:**
+- ✅ API endpoint responding at `https://app.ginkoai.com`
+- ✅ Graph created successfully: `gin_1763490304054_ecc735`
+- ✅ Namespace assigned: `user-placeholder/cli`
+- ✅ Configuration saved to `.ginko/graph/config.json`
+- ✅ Zero documents handled gracefully (no errors)
+
+**Response Format:**
+```json
+{
+  "namespace": "user-placeholder/cli",
+  "graphId": "gin_1763490304054_ecc735",
+  "status": "created",
+  "projectName": "cli",
+  "visibility": "private"
+}
+```
+
+---
+
+#### Test 2: Graph Status API Endpoint (`/api/v1/graph/status`)
+**Status:** ✅ PASS
+
+**Test Case:**
+```bash
+curl "https://app.ginkoai.com/api/v1/graph/status?graphId=gin_1763490304054_ecc735"
+```
+
+**Result:**
+- ✅ Returns comprehensive graph statistics
+- ✅ Node counts by type (1 Project node created)
+- ✅ Relationship statistics (0 relationships - expected)
+- ✅ Health status: "healthy"
+- ✅ Last sync timestamp accurate
+- ✅ Embeddings count (0 - expected with zero documents)
+
+**Response Format:**
+```json
+{
+  "namespace": "user-placeholder/cli",
+  "graphId": "gin_1763490304054_ecc735",
+  "visibility": "private",
+  "nodes": {
+    "total": 1,
+    "byType": { "Project": 1 },
+    "withEmbeddings": 0
+  },
+  "relationships": {
+    "total": 0,
+    "byType": {}
+  },
+  "lastSync": "2025-11-18T18:25:04.054000000Z",
+  "health": "healthy",
+  "stats": {
+    "averageConnections": 0,
+    "mostConnected": { "id": "unknown", "connections": 0 }
+  }
+}
+```
+
+---
+
+#### Test 3: Zero Documents Initialization
+**Status:** ✅ PASS
+
+**Test Case:**
+Fresh project with no ADRs, PRDs, or patterns.
+
+**Result:**
+- ✅ Graph initializes successfully without documents
+- ✅ Shows clear message: "No documents to load yet - graph will be ready when you add them"
+- ✅ Estimated processing time: 0-0 seconds
+- ✅ Creates Project node only
+- ✅ No errors or warnings
+- ✅ Ready for future document uploads
+
+**Impact:**
+Allows users to initialize graph before creating documentation - removes chicken-and-egg problem.
+
+---
+
+#### Test 4: Integration with `ginko init` Flow
+**Status:** ✅ PASS
+
+**Test Case:**
+```bash
+mkdir /tmp/ginko-uat-test
+cd /tmp/ginko-uat-test
+git init && git commit --allow-empty -m "init"
+ginko init
+```
+
+**Result:**
+- ✅ Graph initialization happens automatically during `ginko init`
+- ✅ No separate `ginko graph init` command needed
+- ✅ "Magical onboarding" confirmed - zero manual steps
+- ✅ Graph created: `gin_1763490527667_b391c6`
+- ✅ Config saved correctly
+- ✅ Clear next steps shown: "Next step: ginko start"
+- ✅ All project files created (.ginko/, ginko.json, CLAUDE.md)
+
+**User Experience:**
+```
+✓ Authenticated as: chris@watchhill.ai
+✓ Project: ginko-uat-v1-4-11
+✓ Cloud endpoint: https://app.ginkoai.com
+
+Initializing graph namespace...
+✓ Graph namespace created
+  Namespace: user-placeholder/ginko-uat-v1-4-11
+  Graph ID: gin_1763490527667_b391c6
+✓ Configuration saved
+
+✅ Initialization complete!
+
+Next step: ginko start
+  Start your first session and begin building
+```
+
+---
+
+### Success Criteria - All Passed ✅
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| `/api/v1/graph/init` endpoint functional | ✅ PASS | Creates graph successfully |
+| `/api/v1/graph/status` endpoint functional | ✅ PASS | Returns comprehensive stats |
+| Zero documents handled gracefully | ✅ PASS | No errors, clear messaging |
+| Integration with `ginko init` | ✅ PASS | Automatic, no manual steps |
+| Error handling (not found) | ✅ PASS | Returns proper 404 with message |
+| Authentication | ✅ PASS | API key validation working |
+| Config persistence | ✅ PASS | Saved to `.ginko/graph/config.json` |
+
+---
+
+### Versions Published
+
+| Version | Feature | Status |
+|---------|---------|--------|
+| v1.4.9 | Event ID improvements | ✅ Published |
+| v1.4.10 | Zero documents support | ✅ Published |
+| v1.4.11 | Graph status/init endpoints | ✅ Published |
+
+**Current Stable Version: v1.4.11** 🚀
+
+---
+
+### Impact Analysis
+
+**Onboarding Improvement:**
+- **Before v1.4.8:** 4 manual steps (login → init → graph init → start)
+- **v1.4.8:** 3 steps (auto graph init added to `ginko init`)
+- **v1.4.11:** Same 3 steps, but with **robust cloud API backend**
+
+**Technical Improvements:**
+- ✅ Cloud-based graph storage (Neo4j)
+- ✅ RESTful API endpoints for graph operations
+- ✅ Proper error handling and status codes
+- ✅ Zero documents support (no blocking on empty projects)
+- ✅ Health monitoring via status endpoint
+
+**User Experience:**
+- ✅ Seamless initialization - graph "just works"
+- ✅ Clear status feedback at every step
+- ✅ No manual graph setup required
+- ✅ Works offline for local features, online for cloud features
+
+---
+
+### Recommendations
+
+**For v1.4.11 Release:**
+✅ **Production Ready**
+- All API endpoints functional and tested
+- Zero documents handled gracefully
+- Integration with `ginko init` seamless
+- Error handling appropriate
+- Clear user messaging
+
+**For Future Enhancements:**
+- Consider batch status endpoint for multiple graphs
+- Add graph deletion/cleanup endpoint
+- Implement graph visibility changes (private ↔ organization)
+- Add metrics for graph query performance
+
+---
+
+### Test Environment
+
+**Testing:** Chris Norton + Claude Code
+**Environment:** Local development + Production API (`https://app.ginkoai.com`)
+**CLI Version:** v1.4.11
+**Test Duration:** 30 minutes
+**Test Cases:** 4/4 passed (100%)
+
+---
+
+**Overall UAT Result:** ✅ ALL TESTS PASSED
+
+---
+
+*Updated: 2025-11-18*
+*Ginko CLI v1.4.11*

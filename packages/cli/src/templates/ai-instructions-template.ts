@@ -30,6 +30,50 @@ export interface TemplateVariables extends ProjectContext {
 }
 
 export class AiInstructionsTemplate {
+  private static readonly ONBOARDING_INSTRUCTIONS = `
+## 🚨 AI Assistant Critical Instructions
+
+### Single-Word Command Execution
+
+When the user types a **single word** that matches a ginko command, **IMMEDIATELY** execute it without ANY preamble:
+
+**Pattern Recognition:**
+- User input: \`start\` → Execute: \`ginko start\`
+- User input: \`handoff\` → Execute: \`ginko handoff\`
+- User input: \`status\` → Execute: \`ginko status\`
+- User input: \`log\` → Ask for description, then execute
+
+**DO NOT:**
+- Announce what you're about to do
+- Explain the command first
+- Ask for confirmation
+- Add any commentary before execution
+
+**Why:** Eliminates 9+ seconds of response latency (28s → <2s startup)
+
+### New Project Onboarding
+
+**After first \`ginko start\`**, check for charter (\`docs/PROJECT-CHARTER.md\`):
+
+**If no charter exists:**
+\`\`\`
+I notice this is a new project without a charter. Would you like to create one?
+
+A charter helps us:
+- Align on project goals and scope
+- Define success criteria
+- Guide development decisions
+
+We can create it with: ginko charter
+\`\`\`
+
+**If user agrees:**
+- Execute: \`ginko charter --skip-conversation\` (for speed)
+- Summarize key sections after creation
+- Only suggest once per project
+- Accept "no" gracefully
+`;
+
   private static readonly FRONTMATTER_SECTION = `
 ## AI-Optimized File Discovery (ADR-002)
 
@@ -131,6 +175,8 @@ These reflexes maintain continuous context awareness while preserving natural wo
 - **Frameworks**: ${variables.frameworks.join(', ')}
 - **Package Manager**: ${variables.packageManager}
 - **Generated**: ${variables.date}
+
+${this.ONBOARDING_INSTRUCTIONS}
 
 ## Quick Commands
 ${this.generateQuickCommands(variables)}
