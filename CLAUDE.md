@@ -69,7 +69,7 @@ When working with a **newly initialized project** (fresh `ginko init`, no charte
 
    We can create it with: ginko charter
    ```
-3. **If user agrees**, execute: `ginko charter --skip-conversation` (for speed in fresh projects)
+3. **If user agrees**, execute: `ginko charter` (full conversational experience)
 4. **After charter created**, briefly summarize key sections and confirm next steps
 
 **Example interaction:**
@@ -83,7 +83,8 @@ AI: Ready | Cold | Think & Build mode
     This will help us align on goals and scope.
 
 User: yes
-AI: [Executes: ginko charter --skip-conversation]
+AI: [Executes: ginko charter]
+AI: [Guides user through conversational questions]
 AI: ✓ Charter created at docs/PROJECT-CHARTER.md
 
     Key sections:
@@ -96,7 +97,8 @@ AI: ✓ Charter created at docs/PROJECT-CHARTER.md
 **Important:**
 - Only suggest charter ONCE per project (check if file exists)
 - Don't be pushy - accept "no" gracefully
-- Use `--skip-conversation` flag for speed in new projects
+- Use full conversational approach (default) - it's engaging and valuable
+- Power users can add `--skip-conversation` flag if they want speed
 - After charter is created, reference it naturally during development
 
 **After Execution: Concise Readiness Message**

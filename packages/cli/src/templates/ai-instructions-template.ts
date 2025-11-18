@@ -68,10 +68,12 @@ We can create it with: ginko charter
 \`\`\`
 
 **If user agrees:**
-- Execute: \`ginko charter --skip-conversation\` (for speed)
+- Execute: \`ginko charter\` (full conversational experience)
+- Guide user through questions naturally
 - Summarize key sections after creation
 - Only suggest once per project
 - Accept "no" gracefully
+- Power users can add \`--skip-conversation\` flag if they want speed
 `;
 
   private static readonly FRONTMATTER_SECTION = `
