@@ -735,5 +735,192 @@ Next step: ginko start
 
 ---
 
+## v1.4.12-v1.4.13: AI-Mediated Charter Creation
+**Date:** 2025-11-18
+**Focus:** Charter creation UX improvement - AI-mediated by default
+**Target:** Natural conversational charter creation without blocking prompts
+
+### Issue Identified in UAT
+
+**Problem:** `ginko charter` ran interactive CLI prompts that blocked AI partner
+- AI partner executed command
+- Interactive prompts appeared in terminal
+- User couldn't see prompts (AI was running the command)
+- AI partner couldn't respond to prompts
+- Result: Command hung waiting for input
+
+**Root Cause:** Charter command designed for human-CLI interaction, not AI-mediated interaction
+
+### Solution Implemented
+
+**Pattern Alignment:** Follow Ginko's standard approach
+- **Default:** AI-assisted (output template for AI to use)
+- **`--no-ai` flag:** Interactive mode for human users
+
+### Implementation Details
+
+#### 1. Charter Template (`charter-template.md`)
+**Created comprehensive guide for AI partners:**
+- 7 key charter questions with examples
+- Conversation guidelines (natural, not mechanical)
+- Work mode detection signals (hack-ship, think-build, full-planning)
+- Output format specification
+- Synthesis guidelines
+
+**Example questions:**
+- Purpose & Problem (Required)
+- Users & Personas (Required)
+- Success Criteria (Required)
+- Scope Boundaries (Required)
+- Constraints (Optional)
+- Risks & Mitigation (Optional - full-planning)
+- Alternatives Considered (Optional - full-planning)
+
+#### 2. Updated `ginko charter` Command
+
+**Default Behavior (AI-mediated):**
+```bash
+ginko charter
+# Outputs charter template to stdout
+# AI partner reads template
+# AI conducts natural conversation
+# AI synthesizes and creates docs/PROJECT-CHARTER.md
+```
+
+**Interactive Mode:**
+```bash
+ginko charter --no-ai
+# Existing conversational prompts
+# Direct CLI interaction
+# Requires authentication
+```
+
+#### 3. Build Process Enhancement
+- Added `copy:templates` script to package.json
+- Template .md files copied to dist/ during build
+- Ensures templates available at runtime
+
+#### 4. CLAUDE.md Instructions
+- Updated with AI-mediated charter flow
+- Step-by-step guidance for AI partners
+- Example interaction showing natural conversation
+- Emphasis on adaptive questioning based on project complexity
+
+### UAT Testing Results
+
+**Test Scenario:** Simple React/TypeScript calculator app
+**Tester:** Chris Norton + AI Partner (Claude Code)
+
+**Flow:**
+1. AI suggested charter creation after `ginko start`
+2. User agreed
+3. AI executed `ginko charter`
+4. AI read template output
+5. AI asked **5 focused questions** (appropriate for simple app)
+6. AI detected **Hack & Ship** work mode (from "1-2 days casual")
+7. AI synthesized into well-formed charter
+8. AI created `docs/PROJECT-CHARTER.md`
+9. AI summarized key points and offered next steps
+
+**Charter Created:**
+- **Purpose:** Learn React/TypeScript by building compound interest calculator
+- **Success:** Master user interaction, logic handling, dynamic updates
+- **Scope:** Form inputs → calculation → results + growth chart (Material-UI)
+- **Timeline:** 1-2 days casual exploration
+- **Mode:** Hack & Ship (iterate and learn quickly)
+
+### Success Criteria - All Passed ✅
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| No blocking prompts | ✅ PASS | Template output, no interactive CLI |
+| Natural conversation | ✅ PASS | 5 questions, not mechanical |
+| Appropriate depth | ✅ PASS | Question count matched project complexity |
+| Work mode detection | ✅ PASS | Correctly identified Hack & Ship |
+| Well-formed output | ✅ PASS | Clear charter with all key sections |
+| Charter file created | ✅ PASS | `docs/PROJECT-CHARTER.md` exists |
+| Clear next steps | ✅ PASS | AI offered actionable next steps |
+
+### Versions Published
+
+| Version | Feature | Status |
+|---------|---------|--------|
+| v1.4.12 | Onboarding UX improvements, charter conversation fix | ✅ Published |
+| v1.4.13 | AI-mediated charter creation | ✅ Ready to publish |
+
+**Current Version: v1.4.13** 🚀
+
+---
+
+### Impact Analysis
+
+**Before (v1.4.11 and earlier):**
+- `ginko charter` ran interactive CLI prompts
+- Blocked when AI partner executed command
+- Prompts invisible to user
+- Unusable in AI-mediated workflow
+
+**After (v1.4.13):**
+- `ginko charter` outputs template by default
+- AI partner reads template, conducts conversation
+- Natural, engaging interaction
+- Appropriate question depth for project type
+- No blocking, seamless UX
+
+**Pattern Consistency:**
+- Aligns with Ginko's reflection command pattern
+- AI-assisted by default
+- `--no-ai` for manual/interactive use
+- Follows established conventions
+
+---
+
+### Conversation Quality
+
+**Positive Indicators:**
+- ✅ 5 questions for simple app (not over-engineering)
+- ✅ Work mode correctly detected from conversation cues
+- ✅ Natural flow, not form-filling
+- ✅ User reported "Very good interaction"
+- ✅ Appropriate synthesis and summarization
+
+**Template Effectiveness:**
+- ✅ Clear guidance for AI partners
+- ✅ Examples helped AI understand output format
+- ✅ Conversation guidelines followed
+- ✅ Work mode signals correctly interpreted
+
+---
+
+### Recommendations
+
+**For v1.4.13 Release:**
+✅ **Production Ready**
+- AI-mediated charter fully functional
+- UAT validation successful
+- Natural conversation quality confirmed
+- Pattern alignment complete
+
+**For Future Enhancements:**
+- Consider adding charter editing via AI-mediated mode
+- Add charter refinement conversation flow
+- Explore team charter collaboration features
+
+---
+
+### Test Environment
+
+**Testing:** Chris Norton + Claude Code (AI partner)
+**Environment:** UAT test project (React calculator app)
+**CLI Version:** v1.4.13
+**Test Duration:** Single charter creation flow (~5 minutes)
+**Test Result:** ✅ PASS
+
+---
+
+**Overall UAT Result:** ✅ ALL TESTS PASSED
+
+---
+
 *Updated: 2025-11-18*
-*Ginko CLI v1.4.11*
+*Ginko CLI v1.4.13*
