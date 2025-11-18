@@ -171,23 +171,32 @@ export class GraphApiClient {
     body?: unknown
   ): Promise<T> {
     const token = await this.requireAuth();
+    const url = `${this.apiUrl}${endpoint}`;
 
-    const response = await fetch(`${this.apiUrl}${endpoint}`, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'X-Client-Version': 'ginko-cli@1.2.0',
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Client-Version': 'ginko-cli@1.2.0',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json() as GraphApiError;
-      throw new Error(errorData.error.message || `API error: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json() as GraphApiError;
+        throw new Error(errorData.error.message || `API error: ${response.status}`);
+      }
+
+      return response.json() as Promise<T>;
+    } catch (error) {
+      // Add detailed error logging
+      if (error instanceof Error) {
+        throw new Error(`Failed to ${method} ${url}: ${error.message}`);
+      }
+      throw error;
     }
-
-    return response.json() as Promise<T>;
   }
 
   /**

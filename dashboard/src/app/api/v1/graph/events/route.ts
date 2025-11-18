@@ -44,10 +44,16 @@ interface CreateEventsResponse {
  * Create events in the knowledge graph (ADR-043 Event Stream Model)
  */
 export async function POST(request: NextRequest) {
+  console.log('[Events API] POST /api/v1/graph/events called');
+
   try {
     // Verify Neo4j connection
+    console.log('[Events API] Verifying Neo4j connection...');
     const isConnected = await verifyConnection();
+    console.log('[Events API] Neo4j connection status:', isConnected);
+
     if (!isConnected) {
+      console.error('[Events API] Neo4j connection failed - returning 503');
       return NextResponse.json(
         {
           error: {
@@ -79,6 +85,11 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = (await request.json()) as CreateEventsRequest;
+    console.log('[Events API] Request body:', {
+      graphId: body.graphId,
+      eventCount: body.events?.length,
+      firstEventId: body.events?.[0]?.id
+    });
 
     // Validate required fields
     if (!body.graphId) {
@@ -121,23 +132,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Create events in Neo4j
+    console.log('[Events API] Creating Neo4j session...');
     const createdEvents = [];
     const session = getSession();
+    console.log('[Events API] Session created, processing', body.events.length, 'events');
 
     try {
-      // Create events in a transaction
-      for (const event of body.events) {
-        // First, ensure User node exists
-        await session.run(
-          `
-          MERGE (u:User {id: $userId})
-          ON CREATE SET u.created_at = datetime()
-          `,
-          { userId: event.user_id }
-        );
+      // Create events in a write transaction (ensures commits)
+      await session.executeWrite(async (tx) => {
+        for (const event of body.events) {
+          console.log('[Events API] Processing event:', event.id);
 
-        // Create event with temporal chain link
-        const result = await session.run(
+          // First, ensure User node exists
+          console.log('[Events API] Creating/merging user node:', event.user_id);
+          await tx.run(
+            `
+            MERGE (u:User {id: $userId})
+            ON CREATE SET u.created_at = datetime()
+            `,
+            { userId: event.user_id }
+          );
+          console.log('[Events API] User node created/merged');
+
+          // Create event with temporal chain link
+          console.log('[Events API] Creating event node and relationships...');
+          const result = await tx.run(
           `
           // Create the event
           CREATE (e:Event {
@@ -195,14 +214,23 @@ export async function POST(request: NextRequest) {
           }
         );
 
-        if (result.records.length > 0) {
-          const record = result.records[0];
-          createdEvents.push({
-            id: record.get('id'),
-            timestamp: record.get('timestamp').toString(),
-          });
+        console.log('[Events API] Event creation query completed, records:', result.records.length);
+
+          if (result.records.length > 0) {
+            const record = result.records[0];
+            const createdEvent = {
+              id: record.get('id'),
+              timestamp: record.get('timestamp').toString(),
+            };
+            createdEvents.push(createdEvent);
+            console.log('[Events API] Event created successfully:', createdEvent.id);
+          } else {
+            console.warn('[Events API] Event creation returned no records for:', event.id);
+          }
         }
-      }
+      });
+
+      console.log('[Events API] Transaction committed. Created:', createdEvents.length, '/', body.events.length);
 
       // Success response
       const response: CreateEventsResponse = {
@@ -210,12 +238,16 @@ export async function POST(request: NextRequest) {
         events: createdEvents,
       };
 
+      console.log('[Events API] Returning success response:', response);
       return NextResponse.json(response, { status: 201 });
     } finally {
+      console.log('[Events API] Closing Neo4j session');
       await session.close();
+      console.log('[Events API] Session closed');
     }
   } catch (error) {
-    console.error('[API] Error creating events:', error);
+    console.error('[Events API] ERROR creating events:', error);
+    console.error('[Events API] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return NextResponse.json(
       {
         error: {

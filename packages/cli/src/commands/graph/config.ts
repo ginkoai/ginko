@@ -136,7 +136,7 @@ export function createDefaultConfig(
     namespace,
     projectName,
     visibility,
-    apiEndpoint: process.env.GINKO_API_URL || 'https://api.ginko.ai',
+    apiEndpoint: process.env.GINKO_API_URL || 'https://app.ginkoai.com',
     documents: {
       adr: { enabled: true, path: 'docs/adr' },
       prd: { enabled: true, path: 'docs/PRD' },
