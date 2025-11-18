@@ -39,6 +39,7 @@ interface CharterOptions {
   mode?: string;
   skipConversation?: boolean;
   outputPath?: string;
+  noAi?: boolean;  // Run interactive mode (default is AI-assisted)
 }
 
 // ============================================================================
@@ -48,14 +49,12 @@ interface CharterOptions {
 /**
  * Charter command - Create and manage project charters
  * Usage:
- *   ginko charter             - Create new charter via conversation
+ *   ginko charter             - Output template for AI-mediated creation (default)
+ *   ginko charter --no-ai     - Interactive conversation mode
  *   ginko charter --view      - View existing charter
  *   ginko charter --edit      - Edit charter conversationally
  */
 export async function charterCommand(options: CharterOptions = {}): Promise<void> {
-  // Require authentication
-  await requireAuth('charter');
-
   try {
     const projectRoot = process.cwd();
     const storage = new CharterStorageManager(projectRoot, options.outputPath);
@@ -68,15 +67,48 @@ export async function charterCommand(options: CharterOptions = {}): Promise<void
 
     // Handle --edit flag
     if (options.edit) {
+      // Require authentication for editing
+      await requireAuth('charter');
       await editCharter(storage);
       return;
     }
 
-    // Default: Create new charter
+    // Default: AI-mediated mode (output template) unless --no-ai specified
+    if (!options.noAi) {
+      await outputCharterTemplate();
+      return;
+    }
+
+    // --no-ai: Interactive mode (requires authentication)
+    await requireAuth('charter');
     await createCharter(storage, options);
 
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Error: ${error.message}`));
+    process.exit(1);
+  }
+}
+
+// ============================================================================
+// Output Charter Template (AI-Mediated Mode)
+// ============================================================================
+
+/**
+ * Output charter template for AI-mediated creation
+ * The AI partner will read this, conduct a natural conversation, and create the charter
+ */
+async function outputCharterTemplate(): Promise<void> {
+  const templatePath = new URL('../templates/charter-template.md', import.meta.url);
+
+  try {
+    const template = await fs.readFile(templatePath, 'utf-8');
+
+    // Output template to stdout (AI partner will read this)
+    console.log(template);
+
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Error reading charter template: ${error.message}`));
+    console.error(chalk.yellow('Template path:', templatePath.pathname));
     process.exit(1);
   }
 }

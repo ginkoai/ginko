@@ -69,7 +69,14 @@ When working with a **newly initialized project** (fresh `ginko init`, no charte
 
    We can create it with: ginko charter
    ```
-3. **If user agrees**, execute: `ginko charter` (full conversational experience)
+3. **If user agrees:**
+   - Execute: `ginko charter` (outputs AI-mediated template)
+   - Read the template output carefully - it contains questions, guidelines, examples
+   - Conduct natural conversation with user (not mechanical questions)
+   - Offer insights from your knowledge
+   - Adapt based on their responses
+   - Synthesize responses into well-formed charter
+   - Create `docs/PROJECT-CHARTER.md` with proper format
 4. **After charter created**, briefly summarize key sections and confirm next steps
 
 **Example interaction:**
@@ -83,8 +90,14 @@ AI: Ready | Cold | Think & Build mode
     This will help us align on goals and scope.
 
 User: yes
-AI: [Executes: ginko charter]
-AI: [Guides user through conversational questions]
+AI: [Executes: ginko charter, reads template]
+AI: Great! Let's capture your project vision.
+
+    What problem are you solving? What would you like to build?
+
+User: [describes project]
+AI: [Asks follow-up questions naturally based on template guidance]
+AI: [Synthesizes responses into charter]
 AI: ✓ Charter created at docs/PROJECT-CHARTER.md
 
     Key sections:
@@ -95,10 +108,10 @@ AI: ✓ Charter created at docs/PROJECT-CHARTER.md
 ```
 
 **Important:**
-- Only suggest charter ONCE per project (check if file exists)
+- Only suggest charter ONCE per project (check if `docs/PROJECT-CHARTER.md` exists)
 - Don't be pushy - accept "no" gracefully
-- Use full conversational approach (default) - it's engaging and valuable
-- Power users can add `--skip-conversation` flag if they want speed
+- Use AI-mediated approach (default) - natural conversation guided by template
+- Human users can run `ginko charter --no-ai` for interactive CLI mode
 - After charter is created, reference it naturally during development
 
 **After Execution: Concise Readiness Message**

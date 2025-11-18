@@ -114,11 +114,12 @@ program
 
 program
   .command('charter')
-  .description('Create and manage project charter through natural conversation')
+  .description('Create and manage project charter (AI-assisted by default)')
+  .option('--no-ai', 'Run interactive mode instead of outputting template')
   .option('--view', 'View existing charter')
   .option('--edit', 'Edit charter conversationally')
   .option('--mode <mode>', 'Specify work mode: hack-ship, think-build, full-planning')
-  .option('--skip-conversation', 'Skip conversation (testing/automation)')
+  .option('--skip-conversation', 'Skip conversation (testing/automation, requires --no-ai)')
   .option('--output-path <path>', 'Custom charter file path')
   .option('--examples', 'Show charter command examples')
   .action((options) => {
