@@ -1,12 +1,19 @@
 /**
  * @fileType: utility
- * @status: current
- * @updated: 2025-11-04
- * @tags: [session, cursor, event-stream, adr-043, multi-context]
- * @related: [commands/start/index.ts, utils/helpers.ts, lib/write-dispatcher/write-dispatcher.ts]
- * @priority: critical
+ * @status: deprecated
+ * @updated: 2025-11-19
+ * @tags: [session, cursor, event-stream, adr-043, multi-context, deprecated]
+ * @related: [commands/start/index.ts, utils/helpers.ts, lib/write-dispatcher/write-dispatcher.ts, context-loader-events.ts]
+ * @priority: low
  * @complexity: medium
  * @dependencies: [fs-extra, simple-git]
+ *
+ * @deprecated TASK-011: Cursors are over-engineered for our use case.
+ * We only need "last N events" queries, not stateful cursor tracking.
+ * Use loadRecentEvents() from context-loader-events.ts instead.
+ *
+ * Kept for backward compatibility during transition period.
+ * Will be removed in a future version after cloud-first refactor is complete.
  */
 
 import fs from 'fs-extra';

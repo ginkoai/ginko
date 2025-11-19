@@ -121,7 +121,86 @@ export interface LoadedContext {
 }
 
 /**
+ * Load recent events without cursor (TASK-011: Simplified chronological loading)
+ *
+ * Simple chronological query for last N events - no cursor state needed.
+ * Replaces cursor-based loading with direct "ORDER BY timestamp DESC LIMIT N" query.
+ *
+ * Performance: ~2-3s for consolidated load
+ */
+export async function loadRecentEvents(
+  userId: string,
+  projectId: string,
+  options: ContextLoadOptions = {}
+): Promise<LoadedContext> {
+  const {
+    eventLimit = 50,
+    includeTeam = false,
+    teamEventLimit = 20,
+    categories,
+    documentDepth = 2,
+    teamDays = 7
+  } = options;
+
+  try {
+    const { GraphApiClient } = await import('../commands/graph/api-client.js');
+    const client = new GraphApiClient();
+
+    // Build query parameters (use special cursor value for chronological loading)
+    const params = new URLSearchParams({
+      cursorId: 'chronological', // Special value to trigger chronological query on server
+      userId,
+      projectId,
+      eventLimit: eventLimit.toString(),
+      includeTeam: includeTeam.toString(),
+      teamEventLimit: teamEventLimit.toString(),
+      teamDays: teamDays.toString(),
+      documentDepth: documentDepth.toString(),
+    });
+
+    if (categories && categories.length > 0) {
+      params.append('categories', categories.join(','));
+    }
+
+    console.log('📡 Using consolidated API endpoint (chronological mode)');
+
+    // Single API call - server detects "chronological" cursor and uses ORDER BY timestamp DESC
+    const response = await (client as any).request('GET', `/api/v1/context/initial-load?${params.toString()}`);
+
+    console.log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
+
+    // Create a minimal cursor for backward compatibility
+    const cursor: SessionCursor = {
+      id: 'chronological-query',
+      user_id: userId,
+      project_id: projectId,
+      started: new Date(),
+      last_active: new Date(),
+      current_event_id: response.myEvents?.[0]?.id || 'latest',
+      status: 'active',
+    };
+
+    return {
+      cursor,
+      myEvents: normalizeEvents(response.myEvents || []),
+      teamEvents: response.teamEvents ? normalizeEvents(response.teamEvents) : undefined,
+      documents: response.documents || [],
+      relatedDocs: response.relatedDocs || [],
+      sprint: response.sprint,
+      loaded_at: new Date(response.loaded_at),
+      event_count: response.event_count,
+      token_estimate: response.token_estimate,
+    };
+  } catch (error) {
+    console.log(`⚠️  Consolidated endpoint failed: ${(error as Error).message}`);
+    throw error; // Re-throw to trigger fallback
+  }
+}
+
+/**
  * Load context using consolidated API endpoint (performance optimized)
+ *
+ * @deprecated Use loadRecentEvents() instead (TASK-011). Cursors are unnecessary for "last N events" queries.
  *
  * Single API call that performs all operations server-side:
  * - Read events backward

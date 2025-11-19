@@ -20,9 +20,8 @@ import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/act
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
 import { loadContextStrategic, formatContextSummary, StrategyContext } from '../../utils/context-loader.js';
-import { getOrCreateCursor, SessionCursor } from '../../lib/session-cursor.js';
 import { initializeQueue } from '../../lib/event-queue.js';
-import { loadContextFromCursor, formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
+import { formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -72,14 +71,9 @@ export class StartReflectionCommand extends ReflectionCommand {
         spinner.warn(chalk.yellow('Event sync queue unavailable (offline mode)'));
       }
 
-      // 3. Create or resume session cursor (ADR-043)
-      spinner.text = 'Creating session cursor...';
-      const { cursor, isNew } = await getOrCreateCursor({});
-
-      // 4. Gather context (including handoff)
+      // 3. Gather context (including handoff)
       const context = await this.gatherContext(parsedIntent);
-      context.cursor = cursor;
-      context.isNewSession = isNew;
+      context.isNewSession = true; // Always a new session with chronological loading
 
       // 4. Read previous session log BEFORE archiving (ADR-033: Fresh AI synthesis at optimal pressure)
       spinner.text = 'Reading previous session log...';
@@ -111,8 +105,8 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       spinner.text = 'Loading context strategically...';
 
-      // 8. Load context strategically (TASK-011: Progressive Context Loading)
-      // ADR-043 Phase 3: Event-based context loading is now the default
+      // 8. Load context strategically (TASK-011: Chronological loading)
+      // ADR-043 Phase 3 + TASK-011: Simple chronological loading is now the default
       // Falls back to strategic loading if event loading fails
       let strategyContext: StrategyContext;
       let eventContext: LoadedContext | undefined;
@@ -121,16 +115,25 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Allow disabling event-based loading with env var or --strategic flag
       const useEventBasedLoading = process.env.GINKO_USE_EVENT_CONTEXT !== 'false' && !options.strategic;
 
-      if (useEventBasedLoading && cursor) {
-        spinner.text = 'Loading context from event stream (ADR-043)...';
+      if (useEventBasedLoading) {
+        spinner.text = 'Loading recent events (chronological query)...';
         try {
-          eventContext = await loadContextFromCursor(cursor, {
-            eventLimit: 50,
-            includeTeam: options.team || false,
-            teamEventLimit: 20,
-            documentDepth: 2,
-            teamDays: 7,
-          });
+          // TASK-011: Use simple chronological loading (no cursor needed!)
+          const projectInfo = await import('../../utils/helpers.js').then(m => m.getProjectInfo());
+          eventContext = await import('../../lib/context-loader-events.js').then(m =>
+            m.loadRecentEvents(userEmail, projectInfo.name, {
+              eventLimit: 50,
+              includeTeam: options.team || false,
+              teamEventLimit: 20,
+              documentDepth: 2,
+              teamDays: 7,
+            })
+          );
+
+          // Ensure eventContext is defined
+          if (!eventContext) {
+            throw new Error('Event context loading failed');
+          }
 
           // Display event-based context summary
           spinner.succeed('Event stream context loaded');
@@ -243,17 +246,11 @@ export class StartReflectionCommand extends ReflectionCommand {
   ): Promise<void> {
     console.log('');
 
-    // Display cursor information (ADR-043)
-    if (context.cursor) {
-      const cursor = context.cursor as SessionCursor;
-      const statusEmoji = context.isNewSession ? '🆕' : '🔄';
-      const statusText = context.isNewSession ? 'New session' : 'Resumed session';
-      console.log(chalk.cyan(`${statusEmoji} Session Cursor:`));
-      console.log(chalk.dim(`   ${statusText} on ${chalk.bold(cursor.branch)}`));
-      console.log(chalk.dim(`   Project: ${cursor.project_id}`));
-      if (!context.isNewSession) {
-        console.log(chalk.dim(`   Position: ${cursor.current_event_id}`));
-      }
+    // Display session information (TASK-011: Chronological loading, no cursor state)
+    if (context.currentBranch) {
+      console.log(chalk.cyan(`🆕 Session:`));
+      console.log(chalk.dim(`   Chronological loading on ${chalk.bold(context.currentBranch)}`));
+      console.log(chalk.dim(`   Loading last 50 events (no cursor state)`));
       console.log('');
     }
 

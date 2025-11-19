@@ -1,82 +1,84 @@
 # Current Sprint Status
 
 **Status**: Active Sprint
-**Sprint**: SPRINT-2025-11-10-charter-and-init
+**Sprint**: SPRINT-2025-11-18-command-patterns-ai-ux
 **Mode**: Implementation
-**Started**: 2025-11-10
-**Duration**: 1 week (ending 2025-11-17)
+**Started**: 2025-11-18
+**Duration**: 3 weeks (ending 2025-12-09)
 
 ## Active Sprint
 
-See: **[SPRINT-2025-11-10: Project Charter & Initialization](./SPRINT-2025-11-10-charter-and-init.md)**
+See: **[SPRINT-2025-11-18: Command Patterns & AI-First UX](./SPRINT-2025-11-18-command-patterns-ai-ux.md)**
 
 ### Sprint Goal
 
-Create magical onboarding experience where project charter emerges naturally from conversation.
+Establish clear command patterns (Reflection vs. Utility) and fix event logging for AI partners.
 
-**Philosophy**: "What would you like to build?" - Charter emerges as byproduct of excited exploration, not bureaucratic process.
+**Philosophy**: Commands optimized for AI execution, not human interactivity. Zero blocking prompts, educational feedback, smart defaults from context.
 
-### Current Focus: Day 2 (Implementation Phase)
+### Current Focus: Day 2 (Phase 1 - Week 1)
 
-**Phase**: Implementation & Integration
-**Completed**:
-- ✅ TASK-001: Init architecture audit (cloud-first confirmed)
-- ✅ TASK-002: Conversational charter system design (8 documents)
+**Phase**: Cloud-First Architecture → Eliminate Dual-Write
+**Progress**: 38% (10/26 tasks complete)
 
-**Next Tasks**:
-- TASK-003: Charter storage with changelog
-- TASK-004: Conversational charter experience
-- TASK-005: Integration into `ginko init`
+**NEXT Priority Tasks** (Cloud-first refactor):
+- ✅ TASK-011: Remove cursors, use chronological queries (COMPLETE - 3h)
+- TASK-012: Eliminate dual-write, cloud graph only (CRITICAL - 8h) 🔜 NEXT
+- TASK-013: Graph reliability testing & bug fixes (HIGH - 12h)
+
+**Completed Tasks**:
+- ✅ TASK-001: Remove blocking prompts from `ginko log`
+- ✅ TASK-002: Implement smart defaults
+- ✅ TASK-003: Add educational feedback
+- ✅ TASK-004: Fix session log writing bug
+- ✅ TASK-005: Create shared command utilities
+- ✅ TASK-006: UAT test with AI partner
+- ✅ TASK-007: Reset cursor to latest event (temporary fix)
+- ✅ TASK-008: Improve blocked event detection
+- ✅ TASK-009: Deduplicate events in current-events.jsonl
+- ✅ TASK-011: Remove cursors, use chronological queries (3h - 50% faster!)
+- ⊘ TASK-010: Investigate cursor advancement (CANCELLED - replaced by TASK-011)
 
 **This Week's Goals**:
-- [x] Complete init audit with recommendations ✅
-- [x] Design conversation-first charter system ✅
-- [ ] Implement charter storage with changelog
-- [ ] Build conversational charter experience
-- [ ] Integrate charter into `ginko init`
-- [ ] E2E test suite updated
-- [ ] E2E test documentation ready
+- [ ] Remove all blocking prompts from `ginko log`
+- [ ] Implement smart defaults (category/impact detection)
+- [ ] Add educational feedback to output
+- [ ] Fix session log writing bug (fs.appendFile error)
+- [ ] Create shared command utilities library
+- [ ] UAT validate: AI generates 5+ events per session
 
-**Strategic Pivot**: Cloud-first seamless onboarding (no flags, auto-provision free tier)
+**Strategic Context**: AI-first UX - Commands must work without ANY user input from AI partners.
 
 ### Sprint Overview
 
-**Day 1-2**: Audit & Analysis (review init, design conversations)
-**Day 3-5**: Implementation (storage, conversation flow, integration)
-**Day 6-7**: Testing & Documentation (E2E tests, test plan for Sprint 2)
+**Week 1 (Phase 1)**: Fix `ginko log` + Core Utilities
+**Week 2 (Phase 2)**: Documentation + Guidelines
+**Week 3 (Phase 3)**: Migration + Enforcement
 
 ### Key Deliverables
 
-- Conversational charter creation experience
-- Charter storage (file + graph with changelog)
-- Seamless integration into `ginko init`
-- Confidence scoring system
-- E2E test suite
-- Test plan for Sprint 2 external validation
+- **Week 1**: `ginko log` working with AI partners (zero blocking prompts)
+- **Week 2**: Pattern documentation (UTILITY-COMMAND-PATTERN.md, REFLECTION-COMMAND-PATTERN.md)
+- **Week 3**: All commands migrated, code review process established
 
 ### Related Documents
 
-- **Sprint Plan**: [SPRINT-2025-11-10: Charter & Init](./SPRINT-2025-11-10-charter-and-init.md)
-- **ADR-043**: Event-Based Context Loading
+- **Sprint Plan**: [SPRINT-2025-11-18: Command Patterns](./SPRINT-2025-11-18-command-patterns-ai-ux.md)
+- **ADR-046**: Command Patterns - Reflection vs. Utility
+- **ADR-032**: Core CLI Architecture and Reflection System
 - **ADR-033**: Context Pressure Mitigation Strategy
 
-## Recent Completions (Pre-Sprint)
+## Recent Completions
 
-- **SPRINT-2025-10-27**: Cloud-First Knowledge Graph Platform (Nov 7) - 100% delivery with parallel agents
+- **SPRINT-2025-11-10**: Project Charter & Initialization (Nov 17) - 100% delivery
+  - AI-mediated charter creation (`ginko charter`)
+  - Conversational onboarding experience
+  - Template-guided natural conversation
+  - v1.4.13 shipped with AI-assisted charter by default
+- **SPRINT-2025-10-27**: Cloud-First Knowledge Graph Platform (Nov 7) - 100% delivery
   - Knowledge Management API (REST + GraphQL + CLI)
   - Vector embeddings pipeline (Voyage AI integration)
-  - CloudGraphClient implementation (46 tests passing)
   - Event-based context loading (ADR-043 Phase 3: 99% token reduction)
-- **TASK-017**: Sprint archive cleanup (Oct 24)
-- **TASK-016**: Real-time insight promotion (Oct 24)
-- **TASK-015**: Core context modules system (Oct 24)
-
-## Future Sprint Candidates
-
-Potential upcoming sprints (planning phase):
-- Browser Extension (SPRINT-2025-01-BROWSER-EXTENSION.md)
-- Q1 Monetization Platform (SPRINT-2025-Q1-monetization-platform.md)
-- Phase 1 Planning (sprint-plan-phase-1.md)
 
 ## How This Works
 
@@ -86,16 +88,11 @@ When a sprint becomes active:
 3. The synthesis loader will pick up the active sprint automatically
 4. When complete, add retrospective and archive to docs/sprints/archive/
 
-When working from backlog only (like now):
-- This file serves as the placeholder
-- `ginko start` synthesis will fall back to loading active backlog items
-- Work remains visible through session logs and git history
-
 ## Session Log Integration
 
-Even without a sprint, context is maintained through:
+Context is maintained through:
 - **Session logs**: `.ginko/sessions/{user}/current-session-log.md`
-- **Backlog items**: Referenced via TASK-XXX, FEATURE-XXX in session logs
+- **Sprint tasks**: Referenced via TASK-XXX in session logs
 - **Strategic loading**: Context loader follows references automatically
 
 ---
