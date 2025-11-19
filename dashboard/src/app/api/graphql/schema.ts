@@ -219,6 +219,20 @@ export const typeDefs = `#graphql
       projectId: String!
       graphId: String!
     ): ImplementationProgress!
+
+    """
+    Strategic context for AI partner readiness
+    Loads charter + team activity + relevant patterns in single query
+    """
+    strategicContext(
+      graphId: String!
+      userId: String!
+      projectId: String!
+      teamEventDays: Int = 7
+      teamEventLimit: Int = 10
+      patternTags: [String!]
+      patternLimit: Int = 5
+    ): StrategicContext!
   }
 
   """
@@ -231,5 +245,78 @@ export const typeDefs = `#graphql
     totalADRs: Int!
     completionPercentage: Float!
     recentDecisions: [KnowledgeNode!]!
+  }
+
+  """
+  Project charter for strategic context
+  """
+  type Charter {
+    purpose: String!
+    goals: [String!]!
+    successCriteria: [String!]!
+    constraints: String
+    scope: Scope!
+    team: [String!]
+    workMode: String!
+    status: String!
+    lastUpdated: String!
+    confidence: Float
+  }
+
+  """
+  Scope boundaries
+  """
+  type Scope {
+    inScope: [String!]!
+    outOfScope: [String!]!
+    tbd: [String!]!
+  }
+
+  """
+  Team activity event
+  """
+  type TeamEvent {
+    id: ID!
+    category: String!
+    description: String!
+    impact: String
+    user: String!
+    timestamp: String!
+    branch: String
+    shared: Boolean
+  }
+
+  """
+  Pattern or gotcha from context modules
+  """
+  type Pattern {
+    id: ID!
+    title: String!
+    content: String!
+    type: String!
+    tags: [String!]
+    category: String
+    createdAt: String!
+  }
+
+  """
+  Strategic context response
+  """
+  type StrategicContext {
+    charter: Charter
+    teamActivity: [TeamEvent!]!
+    patterns: [Pattern!]!
+    metadata: StrategicContextMetadata!
+  }
+
+  """
+  Metadata about strategic context loading
+  """
+  type StrategicContextMetadata {
+    charterStatus: String!
+    teamEventCount: Int!
+    patternCount: Int!
+    loadTimeMs: Int!
+    tokenEstimate: Int!
   }
 `;

@@ -387,32 +387,220 @@ export const resolvers = {
         recentDecisions: recentDecisions.map((r: any) => r.adr),
       };
     },
+
+    /**
+     * Strategic context for AI partner readiness
+     * Loads charter + team activity + relevant patterns
+     */
+    strategicContext: async (
+      _parent: any,
+      args: {
+        graphId: string;
+        userId: string;
+        projectId: string;
+        teamEventDays?: number;
+        teamEventLimit?: number;
+        patternTags?: string[];
+        patternLimit?: number;
+      },
+      context: Context
+    ) => {
+      const {
+        graphId,
+        userId,
+        projectId,
+        teamEventDays = 7,
+        teamEventLimit = 10,
+        patternTags = [],
+        patternLimit = 5,
+      } = args;
+
+      const startTime = Date.now();
+
+      // Run all queries in parallel for performance
+      const [charterResult, teamEventsResult, patternsResult] = await Promise.all([
+        // 1. Load charter from graph (future: will be in graph, for now returns null)
+        loadCharter(graphId, projectId).catch(() => null),
+
+        // 2. Load team activity (shared events from last N days)
+        loadTeamActivity(graphId, userId, projectId, teamEventDays, teamEventLimit),
+
+        // 3. Load relevant patterns/gotchas
+        loadPatterns(graphId, projectId, patternTags, patternLimit),
+      ]);
+
+      const loadTimeMs = Date.now() - startTime;
+
+      // Calculate token estimate
+      const tokenEstimate =
+        (charterResult ? 500 : 0) +
+        (teamEventsResult.length * 100) +
+        (patternsResult.length * 300);
+
+      return {
+        charter: charterResult,
+        teamActivity: teamEventsResult,
+        patterns: patternsResult,
+        metadata: {
+          charterStatus: charterResult ? 'loaded' : 'not_found',
+          teamEventCount: teamEventsResult.length,
+          patternCount: patternsResult.length,
+          loadTimeMs,
+          tokenEstimate,
+        },
+      };
+    },
+  },
+};
+
+// ============================================================================
+// Helper Functions for Strategic Context
+// ============================================================================
+
+/**
+ * Load charter from graph
+ * TODO: Implement graph-based charter storage (currently returns null)
+ */
+async function loadCharter(graphId: string, projectId: string): Promise<any | null> {
+  // Future: Query graph for Charter node
+  // For now, return null (CLI will load from filesystem)
+  return null;
+}
+
+/**
+ * Load team activity from events
+ */
+async function loadTeamActivity(
+  graphId: string,
+  userId: string,
+  projectId: string,
+  days: number,
+  limit: number
+): Promise<any[]> {
+  const query = `
+    MATCH (e:Event {project_id: $projectId})
+    WHERE e.user_id <> $userId
+      AND e.category IN ['decision', 'achievement', 'git', 'fix', 'feature']
+      AND e.timestamp >= datetime() - duration({days: $days})
+      AND (e.shared = true OR e.impact = 'high')
+    RETURN e
+    ORDER BY e.timestamp DESC
+    LIMIT $limit
+  `;
+
+  const results = await runQuery<any>(query, {
+    projectId,
+    userId,
+    days: neo4j.int(days),
+    limit: neo4j.int(limit),
+  });
+
+  return results.map((r: any) => {
+    const event = r.e;
+    return {
+      id: event.id,
+      category: event.category,
+      description: event.description,
+      impact: event.impact,
+      user: event.user_id,
+      timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
+      branch: event.branch,
+      shared: event.shared === true,
+    };
+  });
+}
+
+/**
+ * Load relevant patterns/gotchas from ContextModules
+ */
+async function loadPatterns(
+  graphId: string,
+  projectId: string,
+  tags: string[],
+  limit: number
+): Promise<any[]> {
+  // Build query based on whether tags are provided
+  let query: string;
+  let params: any;
+
+  if (tags.length > 0) {
+    // Tag-based filtering
+    query = `
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(cm:ContextModule)
+      WHERE cm.projectId = $projectId
+        AND any(tag IN cm.tags WHERE tag IN $tags)
+        AND cm.category IN ['pattern', 'gotcha', 'decision']
+      RETURN cm
+      ORDER BY cm.createdAt DESC
+      LIMIT $limit
+    `;
+    params = {
+      graphId,
+      projectId,
+      tags,
+      limit: neo4j.int(limit),
+    };
+  } else {
+    // No tags: get recent high-quality patterns
+    query = `
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(cm:ContextModule)
+      WHERE cm.projectId = $projectId
+        AND cm.category IN ['pattern', 'gotcha', 'decision']
+      RETURN cm
+      ORDER BY cm.createdAt DESC
+      LIMIT $limit
+    `;
+    params = {
+      graphId,
+      projectId,
+      limit: neo4j.int(limit * 2), // Get more, then filter for quality
+    };
+  }
+
+  const results = await runQuery<any>(query, params);
+
+  return results.map((r: any) => {
+    const module = r.cm;
+    return {
+      id: module.id,
+      title: module.title || 'Untitled',
+      content: module.content || '',
+      type: module.type || 'ContextModule',
+      tags: module.tags || [],
+      category: module.category,
+      createdAt: module.createdAt ? new Date(module.createdAt).toISOString() : new Date().toISOString(),
+    };
+  }).slice(0, limit); // Apply limit after mapping
+}
+
+// Export helper functions for testing
+export const strategicContextHelpers = {
+  loadCharter,
+  loadTeamActivity,
+  loadPatterns,
+};
+
+// Add KnowledgeNode field resolvers to main resolvers export
+resolvers.KnowledgeNode = {
+  relationships: async (parent: any, _args: any, context: Context) => {
+    // Extract graphId from parent or context
+    const graphId = parent.projectId; // Using projectId as graphId
+    const client = await CloudGraphClient.fromBearerToken(context.token, graphId);
+    return await client.getRelationships(parent.id);
   },
 
-  /**
-   * Field resolvers for KnowledgeNode
-   */
-  KnowledgeNode: {
-    relationships: async (parent: any, _args: any, context: Context) => {
-      // Extract graphId from parent or context
-      const graphId = parent.projectId; // Using projectId as graphId
-      const client = await CloudGraphClient.fromBearerToken(context.token, graphId);
-      return await client.getRelationships(parent.id);
-    },
+  relatedNodes: async (parent: any, _args: any, context: Context) => {
+    const graphId = parent.projectId;
+    const client = await CloudGraphClient.fromBearerToken(context.token, graphId);
 
-    relatedNodes: async (parent: any, _args: any, context: Context) => {
-      const graphId = parent.projectId;
-      const client = await CloudGraphClient.fromBearerToken(context.token, graphId);
+    const relationships = await client.getRelationships(parent.id);
+    const relatedNodeIds = relationships.map((r: any) => r.toId);
 
-      const relationships = await client.getRelationships(parent.id);
-      const relatedNodeIds = relationships.map((r: any) => r.toId);
+    // Fetch related nodes
+    const relatedNodes = await Promise.all(
+      relatedNodeIds.map(id => client.getNode(id))
+    );
 
-      // Fetch related nodes
-      const relatedNodes = await Promise.all(
-        relatedNodeIds.map(id => client.getNode(id))
-      );
-
-      return relatedNodes.filter(node => node !== null);
-    },
+    return relatedNodes.filter(node => node !== null);
   },
 };
