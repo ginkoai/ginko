@@ -237,17 +237,9 @@ export default async function handler(
         relationshipsTraversed: 0,
       },
       // DEBUG: Temporary debugging info
-      debug: {
-        query,
-        queryParams: {
-          userId: queryParams.userId,
-          projectId: queryParams.projectId,
-          limit: queryParams.limit ? queryParams.limit.toString() : undefined,
-          categories: queryParams.categories,
-        },
-        resultCount: result.length,
-        rawResult: JSON.parse(JSON.stringify(result)), // Force serialization
-      },
+      _debug_query: query.trim(),
+      _debug_params: `userId=${userId}, projectId=${projectId}, limit=${limit}`,
+      _debug_result_count: result.length,
     });
   } catch (error: any) {
     console.error('[Context Initial-Load API] Error:', error);
