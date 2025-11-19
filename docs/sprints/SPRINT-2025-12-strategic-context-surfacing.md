@@ -20,13 +20,52 @@
 - Clarifying questions reduced to 3-4 (from 5-7)
 - Startup time remains <2.5s (currently <2s)
 
-**Progress:** 0% (0/3 tasks complete)
+**Progress:** 33% (1/3 tasks complete)
 
 ---
 
 ## Accomplishments This Sprint
 
-*To be updated as work progresses*
+### 2025-11-19: TASK-1 Complete - Charter Integration
+
+**Charter Creation & Display**: Project charter now surfaces in every session, improving AI partner readiness from session start.
+
+**Completed:**
+- ✅ Created PROJECT-CHARTER.md through AI-mediated natural conversation (~30 min)
+  - Captured vision, problems, users, success criteria, scope, constraints, risks
+  - Meta-validation: Charter creation process itself demonstrated Ginko's magic
+  - User feedback: "This is the kind of magic we must bring to every aspect of ginko"
+
+- ✅ Implemented charter-loader.ts (charter-loader.ts:1-195)
+  - Parses markdown charter into structured data (purpose, goals, criteria, scope)
+  - Git-root aware: Uses `git rev-parse --show-toplevel` (not process.cwd)
+  - Handles missing charter gracefully
+  - Extracts: purpose, goals, success criteria, scope boundaries
+
+- ✅ Integrated charter into strategic context (context-loader-events.ts:232-268)
+  - Loads charter from filesystem in loadRecentEvents()
+  - Merges with GraphQL strategic context (filesystem takes precedence)
+  - Logs: "Charter loaded from filesystem (X goals, Y criteria)"
+
+- ✅ Implemented mode-aware display (start-reflection.ts:271-339)
+  - Hack & Ship: Purpose only (minimal)
+  - Think & Build: Purpose + top 3 goals (balanced)
+  - Full Planning: Purpose + top 5 goals (comprehensive)
+  - Clean formatting with proper spacing
+
+**Impact:**
+- AI partners see project mission, goals, and success criteria immediately
+- Expected reduction in clarifying questions: 5-7 → 3-4
+- Strategic north star visible every session
+- Foundation for TASK-2 (team activity) and TASK-3 (patterns)
+
+**Files:**
+- packages/cli/src/lib/charter-loader.ts (new, 195 lines)
+- packages/cli/src/lib/context-loader-events.ts (modified)
+- packages/cli/src/commands/start/start-reflection.ts (modified)
+- docs/PROJECT-CHARTER.md (new, 10KB)
+
+**Commit:** fe7830f
 
 ---
 
@@ -84,9 +123,9 @@ But they miss critical strategic context:
 ## Sprint Tasks
 
 ### TASK-1: Charter Integration
-**Status:** Not Started
-**Owner:** TBD
-**Effort:** 6-8 hours
+**Status:** ✅ Complete (2025-11-19)
+**Owner:** Chris Norton + Claude
+**Effort:** 6 hours actual
 **Priority:** CRITICAL
 
 **Goal:** Surface project charter in `ginko start` output when it exists
