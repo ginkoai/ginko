@@ -240,11 +240,13 @@ export default async function handler(
       debug: {
         query,
         queryParams: {
-          ...queryParams,
-          limit: queryParams.limit.toString(), // Convert neo4j.int to string for JSON
+          userId: queryParams.userId,
+          projectId: queryParams.projectId,
+          limit: queryParams.limit ? queryParams.limit.toString() : undefined,
+          categories: queryParams.categories,
         },
         resultCount: result.length,
-        firstResult: result.length > 0 ? result[0] : null,
+        rawResult: JSON.parse(JSON.stringify(result)), // Force serialization
       },
     });
   } catch (error: any) {
