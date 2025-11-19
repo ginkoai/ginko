@@ -217,7 +217,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
 
       // 11. Display session information with synthesis and strategy metrics
-      await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext);
+      await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext);
 
       // Display strategic context loading summary
       if (options.verbose) {
@@ -237,12 +237,14 @@ export class StartReflectionCommand extends ReflectionCommand {
   /**
    * Display session information based on synthesis (ADR-036)
    * Enhanced with strategic context metrics (TASK-011)
+   * EPIC-001: Display charter, team activity, patterns
    */
   private async displaySessionInfo(
     context: any,
     contextLevel?: ContextLevel,
     synthesis?: SynthesisOutput,
-    strategyContext?: StrategyContext
+    strategyContext?: StrategyContext,
+    eventContext?: any
   ): Promise<void> {
     console.log('');
 
@@ -264,6 +266,76 @@ export class StartReflectionCommand extends ReflectionCommand {
       };
       console.log(chalk.dim(`${tierEmoji[synthesis.qualityTier]} Context Quality: ${synthesis.qualityTier}`));
       console.log('');
+    }
+
+    // Display strategic context (EPIC-001: Charter, Team, Patterns)
+    if (eventContext?.strategicContext) {
+      const strategic = eventContext.strategicContext;
+      const workMode = context.workMode || 'Think & Build';
+
+      // Charter section
+      if (strategic.charter) {
+        console.log(chalk.cyan('📜 Project Charter'));
+        console.log(chalk.dim(`   Purpose: ${strategic.charter.purpose}`));
+
+        if (workMode !== 'Hack & Ship' && strategic.charter.goals && strategic.charter.goals.length > 0) {
+          console.log('');
+          console.log(chalk.dim('   🎯 Goals:'));
+          const goalLimit = workMode === 'Full Planning' ? 5 : 3;
+          strategic.charter.goals.slice(0, goalLimit).forEach((goal: string, i: number) => {
+            console.log(chalk.dim(`   ${i + 1}. ${goal}`));
+          });
+          if (strategic.charter.goals.length > goalLimit) {
+            console.log(chalk.dim(`   ... and ${strategic.charter.goals.length - goalLimit} more`));
+          }
+        }
+        console.log('');
+      }
+
+      // Team activity section
+      if (strategic.teamActivity && strategic.teamActivity.length > 0) {
+        console.log(chalk.cyan('👥 Team Activity (7d)'));
+
+        if (workMode === 'Hack & Ship') {
+          // Just show count for Hack & Ship
+          console.log(chalk.dim(`   ${strategic.teamActivity.length} team updates this week`));
+        } else {
+          // Group by category
+          const decisions = strategic.teamActivity.filter((e: any) => e.category === 'decision');
+          const achievements = strategic.teamActivity.filter((e: any) => e.category === 'achievement');
+
+          if (decisions.length > 0) {
+            console.log(chalk.yellow('   Decisions:'));
+            decisions.slice(0, 3).forEach((d: any) => {
+              const desc = d.description.length > 60 ? d.description.substring(0, 57) + '...' : d.description;
+              console.log(chalk.dim(`   - ${d.user}: ${desc}`));
+            });
+          }
+
+          if (achievements.length > 0) {
+            console.log(chalk.green('   Achievements:'));
+            achievements.slice(0, 3).forEach((a: any) => {
+              const desc = a.description.length > 60 ? a.description.substring(0, 57) + '...' : a.description;
+              console.log(chalk.dim(`   - ${a.user}: ${desc}`));
+            });
+          }
+        }
+        console.log('');
+      }
+
+      // Patterns & Gotchas section (skip in Hack & Ship mode)
+      if (workMode !== 'Hack & Ship' && strategic.patterns && strategic.patterns.length > 0) {
+        console.log(chalk.cyan('🧠 Relevant Patterns'));
+        const limit = workMode === 'Full Planning' ? 5 : 3;
+        strategic.patterns.slice(0, limit).forEach((p: any) => {
+          const tags = p.tags ? ` [${p.tags.join(', ')}]` : '';
+          console.log(chalk.dim(`   - ${p.title}${tags}`));
+        });
+        if (strategic.patterns.length > limit) {
+          console.log(chalk.dim(`   ... and ${strategic.patterns.length - limit} more`));
+        }
+        console.log('');
+      }
     }
 
     // Display flow state (ADR-036: 1-10 scale with emotional tone)

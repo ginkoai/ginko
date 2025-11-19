@@ -27,6 +27,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
+import os from 'os';
 
 /**
  * Event category types
@@ -226,6 +227,44 @@ export async function loadRecentEvents(
           console.log(`📊 Strategic context loaded: ${strategicContext.metadata.teamEventCount} team events, ${strategicContext.metadata.patternCount} patterns`);
         }
       }
+    }
+
+    // Load charter from filesystem (TASK-1: Git-tracked docs, graph-sync for collaboration)
+    const { loadCharter } = await import('./charter-loader.js');
+    const filesystemCharter = await loadCharter();
+
+    if (filesystemCharter) {
+      // Merge filesystem charter into strategic context (filesystem takes precedence)
+      if (!strategicContext) {
+        strategicContext = {
+          charter: {
+            purpose: filesystemCharter.purpose,
+            goals: filesystemCharter.goals,
+            successCriteria: filesystemCharter.successCriteria,
+            scope: filesystemCharter.scope,
+          },
+          teamActivity: [],
+          patterns: [],
+          metadata: {
+            charterStatus: 'loaded-from-filesystem',
+            teamEventCount: 0,
+            patternCount: 0,
+            loadTimeMs: 0,
+            tokenEstimate: 0,
+          },
+        };
+      } else {
+        // Override graph charter with filesystem charter
+        strategicContext.charter = {
+          purpose: filesystemCharter.purpose,
+          goals: filesystemCharter.goals,
+          successCriteria: filesystemCharter.successCriteria,
+          scope: filesystemCharter.scope,
+        };
+        strategicContext.metadata.charterStatus = 'loaded-from-filesystem';
+      }
+
+      console.log(`📜 Charter loaded from filesystem (${filesystemCharter.goals.length} goals, ${filesystemCharter.successCriteria.length} criteria)`);
     }
 
     // Create a minimal cursor for backward compatibility
@@ -539,10 +578,6 @@ async function loadStrategicContext(
   projectId: string
 ): Promise<StrategicContextData | null> {
   try {
-    const fs = await import('fs-extra');
-    const path = await import('path');
-    const os = await import('os');
-
     // Read API key from ~/.ginko/auth.json
     const authPath = path.join(os.homedir(), '.ginko', 'auth.json');
     if (!fs.existsSync(authPath)) {
@@ -613,13 +648,27 @@ async function loadStrategicContext(
     });
 
     if (!response.ok) {
+      const errorBody = await response.text();
+      console.log(`⚠️  Strategic context GraphQL failed: ${response.status} ${response.statusText}`);
+      console.log(`   Response: ${errorBody.substring(0, 200)}`);
       return null;
     }
 
     const result: any = await response.json();
+
+    // Check for GraphQL errors
+    if (result.errors) {
+      console.log('⚠️  Strategic context GraphQL errors:', JSON.stringify(result.errors, null, 2));
+      return null;
+    }
+
     return result.data?.strategicContext || null;
   } catch (error) {
     console.log('⚠️  Strategic context not available (GraphQL query failed)');
+    console.log(`   Error: ${(error as Error).message}`);
+    if (process.env.GINKO_DEBUG_API) {
+      console.log(`   Stack: ${(error as Error).stack}`);
+    }
     return null;
   }
 }
