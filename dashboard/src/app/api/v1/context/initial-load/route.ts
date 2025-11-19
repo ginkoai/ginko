@@ -66,11 +66,13 @@ export async function GET(request: NextRequest) {
 
     try {
       // 1. Read my events backward from cursor
+      // TASK-013 FIX: Handle chronological mode (no cursor filtering)
+      const isChronological = cursorId === 'chronological';
       const myEventsQuery = `
         MATCH (e:Event {project_id: $projectId, user_id: $userId})
-        WHERE e.id <= $cursorId
-        ${categories ? 'AND e.category IN $categories' : ''}
-        ${branch ? 'AND e.branch = $branch' : ''}
+        ${!isChronological ? 'WHERE e.id <= $cursorId' : ''}
+        ${categories ? (isChronological ? 'WHERE' : 'AND') + ' e.category IN $categories' : ''}
+        ${branch ? (categories && isChronological ? 'AND' : !isChronological ? 'AND' : 'WHERE') + ' e.branch = $branch' : ''}
         RETURN e
         ORDER BY e.timestamp DESC
         LIMIT $limit
