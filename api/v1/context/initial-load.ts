@@ -169,7 +169,16 @@ export default async function handler(
       queryParams.categories = categories.split(',').map(c => c.trim());
     }
 
+    // Debug logging
+    console.log('[Initial-Load API] Query:', query);
+    console.log('[Initial-Load API] Params:', JSON.stringify(queryParams, null, 2));
+
     const result = await runQuery<any>(query, queryParams);
+
+    console.log('[Initial-Load API] Query result count:', result.length);
+    if (result.length > 0) {
+      console.log('[Initial-Load API] First result:', JSON.stringify(result[0], null, 2));
+    }
 
     const myEvents: Event[] = result.map((r: any) => {
       const props = r.e.properties;
