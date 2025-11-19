@@ -178,10 +178,31 @@ export async function logEvent(entry: EventEntry): Promise<Event> {
   const cloudOnly = process.env.GINKO_CLOUD_ONLY === 'true';
 
   if (cloudOnly) {
-    // CLOUD-ONLY MODE: Write to graph synchronously, fail loudly if it fails
+    // CLOUD-ONLY MODE: Write directly to graph API, bypassing queue
+    // (Queue depends on local files which don't exist in cloud-only mode)
     try {
-      const { addToQueue } = await import('./event-queue.js');
-      await addToQueue(event);
+      const { createGraphEvents } = await import('../commands/graph/api-client.js');
+
+      // Convert to graph API format
+      const graphEvent = {
+        id: event.id,
+        user_id: event.user_id,
+        organization_id: event.organization_id,
+        project_id: event.project_id,
+        category: event.category,
+        description: event.description,
+        timestamp: event.timestamp,
+        impact: event.impact,
+        files: event.files,
+        branch: event.branch,
+        tags: event.tags,
+        shared: event.shared,
+        commit_hash: event.commit_hash,
+        pressure: event.pressure
+      };
+
+      // Synchronous write to graph (fail loudly if it fails)
+      await createGraphEvents([graphEvent]);
       console.log('[EventLogger] ☁️  Cloud-only: Event synced to graph');
     } catch (error) {
       console.error('[EventLogger] ❌ Cloud-only mode: Graph write failed!');

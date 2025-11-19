@@ -172,6 +172,14 @@ export class GraphApiClient {
   ): Promise<T> {
     const token = await this.requireAuth();
     const url = `${this.apiUrl}${endpoint}`;
+    const debugMode = process.env.GINKO_DEBUG_API === 'true';
+
+    if (debugMode) {
+      console.log(`\n[API Debug] ${method} ${url}`);
+      if (body) {
+        console.log('[API Debug] Request body:', JSON.stringify(body, null, 2));
+      }
+    }
 
     try {
       const response = await fetch(url, {
@@ -184,12 +192,24 @@ export class GraphApiClient {
         body: body ? JSON.stringify(body) : undefined,
       });
 
+      if (debugMode) {
+        console.log(`[API Debug] Response status: ${response.status} ${response.statusText}`);
+      }
+
       if (!response.ok) {
         const errorData = await response.json() as GraphApiError;
+        if (debugMode) {
+          console.log('[API Debug] Error response:', JSON.stringify(errorData, null, 2));
+        }
         throw new Error(errorData.error.message || `API error: ${response.status}`);
       }
 
-      return response.json() as Promise<T>;
+      const responseData = await response.json() as T;
+      if (debugMode) {
+        console.log('[API Debug] Response data:', JSON.stringify(responseData, null, 2));
+      }
+
+      return responseData;
     } catch (error) {
       // Add detailed error logging
       if (error instanceof Error) {
