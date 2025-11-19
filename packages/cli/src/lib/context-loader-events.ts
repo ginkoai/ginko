@@ -126,6 +126,10 @@ export interface LoadedContext {
  * Simple chronological query for last N events - no cursor state needed.
  * Replaces cursor-based loading with direct "ORDER BY timestamp DESC LIMIT N" query.
  *
+ * TASK-012: Cloud-first architecture
+ * - Cloud-only mode (GINKO_CLOUD_ONLY=true): Fails loudly if graph unavailable
+ * - Dual-mode (default): Falls back to strategic loading if graph fails
+ *
  * Performance: ~2-3s for consolidated load
  */
 export async function loadRecentEvents(
@@ -141,6 +145,9 @@ export async function loadRecentEvents(
     documentDepth = 2,
     teamDays = 7
   } = options;
+
+  // TASK-012: Check cloud-only mode
+  const cloudOnly = process.env.GINKO_CLOUD_ONLY === 'true';
 
   try {
     const { GraphApiClient } = await import('../commands/graph/api-client.js');
@@ -162,7 +169,8 @@ export async function loadRecentEvents(
       params.append('categories', categories.join(','));
     }
 
-    console.log('📡 Using consolidated API endpoint (chronological mode)');
+    const mode = cloudOnly ? 'cloud-only' : 'chronological';
+    console.log(`📡 Using consolidated API endpoint (${mode} mode)`);
 
     // Single API call - server detects "chronological" cursor and uses ORDER BY timestamp DESC
     const response = await (client as any).request('GET', `/api/v1/context/initial-load?${params.toString()}`);
@@ -192,8 +200,17 @@ export async function loadRecentEvents(
       token_estimate: response.token_estimate,
     };
   } catch (error) {
-    console.log(`⚠️  Consolidated endpoint failed: ${(error as Error).message}`);
-    throw error; // Re-throw to trigger fallback
+    if (cloudOnly) {
+      // CLOUD-ONLY MODE: Fail loudly, no fallback
+      console.error('❌ Cloud-only mode: Graph API unavailable!');
+      console.error('   Cannot load context from cloud graph.');
+      console.error(`   Error: ${(error as Error).message}`);
+      throw new Error(`Cloud-only mode: Graph API failed: ${(error as Error).message}`);
+    } else {
+      // DUAL-MODE: Log warning and re-throw for fallback handling
+      console.log(`⚠️  Graph API failed: ${(error as Error).message}`);
+      throw error; // Re-throw to trigger fallback
+    }
   }
 }
 

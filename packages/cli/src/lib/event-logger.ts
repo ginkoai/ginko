@@ -137,12 +137,15 @@ async function appendToLocalFile(event: Event): Promise<void> {
 }
 
 /**
- * Log an event with dual-write pattern
+ * Log an event with cloud-first pattern (TASK-012)
  *
- * Pattern (ADR-043):
- * 1. Write to local file immediately (blocking, must succeed)
- * 2. Add to async queue for Neo4j sync (non-blocking)
- * 3. Return immediately (don't wait for sync)
+ * Pattern evolution:
+ * - LEGACY (ADR-043): Dual-write (local file + async graph sync)
+ * - NEW (TASK-012): Cloud-first with optional local backup
+ *
+ * Modes:
+ * - Cloud-only: GINKO_CLOUD_ONLY=true - Graph only, no local files
+ * - Dual-write: (default) - Local file + graph sync for backward compat
  *
  * @param entry - Event entry data
  * @returns Promise<Event> - The logged event with metadata
@@ -171,16 +174,33 @@ export async function logEvent(entry: EventEntry): Promise<Event> {
     synced_to_graph: false
   };
 
-  // 3. Write to local file immediately (MUST succeed)
-  await appendToLocalFile(event);
+  // TASK-012: Check cloud-only mode
+  const cloudOnly = process.env.GINKO_CLOUD_ONLY === 'true';
 
-  // 4. Add to async queue (import lazily to avoid circular deps)
-  try {
-    const { addToQueue } = await import('./event-queue.js');
-    await addToQueue(event);
-  } catch (error) {
-    // Queue failure is non-critical - event is persisted locally
-    console.warn('[EventLogger] Failed to add to sync queue:', error instanceof Error ? error.message : String(error));
+  if (cloudOnly) {
+    // CLOUD-ONLY MODE: Write to graph synchronously, fail loudly if it fails
+    try {
+      const { addToQueue } = await import('./event-queue.js');
+      await addToQueue(event);
+      console.log('[EventLogger] ☁️  Cloud-only: Event synced to graph');
+    } catch (error) {
+      console.error('[EventLogger] ❌ Cloud-only mode: Graph write failed!');
+      console.error('[EventLogger]    Event NOT persisted (no local fallback)');
+      throw new Error(`Cloud-only mode: Graph write failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  } else {
+    // DUAL-WRITE MODE (legacy): Local file first, then async graph sync
+    // 3. Write to local file immediately (MUST succeed)
+    await appendToLocalFile(event);
+
+    // 4. Add to async queue (import lazily to avoid circular deps)
+    try {
+      const { addToQueue } = await import('./event-queue.js');
+      await addToQueue(event);
+    } catch (error) {
+      // Queue failure is non-critical - event is persisted locally
+      console.warn('[EventLogger] Failed to add to sync queue:', error instanceof Error ? error.message : String(error));
+    }
   }
 
   return event;
