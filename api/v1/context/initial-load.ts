@@ -236,6 +236,16 @@ export default async function handler(
         documentsLoaded: 0,
         relationshipsTraversed: 0,
       },
+      // DEBUG: Temporary debugging info
+      debug: {
+        query,
+        queryParams: {
+          ...queryParams,
+          limit: queryParams.limit.toString(), // Convert neo4j.int to string for JSON
+        },
+        resultCount: result.length,
+        firstResult: result.length > 0 ? result[0] : null,
+      },
     });
   } catch (error: any) {
     console.error('[Context Initial-Load API] Error:', error);
