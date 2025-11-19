@@ -218,6 +218,7 @@ export default async function handler(
 
     // Return consolidated response
     return res.status(200).json({
+      _api_version: '2025-11-19-v4', // Version marker to verify deployment
       cursor: {
         id: cursorId || 'chronological',
         current_event_id: cursorId || 'chronological',
