@@ -154,7 +154,20 @@ export default async function handler(
     }
 
     query += `
-      RETURN e
+      RETURN e.id as id,
+             e.user_id as user_id,
+             e.project_id as project_id,
+             e.organization_id as organization_id,
+             e.timestamp as timestamp,
+             e.category as category,
+             e.description as description,
+             e.files as files,
+             e.impact as impact,
+             e.pressure as pressure,
+             e.branch as branch,
+             e.tags as tags,
+             e.shared as shared,
+             e.commit_hash as commit_hash
       ORDER BY e.timestamp DESC
       LIMIT $limit
     `;
@@ -181,24 +194,23 @@ export default async function handler(
     }
 
     const myEvents: Event[] = result.map((r: any) => {
-      const props = r.e.properties;
       return {
-        id: props.id,
-        user_id: props.user_id,
-        project_id: props.project_id,
-        organization_id: props.organization_id || '',
-        timestamp: props.timestamp instanceof neo4j.types.DateTime
-          ? new Date(props.timestamp.toString())
-          : new Date(props.timestamp),
-        category: props.category,
-        description: props.description,
-        files: props.files || [],
-        impact: props.impact,
-        pressure: props.pressure ?? 0,
-        branch: props.branch || 'main',
-        tags: props.tags || [],
-        shared: props.shared ?? false,
-        commit_hash: props.commit_hash || undefined,
+        id: r.id,
+        user_id: r.user_id,
+        project_id: r.project_id,
+        organization_id: r.organization_id || '',
+        timestamp: r.timestamp instanceof neo4j.types.DateTime
+          ? new Date(r.timestamp.toString())
+          : new Date(r.timestamp),
+        category: r.category,
+        description: r.description,
+        files: r.files || [],
+        impact: r.impact,
+        pressure: r.pressure ?? 0,
+        branch: r.branch || 'main',
+        tags: r.tags || [],
+        shared: r.shared ?? false,
+        commit_hash: r.commit_hash || undefined,
       };
     });
 
