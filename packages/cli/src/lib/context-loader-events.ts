@@ -115,9 +115,46 @@ export interface LoadedContext {
   documents: KnowledgeNode[];  // Documents mentioned in events
   relatedDocs: KnowledgeNode[]; // Graph neighborhood
   sprint?: Sprint;             // Active sprint
+  strategicContext?: StrategicContextData; // Strategic context (charter, team, patterns)
   loaded_at: Date;
   event_count: number;
   token_estimate: number;
+}
+
+/**
+ * Strategic context from GraphQL query (EPIC-001)
+ */
+export interface StrategicContextData {
+  charter?: {
+    purpose: string;
+    goals: string[];
+    successCriteria: string[];
+    scope?: {
+      inScope: string[];
+      outOfScope: string[];
+      tbd: string[];
+    };
+  };
+  teamActivity: Array<{
+    category: string;
+    description: string;
+    impact?: string;
+    user: string;
+    timestamp: string;
+  }>;
+  patterns: Array<{
+    title: string;
+    content: string;
+    tags: string[];
+    category?: string;
+  }>;
+  metadata: {
+    charterStatus: string;
+    teamEventCount: number;
+    patternCount: number;
+    loadTimeMs: number;
+    tokenEstimate: number;
+  };
 }
 
 /**
@@ -177,6 +214,20 @@ export async function loadRecentEvents(
 
     console.log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
 
+    // Load strategic context (EPIC-001: charter + team + patterns)
+    const graphId = process.env.GINKO_GRAPH_ID || '';
+    let strategicContext: StrategicContextData | undefined = undefined;
+
+    if (graphId) {
+      const loadedStrategic = await loadStrategicContext(graphId, userId, projectId);
+      if (loadedStrategic) {
+        strategicContext = loadedStrategic;
+        if (strategicContext.metadata) {
+          console.log(`📊 Strategic context loaded: ${strategicContext.metadata.teamEventCount} team events, ${strategicContext.metadata.patternCount} patterns`);
+        }
+      }
+    }
+
     // Create a minimal cursor for backward compatibility
     const cursor: SessionCursor = {
       id: 'chronological-query',
@@ -195,6 +246,7 @@ export async function loadRecentEvents(
       documents: response.documents || [],
       relatedDocs: response.relatedDocs || [],
       sprint: response.sprint,
+      strategicContext,
       loaded_at: new Date(response.loaded_at),
       event_count: response.event_count,
       token_estimate: response.token_estimate,
@@ -468,6 +520,107 @@ async function loadTeamEvents(
   } catch (error) {
     console.error('Failed to load team events:', error);
     return [];
+  }
+}
+
+/**
+ * Load strategic context via GraphQL (EPIC-001)
+ *
+ * Fetches charter + team activity + relevant patterns in single GraphQL query
+ *
+ * @param graphId - Graph ID
+ * @param userId - User ID
+ * @param projectId - Project ID
+ * @returns Strategic context data
+ */
+async function loadStrategicContext(
+  graphId: string,
+  userId: string,
+  projectId: string
+): Promise<StrategicContextData | null> {
+  try {
+    const fs = await import('fs-extra');
+    const path = await import('path');
+    const os = await import('os');
+
+    // Read API key from ~/.ginko/auth.json
+    const authPath = path.join(os.homedir(), '.ginko', 'auth.json');
+    if (!fs.existsSync(authPath)) {
+      return null;
+    }
+
+    const authData = JSON.parse(fs.readFileSync(authPath, 'utf-8'));
+    const apiKey = authData.api_key;
+    if (!apiKey) {
+      return null;
+    }
+
+    const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
+
+    const query = `
+      query GetStrategicContext($graphId: String!, $userId: String!, $projectId: String!) {
+        strategicContext(
+          graphId: $graphId
+          userId: $userId
+          projectId: $projectId
+          teamEventDays: 7
+          teamEventLimit: 10
+          patternLimit: 5
+        ) {
+          charter {
+            purpose
+            goals
+            successCriteria
+            scope {
+              inScope
+              outOfScope
+              tbd
+            }
+          }
+          teamActivity {
+            category
+            description
+            impact
+            user
+            timestamp
+          }
+          patterns {
+            title
+            content
+            tags
+            category
+          }
+          metadata {
+            charterStatus
+            teamEventCount
+            patternCount
+            loadTimeMs
+            tokenEstimate
+          }
+        }
+      }
+    `;
+
+    const variables = { graphId, userId, projectId };
+
+    const response = await fetch(`${apiUrl}/api/graphql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const result: any = await response.json();
+    return result.data?.strategicContext || null;
+  } catch (error) {
+    console.log('⚠️  Strategic context not available (GraphQL query failed)');
+    return null;
   }
 }
 
