@@ -449,10 +449,22 @@
       "relevance": "critical",
       "created": "2025-11-19T21:25:02.777Z",
       "sessionId": "session-chris-at-watchhill-ai-1763587502764"
+    },
+    {
+      "filename": "decision-starting-task013-graph-reliability-testing.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "testing"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-21T14:21:21.565Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763734881548"
     }
   ],
-  "lastUpdated": "2025-11-19T21:25:02.778Z",
-  "totalModules": 29,
+  "lastUpdated": "2025-11-21T14:21:21.566Z",
+  "totalModules": 30,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
