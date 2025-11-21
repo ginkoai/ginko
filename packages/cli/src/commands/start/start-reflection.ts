@@ -22,6 +22,7 @@ import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
 import { loadContextStrategic, formatContextSummary, StrategyContext } from '../../utils/context-loader.js';
 import { initializeQueue } from '../../lib/event-queue.js';
 import { formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
+import { loadSprintChecklist, formatSprintChecklist, formatCurrentTaskDetails } from '../../lib/sprint-loader.js';
 
 /**
  * Start domain reflection for intelligent session initialization
