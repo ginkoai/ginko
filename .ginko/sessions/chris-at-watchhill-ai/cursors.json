@@ -53,8 +53,8 @@
       "branch": "main",
       "current_event_id": "evt_1762358534369_0m77kb",
       "started": "2025-11-05T16:02:14.369Z",
-      "last_active": "2025-11-05T16:02:14.369Z",
-      "status": "active"
+      "last_active": "2025-11-21T17:31:24.965Z",
+      "status": "paused"
     },
     "da463d92-319e-4381-bace-279bb262be04": {
       "id": "da463d92-319e-4381-bace-279bb262be04",
@@ -541,5 +541,5 @@
       "status": "active"
     }
   },
-  "last_updated": "2025-11-21T16:56:16.284Z"
+  "last_updated": "2025-11-21T17:31:25.025Z"
 }
