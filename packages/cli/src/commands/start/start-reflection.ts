@@ -84,6 +84,9 @@ export class StartReflectionCommand extends ReflectionCommand {
       const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
       const projectRoot = await getProjectRoot();
 
+      // Load sprint checklist for session context
+      const sprintChecklist = await loadSprintChecklist(projectRoot);
+
       // Load session log content before archiving
       const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);
       const hasLog = previousSessionLog.length > 100; // Non-empty log
@@ -218,7 +221,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
 
       // 11. Display session information with synthesis and strategy metrics
-      await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext);
+      await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
 
       // Display strategic context loading summary
       if (options.verbose) {
@@ -239,13 +242,15 @@ export class StartReflectionCommand extends ReflectionCommand {
    * Display session information based on synthesis (ADR-036)
    * Enhanced with strategic context metrics (TASK-011)
    * EPIC-001: Display charter, team activity, patterns
+   * TASK-5: Display sprint checklist with [@] current task
    */
   private async displaySessionInfo(
     context: any,
     contextLevel?: ContextLevel,
     synthesis?: SynthesisOutput,
     strategyContext?: StrategyContext,
-    eventContext?: any
+    eventContext?: any,
+    sprintChecklist?: any
   ): Promise<void> {
     console.log('');
 
@@ -383,7 +388,14 @@ export class StartReflectionCommand extends ReflectionCommand {
         console.log('');
       }
 
-      if (work.inProgress.length > 0) {
+      // Display sprint checklist (TASK-5) - replaces generic "In Progress"
+      if (sprintChecklist) {
+        console.log(formatSprintChecklist(sprintChecklist));
+        if (sprintChecklist.currentTask) {
+          console.log(formatCurrentTaskDetails(sprintChecklist.currentTask));
+        }
+      } else if (work.inProgress.length > 0) {
+        // Fallback to generic in-progress if no sprint file
         console.log(chalk.yellow('🚧 In Progress:'));
         work.inProgress.forEach(item => {
           console.log(chalk.dim(`   - ${item}`));
