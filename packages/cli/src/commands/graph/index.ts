@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import { initCommand } from './init.js';
 import { loadCommand } from './load.js';
 import { statusCommand } from './status.js';
+import { healthCommand } from './health.js';
 import { queryCommand } from './query.js';
 import { exploreCommand } from './explore.js';
 
@@ -78,6 +79,14 @@ ${chalk.gray('Learn More:')}
     .description('Show graph statistics and health')
     .action(async () => {
       await statusCommand();
+    });
+
+  // Show health metrics (TASK-013)
+  graph
+    .command('health')
+    .description('Show graph reliability metrics (success rate, latency, retries)')
+    .action(async () => {
+      await healthCommand();
     });
 
   // Semantic query

@@ -10,6 +10,7 @@
  */
 
 import { getAccessToken, isAuthenticated } from '../../utils/auth-storage.js';
+import { graphHealthMonitor } from '../../utils/graph-health-monitor.js';
 
 export interface GraphApiError {
   error: {
@@ -163,19 +164,30 @@ export class GraphApiClient {
   }
 
   /**
-   * Make authenticated API request
+   * Make authenticated API request with retry logic (TASK-013)
+   *
+   * Retry strategy for transient failures:
+   * - Network errors (ECONNRESET, ETIMEDOUT, etc.)
+   * - Server errors (500, 502, 503, 504)
+   * - Rate limiting (429)
+   *
+   * Exponential backoff: 1s, 2s, 4s (max 3 attempts)
    */
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: unknown
+    body?: unknown,
+    attempt: number = 1
   ): Promise<T> {
     const token = await this.requireAuth();
     const url = `${this.apiUrl}${endpoint}`;
     const debugMode = process.env.GINKO_DEBUG_API === 'true';
+    const maxAttempts = 3;
+    const baseDelay = 1000; // 1 second
+    const startTime = Date.now();
 
     if (debugMode) {
-      console.log(`\n[API Debug] ${method} ${url}`);
+      console.log(`\n[API Debug] ${method} ${url}${attempt > 1 ? ` (attempt ${attempt}/${maxAttempts})` : ''}`);
       if (body) {
         console.log('[API Debug] Request body:', JSON.stringify(body, null, 2));
       }
@@ -196,12 +208,28 @@ export class GraphApiClient {
         console.log(`[API Debug] Response status: ${response.status} ${response.statusText}`);
       }
 
+      // Check if response indicates a retryable error
+      const isRetryable = this.isRetryableStatusCode(response.status);
+
       if (!response.ok) {
         const errorData = await response.json() as GraphApiError;
         if (debugMode) {
           console.log('[API Debug] Error response:', JSON.stringify(errorData, null, 2));
         }
-        throw new Error(errorData.error.message || `API error: ${response.status}`);
+
+        const error = new Error(errorData.error.message || `API error: ${response.status}`);
+
+        // Retry if retryable and haven't exceeded max attempts
+        if (isRetryable && attempt < maxAttempts) {
+          graphHealthMonitor.recordRetry();
+          const delay = baseDelay * Math.pow(2, attempt - 1); // Exponential backoff
+          console.log(`⚠️  Retryable error (${response.status}). Retrying in ${delay}ms...`);
+          await this.sleep(delay);
+          return this.request<T>(method, endpoint, body, attempt + 1);
+        }
+
+        graphHealthMonitor.recordFailure(`${method} ${endpoint}`, error.message);
+        throw error;
       }
 
       const responseData = await response.json() as T;
@@ -209,14 +237,58 @@ export class GraphApiClient {
         console.log('[API Debug] Response data:', JSON.stringify(responseData, null, 2));
       }
 
+      const latency = Date.now() - startTime;
+      graphHealthMonitor.recordSuccess(latency);
+
       return responseData;
     } catch (error) {
+      // Network errors (timeouts, connection refused, etc.)
+      const isNetworkError = error instanceof Error && (
+        error.message.includes('ECONNRESET') ||
+        error.message.includes('ETIMEDOUT') ||
+        error.message.includes('ECONNREFUSED') ||
+        error.message.includes('fetch failed') ||
+        error.message.includes('network')
+      );
+
+      // Retry network errors
+      if (isNetworkError && attempt < maxAttempts) {
+        graphHealthMonitor.recordRetry();
+        const delay = baseDelay * Math.pow(2, attempt - 1);
+        console.log(`⚠️  Network error. Retrying in ${delay}ms...`);
+        await this.sleep(delay);
+        return this.request<T>(method, endpoint, body, attempt + 1);
+      }
+
       // Add detailed error logging
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      graphHealthMonitor.recordFailure(`${method} ${endpoint}`, errorMessage);
+
       if (error instanceof Error) {
         throw new Error(`Failed to ${method} ${url}: ${error.message}`);
       }
       throw error;
     }
+  }
+
+  /**
+   * Check if HTTP status code is retryable
+   */
+  private isRetryableStatusCode(status: number): boolean {
+    return (
+      status === 429 || // Rate limit
+      status === 500 || // Internal server error
+      status === 502 || // Bad gateway
+      status === 503 || // Service unavailable
+      status === 504    // Gateway timeout
+    );
+  }
+
+  /**
+   * Sleep utility for retry backoff
+   */
+  private sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**

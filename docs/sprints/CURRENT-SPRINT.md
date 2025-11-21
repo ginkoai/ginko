@@ -24,7 +24,7 @@ Establish clear command patterns (Reflection vs. Utility) and fix event logging 
 **NEXT Priority Tasks** (Cloud-first refactor):
 - ✅ TASK-011: Remove cursors, use chronological queries (COMPLETE - 3h)
 - ✅ TASK-012: Eliminate dual-write, cloud graph only (COMPLETE - 5h)
-- TASK-013: Graph reliability testing & bug fixes (HIGH - 12h) 🔜 NEXT
+- 🚧 TASK-013: Graph reliability testing & bug fixes (IN PROGRESS - Phase 1 complete, 4h)
 
 **Completed Tasks**:
 - ✅ TASK-001: Remove blocking prompts from `ginko log`
@@ -38,6 +38,7 @@ Establish clear command patterns (Reflection vs. Utility) and fix event logging 
 - ✅ TASK-009: Deduplicate events in current-events.jsonl
 - ✅ TASK-011: Remove cursors, use chronological queries (3h - 50% faster!)
 - ✅ TASK-012: Cloud-only mode implemented (5h - 37.5% faster!)
+- 🚧 TASK-013: Graph reliability - Phase 1 complete (4h - retry logic + monitoring)
 - ⊘ TASK-010: Investigate cursor advancement (CANCELLED - replaced by TASK-011)
 
 **This Week's Goals**:
