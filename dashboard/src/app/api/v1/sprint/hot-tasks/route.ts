@@ -45,6 +45,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '../../graph/_neo4j';
+import neo4j from 'neo4j-driver';
 
 interface HotTask {
   taskId: string;
@@ -154,7 +155,7 @@ export async function GET(request: NextRequest) {
 
     const result = await runQuery(query, {
       sprintId: sprintFilter,
-      limit: Math.floor(limit), // Ensure integer for Neo4j
+      limit: neo4j.int(limit), // Neo4j requires integers to be wrapped
     });
 
     // Process tasks and calculate hotness
