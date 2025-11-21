@@ -154,7 +154,7 @@ export async function GET(request: NextRequest) {
 
     const result = await runQuery(query, {
       sprintId: sprintFilter,
-      limit,
+      limit: Math.floor(limit), // Ensure integer for Neo4j
     });
 
     // Process tasks and calculate hotness
