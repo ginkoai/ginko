@@ -7,10 +7,10 @@
       "organization_id": "org_chris",
       "project_id": "ginko",
       "branch": "main",
-      "current_event_id": "evt_1762356439119_49fng1",
+      "current_event_id": "event_1763515769281_00775bc4",
       "started": "2025-11-05T15:27:19.119Z",
-      "last_active": "2025-11-05T15:27:19.119Z",
-      "status": "active"
+      "last_active": "2025-11-19T16:36:29.581Z",
+      "status": "paused"
     },
     "f8896f00-328d-4871-94ca-0567ad83d559": {
       "id": "f8896f00-328d-4871-94ca-0567ad83d559",
@@ -20,8 +20,8 @@
       "branch": "main",
       "current_event_id": "evt_1762357237237_bct395",
       "started": "2025-11-05T15:40:37.237Z",
-      "last_active": "2025-11-05T15:40:37.237Z",
-      "status": "active"
+      "last_active": "2025-11-19T18:18:17.440Z",
+      "status": "paused"
     },
     "62cc7f01-4ef1-4df1-bf5e-b39cb861e36a": {
       "id": "62cc7f01-4ef1-4df1-bf5e-b39cb861e36a",
@@ -31,8 +31,8 @@
       "branch": "main",
       "current_event_id": "evt_1762357403218_b28sdb",
       "started": "2025-11-05T15:43:23.218Z",
-      "last_active": "2025-11-05T15:43:23.218Z",
-      "status": "active"
+      "last_active": "2025-11-19T21:12:12.103Z",
+      "status": "paused"
     },
     "b1fd49ee-0112-49b5-9c9c-2ecdd007757e": {
       "id": "b1fd49ee-0112-49b5-9c9c-2ecdd007757e",
@@ -495,7 +495,51 @@
       "started": "2025-11-17T21:06:09.029Z",
       "last_active": "2025-11-17T21:06:09.029Z",
       "status": "active"
+    },
+    "a2775a20-dc9f-47ec-9e27-3704384b3666": {
+      "id": "a2775a20-dc9f-47ec-9e27-3704384b3666",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1763489006425_rbhi61",
+      "started": "2025-11-18T18:03:26.425Z",
+      "last_active": "2025-11-18T18:03:26.425Z",
+      "status": "active"
+    },
+    "3e6149fa-e965-4572-a4a7-af371f54155d": {
+      "id": "3e6149fa-e965-4572-a4a7-af371f54155d",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1763504317813_qp40t8",
+      "started": "2025-11-18T22:18:37.813Z",
+      "last_active": "2025-11-18T22:18:37.813Z",
+      "status": "active"
+    },
+    "eaf3888f-ff25-4ed3-8d54-1d97113b15f6": {
+      "id": "eaf3888f-ff25-4ed3-8d54-1d97113b15f6",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1763512876883_v1g27c",
+      "started": "2025-11-19T00:41:16.883Z",
+      "last_active": "2025-11-19T00:41:16.883Z",
+      "status": "active"
+    },
+    "49e3b715-8506-4386-8ab1-db50d3961ff2": {
+      "id": "49e3b715-8506-4386-8ab1-db50d3961ff2",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "main",
+      "current_event_id": "evt_1763521253946_k9lrag",
+      "started": "2025-11-19T03:00:53.946Z",
+      "last_active": "2025-11-19T03:00:53.946Z",
+      "status": "active"
     }
   },
-  "last_updated": "2025-11-17T21:06:09.100Z"
+  "last_updated": "2025-11-19T21:12:12.159Z"
 }

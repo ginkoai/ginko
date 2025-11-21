@@ -277,10 +277,182 @@
       "relevance": "high",
       "created": "2025-09-22T18:14:48.451Z",
       "sessionId": "xtophr@gmail.com-1758564888315"
+    },
+    {
+      "filename": "gotcha-fixed-eventqueue-timer-keeping-ginko-start-process.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T00:37:16.102Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763512636088"
+    },
+    {
+      "filename": "gotcha-test-session-log-writing-after-fix.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T00:39:19.407Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763512759400"
+    },
+    {
+      "filename": "gotcha-session-log-fix-verified.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "testing"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T00:40:47.953Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763512847945"
+    },
+    {
+      "filename": "discovery-task004-complete-fixed-session-log-writing-bug-by-.md",
+      "type": "discovery",
+      "tags": [
+        "achievement",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T00:41:27.929Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763512887922"
+    },
+    {
+      "filename": "discovery-completed-task001-through-task004-for-sprint202511.md",
+      "type": "discovery",
+      "tags": [
+        "achievement",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T00:42:14.927Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763512934919"
+    },
+    {
+      "filename": "gotcha-fixed-eventqueue-timer-keeping-process-alive.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T01:15:48.241Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763514948225"
+    },
+    {
+      "filename": "discovery-discovered-edge-cases-in-detectcategory-empty-stri.md",
+      "type": "discovery",
+      "tags": [
+        "insight",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T01:27:04.667Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763515624659"
+    },
+    {
+      "filename": "gotcha-fixed-edge-case-vulnerability-in-detectcategory-an.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T01:27:40.870Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763515660843"
+    },
+    {
+      "filename": "pattern-all-edge-case-tests-passing.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T01:29:29.488Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763515769479"
+    },
+    {
+      "filename": "decision-completed-event-loading-fixes-and-pivoted-to-cloud.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "testing"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T02:57:10.970Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763521030951"
+    },
+    {
+      "filename": "discovery-task013-completed-serverside-investigation-for-bug.md",
+      "type": "discovery",
+      "tags": [
+        "insight",
+        "high",
+        "api",
+        "cli",
+        "database"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T03:58:59.399Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763524739383"
+    },
+    {
+      "filename": "gotcha-fixed-neo4j-query-in-initialload-endpoint-to-retur.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T04:59:51.683Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763528391666"
+    },
+    {
+      "filename": "discovery-task013-breakthrough-discovered-i-was-editing-wron.md",
+      "type": "discovery",
+      "tags": [
+        "insight",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T05:47:38.809Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763531258792"
+    },
+    {
+      "filename": "decision-planning-complete-epic001-strategic-context-dynami.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "testing"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T16:12:42.689Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763568762669"
+    },
+    {
+      "filename": "gotcha-fixed-event-miscategorization-bug-in-synthesis.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-19T21:25:02.777Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763587502764"
     }
   ],
-  "lastUpdated": "2025-09-22T18:14:48.459Z",
-  "totalModules": 14,
+  "lastUpdated": "2025-11-19T21:25:02.778Z",
+  "totalModules": 29,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

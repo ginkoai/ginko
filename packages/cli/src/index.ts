@@ -137,8 +137,8 @@ program
 program
   .command('log [description]')
   .description('Log an event to the current session (ADR-033 defensive logging)')
-  .option('-c, --category <category>', 'Event category: fix, feature, decision, insight, git, achievement', 'feature')
-  .option('-i, --impact <impact>', 'Impact level: high, medium, low', 'medium')
+  .option('-c, --category <category>', 'Event category: fix, feature, decision, insight, git, achievement (auto-detected if not provided)')
+  .option('-i, --impact <impact>', 'Impact level: high, medium, low (auto-detected if not provided)')
   .option('-f, --files <files>', 'Comma-separated list of files affected')
   .option('-s, --show', 'Show current session log with quality score')
   .option('--validate', 'Check session log quality and get suggestions')

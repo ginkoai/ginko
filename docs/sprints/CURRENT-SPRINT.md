@@ -69,6 +69,20 @@ Establish clear command patterns (Reflection vs. Utility) and fix event logging 
 - **ADR-032**: Core CLI Architecture and Reflection System
 - **ADR-033**: Context Pressure Mitigation Strategy
 
+## Upcoming Epic
+
+**[EPIC-001: Strategic Context & Dynamic Adaptivity](../epics/EPIC-001-strategic-context-and-dynamic-adaptivity.md)**
+- **Status**: Planning complete, ready to execute
+- **Goal**: Improve AI partner readiness from 6.5/10 to 7-8/10
+- **Duration**: 4 sprints (~4 weeks)
+- **Sprints**:
+  1. [Strategic Context Surfacing](./SPRINT-2025-12-strategic-context-surfacing.md) - Charter, team, patterns
+  2. [Dynamic Adaptivity](./SPRINT-2026-01-A-dynamic-adaptivity.md) - Maturity detection, mode recommendations
+  3. [Intelligent Knowledge Capture](./SPRINT-2026-01-B-intelligent-knowledge-capture.md) - Significance detection, ADR/PRD nudging
+  4. [Polish & Validation](./SPRINT-2026-02-polish-and-validation.md) - Performance, UX, comprehensive testing
+
+---
+
 ## Recent Completions
 
 - **SPRINT-2025-11-10**: Project Charter & Initialization (Nov 17) - 100% delivery

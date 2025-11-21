@@ -9,7 +9,7 @@
  * @dependencies: [fs-extra]
  */
 
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import * as path from 'path';
 import type {
   WriteAdapter,
@@ -216,7 +216,15 @@ export class LocalAdapter implements WriteAdapter {
     await fs.ensureDir(sessionDir);
 
     const entry = this.formatLogEntry(document);
-    await fs.appendFile(logPath, entry, 'utf-8');
+
+    // Use fs-extra's appendFile (ensure file exists first)
+    if (!await fs.pathExists(logPath)) {
+      await fs.writeFile(logPath, '', 'utf-8');
+    }
+
+    // Read current content, append, and write back (fs-extra compatible)
+    const currentContent = await fs.readFile(logPath, 'utf-8');
+    await fs.writeFile(logPath, currentContent + entry, 'utf-8');
 
     return logPath;
   }

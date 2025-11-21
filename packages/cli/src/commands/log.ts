@@ -1,16 +1,16 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-10-22
- * @tags: [session-logging, defensive-logging, adr-033, references, task-010]
- * @related: [../core/session-log-manager.ts, start/start-reflection.ts, ../utils/reference-parser.ts]
+ * @updated: 2025-11-18
+ * @pattern: utility
+ * @tags: [session-logging, defensive-logging, adr-033, adr-046, utility-command, ai-first-ux]
+ * @related: [../core/session-log-manager.ts, ../utils/command-helpers.ts, ADR-046-command-patterns-reflection-vs-utility.md]
  * @priority: critical
  * @complexity: low
- * @dependencies: [chalk, commander, session-log-manager, reference-parser]
+ * @dependencies: [chalk, session-log-manager, event-logger]
  */
 
 import chalk from 'chalk';
-import prompts from 'prompts';
 import { v4 as uuidv4 } from 'uuid';
 import { SessionLogManager, LogCategory, LogImpact, LogEntry } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
@@ -22,6 +22,14 @@ import {
   getQualityExamples,
   suggestInsights
 } from '../utils/log-quality.js';
+import {
+  detectCategory,
+  detectImpact,
+  shouldCreateContextModule,
+  getQualityDescription,
+  getQualityBreakdown,
+  analyzeQuality
+} from '../utils/command-helpers.js';
 import {
   extractReferences,
   validateReferences,
@@ -91,117 +99,63 @@ export async function logCommand(description: string, options: LogOptions): Prom
       return;
     }
 
-    // Parse and validate category
-    let category = (options.category || 'feature') as LogCategory;
-    const validCategories: LogCategory[] = ['fix', 'feature', 'decision', 'insight', 'git', 'achievement'];
-    if (!validCategories.includes(category)) {
-      console.error(chalk.red(`❌ Invalid category: ${category}`));
-      console.error(chalk.dim(`   Valid categories: ${validCategories.join(', ')}`));
-      process.exit(1);
+    // Auto-detect category if not provided (TASK-002: Smart Defaults)
+    const autoDetected = {
+      category: false,
+      impact: false
+    };
+
+    let category: LogCategory;
+    if (options.category) {
+      // User provided explicit category - validate it
+      category = options.category as LogCategory;
+      const validCategories: LogCategory[] = ['fix', 'feature', 'decision', 'insight', 'git', 'achievement'];
+      if (!validCategories.includes(category)) {
+        console.error(chalk.red(`❌ Invalid category: ${options.category}`));
+        console.error(chalk.dim(`   Valid categories: ${validCategories.join(', ')}`));
+        process.exit(1);
+      }
+    } else {
+      // Auto-detect category from description
+      const detected = detectCategory(description);
+      category = detected || 'feature'; // Default to feature if detection fails
+      autoDetected.category = detected !== null;
     }
 
-    // Parse and validate impact
-    let impact = (options.impact || 'medium') as LogImpact;
-    const validImpacts: LogImpact[] = ['high', 'medium', 'low'];
-    if (!validImpacts.includes(impact)) {
-      console.error(chalk.red(`❌ Invalid impact: ${impact}`));
-      console.error(chalk.dim(`   Valid impacts: ${validImpacts.join(', ')}`));
-      process.exit(1);
+    // Auto-detect impact if not provided (TASK-002: Smart Defaults)
+    let impact: LogImpact;
+    if (options.impact) {
+      // User provided explicit impact - validate it
+      impact = options.impact as LogImpact;
+      const validImpacts: LogImpact[] = ['high', 'medium', 'low'];
+      if (!validImpacts.includes(impact)) {
+        console.error(chalk.red(`❌ Invalid impact: ${options.impact}`));
+        console.error(chalk.dim(`   Valid impacts: ${validImpacts.join(', ')}`));
+        process.exit(1);
+      }
+    } else {
+      // Auto-detect impact from description
+      impact = detectImpact(description);
+      autoDetected.impact = true;
     }
 
-    // Enhanced description with interactive prompts (unless --quick mode)
+    // AI-first: No prompts - description provided upfront contains all context
     let enhancedDescription = description;
 
-    if (!options.quick) {
-      // Prompt for WHY on features
-      if (category === 'feature' && options.why !== false) {
-        console.log(chalk.cyan('\n💡 Quality Tip: Feature entries should explain WHY (what problem it solves)\n'));
-
-        const answer = await prompts({
-          type: 'text',
-          name: 'why',
-          message: 'What problem does this feature solve?',
-          initial: ''
-        });
-
-        if (answer.why && answer.why.trim()) {
-          enhancedDescription += `\nProblem: ${answer.why.trim()}`;
-        }
-      }
-
-      // Prompt for alternatives on decisions
-      if (category === 'decision') {
-        console.log(chalk.cyan('\n💡 Quality Tip: Decision entries should mention alternatives considered\n'));
-
-        const answer = await prompts({
-          type: 'text',
-          name: 'alternatives',
-          message: 'What alternatives were considered?',
-          initial: ''
-        });
-
-        if (answer.alternatives && answer.alternatives.trim()) {
-          enhancedDescription += `\nAlternatives: ${answer.alternatives.trim()}`;
-        }
-      }
-
-      // Prompt for root cause on fixes
-      if (category === 'fix') {
-        console.log(chalk.cyan('\n💡 Quality Tip: Fix entries should include root cause\n'));
-
-        const answer = await prompts({
-          type: 'text',
-          name: 'rootCause',
-          message: 'What was the root cause?',
-          initial: ''
-        });
-
-        if (answer.rootCause && answer.rootCause.trim()) {
-          enhancedDescription += `\nRoot cause: ${answer.rootCause.trim()}`;
-        }
-      }
-    }
-
-    // Auto-detect files from git if not provided
+    // Auto-detect files from git if not provided (AI-first: no confirmation needed)
     let files: string[] | undefined = options.files
       ? options.files.split(',').map(f => f.trim())
       : undefined;
 
     if (!files || files.length === 0) {
       const detectedFiles = await autoDetectFiles();
-      if (detectedFiles.length > 0 && !options.quick) {
-        console.log(chalk.cyan(`\n📁 Detected ${detectedFiles.length} modified files from git\n`));
-
-        const answer = await prompts({
-          type: 'confirm',
-          name: 'useDetected',
-          message: 'Include these files in the log entry?',
-          initial: true
-        });
-
-        if (answer.useDetected) {
-          files = detectedFiles.slice(0, 5); // Limit to 5 most relevant
-        }
+      if (detectedFiles.length > 0) {
+        files = detectedFiles.slice(0, 5); // Auto-include, limit to 5 most relevant
       }
     }
 
     // Auto-detect references from description (TASK-010)
     const references = extractReferences(enhancedDescription);
-
-    if (references.length > 0 && !options.quick) {
-      console.log(chalk.cyan(`\n🔗 Detected ${references.length} reference(s): ${references.map(r => r.rawText).join(', ')}\n`));
-
-      // Validate references asynchronously (non-blocking)
-      const refValidation = await validateReferences(references);
-
-      if (refValidation.broken.length > 0) {
-        console.log(chalk.yellow('⚠️  Some references could not be resolved:'));
-        for (const brokenRef of refValidation.broken) {
-          console.log(chalk.dim(`   - ${brokenRef.rawText} (target not found)`));
-        }
-        console.log(chalk.dim('\n   This is just a warning - logging will continue.\n'));
-      }
-    }
 
     // Create log entry
     const entry: LogEntry = {
@@ -212,26 +166,8 @@ export async function logCommand(description: string, options: LogOptions): Prom
       impact
     };
 
-    // Validate entry quality
+    // Validate entry quality (AI-first: provide feedback, don't block)
     const validation = validateEntry(entry);
-    if (validation.warnings.length > 0 && !options.quick) {
-      console.log(chalk.yellow('\n⚠️  Quality Warnings:'));
-      for (const warning of validation.warnings) {
-        console.log(chalk.dim(`   - ${warning}`));
-      }
-
-      const answer = await prompts({
-        type: 'confirm',
-        name: 'continue',
-        message: 'Continue with this entry?',
-        initial: true
-      });
-
-      if (!answer.continue) {
-        console.log(chalk.yellow('Entry cancelled.'));
-        return;
-      }
-    }
 
     // Append to session log (via dispatcher if enabled, local fallback)
     await appendLogEntry(sessionDir, entry, userEmail);
@@ -252,21 +188,69 @@ export async function logCommand(description: string, options: LogOptions): Prom
       console.warn(chalk.dim(`  ${error instanceof Error ? error.message : String(error)}`));
     }
 
-    console.log(chalk.green(`\n✓ Logged ${category} event`));
+    // Educational feedback output (AI-first UX with auto-detection transparency)
+    const autoLabel = (autoDetected.category || autoDetected.impact)
+      ? chalk.dim(' (auto-detected)')
+      : '';
+    console.log(chalk.green(`\n✓ Event logged: ${category} (${impact} impact)`) + autoLabel + '\n');
+
+    // Quality analysis feedback
+    const qualityScore = validation.warnings.length === 0 ? 100 : Math.max(50, 100 - (validation.warnings.length * 20));
+    console.log(chalk.cyan('Quality:'), getQualityDescription({ score: qualityScore, warnings: validation.warnings }));
+
+    // Show auto-detection details for transparency
+    if (autoDetected.category || autoDetected.impact) {
+      const detected: string[] = [];
+      if (autoDetected.category) detected.push(`category=${category}`);
+      if (autoDetected.impact) detected.push(`impact=${impact}`);
+      console.log(chalk.dim(`  Auto-detected: ${detected.join(', ')}`));
+    }
+
+    // Show quality breakdown for good entries
+    if (qualityScore >= 70) {
+      const breakdown = getQualityBreakdown(enhancedDescription);
+      if (breakdown) {
+        console.log(chalk.dim('  ' + breakdown));
+      }
+    }
+
+    // Files included
     if (files && files.length > 0) {
-      console.log(chalk.dim(`  Files: ${files.join(', ')}`));
+      console.log(chalk.cyan('\nFiles:'), chalk.dim(`${files.length} auto-included`));
+      for (const file of files.slice(0, 3)) {
+        console.log(chalk.dim(`  - ${file}`));
+      }
+      if (files.length > 3) {
+        console.log(chalk.dim(`  ... and ${files.length - 3} more`));
+      }
     }
-    console.log(chalk.dim(`  Impact: ${impact}`));
 
-    // Show reference chains if detected
+    // References detected
     if (references.length > 0) {
-      console.log(chalk.dim(`  References: ${references.map(r => r.rawText).join(', ')}`));
+      console.log(chalk.cyan('\nReferences:'), chalk.dim(`${references.length} detected`));
+      for (const ref of references.slice(0, 3)) {
+        console.log(chalk.dim(`  - ${ref.rawText}`));
+      }
     }
 
-    // Check if this entry should be promoted to a context module
-    if (!options.quick) {
-      await promptForContextModule(entry, ginkoDir, sessionDir);
+    // Auto-create context module for high-value entries (no prompt)
+    // Use new shouldCreateContextModule from command-helpers
+    if (shouldCreateContextModule(category, impact)) {
+      await autoCreateContextModule(entry, ginkoDir, sessionDir);
+      console.log(chalk.green('\nContext module:'), chalk.dim('Created (high-impact pattern)'));
     }
+
+    // Quality coaching for low-quality entries
+    if (validation.warnings.length > 0) {
+      console.log(chalk.yellow('\n💡 Quality Tips:'));
+      for (const warning of validation.warnings) {
+        console.log(chalk.dim(`   ${warning}`));
+      }
+      console.log(chalk.dim('\n   Next entry: Include WHAT+WHY+HOW for richer context'));
+      console.log(chalk.dim('   Example: "Fixed X. Root cause: Y. Solution: Z. Impact: A→B"'));
+    }
+
+    console.log(''); // Blank line for spacing
 
   } catch (error) {
     console.error(chalk.red('Error logging event:'), error instanceof Error ? error.message : String(error));
@@ -275,93 +259,36 @@ export async function logCommand(description: string, options: LogOptions): Prom
 }
 
 /**
- * Prompt user to create a context module from high-value log entry
+ * Auto-create context module from high-value log entry (AI-first: no prompts)
  */
-async function promptForContextModule(
+async function autoCreateContextModule(
   entry: LogEntry,
   ginkoDir: string,
   sessionDir: string
 ): Promise<void> {
-  // Step 1: Detect if entry qualifies for promotion
-  const shouldPrompt = detectInsightPromotion(entry);
-
-  if (!shouldPrompt) {
-    return;
-  }
-
-  console.log(chalk.cyan('\n📦 This looks like valuable team knowledge!'));
-
-  const confirmAnswer = await prompts({
-    type: 'confirm',
-    name: 'create',
-    message: 'Create context module?',
-    initial: true
-  });
-
-  if (!confirmAnswer.create) {
-    return;
-  }
-
-  // Step 2: Gather additional context from user
-  const answers = await prompts([
-    {
-      type: 'text',
-      name: 'title',
-      message: 'Module title (brief, descriptive):',
-      initial: extractTitle(entry.description),
-      validate: (input: string) => input.length > 0 || 'Title is required'
-    },
-    {
-      type: 'text',
-      name: 'problem',
-      message: 'What problem does this solve?',
-      validate: (input: string) => input.length > 0 || 'Problem description is required'
-    },
-    {
-      type: 'text',
-      name: 'solution',
-      message: 'What is the solution/approach?',
-      validate: (input: string) => input.length > 0 || 'Solution description is required'
-    },
-    {
-      type: 'number',
-      name: 'timeSaving',
-      message: 'Estimated time saving for future use (minutes):',
-      initial: 60,
-      validate: (input: number) => input > 0 || 'Time saving must be positive'
-    },
-    {
-      type: 'text',
-      name: 'tags',
-      message: 'Tags (comma-separated):',
-      initial: extractTags(entry)
-    }
-  ]);
-
-  // Process tags manually since prompts doesn't have a filter option
-  const tags = typeof answers.tags === 'string'
-    ? answers.tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
-    : answers.tags;
-
-  // Step 3: Convert LogEntry to SessionInsight
-  const insight: SessionInsight = {
-    id: uuidv4(),
-    type: mapCategoryToInsightType(entry.category),
-    title: answers.title,
-    problem: answers.problem,
-    solution: answers.solution,
-    impact: entry.description,
-    reusabilityScore: entry.impact === 'high' ? 0.85 : 0.75,
-    timeSavingPotential: answers.timeSaving,
-    relevanceScore: 0.9,
-    tags: tags,
-    relatedFiles: entry.files,
-    sessionId: await getSessionId(sessionDir),
-    timestamp: new Date(entry.timestamp)
-  };
-
-  // Step 4: Generate module using ModuleGenerator
   try {
+    // Extract title, problem, solution from description
+    const title = extractTitle(entry.description);
+    const tags = extractTags(entry).split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+    // Convert LogEntry to SessionInsight with intelligent defaults
+    const insight: SessionInsight = {
+      id: uuidv4(),
+      type: mapCategoryToInsightType(entry.category),
+      title,
+      problem: extractProblemFromDescription(entry.description, entry.category),
+      solution: extractSolutionFromDescription(entry.description, entry.category),
+      impact: entry.description,
+      reusabilityScore: entry.impact === 'high' ? 0.85 : 0.75,
+      timeSavingPotential: estimateTimeSaving(entry.category, entry.impact),
+      relevanceScore: 0.9,
+      tags,
+      relatedFiles: entry.files,
+      sessionId: await getSessionId(sessionDir),
+      timestamp: new Date(entry.timestamp)
+    };
+
+    // Generate module using ModuleGenerator
     const generator = new ModuleGenerator(ginkoDir);
     await generator.initialize();
 
@@ -369,51 +296,20 @@ async function promptForContextModule(
 
     if (result.created.length > 0) {
       const module = result.created[0];
-      console.log(chalk.green(`\n✓ Context module created: ${module.filename}`));
-      console.log(chalk.dim('📚 Available to all team members in next session\n'));
+      console.log(chalk.cyan('\nContext module:'), chalk.green('Created'));
+      console.log(chalk.dim(`  ${module.filename} (${entry.impact}-impact ${entry.category} pattern)`));
     } else if (result.skipped.length > 0) {
       const skip = result.skipped[0];
-      console.log(chalk.yellow(`\n⚠️  Module creation skipped: ${skip.reason}`));
+      console.log(chalk.cyan('\nContext module:'), chalk.dim('Skipped'));
+      console.log(chalk.dim(`  Reason: ${skip.reason}`));
       if (skip.existingModule) {
-        console.log(chalk.dim(`   Similar module exists: ${skip.existingModule}\n`));
+        console.log(chalk.dim(`  Similar: ${skip.existingModule}`));
       }
     }
   } catch (error) {
-    console.error(chalk.red('Error creating context module:'), error instanceof Error ? error.message : String(error));
+    // Context module creation is non-critical, don't block
+    console.log(chalk.dim('\n  Context module creation skipped (non-critical error)'));
   }
-}
-
-/**
- * Detect if log entry should trigger context module promotion
- */
-function detectInsightPromotion(entry: LogEntry): boolean {
-  // Detect by category
-  const promotionCategories: LogCategory[] = ['insight', 'decision'];
-  if (promotionCategories.includes(entry.category)) {
-    return true;
-  }
-
-  // Detect by impact level
-  if (entry.impact === 'high') {
-    return true;
-  }
-
-  // Detect by keywords in description
-  const keywords = [
-    'discovered',
-    'pattern',
-    'breakthrough',
-    'game changer',
-    'significant',
-    'profound',
-    'brilliant',
-    'critical insight',
-    'key learning',
-    'important finding'
-  ];
-
-  const lowerDesc = entry.description.toLowerCase();
-  return keywords.some(keyword => lowerDesc.includes(keyword));
 }
 
 /**
@@ -473,6 +369,87 @@ function mapCategoryToInsightType(category: LogCategory): InsightType {
   };
 
   return mapping[category] || 'discovery';
+}
+
+/**
+ * Extract problem from description based on category
+ */
+function extractProblemFromDescription(description: string, category: LogCategory): string {
+  // Try to extract explicit problem statement
+  const problemMatch = description.match(/Problem:\s*([^\n]+)/i);
+  if (problemMatch) {
+    return problemMatch[1].trim();
+  }
+
+  const rootCauseMatch = description.match(/Root cause:\s*([^\n]+)/i);
+  if (rootCauseMatch) {
+    return rootCauseMatch[1].trim();
+  }
+
+  // Category-specific extraction
+  if (category === 'fix') {
+    // For fixes, the problem is what was broken
+    const fixMatch = description.match(/Fixed\s+([^.]+)/i);
+    if (fixMatch) {
+      return fixMatch[1].trim();
+    }
+  }
+
+  // Default: use first sentence
+  return description.split(/[.!?]/)[0].trim();
+}
+
+/**
+ * Extract solution from description based on category
+ */
+function extractSolutionFromDescription(description: string, category: LogCategory): string {
+  // Try to extract explicit solution statement
+  const solutionMatch = description.match(/Solution:\s*([^\n]+)/i);
+  if (solutionMatch) {
+    return solutionMatch[1].trim();
+  }
+
+  const approachMatch = description.match(/Approach:\s*([^\n]+)/i);
+  if (approachMatch) {
+    return approachMatch[1].trim();
+  }
+
+  // Try to find "by doing X" pattern
+  const byMatch = description.match(/[Bb]y\s+([^.]+)/);
+  if (byMatch) {
+    return byMatch[1].trim();
+  }
+
+  // Try to find "Added/Implemented X" pattern
+  const actionMatch = description.match(/(?:Added|Implemented|Created|Used)\s+([^.]+)/i);
+  if (actionMatch) {
+    return actionMatch[1].trim();
+  }
+
+  // Default: use description as solution
+  return description.trim();
+}
+
+/**
+ * Estimate time saving based on category and impact
+ */
+function estimateTimeSaving(category: LogCategory, impact: LogImpact): number {
+  const baseMinutes: Record<LogCategory, number> = {
+    fix: 30,
+    feature: 60,
+    decision: 90,
+    insight: 120,
+    git: 15,
+    achievement: 30
+  };
+
+  const impactMultiplier: Record<LogImpact, number> = {
+    high: 2,
+    medium: 1,
+    low: 0.5
+  };
+
+  return (baseMinutes[category] || 60) * (impactMultiplier[impact] || 1);
 }
 
 /**

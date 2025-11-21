@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "graphId": "gin_1763490304054_ecc735",
+  "namespace": "user-placeholder/cli",
+  "projectName": "cli",
+  "visibility": "private",
+  "apiEndpoint": "https://app.ginkoai.com",
+  "documents": {
+    "adr": {
+      "enabled": true,
+      "path": "docs/adr"
+    },
+    "prd": {
+      "enabled": true,
+      "path": "docs/PRD"
+    },
+    "patterns": {
+      "enabled": true,
+      "path": ".ginko/context/modules"
+    },
+    "sessions": {
+      "enabled": true,
+      "path": ".ginko/sessions"
+    }
+  },
+  "hashes": {},
+  "lastSync": "2025-11-18T18:25:04.373Z"
+}

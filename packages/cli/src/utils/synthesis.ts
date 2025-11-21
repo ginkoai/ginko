@@ -186,17 +186,26 @@ export class SessionSynthesizer {
     const blocked: string[] = [];
 
     for (const entry of timeline) {
+      let categorized = false;
+
       if (entry.category === 'achievement' || entry.category === 'fix') {
         completed.push(entry.description);
+        categorized = true;
       } else if (entry.category === 'feature') {
         inProgress.push(entry.description);
+        categorized = true;
       }
 
-      // Check for blocked indicators
-      if (entry.description.toLowerCase().includes('block') ||
-          entry.description.toLowerCase().includes('stuck') ||
-          entry.description.toLowerCase().includes('waiting')) {
-        blocked.push(entry.description);
+      // Check for blocked indicators (smart detection)
+      // Skip if already categorized as completed/in-progress to avoid duplicates
+      if (!categorized) {
+        const blockingWords = /\b(block(s|ed|ing)?|stuck|waiting|can'?t proceed|impediment)\b/i;
+        const unblockingWords = /\b(unblock(s|ed|ing)?|resolv(e|ed|ing)?|fixed|completed?|solved?)\b/i;
+
+        if (blockingWords.test(entry.description) &&
+            !unblockingWords.test(entry.description)) {
+          blocked.push(entry.description);
+        }
       }
     }
 
@@ -596,11 +605,13 @@ export class SessionSynthesizer {
       }
     }
 
-    // Extract blocked items (look for keywords)
+    // Extract blocked items (smart detection with word boundaries)
+    const blockingWords = /\b(block(s|ed|ing)?|stuck|waiting|can'?t proceed|impediment)\b/i;
+    const unblockingWords = /\b(unblock(s|ed|ing)?|resolv(e|ed|ing)?|fixed|completed?|solved?)\b/i;
+
     for (const entry of timeline) {
-      if (entry.description.toLowerCase().includes('blocked') ||
-          entry.description.toLowerCase().includes('waiting') ||
-          entry.description.toLowerCase().includes('stuck')) {
+      if (blockingWords.test(entry.description) &&
+          !unblockingWords.test(entry.description)) {
         blocked.push(entry.description);
       }
     }

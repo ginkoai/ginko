@@ -38,6 +38,7 @@ This document maintains the official registry of all Architecture Decision Recor
 | [ADR-043](ADR-043-event-stream-session-model.md) | Event Stream Session Model with Read Cursors | Proposed | 2025-11-04 | sessions, event-stream, context-pressure, cursor |
 | [ADR-044](ADR-044-neo4j-auradb-migration.md) | Migrate to Neo4j AuraDB Free Tier for Production Deployment | Accepted | 2025-11-05 | infrastructure, database, saas, cost-optimization |
 | [ADR-045](ADR-045-voyage-ai-embedding-provider.md) | Voyage AI as Vector Embedding Provider | Proposed | 2025-11-07 | embeddings, vector-search, voyage-ai, semantic-search |
+| [ADR-046](ADR-046-command-patterns-reflection-vs-utility.md) | Command Patterns: Reflection vs. Utility | Proposed | 2025-11-18 | architecture, cli, command-patterns, ai-ux, reflection, utility |
 
 ## ADR Status Definitions
 
