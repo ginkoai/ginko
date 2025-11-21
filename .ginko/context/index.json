@@ -483,10 +483,23 @@
       "relevance": "critical",
       "created": "2025-11-21T16:48:36.082Z",
       "sessionId": "session-chris-at-watchhill-ai-1763743716072"
+    },
+    {
+      "filename": "decision-decision-file-metadata-strategy-hybrid-model-optio.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "api",
+        "testing"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-21T21:58:32.720Z",
+      "sessionId": "session-chris-at-watchhill-ai-1763762312703"
     }
   ],
-  "lastUpdated": "2025-11-21T16:48:36.083Z",
-  "totalModules": 32,
+  "lastUpdated": "2025-11-21T21:58:32.721Z",
+  "totalModules": 33,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
