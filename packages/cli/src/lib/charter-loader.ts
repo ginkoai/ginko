@@ -45,6 +45,38 @@ export interface Charter {
 }
 
 /**
+ * Charter graph structure for syncing to Neo4j
+ * Represents nodes and relationships extracted from charter
+ */
+export interface CharterGraph {
+  epic: {
+    id: string;
+    name: string;
+    vision: string;
+    purpose: string;
+  };
+  problems: Array<{
+    id: string;
+    description: string;
+  }>;
+  goals: Array<{
+    id: string;
+    text: string;
+    type: 'qualitative' | 'quantitative';
+  }>;
+  users: Array<{
+    id: string;
+    description: string;
+    segment: 'primary' | 'secondary' | 'long-term';
+  }>;
+  relationships: {
+    epicSolvesProblems: string[][]; // [epicId, problemId][]
+    epicHasGoals: string[][];        // [epicId, goalId][]
+    problemsImpactUsers: string[][]; // [problemId, userId][]
+  };
+}
+
+/**
  * Load charter from filesystem
  *
  * @param projectRoot - Project root directory (defaults to git root)
@@ -195,4 +227,183 @@ function extractBulletPoints(text: string): string[] {
     }
     return line.replace(/^[-*]\s+/, '').trim();
   }).filter(s => s.length > 0);
+}
+
+/**
+ * Parse charter markdown into graph structure (TASK-1)
+ * Extracts Epic, Problem, Goal, and User nodes with relationships
+ *
+ * @param content - Raw charter markdown content
+ * @returns Structured graph data ready for Neo4j sync
+ */
+export function parseCharterToGraph(content: string): CharterGraph {
+  const charter = parseCharterMarkdown(content);
+
+  // Generate unique IDs
+  const epicId = `epic_ginko_${Date.now()}`;
+
+  // Extract epic (project-level)
+  const epic = {
+    id: epicId,
+    name: 'Ginko',
+    vision: charter.goals[0] || charter.purpose,
+    purpose: charter.purpose,
+  };
+
+  // Extract problems from Purpose section
+  const problems: CharterGraph['problems'] = [];
+  const purposeMatch = content.match(/##\s+Purpose\s+([\s\S]*?)(?=\n##|\n---|$)/);
+
+  if (purposeMatch) {
+    const purposeText = purposeMatch[1];
+
+    // Extract problem bullets from "**Problem:**" section
+    const problemSection = purposeText.match(/\*\*Problem:\*\*\s+([\s\S]*?)(?=\*\*Solution:\*\*|$)/);
+    if (problemSection) {
+      const problemBullets = problemSection[1].match(/^[-*]\s+\*\*([^*]+)\*\*:/gm);
+      if (problemBullets) {
+        problemBullets.forEach((bullet, index) => {
+          const match = bullet.match(/\*\*([^*]+)\*\*:/);
+          if (match) {
+            const problemId = `problem_${index + 1}_${Date.now()}`;
+            problems.push({
+              id: problemId,
+              description: match[1].trim(),
+            });
+          }
+        });
+      }
+    }
+  }
+
+  // Extract goals from Success Criteria (qualitative and quantitative)
+  const goals: CharterGraph['goals'] = [];
+
+  // Qualitative goals
+  const qualitativeMatch = content.match(/###\s+Qualitative\s+\(Primary\)\s+([\s\S]*?)(?=\n###|$)/);
+  if (qualitativeMatch) {
+    const checkboxes = qualitativeMatch[1].match(/- \[.\]\s+\*\*([^*]+)\*\*:?([^\n]*)/g);
+    if (checkboxes) {
+      checkboxes.forEach((line, index) => {
+        const match = line.match(/\*\*([^*]+)\*\*:?\s*([^\n]*)/);
+        if (match) {
+          const goalId = `goal_qual_${index + 1}_${Date.now()}`;
+          goals.push({
+            id: goalId,
+            text: match[1].trim(),
+            type: 'qualitative',
+          });
+        }
+      });
+    }
+  }
+
+  // Quantitative goals (no bold formatting)
+  const quantitativeMatch = content.match(/###\s+Quantitative\s+\(Secondary\)\s+([\s\S]*?)(?=\n###|$)/);
+  if (quantitativeMatch) {
+    const checkboxes = quantitativeMatch[1].match(/- \[.\]\s+([^\n]+)/g);
+    if (checkboxes) {
+      checkboxes.forEach((line, index) => {
+        const match = line.match(/- \[.\]\s+(.+)/);
+        if (match) {
+          const goalId = `goal_quant_${index + 1}_${Date.now()}`;
+          goals.push({
+            id: goalId,
+            text: match[1].trim(),
+            type: 'quantitative',
+          });
+        }
+      });
+    }
+  }
+
+  // Extract users from Users section
+  const users: CharterGraph['users'] = [];
+  const usersMatch = content.match(/##\s+Users\s+([\s\S]*?)(?=\n##|$)/);
+
+  if (usersMatch) {
+    const usersText = usersMatch[1];
+
+    // Primary users
+    const primaryMatch = usersText.match(/\*\*Primary[^:]*:\*\*\s+([\s\S]*?)(?=\n\*\*Secondary|$)/);
+    if (primaryMatch) {
+      const primaryBullets = primaryMatch[1].match(/^[-*]\s+\*\*([^*]+)\*\*/gm);
+      if (primaryBullets) {
+        primaryBullets.forEach((bullet, index) => {
+          const match = bullet.match(/\*\*([^*]+)\*\*/);
+          if (match) {
+            const userId = `user_primary_${index + 1}_${Date.now()}`;
+            users.push({
+              id: userId,
+              description: match[1].trim(),
+              segment: 'primary',
+            });
+          }
+        });
+      }
+    }
+
+    // Secondary users
+    const secondaryMatch = usersText.match(/\*\*Secondary[^:]*:\*\*\s+([\s\S]*?)(?=\n\*\*Long-term|$)/);
+    if (secondaryMatch) {
+      const secondaryBullets = secondaryMatch[1].match(/^[-*]\s+\*\*([^*]+)\*\*/gm);
+      if (secondaryBullets) {
+        secondaryBullets.forEach((bullet, index) => {
+          const match = bullet.match(/\*\*([^*]+)\*\*/);
+          if (match) {
+            const userId = `user_secondary_${index + 1}_${Date.now()}`;
+            users.push({
+              id: userId,
+              description: match[1].trim(),
+              segment: 'secondary',
+            });
+          }
+        });
+      }
+    }
+
+    // Long-term users
+    const longTermMatch = usersText.match(/\*\*Long-term Vision:\*\*\s+([\s\S]*?)(?=\n\*\*|$)/);
+    if (longTermMatch) {
+      const longTermBullets = longTermMatch[1].match(/^[-*]\s+([^\n]+)/gm);
+      if (longTermBullets) {
+        longTermBullets.forEach((bullet, index) => {
+          const text = bullet.replace(/^[-*]\s+/, '').trim();
+          if (text) {
+            const userId = `user_long_term_${index + 1}_${Date.now()}`;
+            users.push({
+              id: userId,
+              description: text,
+              segment: 'long-term',
+            });
+          }
+        });
+      }
+    }
+  }
+
+  // Build relationships
+  const epicSolvesProblems = problems.map(p => [epicId, p.id]);
+  const epicHasGoals = goals.map(g => [epicId, g.id]);
+
+  // Each problem impacts all primary users
+  const problemsImpactUsers: string[][] = [];
+  const primaryUsers = users.filter(u => u.segment === 'primary');
+  problems.forEach(problem => {
+    primaryUsers.forEach(user => {
+      problemsImpactUsers.push([problem.id, user.id]);
+    });
+  });
+
+  return {
+    epic,
+    problems,
+    goals,
+    users,
+    relationships: {
+      epicSolvesProblems,
+      epicHasGoals,
+      problemsImpactUsers,
+    },
+  };
 }
