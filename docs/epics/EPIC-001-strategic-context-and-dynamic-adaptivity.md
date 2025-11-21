@@ -2,98 +2,136 @@
 
 ## Epic Overview
 
-**Epic Goal**: Transform Ginko from a fast tactical context loader into an intelligent strategic context navigator that achieves 7-8/10 AI partner readiness through dynamic adaptivity, intelligent nudging, and comprehensive strategic context surfacing.
+**Epic Goal**: Transform Ginko from filesystem-based context loading to graph-native cognitive scaffolding that enables AI-centric sprint management (EPIC-002). Build the graph relationships infrastructure that powers explicit AI guidance, constraint awareness, and strategic grounding.
 
-**Business Value**: Enable AI partners to work autonomously with minimal clarifying questions (1-3 vs 5-7), make aligned decisions without constant guidance, and maintain project direction through charter-aware development.
+**Business Value**: Enable EPIC-002's AI-native sprint graphs through graph-first architecture. Eliminate 14-18 hours of rework by building relationships (not text displays) from the start. Foundation for 5-10x AI productivity improvements.
 
 **Duration**: 4 sprints (~4 weeks)
 
-**Type**: Architecture + Features (AI-UX optimization)
+**Type**: Architecture + Infrastructure (Graph-native foundation)
 
-**Status**: Planning
+**Status**: Planning → Realigned (2025-11-21)
+
+**Strategic Pivot**: Realigned to support EPIC-002 (AI-Native Sprint Graphs). Focus shifted from text displays to graph relationships for AI cognitive scaffolding.
 
 ---
 
 ## The Problem
 
-### Current State (6.5/10 AI Readiness)
+### Current State: Filesystem-Based Context Loading
 
 **What Works:**
 - ✅ Tactical context excellent (flow state, resume points, uncommitted files)
 - ✅ Event-based loading fast (<2s startup)
-- ✅ Mode-aware context loading strategies exist
 - ✅ Charter creation works (AI-mediated)
+- ✅ Events stored in graph (via TASK-013 reliability work)
 
-**What's Missing:**
-- ❌ Strategic context not surfaced (charter, team, patterns)
-- ❌ Mode sensing is manual, not dynamic
-- ❌ No project maturity detection
-- ❌ No knowledge capture nudging (ADR/PRD suggestions)
-- ❌ No charter drift detection
-- ❌ Conflicting work mode implementations
+**What's Missing (Architecture Level):**
+- ❌ **No graph relationships** - Context stored as files, not semantic connections
+- ❌ **No task-centric guidance** - AI infers action from text, not explicit relationships
+- ❌ **No constraint awareness** - Patterns/gotchas are markdown files, not graph nodes
+- ❌ **No strategic grounding** - Charter is filesystem, not graph (Epic→Problem→User chain)
+- ❌ **No dependency tracking** - Task relationships implicit, not explicit
 
-**AI Partner Experience:**
-- Must ask 5-7 clarifying questions at session start
-- Missing BIG WHY and success criteria
-- No team coordination signals
-- Reinvents patterns, repeats gotchas
-- Can't sense when to suggest documentation
-
-### Target State (7-8/10 AI Readiness - MVP)
-
-**Strategic Context Surfaced:**
-- ✅ Charter visible (purpose, goals, success criteria, constraints)
-- ✅ Team activity feed (decisions, achievements, blockers)
-- ✅ Relevant patterns/gotchas (tag-matched to current work)
-- ✅ Decision breadcrumbs (WHY rationale visible)
-
-**Dynamic Adaptivity:**
-- ✅ Project maturity detection (solo/simple → team/complex)
-- ✅ Mode sensing and recommendations
-- ✅ Intelligent nudging for significant decisions
-- ✅ Charter drift warnings
-- ✅ Mode-aware strategic context display
+**Impact on EPIC-002:**
+Without graph-native context, we cannot implement:
+- `(Sprint)-[:NEXT_TASK]->(Task)` - Explicit priority guidance
+- `(Task)-[:APPLIES_PATTERN]->(Pattern)` - Constraint awareness
+- `(Task)-[:MODIFIES]->(File)` - Attention direction (ADR-002)
+- `(Task)-[:MUST_FOLLOW]->(ADR)` - Architectural compliance
+- `(Sprint)-[:IMPLEMENTS]->(Epic)-[:SOLVES]->(Problem)` - Strategic grounding
 
 **AI Partner Experience:**
-- Asks 1-3 clarifying questions (priority/approach, not what/why)
-- Understands project mission and constraints
-- Coordinates with team, avoids conflicts
-- Applies accumulated wisdom proactively
-- Suggests documentation at right moments
+- Must read text files and infer relationships
+- No explicit "what to work on" guidance
+- Patterns/gotchas require tag matching and text parsing
+- Strategic context disconnected from tactical work
+- 10-15 minute orientation time (vs. <3s with graph)
+
+### Target State: Graph-Native Cognitive Scaffolding
+
+**Graph Relationships Established:**
+- ✅ `(Sprint)-[:CONTAINS]->(Task)` - Sprint structure in graph
+- ✅ `(Sprint)-[:NEXT_TASK]->(Task)` - Explicit priority/hotness
+- ✅ `(Task)-[:MODIFIES]->(File)` - Attention direction
+- ✅ `(Task)-[:RECENT_ACTIVITY]->(Event)` - Momentum awareness
+- ✅ `(Task)-[:APPLIES_PATTERN]->(Pattern)` - Constraint guidance
+- ✅ `(Task)-[:AVOID_GOTCHA]->(Gotcha)` - Error prevention
+- ✅ `(Task)-[:MUST_FOLLOW]->(ADR)` - Architectural compliance
+- ✅ `(Sprint)-[:IMPLEMENTS]->(Epic)-[:SOLVES]->(Problem)` - Strategic grounding
+
+**Infrastructure Ready:**
+- ✅ Graph query API operational (<200ms)
+- ✅ Context modules converted to graph nodes
+- ✅ Charter problems synced to graph
+- ✅ Task relationships auto-detected from sprint files
+- ✅ Mode-aware graph traversal depth
+
+**AI Partner Experience:**
+- Graph query returns explicit guidance: "Work on TASK-014, follow ADR-046, see log.ts, avoid in-memory gotcha"
+- <3 second session start (vs. 10-15 min with text inference)
+- Zero "sorry, that violates our pattern" rework cycles
+- Strategic context integrated with tactical work
+- Foundation ready for EPIC-002's full cognitive scaffolding
 
 ---
 
 ## Success Criteria
 
-### Quantitative Metrics
+### Quantitative Metrics (Infrastructure Foundation)
 
-1. **AI Readiness Score**: 7-8/10 (up from 6.5/10)
-   - Measurement: Self-reported readiness in standardized test scenarios
+1. **Graph Relationships Established**: 100% of core relationships implemented
+   - `(Sprint)-[:CONTAINS/NEXT_TASK]->(Task)` ✅
+   - `(Task)-[:MODIFIES]->(File)` ✅
+   - `(Task)-[:RECENT_ACTIVITY]->(Event)` ✅
+   - `(Task)-[:APPLIES_PATTERN/AVOID_GOTCHA/MUST_FOLLOW]->(Context)` ✅
+   - `(Sprint)-[:IMPLEMENTS]->(Epic)-[:SOLVES]->(Problem)` ✅
 
-2. **Question Reduction**: 1-3 clarifying questions at session start (down from 5-7)
-   - Measurement: Count questions in first 5 minutes of test sessions
+2. **Graph Query Performance**: <200ms for AI session start query
+   - Measurement: p95 latency for `/api/v1/context/ai-session-start`
+   - Target: Return full graph structure in single query
 
-3. **Context Coverage**: 80% of strategic context surfaced
-   - Charter: 100% (when exists)
-   - Team activity: 100% (when team > 1)
-   - Patterns/gotchas: 60%+ (when relevant)
+3. **Session Startup Time**: <2.5s total (foundation for EPIC-002's <3s)
+   - Measurement: p95 startup time with graph query
+   - No performance regression from current <2s baseline
 
-4. **Maturity Detection Accuracy**: 70%+ correct mode recommendations
-   - Measurement: Human validation of AI-detected project maturity
+4. **Context Module Migration**: 100% of patterns/gotchas/ADRs in graph
+   - Parse `.ginko/context/modules/*.md` → graph nodes
+   - Tags, impact, related files extracted as properties
 
-5. **Performance**: Startup time <2.5s (currently <2s)
-   - Measurement: p95 startup time with all strategic context
+5. **Sprint File Sync**: Automatic graph sync from sprint markdown
+   - Task detection from markdown
+   - Relationship extraction from "Files:", "Related:", etc.
+   - Auto-update on sprint file changes
 
-6. **Knowledge Capture**: 60%+ of significant decisions result in ADR/PRD
-   - Measurement: Nudge acceptance rate for high-significance events
+6. **Zero Rework for EPIC-002**: Direct foundation, no architectural changes needed
+   - Measurement: EPIC-002 implementation starts with existing graph
+   - No need to rebuild relationships
 
-### Qualitative Success
+### Qualitative Success (Architecture Quality)
 
-1. **AI Partner Autonomy**: Makes smart tradeoffs without asking
-2. **Team Coordination**: Sees teammate activity, avoids conflicts
-3. **Pattern Application**: Proactively applies relevant patterns
-4. **Documentation Quality**: Creates ADRs/PRDs for major decisions
-5. **Charter Alignment**: Work stays within charter scope boundaries
+1. **Graph-First Architecture**: All new context stored as graph relationships first, text display second
+2. **Task-Centric Design**: AI gets explicit guidance (not text inference)
+3. **Semantic Relationships**: Rich metadata enables AI traversal
+4. **Mode-Aware Depth**: Graph traversal respects work mode (Hack & Ship: shallow, Full Planning: deep)
+5. **EPIC-002 Ready**: Infrastructure supports all Tier 1-3 relationships without modification
+
+### EPIC-002 Enablement Success
+
+**Tier 1 (Actionable Context)** - Ready:
+- ✅ NEXT_TASK relationship (explicit priority)
+- ✅ RECENT_ACTIVITY → Event (hot/cold detection)
+- ✅ MODIFIES → File (attention direction)
+
+**Tier 2 (Architectural Constraints)** - Ready:
+- ✅ MUST_FOLLOW → ADR (compliance)
+- ✅ APPLIES_PATTERN → Pattern (guidance)
+- ✅ AVOID_GOTCHA → Gotcha (prevention)
+
+**Tier 3 (Strategic Context)** - Ready:
+- ✅ IMPLEMENTS → Epic → SOLVES → Problem (grounding)
+- ✅ DEPENDS_ON → Task (ordering)
+- ✅ BLOCKED_BY → Blocker (warnings)
 
 ---
 
@@ -142,27 +180,68 @@
 
 ## Epic Structure
 
-This epic is delivered through 4 sprints:
+This epic is delivered through 4 sprints (Realigned 2025-11-21):
 
-### [Sprint 1: Strategic Context Surfacing](/docs/sprints/SPRINT-2025-12-strategic-context-surfacing.md)
-**Duration**: 1 week
-**Focus**: Surface charter, team activity, patterns/gotchas
-**Deliverables**: Charter integration, team feed, relevant practices display
+### Sprint 1: Graph Infrastructure & Core Relationships (2 weeks)
+**Duration**: 2 weeks
+**Focus**: Build graph-native context system, establish Tier 1 relationships
+**Deliverables**:
+- Sprint → Task graph structure (CONTAINS, NEXT_TASK)
+- Task → File relationships (MODIFIES - attention direction)
+- Task → Event relationships (RECENT_ACTIVITY - momentum)
+- Charter → Graph sync (Epic → Problem nodes)
+- Graph query API: `/api/v1/sprint/active`
 
-### [Sprint 2: Dynamic Adaptivity](/docs/sprints/SPRINT-2026-01-dynamic-adaptivity.md)
-**Duration**: 1 week
-**Focus**: Project maturity detection, mode consolidation, recommendations
-**Deliverables**: Maturity analyzer, consolidated modes, recommendation UI
+**Success Metrics**:
+- Graph relationships operational
+- Query API <200ms
+- Session start <2.5s
+- Charter synced to graph
 
-### [Sprint 3: Intelligent Knowledge Capture](/docs/sprints/SPRINT-2026-01-intelligent-knowledge-capture.md)
-**Duration**: 1 week
-**Focus**: Significance detection, ADR/PRD nudging, charter drift
-**Deliverables**: Significance detector, documentation nudging, drift warnings
+### Sprint 2: Pattern & Constraint Graph (2 weeks)
+**Duration**: 2 weeks
+**Focus**: Convert context modules to graph relationships (Tier 2)
+**Deliverables**:
+- Context modules → Graph nodes (Pattern, Gotcha, ADR, Discovery)
+- Task → Pattern relationships (APPLIES_PATTERN)
+- Task → Gotcha relationships (AVOID_GOTCHA)
+- Task → ADR relationships (MUST_FOLLOW)
+- Pattern application tracking (APPLIED_IN → File)
 
-### [Sprint 4: Polish & Validation](/docs/sprints/SPRINT-2026-02-polish-and-validation.md)
+**Success Metrics**:
+- 100% context modules migrated
+- Constraint relationships established
+- AI gets explicit pattern guidance
+
+### Sprint 3: Strategic Dependencies & Blockers (1.5 weeks)
+**Duration**: 1.5 weeks
+**Focus**: Complete strategic grounding (Tier 3)
+**Deliverables**:
+- Task dependency tracking (DEPENDS_ON)
+- Sprint blocker relationships (BLOCKED_BY)
+- Problem impact chain (IMPACTS → User)
+- Strategic context complete
+
+**Success Metrics**:
+- Dependency graph operational
+- Blocker warnings explicit
+- Strategic grounding complete
+
+### Sprint 4: Graph Query API & Integration (1 week)
 **Duration**: 1 week
-**Focus**: Performance, UX balance, comprehensive testing
-**Deliverables**: Optimized performance, dual output system, validated MVP
+**Focus**: Unified graph query for AI session start
+**Deliverables**:
+- Consolidated API: `/api/v1/context/ai-session-start`
+- CLI integration in `start-reflection.ts`
+- Mode-aware graph traversal
+- Performance optimization
+- Validation testing
+
+**Success Metrics**:
+- <3s session start with full graph
+- AI gets explicit guidance
+- Zero rework for EPIC-002
+- Foundation validated
 
 ---
 
@@ -378,6 +457,18 @@ This epic is delivered through 4 sprints:
 
 ## Changelog
 
+**2025-11-21**: Strategic realignment to support EPIC-002 (AI-Native Sprint Graphs)
+- **CRITICAL PIVOT**: Shifted from text display to graph-first architecture
+- Updated epic goal: Filesystem → Graph-native cognitive scaffolding
+- Revised all 4 sprints to focus on graph relationships (not text surfacing)
+- Sprint 1: Graph infrastructure & Tier 1 relationships (Sprint→Task, Task→File, Task→Event)
+- Sprint 2: Pattern & constraint graph (Tier 2 - APPLIES_PATTERN, AVOID_GOTCHA, MUST_FOLLOW)
+- Sprint 3: Strategic dependencies (Tier 3 - DEPENDS_ON, BLOCKED_BY, SOLVES→Problem)
+- Sprint 4: Graph query API & CLI integration
+- Updated success criteria: Infrastructure foundation (not user-facing features)
+- **Rework avoided**: 14-18 hours saved by aligning with EPIC-002 before implementation
+- Foundation ready: Zero architectural changes needed for EPIC-002
+
 **2025-11-19**: Epic created from comprehensive planning session
 - Gap analysis completed (current 6.5/10 → target 7-8/10)
 - AI-UX principles established
@@ -387,7 +478,7 @@ This epic is delivered through 4 sprints:
 
 ---
 
-**Epic Status**: Planning
+**Epic Status**: Planning → Realigned (2025-11-21)
 **Start Date**: TBD
 **Target Completion**: TBD (4 weeks from start)
 **Owner**: Chris Norton

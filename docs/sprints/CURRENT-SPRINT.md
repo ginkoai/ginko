@@ -70,17 +70,19 @@ Establish clear command patterns (Reflection vs. Utility) and fix event logging 
 - **ADR-032**: Core CLI Architecture and Reflection System
 - **ADR-033**: Context Pressure Mitigation Strategy
 
-## Upcoming Epic
+## Upcoming Epic: EPIC-001 (Realigned 2025-11-21)
 
 **[EPIC-001: Strategic Context & Dynamic Adaptivity](../epics/EPIC-001-strategic-context-and-dynamic-adaptivity.md)**
-- **Status**: Planning complete, ready to execute
-- **Goal**: Improve AI partner readiness from 6.5/10 to 7-8/10
+- **Status**: Realigned → Graph-First Architecture (ready to execute)
+- **Goal**: Build graph-native cognitive scaffolding (foundation for EPIC-002)
 - **Duration**: 4 sprints (~4 weeks)
-- **Sprints**:
-  1. [Strategic Context Surfacing](./SPRINT-2025-12-strategic-context-surfacing.md) - Charter, team, patterns
-  2. [Dynamic Adaptivity](./SPRINT-2026-01-A-dynamic-adaptivity.md) - Maturity detection, mode recommendations
-  3. [Intelligent Knowledge Capture](./SPRINT-2026-01-B-intelligent-knowledge-capture.md) - Significance detection, ADR/PRD nudging
-  4. [Polish & Validation](./SPRINT-2026-02-polish-and-validation.md) - Performance, UX, comprehensive testing
+- **Strategic Pivot**: Shifted from text displays to graph relationships
+- **Rework Avoided**: 14-18 hours saved by aligning with EPIC-002
+- **Sprints** (Revised):
+  1. [Graph Infrastructure & Core Relationships](./SPRINT-2025-12-graph-infrastructure.md) - Sprint→Task, Task→File, Task→Event
+  2. Pattern & Constraint Graph - Task→Pattern, Task→Gotcha, Task→ADR
+  3. Strategic Dependencies - DEPENDS_ON, BLOCKED_BY, SOLVES→Problem
+  4. Graph Query API & Integration - Unified AI session start query
 
 ---
 
