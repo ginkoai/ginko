@@ -255,6 +255,8 @@ function parseSprintToGraph(content: string): SprintGraph {
  * Sync sprint graph to Neo4j
  * Creates all nodes and relationships
  *
+ * TASK-3: Now creates File nodes and MODIFIES relationships
+ *
  * @param client - CloudGraphClient instance
  * @param graph - Parsed sprint graph structure
  * @returns Sync result with counts and next task
@@ -280,6 +282,22 @@ async function syncSprintToGraph(
     progress: graph.sprint.progress,
   });
   nodeCount++;
+
+  // Collect all unique files across tasks (TASK-3)
+  const allFiles = new Set<string>();
+  for (const task of graph.tasks) {
+    task.files.forEach(file => allFiles.add(file));
+  }
+
+  // Create File nodes (TASK-3)
+  for (const filePath of allFiles) {
+    await client.createNode('File', {
+      id: `file_${filePath.replace(/[^a-zA-Z0-9]/g, '_')}`,
+      path: filePath,
+      status: 'current', // Default status
+    });
+    nodeCount++;
+  }
 
   // Create Task nodes
   for (const task of graph.tasks) {
@@ -315,6 +333,17 @@ async function syncSprintToGraph(
       type: 'NEXT_TASK',
     });
     relCount++;
+  }
+
+  // Create Task → File relationships (MODIFIES) - TASK-3
+  for (const task of graph.tasks) {
+    for (const filePath of task.files) {
+      const fileId = `file_${filePath.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      await client.createRelationship(task.id, fileId, {
+        type: 'MODIFIES',
+      });
+      relCount++;
+    }
   }
 
   return {

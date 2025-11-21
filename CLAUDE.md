@@ -146,6 +146,46 @@ What would you like to work on?
 - End with clear next action or open question
 - Preserve momentum and flow continuity
 
+---
+
+## Autonomous Development Mode
+
+**Edit Permission**: Auto-accept enabled. Proceed with edits autonomously.
+
+**Decision Framework**:
+- ✅ **Proceed autonomously**: Implementation details, code style, file organization, refactoring, bug fixes
+- ⏸️ **Ask first**: Architecture changes, breaking API changes, new external dependencies, significant scope expansion
+- 🤔 **Use judgment**: If confidence > 80%, proceed. If confidence < 80%, ask for clarification.
+
+**Collaboration Style**:
+- Work at full speed with concise progress updates
+- Only interrupt for genuine ambiguity or meaningful risk
+- Trust established: 2025-11-21
+
+### Subagent Usage for Acceleration
+
+**When to use subagents** (via Task tool):
+- ✅ **Parallel work**: Launch multiple subagents simultaneously for independent tasks
+- ✅ **Exploration**: Use `Explore` agent for codebase discovery, pattern finding
+- ✅ **Complex multi-step tasks**: Delegate to specialized agents (general-purpose, Plan)
+- ✅ **Documentation lookup**: Use claude-code-guide for Claude Code/SDK questions
+
+**Best practices**:
+- Launch subagents in parallel when tasks are independent (single message, multiple Task calls)
+- Be specific with prompts - agents run autonomously and return once
+- Use appropriate thoroughness levels for Explore agent (quick/medium/very thorough)
+- Trust agent outputs - they're designed for accuracy
+
+**Example parallel execution**:
+```typescript
+// Instead of sequential:
+// 1. Read file A, 2. Read file B, 3. Read file C
+// Do parallel:
+[Task(explore pattern X), Task(explore pattern Y), Task(explore pattern Z)]
+```
+
+---
+
 ### Context Loading
 Context loads automatically via event-based streaming (ADR-043):
 - Session cursor: `.ginko/sessions/[user]/cursors.json`

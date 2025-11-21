@@ -21,7 +21,7 @@
 - Session startup <2.5s with graph query
 - Zero rework needed for EPIC-002
 
-**Progress:** 0% (0/4 tasks complete)
+**Progress:** 50% (2/4 tasks complete)
 
 ---
 
@@ -69,8 +69,8 @@ This sprint builds **Tier 1: Actionable Context** relationships:
 ## Sprint Tasks
 
 ### TASK-1: Charter → Graph Nodes (4-6h)
-**Status:** Not Started
-**Owner:** TBD
+**Status:** ✅ Complete
+**Owner:** Chris Norton
 **Priority:** CRITICAL
 
 **Goal:** Sync charter to graph with Epic, Problem, Goal nodes
@@ -115,8 +115,8 @@ async function syncCharterToGraph(charter: Charter): Promise<void> {
 ---
 
 ### TASK-2: Sprint → Task Graph Structure (8-10h)
-**Status:** Not Started
-**Owner:** TBD
+**Status:** ✅ Complete
+**Owner:** Chris Norton
 **Priority:** CRITICAL
 
 **Goal:** Auto-sync sprint files to graph with Sprint and Task nodes
