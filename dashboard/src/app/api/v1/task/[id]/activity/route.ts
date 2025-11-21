@@ -34,7 +34,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { runQuery, verifyConnection } from '../../../_neo4j';
+import { runQuery, verifyConnection } from '../../../graph/_neo4j';
 
 interface ActivityResponse {
   taskId: string;
