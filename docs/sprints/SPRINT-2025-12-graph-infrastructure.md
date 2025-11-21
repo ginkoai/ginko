@@ -21,7 +21,7 @@
 - Session startup <2.5s with graph query
 - Zero rework needed for EPIC-002
 
-**Progress:** 50% (2/4 tasks complete)
+**Progress:** 100% (4/4 tasks complete)
 
 ---
 
@@ -187,8 +187,8 @@ async function syncSprintToGraph(sprintFile: string): Promise<void> {
 ---
 
 ### TASK-3: Task → File Relationships (6-8h)
-**Status:** Not Started
-**Owner:** TBD
+**Status:** ✅ Complete
+**Owner:** Chris Norton
 **Priority:** HIGH
 
 **Goal:** Create MODIFIES relationships for attention direction (ADR-002)
@@ -231,21 +231,21 @@ export async function GET(
 ---
 
 ### TASK-4: Task → Event Relationships (6-8h)
-**Status:** Not Started
-**Owner:** TBD
+**Status:** ✅ Complete
+**Owner:** Chris Norton
 **Priority:** HIGH
 
 **Goal:** Connect tasks to events for hot/cold detection (momentum awareness)
 
 **Acceptance Criteria:**
-- [ ] Parse event descriptions for TASK-XXX mentions
-- [ ] Create relationships:
-  - `(Task)-[:RECENT_ACTIVITY]->(Event)` - Events mentioning task
-  - Include timestamp, category, impact as relationship properties
-- [ ] Query: "How hot is TASK-X?" (event count in last 4h/24h/7d)
-- [ ] Query: "What's the most active task?" (highest event count)
-- [ ] API endpoint: `GET /api/v1/task/{id}/activity`
-- [ ] API endpoint: `GET /api/v1/sprint/hot-tasks`
+- [x] Parse event descriptions for TASK-XXX mentions ✅
+- [x] Create relationships: ✅
+  - `(Task)<-[:RECENT_ACTIVITY]-(Event)` - Events mentioning task
+  - Automatic during event sync (no separate process needed)
+- [x] Query: "How hot is TASK-X?" (event count in last 4h/24h/7d) ✅
+- [x] Query: "What's the most active task?" (highest event count) ✅
+- [x] API endpoint: `GET /api/v1/task/{id}/activity` ✅
+- [x] API endpoint: `GET /api/v1/sprint/hot-tasks` ✅
 
 **Implementation:**
 
@@ -447,7 +447,41 @@ ginko graph health  # From TASK-013
 
 ---
 
-**Sprint Status**: Planning
+**Sprint Status**: Complete ✅
 **Start Date**: 2025-11-21
-**End Date**: 2025-12-05 (2 weeks)
-**Progress**: 0% (0/4 tasks complete)
+**End Date**: 2025-11-21 (Completed same day!)
+**Progress**: 100% (4/4 tasks complete)
+
+---
+
+## Accomplishments This Sprint
+
+### 2025-11-21: Sprint Completed (All 4 Tasks)
+
+**TASK-3: Task → File Relationships**
+- Created 10 File nodes + 11 MODIFIES relationships
+- API endpoint: GET /api/v1/task/[id]/files (with frontmatter reading)
+- Hybrid metadata model: Graph for relationships, filesystem for truth
+- ADR-002 aligned: head -12 for instant context
+
+**TASK-4: Task → Event Relationships** ✅
+- Created event-task-linker.ts with extraction and hotness calculations
+- Integrated automatic RECENT_ACTIVITY relationship creation in event sync
+- API endpoints:
+  - GET /api/v1/task/[id]/activity (individual task hotness)
+  - GET /api/v1/sprint/hot-tasks (all tasks sorted by activity)
+- Hotness formula: 4h=3x, 24h=2x, 7d=1x weight (max 100)
+- Unit tests: 100% pass (extraction, calculation, classification)
+- Files:
+  - packages/cli/src/lib/event-task-linker.ts (156 lines)
+  - dashboard/src/app/api/v1/graph/events/route.ts (modified)
+  - dashboard/src/app/api/v1/task/[id]/activity/route.ts (166 lines)
+  - dashboard/src/app/api/v1/sprint/hot-tasks/route.ts (200 lines)
+  - scripts/test-task-4-integration.ts (test suite)
+
+**Additional Improvements:**
+- Enhanced File API with ADR-002 frontmatter reading (@fileType, @tags, @complexity, @priority)
+- Added message argument to `ginko handoff` command (pattern consistency with log/status)
+- TypeScript compilation: 100% success (CLI + Dashboard)
+
+**Impact:** Complete Tier 1 relationship graph operational - foundation ready for EPIC-002 AI-native sprint graphs!

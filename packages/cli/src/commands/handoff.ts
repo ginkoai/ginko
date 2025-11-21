@@ -18,13 +18,20 @@ import { isQueueInitialized, getQueue } from '../lib/event-queue.js';
 import path from 'path';
 import { requireAuth } from '../utils/auth-storage.js';
 
+interface HandoffOptions {
+  message?: string;
+  verbose?: boolean;
+}
+
 /**
  * Handoff command - Pause current session and update cursor
  *
  * ADR-043: No synthesis! Just update cursor position and flush events.
  * Context loading happens on resume via reading backwards from cursor.
+ *
+ * Optional message parameter allows user-provided handoff summary.
  */
-export async function handoffCommand(options: any = {}) {
+export async function handoffCommand(options: HandoffOptions = {}) {
   // Require authentication
   await requireAuth('handoff');
 
@@ -93,6 +100,14 @@ export async function handoffCommand(options: any = {}) {
     spinner.succeed('Work paused!');
     console.log('');
     console.log(chalk.green(`✓ Work paused on ${chalk.bold(cursor.branch)}`));
+
+    // Display user-provided message if present
+    if (options.message) {
+      console.log('');
+      console.log(chalk.cyan('Handoff Summary:'));
+      console.log(chalk.dim(`   ${options.message}`));
+    }
+
     console.log('');
     console.log(chalk.cyan('Session Cursor:'));
     console.log(chalk.dim(`   Project: ${cursor.project_id}`));

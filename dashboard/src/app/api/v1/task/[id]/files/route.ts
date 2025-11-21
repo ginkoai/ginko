@@ -2,11 +2,11 @@
  * @fileType: api-route
  * @status: current
  * @updated: 2025-11-21
- * @tags: [task, files, graph-query, epic-001, task-3]
+ * @tags: [task, files, graph-query, epic-001, task-3, frontmatter, adr-002]
  * @related: [../../../sprint/sync/route.ts, _cloud-graph-client.ts]
  * @priority: high
- * @complexity: low
- * @dependencies: [neo4j-driver]
+ * @complexity: medium
+ * @dependencies: [neo4j-driver, fs/promises, path]
  */
 
 /**
@@ -15,14 +15,16 @@
  * Query files modified by a specific task (TASK-3)
  *
  * Returns files connected via (Task)-[:MODIFIES]->(File) relationship
- * with optional frontmatter metadata from ADR-002
+ * with ADR-002 frontmatter metadata read from filesystem
+ *
+ * Design: Graph stores relationships only, filesystem is source of truth for metadata
  *
  * Query Parameters:
- * - graphId: Graph namespace identifier (optional, can use default)
+ * - graphId: Graph namespace identifier (required)
  *
  * Returns:
  * - taskId: The task ID queried
- * - files: Array of file objects with path and metadata
+ * - files: Array of file objects with path, exists flag, and frontmatter metadata
  * - count: Number of files
  *
  * Example Response:
@@ -31,10 +33,14 @@
  *   "files": [
  *     {
  *       "path": "packages/cli/src/lib/sprint-parser.ts",
- *       "status": "current",
+ *       "exists": true,
  *       "metadata": {
+ *         "fileType": "utility",
+ *         "status": "current",
  *         "tags": ["sprint", "parser"],
- *         "complexity": "medium"
+ *         "complexity": "medium",
+ *         "priority": "high",
+ *         "dependencies": ["gray-matter"]
  *       }
  *     }
  *   ],
@@ -44,6 +50,84 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { CloudGraphClient } from '../../../graph/_cloud-graph-client';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+
+/**
+ * Frontmatter metadata structure (ADR-002)
+ */
+interface FileFrontmatter {
+  fileType?: string;
+  status?: string;
+  updated?: string;
+  tags?: string[];
+  related?: string[];
+  priority?: string;
+  complexity?: string;
+  dependencies?: string[];
+}
+
+/**
+ * Enhanced file response with filesystem metadata
+ */
+interface FileWithMetadata {
+  path: string;
+  exists: boolean;
+  metadata: FileFrontmatter | null;
+}
+
+/**
+ * Read ADR-002 frontmatter from filesystem
+ *
+ * Reads first 12 lines and parses @key: value patterns
+ *
+ * @param filePath - Relative path from project root
+ * @returns Parsed frontmatter or null if not found/error
+ */
+async function readFrontmatter(filePath: string): Promise<FileFrontmatter | null> {
+  try {
+    // Resolve to absolute path from project root
+    // Dashboard is in /dashboard, project root is parent
+    const projectRoot = join(process.cwd(), '..');
+    const absolutePath = join(projectRoot, filePath);
+
+    // Read first 12 lines (ADR-002 standard)
+    const content = await readFile(absolutePath, 'utf-8');
+    const lines = content.split('\n').slice(0, 12);
+
+    const metadata: FileFrontmatter = {};
+
+    for (const line of lines) {
+      // Parse @key: value patterns
+      const match = line.match(/@(\w+):\s*(.+)/);
+      if (!match) continue;
+
+      const [, key, value] = match;
+      const trimmedValue = value.trim();
+
+      // Parse arrays: [item1, item2, item3]
+      if (trimmedValue.startsWith('[') && trimmedValue.endsWith(']')) {
+        const arrayValue = trimmedValue
+          .slice(1, -1)
+          .split(',')
+          .map(item => item.trim())
+          .filter(Boolean);
+
+        metadata[key as keyof FileFrontmatter] = arrayValue as any;
+      } else {
+        // Store as string
+        metadata[key as keyof FileFrontmatter] = trimmedValue as any;
+      }
+    }
+
+    return Object.keys(metadata).length > 0 ? metadata : null;
+
+  } catch (error) {
+    // File not found or read error - return null
+    console.warn(`[Frontmatter] Could not read ${filePath}:`, error instanceof Error ? error.message : error);
+    return null;
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -78,12 +162,24 @@ export async function GET(
     const client = await CloudGraphClient.fromBearerToken(token, graphId);
 
     // Query for files modified by this task
-    const files = await queryTaskFiles(client, taskId);
+    const filePaths = await queryTaskFiles(client, taskId);
+
+    // Enrich with filesystem frontmatter
+    const filesWithMetadata = await Promise.all(
+      filePaths.map(async (filePath) => {
+        const metadata = await readFrontmatter(filePath);
+        return {
+          path: filePath,
+          exists: metadata !== null,
+          metadata,
+        } as FileWithMetadata;
+      })
+    );
 
     return NextResponse.json({
       taskId,
-      files,
-      count: files.length,
+      files: filesWithMetadata,
+      count: filesWithMetadata.length,
     });
 
   } catch (error) {
@@ -100,29 +196,22 @@ export async function GET(
  *
  * Executes Cypher query:
  * MATCH (t:Task {id: $taskId})-[:MODIFIES]->(f:File)
- * OPTIONAL MATCH (f)-[:HAS_FRONTMATTER]->(m:Metadata)
- * RETURN f.path, f.status, m.tags, m.complexity
+ * RETURN f.path
+ *
+ * Returns only file paths - metadata is read from filesystem via ADR-002
  *
  * @param client - CloudGraphClient instance
  * @param taskId - Task ID to query
- * @returns Array of file objects
+ * @returns Array of file paths
  */
 async function queryTaskFiles(
   client: CloudGraphClient,
   taskId: string
-): Promise<Array<{
-  path: string;
-  status: string;
-  metadata?: {
-    tags?: string[];
-    complexity?: string;
-  };
-}>> {
-  // Build Cypher query
+): Promise<string[]> {
+  // Build Cypher query - only paths, no metadata
   const query = `
     MATCH (t:Task {id: $taskId})-[:MODIFIES]->(f:File)
-    OPTIONAL MATCH (f)-[:HAS_FRONTMATTER]->(m:Metadata)
-    RETURN f.path as path, f.status as status, m.tags as tags, m.complexity as complexity
+    RETURN f.path as path
     ORDER BY f.path
   `;
 
@@ -130,19 +219,10 @@ async function queryTaskFiles(
     // Execute query via CloudGraphClient
     const result = await client.runScopedQuery(query, { taskId });
 
-    // Transform results
-    const files = result.map((record: any) => ({
-      path: record.path,
-      status: record.status || 'current',
-      ...(record.tags || record.complexity ? {
-        metadata: {
-          ...(record.tags ? { tags: record.tags } : {}),
-          ...(record.complexity ? { complexity: record.complexity } : {}),
-        }
-      } : {})
-    }));
+    // Extract file paths
+    const filePaths = result.map((record: any) => record.path);
 
-    return files;
+    return filePaths;
   } catch (error) {
     console.error('[Task Files Query] Query execution failed:', error);
     throw error;

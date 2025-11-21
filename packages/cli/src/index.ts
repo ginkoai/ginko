@@ -107,10 +107,10 @@ program
   .action(statusCommand);
 
 program
-  .command('handoff')
-  .description('Pause current session and update cursor (ADR-043)')
+  .command('handoff [message]')
+  .description('Pause current session and update cursor (ADR-043). Optionally provide a handoff summary message.')
   .option('-v, --verbose', 'Show detailed cursor and sync information')
-  .action(handoffCommand);
+  .action((message, options) => handoffCommand({ message, ...options }));
 
 program
   .command('charter')

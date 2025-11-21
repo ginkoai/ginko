@@ -12,6 +12,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection, getSession } from '../_neo4j';
 
+/**
+ * Extract task IDs from event descriptions (TASK-4)
+ * Matches patterns like "TASK-1", "TASK-123", "task-5" (case insensitive)
+ */
+function extractTaskMentions(text: string): string[] {
+  if (!text || typeof text !== 'string') {
+    return [];
+  }
+
+  const taskPattern = /TASK-(\d+)/gi;
+  const matches = text.matchAll(taskPattern);
+
+  const taskIds = new Set<string>();
+  for (const match of matches) {
+    const taskId = `TASK-${match[1]}`;
+    taskIds.add(taskId);
+  }
+
+  return Array.from(taskIds);
+}
+
 interface EventInput {
   id: string;
   user_id: string;
@@ -224,6 +245,30 @@ export async function POST(request: NextRequest) {
             };
             createdEvents.push(createdEvent);
             console.log('[Events API] Event created successfully:', createdEvent.id);
+
+            // Extract task mentions and create RECENT_ACTIVITY relationships (TASK-4)
+            const taskMentions = extractTaskMentions(event.description);
+            if (taskMentions.length > 0) {
+              console.log('[Events API] Found task mentions:', taskMentions, 'in event:', event.id);
+
+              // Create RECENT_ACTIVITY relationships for each mentioned task
+              for (const taskId of taskMentions) {
+                try {
+                  await tx.run(
+                    `
+                    MATCH (e:Event {id: $eventId})
+                    MERGE (t:Task {id: $taskId})
+                    MERGE (t)<-[:RECENT_ACTIVITY]-(e)
+                    `,
+                    { eventId: event.id, taskId }
+                  );
+                  console.log('[Events API] Created RECENT_ACTIVITY relationship: Task', taskId, '<- Event', event.id);
+                } catch (linkError) {
+                  console.warn('[Events API] Failed to create RECENT_ACTIVITY for task', taskId, ':', linkError);
+                  // Don't fail the whole event creation if task linking fails
+                }
+              }
+            }
           } else {
             console.warn('[Events API] Event creation returned no records for:', event.id);
           }
