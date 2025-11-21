@@ -21,7 +21,7 @@
  *
  * Request Body:
  * - graphId: Graph namespace identifier
- * - charterPath: Optional path to charter file (defaults to docs/PROJECT-CHARTER.md)
+ * - charterContent: Charter markdown content to parse and sync
  *
  * Returns:
  * - success: boolean
@@ -32,8 +32,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { CloudGraphClient } from '../../graph/_cloud-graph-client';
-import * as fs from 'fs-extra';
-import * as path from 'path';
 
 interface CharterGraph {
   epic: {
@@ -78,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { graphId, charterPath } = body;
+    const { graphId, charterContent } = body;
 
     if (!graphId) {
       return NextResponse.json(
@@ -87,20 +85,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create graph client
-    const client = await CloudGraphClient.fromBearerToken(token, graphId);
-
-    // Read charter file
-    const charterFilePath = charterPath || path.join(process.cwd(), '..', 'docs', 'PROJECT-CHARTER.md');
-
-    if (!fs.existsSync(charterFilePath)) {
+    if (!charterContent) {
       return NextResponse.json(
-        { error: `Charter file not found at ${charterFilePath}` },
-        { status: 404 }
+        { error: 'Missing required parameter: charterContent' },
+        { status: 400 }
       );
     }
 
-    const charterContent = await fs.readFile(charterFilePath, 'utf-8');
+    // Create graph client
+    const client = await CloudGraphClient.fromBearerToken(token, graphId);
 
     // Parse charter to graph structure
     const charterGraph = parseCharterToGraph(charterContent);
