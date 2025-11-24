@@ -92,9 +92,8 @@ program
 program
   .command('start [sessionId]')
   .description('Start or resume a session with event-based context loading (ADR-043)')
-  .option('-v, --verbose', 'Show full context and session details (AI context for debugging)')
-  .option('-m, --minimal', 'Minimal output for quick start')
-  .option('-c, --concise', 'Concise 6-8 line human-optimized output (TASK-11)')
+  .option('-v, --verbose', 'Show full session details with all context (~80 lines, for detailed review)')
+  .option('-m, --minimal', 'Minimal output for quick start (deprecated, concise is now default)')
   .option('--noai', 'Disable AI enhancement and use procedural templates')
   .option('--legacy', 'Use original implementation without reflection (deprecated)')
   .option('--strategic', 'Use strategic context loading instead of event-based (fallback mode)')

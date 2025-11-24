@@ -265,6 +265,9 @@ export class SessionSynthesizer {
 
   /**
    * Generate resume point from events (static helper)
+   *
+   * TASK-P3: Removed suggestedCommand to prevent stale/conflicting commands
+   * Priority logic moved to start-reflection.ts display layer
    */
   private static generateResumePointFromEvents(
     timeline: LogEntry[],
@@ -277,37 +280,28 @@ export class SessionSynthesizer {
       return {
         summary: 'No recent work logged',
         nextAction: 'Review sprint goals and begin work',
-        suggestedCommand: 'git status',
+        suggestedCommand: '', // Empty - display layer will determine
         contextFiles: []
       };
     }
 
-    // Generate summary
+    // Generate summary from latest event
     let summary = latest.description;
     if (latest.files && latest.files.length > 0) {
       summary += ` (${latest.files[0]})`;
     }
 
-    // Determine next action based on latest entry
+    // Generic next action (display layer will reconcile with sprint task)
     let nextAction: string;
-    let suggestedCommand: string;
 
     if (latest.category === 'achievement') {
-      nextAction = sprintContext
-        ? `Begin next task: ${sprintContext.goal}`
-        : 'Review backlog for next task';
-      suggestedCommand = 'git status';
+      nextAction = 'What would you like to work on next?';
     } else if (latest.category === 'fix') {
-      nextAction = 'Verify fix and run tests';
-      suggestedCommand = 'npm test';
+      nextAction = 'Verify fix and continue';
     } else if (latest.category === 'feature') {
       nextAction = 'Continue implementing feature';
-      suggestedCommand = latest.files?.[0]
-        ? `code ${latest.files[0]}`
-        : 'git status';
     } else {
       nextAction = 'Continue where you left off';
-      suggestedCommand = 'git status';
     }
 
     const contextFiles = latest.files || [];
@@ -315,7 +309,7 @@ export class SessionSynthesizer {
     return {
       summary,
       nextAction,
-      suggestedCommand,
+      suggestedCommand: '', // Empty - no more stale commands
       contextFiles: contextFiles.slice(0, 3)
     };
   }
@@ -749,6 +743,9 @@ export class SessionSynthesizer {
 
   /**
    * Generate resume point from timeline and work context
+   *
+   * TASK-P3: Removed suggestedCommand to prevent stale/conflicting commands
+   * Priority logic moved to start-reflection.ts display layer
    */
   private generateResumePoint(
     timeline: LogEntry[],
@@ -762,37 +759,28 @@ export class SessionSynthesizer {
       return {
         summary: 'No recent work logged',
         nextAction: 'Review sprint goals and begin work',
-        suggestedCommand: 'git status',
+        suggestedCommand: '', // Empty - display layer will determine
         contextFiles: []
       };
     }
 
-    // Generate summary
+    // Generate summary from latest event
     let summary = latest.description;
     if (latest.files && latest.files.length > 0) {
       summary += ` (${latest.files[0]})`;
     }
 
-    // Determine next action based on latest entry
+    // Generic next action (display layer will reconcile with sprint task)
     let nextAction: string;
-    let suggestedCommand: string;
 
     if (latest.category === 'achievement') {
-      nextAction = sprintContext
-        ? `Begin next task: ${sprintContext.goal}`
-        : 'Review backlog for next task';
-      suggestedCommand = 'ginko backlog list --status=proposed';
+      nextAction = 'What would you like to work on next?';
     } else if (latest.category === 'fix') {
-      nextAction = 'Verify fix and run tests';
-      suggestedCommand = 'npm test';
+      nextAction = 'Verify fix and continue';
     } else if (latest.category === 'feature') {
       nextAction = 'Continue implementing feature';
-      suggestedCommand = latest.files?.[0]
-        ? `code ${latest.files[0]}`
-        : 'git status';
     } else {
       nextAction = 'Continue where you left off';
-      suggestedCommand = 'git status';
     }
 
     const contextFiles = latest.files || [];
@@ -800,7 +788,7 @@ export class SessionSynthesizer {
     return {
       summary,
       nextAction,
-      suggestedCommand,
+      suggestedCommand: '', // Empty - no more stale commands
       contextFiles
     };
   }

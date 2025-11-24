@@ -232,20 +232,16 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Store AI context for MCP/external access
       await this.storeAIContext(aiContext, sessionDir);
 
-      // 12. Display output based on mode
-      if (options.concise) {
-        // Concise mode: 6-8 line human-optimized output
-        this.displayConciseOutput(aiContext);
-      } else {
-        // Standard mode: Full session info
-        await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
-      }
-
-      // Display verbose AI context if requested (for debugging)
+      // 12. Display output based on mode (TASK-P2: Concise is now default)
       if (options.verbose) {
+        // Verbose mode: Full session info (~80 lines)
+        await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
         console.log(formatVerboseOutput(aiContext));
         console.log('');
         console.log(chalk.dim(formatContextSummary(strategyContext)));
+      } else {
+        // Default mode: Concise human-optimized output (≤20 lines)
+        this.displayConciseOutput(aiContext);
       }
 
       spinner.succeed('Session initialized with strategic context!');
@@ -551,28 +547,51 @@ export class StartReflectionCommand extends ReflectionCommand {
     }
 
     // Resume point from synthesis (ADR-036)
-    if (synthesis?.resumePoint) {
-      const resume = synthesis.resumePoint;
-      console.log(chalk.green('⚡ Resume Point:'));
-      console.log(chalk.white(`   ${resume.summary}`));
-      console.log('');
-      console.log(chalk.yellow('📍 Next Action:'));
-      console.log(chalk.white(`   ${resume.nextAction}`));
-      console.log(chalk.dim(`   $ ${resume.suggestedCommand}`));
+    // Priority order for next action (TASK-P3):
+    // 1. If sprint has in_progress task -> "Continue: [task title]"
+    // 2. If resume event has explicit nextAction -> use it
+    // 3. Default -> "What would you like to work on?"
 
-      if (resume.contextFiles.length > 0) {
+    // Determine next action with single source of truth
+    let nextAction: string;
+    let resumeSummary: string;
+
+    if (sprintChecklist?.currentTask) {
+      const task = sprintChecklist.currentTask;
+      const isInProgress = task.state === 'in_progress';
+
+      // Sprint task takes priority
+      resumeSummary = synthesis?.resumePoint?.summary || 'Resuming sprint work';
+      nextAction = isInProgress
+        ? `Continue: ${task.title}`
+        : `Begin: ${task.title}`;
+    } else if (synthesis?.resumePoint) {
+      // Use synthesis resume point if no sprint task
+      resumeSummary = synthesis.resumePoint.summary;
+      nextAction = synthesis.resumePoint.nextAction;
+    } else {
+      // Generic fallback
+      resumeSummary = 'Ready to work';
+      nextAction = 'What would you like to work on?';
+    }
+
+    // Display coherent resume + next action
+    console.log(chalk.green('⚡ Resume Point:'));
+    console.log(chalk.white(`   ${resumeSummary}`));
+    console.log('');
+    console.log(chalk.yellow('📍 Next Action:'));
+    console.log(chalk.white(`   ${nextAction}`));
+
+    // Only show context files if available and no sprint task
+    if (!sprintChecklist?.currentTask && synthesis?.resumePoint?.contextFiles) {
+      const contextFiles = synthesis.resumePoint.contextFiles;
+      if (contextFiles.length > 0) {
         console.log('');
         console.log(chalk.cyan('📄 Context Files:'));
-        resume.contextFiles.slice(0, 3).forEach(file => {
+        contextFiles.slice(0, 3).forEach(file => {
           console.log(chalk.dim(`   - ${file}`));
         });
       }
-    } else {
-      // Fallback to generic steps
-      console.log(chalk.green('⚡ Next Steps:'));
-      console.log(chalk.white('   1. Review uncommitted changes'));
-      console.log(chalk.white('   2. Continue where you left off'));
-      console.log(chalk.white('   3. Run tests to verify everything works'));
     }
 
     // Show warnings from synthesis

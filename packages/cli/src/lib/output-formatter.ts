@@ -159,66 +159,89 @@ export function formatSessionOutput(
 }
 
 /**
- * Format concise human-readable output (6-8 lines max)
+ * Format concise human-readable output (≤20 lines, typically 6-12)
  *
- * Focuses on: What mode? What task? What to do next? Any blockers?
+ * Focuses on: Flow state, resume point, sprint, branch, warnings, next action
+ * Format matches CLAUDE.md specification (TASK-P2)
  */
 export function formatHumanOutput(
   context: AISessionContext,
   config: OutputConfig = {}
 ): string {
   const lines: string[] = [];
-  const { minimal = false, workMode = 'think-build' } = config;
+  const { minimal = false } = config;
 
-  // Line 1: Work Mode + Flow State
-  const flowEmoji = getFlowEmoji(context.session.flowScore);
+  // Line 1: Ready | Flow State | Work Mode
+  const flowState = getFlowStateLabel(context.session.flowScore);
   lines.push(
-    `${flowEmoji} ${chalk.cyan(context.session.workMode)} | Flow: ${context.session.flowScore}/10 | ${chalk.dim(context.session.branch)}`
+    chalk.green('Ready') + chalk.dim(' | ') +
+    chalk.cyan(`${flowState} (${context.session.flowScore}/10)`) + chalk.dim(' | ') +
+    chalk.white(`${context.session.workMode} mode`)
   );
 
-  // Line 2-3: Sprint Progress (if active)
+  // Line 2: Resume point (most important!)
+  if (context.synthesis?.resumePoint) {
+    const resumeShort = truncate(context.synthesis.resumePoint, 80);
+    lines.push(chalk.white('Resume: ') + chalk.dim(resumeShort));
+  }
+
+  // Empty line for spacing
+  lines.push('');
+
+  // Line 3-4: Sprint + Branch context
   if (context.sprint && !minimal) {
     const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
-    const progressBar = formatProgressBar(progress, 20);
     const sprintName = context.sprint.name || 'Active Sprint';
-    lines.push(`📋 ${sprintName}: ${progressBar} ${progress}%`);
+    lines.push(chalk.white('Sprint: ') + chalk.cyan(sprintName) + chalk.dim(` (${progress}%)`));
 
+    // Show current task if available
     if (context.sprint.currentTask) {
-      lines.push(
-        `   ${chalk.yellow('[@]')} ${context.sprint.currentTask.id}: ${context.sprint.currentTask.title}`
-      );
+      lines.push(chalk.dim('  [@] ') + chalk.yellow(`${context.sprint.currentTask.id}: ${context.sprint.currentTask.title}`));
     }
   }
 
-  // Line 4: Resume Point / Next Action (CRITICAL - most important)
-  if (context.synthesis?.resumePoint) {
-    const resumeShort = truncate(context.synthesis.resumePoint, 70);
-    lines.push(`⚡ ${chalk.green('Resume:')} ${resumeShort}`);
+  // Branch + uncommitted files count
+  const totalChanges =
+    context.git.uncommittedChanges.modified.length +
+    context.git.uncommittedChanges.created.length +
+    context.git.uncommittedChanges.untracked.length;
+
+  if (totalChanges > 0) {
+    lines.push(
+      chalk.white('Branch: ') +
+      chalk.cyan(context.git.branch) +
+      chalk.dim(` (${totalChanges} uncommitted files)`)
+    );
+  } else {
+    lines.push(chalk.white('Branch: ') + chalk.cyan(context.git.branch) + chalk.dim(' (clean)'));
   }
 
-  if (context.synthesis?.suggestedCommand) {
-    lines.push(`   ${chalk.dim('$')} ${chalk.cyan(context.synthesis.suggestedCommand)}`);
-  }
+  // Warnings section (1-2 key warnings)
+  const warnings: string[] = [];
 
-  // Line 5: Blockers (if any - IMPORTANT)
+  // Priority 1: Blockers
   if (context.synthesis?.blockedItems && context.synthesis.blockedItems.length > 0) {
-    lines.push(chalk.red(`🚫 Blocked: ${context.synthesis.blockedItems[0]}`));
+    warnings.push(chalk.red(`⚠️  Blocked: ${truncate(context.synthesis.blockedItems[0], 70)}`));
   }
 
-  // Line 6: Git warnings (if any)
-  if (context.git.warnings.length > 0) {
-    lines.push(chalk.yellow(`⚠️  ${context.git.warnings[0]}`));
-  } else if (context.git.uncommittedChanges.modified.length > 0) {
-    const totalChanges =
-      context.git.uncommittedChanges.modified.length +
-      context.git.uncommittedChanges.created.length +
-      context.git.uncommittedChanges.untracked.length;
-    lines.push(chalk.dim(`📝 ${totalChanges} uncommitted changes`));
+  // Priority 2: Git warnings
+  if (context.git.warnings.length > 0 && warnings.length < 2) {
+    warnings.push(chalk.yellow(`⚠️  ${context.git.warnings[0]}`));
   }
 
-  // Final line: Ready message
+  // Show warnings with spacing if any
+  if (warnings.length > 0) {
+    lines.push('');
+    warnings.forEach(w => lines.push(w));
+  }
+
+  // Next action / ready message
   lines.push('');
-  lines.push(chalk.green('Ready to build!') + chalk.dim(' Use ginko log to capture insights'));
+  if (context.synthesis?.nextAction) {
+    lines.push(chalk.white('Next: ') + chalk.dim(context.synthesis.nextAction));
+  } else {
+    lines.push(chalk.white('Next: ') + chalk.dim('What would you like to work on?'));
+  }
 
   return lines.join('\n');
 }
@@ -311,6 +334,17 @@ function getFlowEmoji(score: number): string {
   if (score >= 4) return '🌊'; // Flowing
   if (score >= 2) return '🌱'; // Growing
   return '❄️'; // Cold
+}
+
+/**
+ * Get flow state label based on score (for concise output)
+ */
+function getFlowStateLabel(score: number): string {
+  if (score >= 8) return 'Hot';
+  if (score >= 6) return 'Warm';
+  if (score >= 4) return 'Flowing';
+  if (score >= 2) return 'Warming Up';
+  return 'Cold';
 }
 
 /**
