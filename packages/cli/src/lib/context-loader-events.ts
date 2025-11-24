@@ -958,8 +958,13 @@ function estimateTokens(context: {
 export function formatContextSummary(context: LoadedContext): string {
   const lines: string[] = [];
 
+  // Calculate days span from oldest event (last in array since sorted DESC)
+  // Events are ordered newest-first from API
+  const oldestEvent = context.myEvents[context.myEvents.length - 1];
+  const daySpan = daysAgo(oldestEvent?.timestamp);
+
   lines.push('📊 Context Loaded:');
-  lines.push(`   - ${context.myEvents.length} my events (last ${daysAgo(context.myEvents[0]?.timestamp)} days)`);
+  lines.push(`   - ${context.myEvents.length} my events (last ${daySpan} days)`);
 
   if (context.teamEvents && context.teamEvents.length > 0) {
     lines.push(`   - ${context.teamEvents.length} team events (decisions + achievements)`);

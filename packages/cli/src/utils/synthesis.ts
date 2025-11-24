@@ -268,13 +268,26 @@ export class SessionSynthesizer {
    *
    * TASK-P3: Removed suggestedCommand to prevent stale/conflicting commands
    * Priority logic moved to start-reflection.ts display layer
+   *
+   * FIX: Events arrive from API in DESC order (newest first).
+   * Filter test events and pick first meaningful event for resume point.
    */
   private static generateResumePointFromEvents(
     timeline: LogEntry[],
     workPerformed: WorkContext,
     sprintContext: SprintContext | null
   ): ResumePoint {
-    const latest = timeline[timeline.length - 1];
+    // Filter out test events and non-meaningful entries
+    // Events are ordered newest-first from API (ORDER BY timestamp DESC)
+    const meaningfulEvents = timeline.filter(e =>
+      !e.description.startsWith('[TEST') &&
+      !e.description.toLowerCase().startsWith('test ') &&
+      !e.description.toLowerCase().includes('test event') &&
+      e.description.length > 20 // Filter trivial entries
+    );
+
+    // Pick first (most recent) meaningful event
+    const latest = meaningfulEvents[0];
 
     if (!latest) {
       return {

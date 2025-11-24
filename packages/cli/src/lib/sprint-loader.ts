@@ -79,11 +79,13 @@ async function findGitRoot(): Promise<string> {
 /**
  * Find active sprint file
  *
- * Looks for most recent SPRINT-*.md file in docs/sprints/
- * that is not marked as "Complete" in its status
+ * Priority:
+ * 1. Check CURRENT-SPRINT.md for "Between Sprints" status → return null
+ * 2. Check CURRENT-SPRINT.md for sprint reference → return that file
+ * 3. Fall back to scanning SPRINT-*.md files for first incomplete one
  *
  * @param projectRoot - Project root directory
- * @returns Path to active sprint file or null
+ * @returns Path to active sprint file or null (if between sprints)
  */
 export async function findActiveSprint(projectRoot?: string): Promise<string | null> {
   try {
@@ -94,9 +96,36 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       return null;
     }
 
-    // Get all sprint files sorted by date (newest first)
+    // Check CURRENT-SPRINT.md first (source of truth)
+    const currentSprintPath = path.join(sprintsDir, 'CURRENT-SPRINT.md');
+    if (fs.existsSync(currentSprintPath)) {
+      const currentContent = await fs.readFile(currentSprintPath, 'utf-8');
+
+      // Check for "Between Sprints" or "No active sprint" status
+      if (currentContent.includes('Between Sprints') ||
+          currentContent.includes('No active sprint') ||
+          currentContent.match(/\*\*Status\*\*:\s*Between Sprints/i)) {
+        return null; // Explicitly between sprints
+      }
+
+      // Look for sprint reference: See: SPRINT-YYYY-MM-DD-name.md
+      const sprintRefMatch = currentContent.match(/See:\s*(SPRINT-[\w-]+\.md)/i);
+      if (sprintRefMatch) {
+        const referencedPath = path.join(sprintsDir, sprintRefMatch[1]);
+        if (fs.existsSync(referencedPath)) {
+          return referencedPath;
+        }
+      }
+
+      // Look for **Last Completed**: SPRINT-XXX pattern (means between sprints)
+      if (currentContent.match(/\*\*Last Completed\*\*:/)) {
+        return null;
+      }
+    }
+
+    // Fall back: Get all sprint files sorted by date (newest first)
     const sprintFiles = (await fs.readdir(sprintsDir))
-      .filter(f => f.startsWith('SPRINT-') && f.endsWith('.md'))
+      .filter(f => f.startsWith('SPRINT-') && f.endsWith('.md') && f !== 'CURRENT-SPRINT.md')
       .sort()
       .reverse();
 
@@ -122,10 +151,8 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       return filePath;
     }
 
-    // If no active sprint found, return most recent
-    return sprintFiles.length > 0
-      ? path.join(sprintsDir, sprintFiles[0])
-      : null;
+    // No active sprint found
+    return null;
 
   } catch (error) {
     console.error('Failed to find active sprint:', (error as Error).message);
