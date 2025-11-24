@@ -138,5 +138,8 @@ api/_lib/
 .ginko/local.json
 .ginko/.temp/
 
+# Ginko session archives (local-only, accumulate rapidly)
+.ginko/sessions/*/archive/
+
 # Claude Code local settings (user-specific permissions)
 .claude/settings.local.json
