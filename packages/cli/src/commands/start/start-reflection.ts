@@ -23,6 +23,12 @@ import { loadContextStrategic, formatContextSummary, StrategyContext } from '../
 import { initializeQueue } from '../../lib/event-queue.js';
 import { formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
 import { loadSprintChecklist, formatSprintChecklist, formatCurrentTaskDetails } from '../../lib/sprint-loader.js';
+import {
+  AISessionContext,
+  formatHumanOutput,
+  formatVerboseOutput,
+  formatAIContextJSONL
+} from '../../lib/output-formatter.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -220,11 +226,24 @@ export class StartReflectionCommand extends ReflectionCommand {
         spinner.info('Session logging enabled (use --no-log to disable)');
       }
 
-      // 11. Display session information with synthesis and strategy metrics
-      await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
+      // 11. Build AI context for dual output system (TASK-11)
+      const aiContext = this.buildAIContext(context, activeSynthesis, strategyContext, eventContext, sprintChecklist);
 
-      // Display strategic context loading summary
+      // Store AI context for MCP/external access
+      await this.storeAIContext(aiContext, sessionDir);
+
+      // 12. Display output based on mode
+      if (options.concise) {
+        // Concise mode: 6-8 line human-optimized output
+        this.displayConciseOutput(aiContext);
+      } else {
+        // Standard mode: Full session info
+        await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
+      }
+
+      // Display verbose AI context if requested (for debugging)
       if (options.verbose) {
+        console.log(formatVerboseOutput(aiContext));
         console.log('');
         console.log(chalk.dim(formatContextSummary(strategyContext)));
       }
@@ -962,6 +981,156 @@ Example output structure:
       testStatus: testStatus,
       hasUncommittedChanges: status.files.length > 0
     };
+  }
+
+  /**
+   * Build AI context object for structured output (TASK-11)
+   *
+   * Creates a rich, structured context object that AI partners can parse.
+   * This is the "AI UX" side of the dual output system.
+   */
+  private buildAIContext(
+    context: any,
+    synthesis: SynthesisOutput | undefined,
+    strategyContext: StrategyContext | undefined,
+    eventContext: LoadedContext | undefined,
+    sprintChecklist: any
+  ): AISessionContext {
+    const workMode = context.workMode || 'Think & Build';
+
+    // Build sprint object
+    let sprint: AISessionContext['sprint'] | undefined;
+    if (sprintChecklist) {
+      sprint = {
+        id: sprintChecklist.sprintId || 'unknown',
+        name: sprintChecklist.sprintName || 'Active Sprint',
+        goal: synthesis?.sprintContext?.goal || '',
+        progress: sprintChecklist.progress || 0,
+        currentTask: sprintChecklist.currentTask ? {
+          id: sprintChecklist.currentTask.id,
+          title: sprintChecklist.currentTask.title,
+          status: sprintChecklist.currentTask.status || 'in_progress',
+          files: sprintChecklist.currentTask.files || [],
+          priority: sprintChecklist.currentTask.priority || 'medium',
+        } : undefined,
+        tasks: (sprintChecklist.tasks || []).map((t: any) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status,
+        })),
+      };
+    }
+
+    // Build synthesis object
+    let synthObj: AISessionContext['synthesis'] | undefined;
+    if (synthesis) {
+      synthObj = {
+        completedWork: synthesis.workPerformed?.completed || [],
+        inProgressWork: synthesis.workPerformed?.inProgress || [],
+        blockedItems: synthesis.workPerformed?.blocked || [],
+        keyDecisions: synthesis.discoveries?.decisions?.map((d: any) => d.description) || [],
+        gotchas: synthesis.discoveries?.gotchas || [],
+        resumePoint: synthesis.resumePoint?.summary,
+        nextAction: synthesis.resumePoint?.nextAction,
+        suggestedCommand: synthesis.resumePoint?.suggestedCommand,
+      };
+    }
+
+    // Build git status
+    const uncommittedChanges = {
+      modified: context.uncommittedWork?.modified || [],
+      created: context.uncommittedWork?.created || [],
+      untracked: context.uncommittedWork?.not_added || [],
+    };
+
+    const warnings: string[] = [];
+    const totalChanges =
+      uncommittedChanges.modified.length +
+      uncommittedChanges.created.length +
+      uncommittedChanges.untracked.length;
+    if (totalChanges > 0) {
+      warnings.push(`${totalChanges} uncommitted files`);
+    }
+    if (synthesis?.warnings) {
+      warnings.push(...synthesis.warnings);
+    }
+
+    return {
+      session: {
+        id: `session-${Date.now()}`,
+        branch: context.currentBranch || 'unknown',
+        startedAt: new Date().toISOString(),
+        flowScore: synthesis?.flowState?.score || 5,
+        flowState: synthesis?.flowState?.energy || 'neutral',
+        workMode: workMode,
+      },
+      charter: eventContext?.strategicContext?.charter,
+      teamActivity: eventContext?.strategicContext?.teamActivity ? {
+        decisions: eventContext.strategicContext.teamActivity
+          .filter((e: any) => e.category === 'decision')
+          .map((d: any) => ({
+            user: d.user,
+            description: d.description,
+            timestamp: d.timestamp,
+            impact: d.impact,
+          })),
+        achievements: eventContext.strategicContext.teamActivity
+          .filter((e: any) => e.category === 'achievement')
+          .map((a: any) => ({
+            user: a.user,
+            description: a.description,
+            timestamp: a.timestamp,
+          })),
+      } : undefined,
+      patterns: eventContext?.strategicContext?.patterns,
+      sprint,
+      synthesis: synthObj,
+      git: {
+        branch: context.currentBranch || 'unknown',
+        commitsAhead: context.uncommittedWork?.ahead || 0,
+        uncommittedChanges,
+        warnings,
+      },
+      metrics: {
+        eventsLoaded: eventContext?.event_count || 0,
+        documentsLoaded: strategyContext?.metrics?.documentsLoaded || 0,
+        tokenEstimate: strategyContext?.metrics?.totalTokens || eventContext?.token_estimate || 0,
+        tokenReduction: strategyContext?.metrics?.tokenReductionPercent
+          ? `${strategyContext.metrics.tokenReductionPercent}%`
+          : undefined,
+        loadTimeMs: strategyContext?.metrics?.bootstrapTimeMs || 0,
+      },
+    };
+  }
+
+  /**
+   * Display concise human output (TASK-11)
+   *
+   * Shows only essential info for instant productivity (6-8 lines).
+   * Used with --concise flag.
+   */
+  private displayConciseOutput(aiContext: AISessionContext): void {
+    console.log('');
+    console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
+    console.log('');
+  }
+
+  /**
+   * Store AI context to file for MCP/external access (TASK-11)
+   *
+   * Writes structured context to .ginko/sessions/[user]/current-context.jsonl
+   */
+  private async storeAIContext(aiContext: AISessionContext, sessionDir: string): Promise<void> {
+    const contextPath = path.join(sessionDir, 'current-context.jsonl');
+
+    try {
+      // Append context as JSONL entry
+      const jsonlEntry = formatAIContextJSONL(aiContext) + '\n';
+      await fs.appendFile(contextPath, jsonlEntry);
+    } catch (error) {
+      // Non-critical - log but don't fail
+      console.log(chalk.dim(`⚠️  Could not store AI context: ${(error as Error).message}`));
+    }
   }
 
   /**

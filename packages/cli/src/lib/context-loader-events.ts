@@ -215,23 +215,25 @@ export async function loadRecentEvents(
 
     console.log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
 
-    // Load strategic context (EPIC-001: charter + team + patterns)
+    // TASK-10: Load strategic context + charter in PARALLEL (saves 200-300ms)
     const graphId = process.env.GINKO_GRAPH_ID || '';
-    let strategicContext: StrategicContextData | undefined = undefined;
 
-    if (graphId) {
-      const loadedStrategic = await loadStrategicContext(graphId, userId, projectId);
-      if (loadedStrategic) {
-        strategicContext = loadedStrategic;
-        if (strategicContext.metadata) {
-          console.log(`📊 Strategic context loaded: ${strategicContext.metadata.teamEventCount} team events, ${strategicContext.metadata.patternCount} patterns`);
-        }
-      }
+    // Fire both requests simultaneously
+    const [strategicResult, charterResult] = await Promise.all([
+      graphId
+        ? loadStrategicContext(graphId, userId, projectId).catch(() => null)
+        : Promise.resolve(null),
+      import('./charter-loader.js')
+        .then(m => m.loadCharter())
+        .catch(() => null)
+    ]);
+
+    let strategicContext: StrategicContextData | undefined = strategicResult || undefined;
+    const filesystemCharter = charterResult;
+
+    if (strategicContext?.metadata) {
+      console.log(`📊 Strategic context loaded: ${strategicContext.metadata.teamEventCount} team events, ${strategicContext.metadata.patternCount} patterns`);
     }
-
-    // Load charter from filesystem (TASK-1: Git-tracked docs, graph-sync for collaboration)
-    const { loadCharter } = await import('./charter-loader.js');
-    const filesystemCharter = await loadCharter();
 
     if (filesystemCharter) {
       // Merge filesystem charter into strategic context (filesystem takes precedence)
@@ -638,31 +640,48 @@ async function loadStrategicContext(
 
     const variables = { graphId, userId, projectId };
 
-    const response = await fetch(`${apiUrl}/api/graphql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ query, variables }),
-    });
+    // TASK-10: Add 3-second timeout to prevent hangs
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.log(`⚠️  Strategic context GraphQL failed: ${response.status} ${response.statusText}`);
-      console.log(`   Response: ${errorBody.substring(0, 200)}`);
-      return null;
+    try {
+      const response = await fetch(`${apiUrl}/api/graphql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ query, variables }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        console.log(`⚠️  Strategic context GraphQL failed: ${response.status} ${response.statusText}`);
+        console.log(`   Response: ${errorBody.substring(0, 200)}`);
+        return null;
+      }
+
+      const result: any = await response.json();
+
+      // Check for GraphQL errors
+      if (result.errors) {
+        console.log('⚠️  Strategic context GraphQL errors:', JSON.stringify(result.errors, null, 2));
+        return null;
+      }
+
+      return result.data?.strategicContext || null;
+    } catch (innerError) {
+      clearTimeout(timeoutId);
+      // Handle timeout specifically
+      if (innerError instanceof Error && innerError.name === 'AbortError') {
+        console.log('⚠️  Strategic context timeout (3s) - skipping');
+        return null;
+      }
+      throw innerError; // Re-throw for outer catch
     }
-
-    const result: any = await response.json();
-
-    // Check for GraphQL errors
-    if (result.errors) {
-      console.log('⚠️  Strategic context GraphQL errors:', JSON.stringify(result.errors, null, 2));
-      return null;
-    }
-
-    return result.data?.strategicContext || null;
   } catch (error) {
     console.log('⚠️  Strategic context not available (GraphQL query failed)');
     console.log(`   Error: ${(error as Error).message}`);
@@ -672,6 +691,9 @@ async function loadStrategicContext(
     return null;
   }
 }
+
+// Module-level regex patterns (compiled once, reused - TASK-10 optimization)
+const DOCUMENT_REFERENCE_PATTERN = /(ADR|PRD|Pattern|TASK)-\d+/gi;
 
 /**
  * Extract document references from event descriptions
@@ -688,23 +710,10 @@ async function loadStrategicContext(
 function extractDocumentReferences(events: Event[]): string[] {
   const refs = new Set<string>();
 
-  // Regex patterns for document references
-  const patterns = [
-    /ADR-(\d+)/gi,
-    /PRD-(\d+)/gi,
-    /Pattern-(\d+)/gi,
-    /TASK-(\d+)/gi,
-  ];
-
   for (const event of events) {
-    const text = event.description;
-
-    for (const pattern of patterns) {
-      const matches = text.matchAll(pattern);
-      for (const match of matches) {
-        refs.add(match[0]); // e.g., "ADR-043"
-      }
-    }
+    // Use single combined regex (faster than 4 separate patterns)
+    const matches = event.description.match(DOCUMENT_REFERENCE_PATTERN) || [];
+    matches.forEach(match => refs.add(match.toUpperCase()));
   }
 
   console.log(`📎 Extracted ${refs.size} document references from ${events.length} events`);
@@ -757,6 +766,8 @@ async function loadDocuments(documentIds: string[]): Promise<KnowledgeNode[]> {
  * - REFERENCES (ADR -> ADR, Pattern -> ADR)
  * - DEPENDS_ON (Feature -> Feature)
  *
+ * TASK-10: Parallelized API calls (saves 500ms-1.5s)
+ *
  * @param documents - Starting documents
  * @param depth - How many hops to follow
  * @returns Array of related documents
@@ -775,43 +786,57 @@ async function followTypedRelationships(
     const { GraphApiClient } = await import('../commands/graph/api-client.js');
     const client = new GraphApiClient();
 
-    const relatedDocs = new Set<KnowledgeNode>();
+    // TASK-10: Fetch all relationships in PARALLEL (was sequential for-loop)
+    const docsToExplore = documents.slice(0, 10); // Limit to first 10
+    const explorationPromises = docsToExplore.map(doc =>
+      (client as any)
+        .request('GET', `/api/v1/graph/explore/${doc.id}`)
+        .catch((error: Error) => {
+          console.log(`  ⚠️  Could not explore ${doc.id}:`, error.message);
+          return null; // Return null on error instead of throwing
+        })
+    );
 
-    // For each starting document, explore its relationships
-    for (const doc of documents.slice(0, 10)) { // Limit to first 10 to avoid too many API calls
-      try {
-        const response = await (client as any).request('GET', `/api/v1/graph/explore/${doc.id}`);
+    const results = await Promise.all(explorationPromises);
 
-        // Collect all related documents from typed relationships
-        const relationships = response.relationships;
+    // Collect all related documents from typed relationships
+    const relatedDocs: KnowledgeNode[] = [];
+    const seenIds = new Set<string>();
 
-        if (relationships.implements) {
-          relationships.implements.forEach((rel: any) => {
-            relatedDocs.add({
+    for (const response of results) {
+      if (!response?.relationships) continue;
+
+      const { implements: implementsList, referencedBy } = response.relationships;
+
+      if (implementsList) {
+        for (const rel of implementsList) {
+          if (!seenIds.has(rel.id)) {
+            seenIds.add(rel.id);
+            relatedDocs.push({
               id: rel.id,
               type: rel.type,
               title: rel.title,
             });
-          });
+          }
         }
-
-        if (relationships.referencedBy) {
-          relationships.referencedBy.forEach((rel: any) => {
-            relatedDocs.add({
-              id: rel.id,
-              type: rel.type,
-              title: rel.title,
-            });
-          });
-        }
-
-        // Skip SIMILAR_TO as these are lower signal
-      } catch (error) {
-        console.log(`  ⚠️  Could not explore ${doc.id}:`, (error as Error).message);
       }
+
+      if (referencedBy) {
+        for (const rel of referencedBy) {
+          if (!seenIds.has(rel.id)) {
+            seenIds.add(rel.id);
+            relatedDocs.push({
+              id: rel.id,
+              type: rel.type,
+              title: rel.title,
+            });
+          }
+        }
+      }
+      // Skip SIMILAR_TO as these are lower signal
     }
 
-    return Array.from(relatedDocs);
+    return relatedDocs;
   } catch (error) {
     console.error('Failed to follow relationships:', error);
     return [];
