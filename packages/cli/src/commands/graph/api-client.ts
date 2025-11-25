@@ -400,6 +400,22 @@ export class GraphApiClient {
   }
 
   /**
+   * Get patterns for a task (EPIC-002 Sprint 3)
+   * Returns APPLIES_PATTERN relationships with confidence scores
+   */
+  async getTaskPatterns(taskId: string): Promise<TaskPatternsResponse> {
+    return this.request<TaskPatternsResponse>('GET', `/api/v1/task/${taskId}/patterns`);
+  }
+
+  /**
+   * Get gotchas for a task (EPIC-002 Sprint 3)
+   * Returns AVOID_GOTCHA relationships with severity and resolution stats
+   */
+  async getTaskGotchas(taskId: string): Promise<TaskGotchasResponse> {
+    return this.request<TaskGotchasResponse>('GET', `/api/v1/task/${taskId}/gotchas`);
+  }
+
+  /**
    * Record a gotcha encounter (EPIC-002 Sprint 3 TASK-4)
    * Called when `ginko log --category=gotcha` references a gotcha
    *
@@ -533,6 +549,70 @@ export interface TaskConstraintsResponse {
     relationship: {
       source: string;
       extracted_at: string;
+    };
+  }>;
+  count: number;
+}
+
+/**
+ * Task patterns response from API (EPIC-002 Sprint 3)
+ */
+export interface TaskPatternsResponse {
+  task: {
+    id: string;
+    title: string;
+    status: string;
+  };
+  patterns: Array<{
+    pattern: {
+      id: string;
+      title: string;
+      category: string;
+      confidence: 'high' | 'medium' | 'low';
+      confidenceScore: number;
+      usageCount: number;
+      content?: string;
+    };
+    relationship: {
+      source: string;
+      extracted_at: string;
+    };
+    usages: Array<{
+      fileId: string;
+      context?: string;
+    }>;
+  }>;
+  count: number;
+}
+
+/**
+ * Task gotchas response from API (EPIC-002 Sprint 3)
+ */
+export interface TaskGotchasResponse {
+  task: {
+    id: string;
+    title: string;
+    status: string;
+  };
+  gotchas: Array<{
+    gotcha: {
+      id: string;
+      title: string;
+      severity: 'critical' | 'high' | 'medium' | 'low';
+      confidence: 'high' | 'medium' | 'low';
+      confidenceScore: number;
+      symptom?: string;
+      cause?: string;
+      solution?: string;
+    };
+    relationship: {
+      source: string;
+      extracted_at: string;
+    };
+    stats: {
+      encounters: number;
+      resolutions: number;
+      resolutionRate: number;
     };
   }>;
   count: number;

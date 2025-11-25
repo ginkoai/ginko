@@ -90,19 +90,39 @@ export interface AISessionContext {
       status: string;
       files: string[];
       priority: string;
-      /** ADR constraints this task must follow (EPIC-002 Phase 1) */
+      /** ADR constraints this task must follow (EPIC-002 Phase 1, enriched) */
       constraints?: Array<{
         adr: {
           id: string;
           title: string;
           summary?: string;
+          rationale?: string;
         };
         source: string;
       }>;
-      /** Pattern guidance for this task (EPIC-002 Sprint 3) */
-      patterns?: string[];
-      /** Gotcha warnings for this task (EPIC-002 Sprint 3) */
-      gotchas?: string[];
+      /** Pattern guidance for this task (EPIC-002 Sprint 3, enriched from graph API) */
+      patterns?: Array<{
+        id: string;
+        title: string;
+        confidence: 'high' | 'medium' | 'low';
+        confidenceScore: number;
+        content?: string;
+        usageCount: number;
+        usages?: Array<{
+          fileId: string;
+          context?: string;
+        }>;
+      }>;
+      /** Gotcha warnings for this task (EPIC-002 Sprint 3, enriched from graph API) */
+      gotchas?: Array<{
+        id: string;
+        title: string;
+        severity: 'critical' | 'high' | 'medium' | 'low';
+        symptom?: string;
+        cause?: string;
+        solution?: string;
+        resolutionRate: number;
+      }>;
     };
     tasks: Array<{
       id: string;
@@ -214,23 +234,29 @@ export function formatHumanOutput(
     if (context.sprint.currentTask) {
       lines.push(chalk.dim('  [@] ') + chalk.yellow(`${context.sprint.currentTask.id}: ${context.sprint.currentTask.title}`));
 
-      // Show ADR constraints for current task (EPIC-002 Phase 1)
+      // Show ADR constraints for current task (EPIC-002 Phase 1, enriched)
       if (context.sprint.currentTask.constraints && context.sprint.currentTask.constraints.length > 0) {
         const adrList = context.sprint.currentTask.constraints
-          .map(c => c.adr.id)
+          .map(c => c.adr.summary ? `${c.adr.id} (${truncate(c.adr.summary, 30)})` : c.adr.id)
           .join(', ');
         lines.push(chalk.dim('      Follow: ') + chalk.magenta(adrList));
       }
 
-      // Show pattern guidance for current task (EPIC-002 Sprint 3)
+      // Show pattern guidance for current task (EPIC-002 Sprint 3, enriched from graph)
       if (context.sprint.currentTask.patterns && context.sprint.currentTask.patterns.length > 0) {
-        const patternList = context.sprint.currentTask.patterns.slice(0, 3).join(', ');
+        const patternList = context.sprint.currentTask.patterns.slice(0, 3).map(p => {
+          const confIcon = p.confidence === 'high' ? '★' : p.confidence === 'medium' ? '◐' : '○';
+          return `${p.title} ${confIcon}`;
+        }).join(', ');
         lines.push(chalk.dim('      Apply: ') + chalk.blue(patternList));
       }
 
-      // Show gotcha warnings for current task (EPIC-002 Sprint 3)
+      // Show gotcha warnings for current task (EPIC-002 Sprint 3, enriched from graph)
       if (context.sprint.currentTask.gotchas && context.sprint.currentTask.gotchas.length > 0) {
-        const gotchaList = context.sprint.currentTask.gotchas.slice(0, 2).join(', ');
+        const gotchaList = context.sprint.currentTask.gotchas.slice(0, 2).map(g => {
+          const sevIcon = g.severity === 'critical' ? '🚨' : g.severity === 'high' ? '⚠️' : '💡';
+          return `${sevIcon} ${g.title}`;
+        }).join(', ');
         lines.push(chalk.dim('      Avoid: ') + chalk.red(gotchaList));
       }
     }

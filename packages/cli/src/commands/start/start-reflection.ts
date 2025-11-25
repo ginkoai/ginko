@@ -29,6 +29,13 @@ import {
   formatVerboseOutput,
   formatAIContextJSONL
 } from '../../lib/output-formatter.js';
+import {
+  GraphApiClient,
+  TaskPatternsResponse,
+  TaskGotchasResponse,
+  TaskConstraintsResponse
+} from '../graph/api-client.js';
+import { isGraphInitialized, getGraphId } from '../graph/config.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -227,7 +234,8 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
 
       // 11. Build AI context for dual output system (TASK-11)
-      const aiContext = this.buildAIContext(context, activeSynthesis, strategyContext, eventContext, sprintChecklist);
+      // Now async due to graph API enrichment (EPIC-002 Sprint 3 completion)
+      const aiContext = await this.buildAIContext(context, activeSynthesis, strategyContext, eventContext, sprintChecklist);
 
       // Store AI context for MCP/external access
       await this.storeAIContext(aiContext, sessionDir);
@@ -1003,18 +1011,168 @@ Example output structure:
   }
 
   /**
+   * Enriched task context from graph API (EPIC-002 Sprint 3 completion)
+   */
+  private enrichedTaskContext?: {
+    patterns: AISessionContext['sprint'] extends { currentTask?: { patterns?: infer P } } ? P : never;
+    gotchas: AISessionContext['sprint'] extends { currentTask?: { gotchas?: infer G } } ? G : never;
+    constraints: AISessionContext['sprint'] extends { currentTask?: { constraints?: infer C } } ? C : never;
+  };
+
+  /**
+   * Enrich task context with patterns, gotchas, and constraints from graph API
+   * (EPIC-002 Sprint 3 completion - completes cognitive scaffolding)
+   *
+   * Makes parallel API calls with timeout protection and graceful fallback.
+   */
+  private async enrichTaskContext(
+    taskId: string,
+    relatedPatterns: string[],
+    relatedGotchas: string[],
+    relatedADRs: string[],
+    workMode: string
+  ): Promise<{
+    patterns: NonNullable<NonNullable<AISessionContext['sprint']>['currentTask']>['patterns'];
+    gotchas: NonNullable<NonNullable<AISessionContext['sprint']>['currentTask']>['gotchas'];
+    constraints: NonNullable<NonNullable<AISessionContext['sprint']>['currentTask']>['constraints'];
+  }> {
+    // Check if graph is initialized
+    if (!await isGraphInitialized()) {
+      // Fallback: return ID-only data (current behavior)
+      return {
+        patterns: relatedPatterns.map(id => ({
+          id,
+          title: id,
+          confidence: 'medium' as const,
+          confidenceScore: 50,
+          usageCount: 0,
+        })),
+        gotchas: relatedGotchas.map(id => ({
+          id,
+          title: id,
+          severity: 'medium' as const,
+          resolutionRate: 0,
+        })),
+        constraints: relatedADRs.map(id => ({
+          adr: { id, title: id },
+          source: 'sprint_definition',
+        })),
+      };
+    }
+
+    const client = new GraphApiClient();
+
+    // Timeout wrapper for API calls
+    const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T | null> => {
+      return Promise.race([
+        promise,
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), ms))
+      ]);
+    };
+
+    // Parallel API calls with 2s timeout each
+    const [patternsRes, gotchasRes, constraintsRes] = await Promise.all([
+      withTimeout(client.getTaskPatterns(taskId).catch(() => null), 2000),
+      withTimeout(client.getTaskGotchas(taskId).catch(() => null), 2000),
+      withTimeout(client.getTaskConstraints(taskId).catch(() => null), 2000),
+    ]);
+
+    // Filter patterns by work mode
+    const filterPatterns = (patterns: TaskPatternsResponse['patterns']): NonNullable<NonNullable<AISessionContext['sprint']>['currentTask']>['patterns'] => {
+      let filtered = patterns;
+      switch (workMode) {
+        case 'Hack & Ship':
+          filtered = patterns.filter(p => p.pattern.confidence === 'high').slice(0, 1);
+          break;
+        case 'Think & Build':
+          filtered = patterns.filter(p => p.pattern.confidenceScore >= 50).slice(0, 3);
+          break;
+        // Full Planning: return all
+      }
+      return filtered.map(p => ({
+        id: p.pattern.id,
+        title: p.pattern.title,
+        confidence: p.pattern.confidence,
+        confidenceScore: p.pattern.confidenceScore,
+        content: p.pattern.content,
+        usageCount: p.pattern.usageCount,
+        usages: p.usages,
+      }));
+    };
+
+    // Filter gotchas by work mode
+    const filterGotchas = (gotchas: TaskGotchasResponse['gotchas']): NonNullable<NonNullable<AISessionContext['sprint']>['currentTask']>['gotchas'] => {
+      let filtered = gotchas;
+      switch (workMode) {
+        case 'Hack & Ship':
+          filtered = gotchas.filter(g => g.gotcha.severity === 'critical');
+          break;
+        case 'Think & Build':
+          filtered = gotchas.filter(g => ['critical', 'high'].includes(g.gotcha.severity));
+          break;
+        // Full Planning: return all
+      }
+      return filtered.map(g => ({
+        id: g.gotcha.id,
+        title: g.gotcha.title,
+        severity: g.gotcha.severity,
+        symptom: g.gotcha.symptom,
+        cause: g.gotcha.cause,
+        solution: g.gotcha.solution,
+        resolutionRate: g.stats.resolutionRate,
+      }));
+    };
+
+    // Process API responses with fallback to ID-only
+    const patterns = patternsRes?.patterns
+      ? filterPatterns(patternsRes.patterns)
+      : relatedPatterns.map(id => ({
+          id,
+          title: id,
+          confidence: 'medium' as const,
+          confidenceScore: 50,
+          usageCount: 0,
+        }));
+
+    const gotchas = gotchasRes?.gotchas
+      ? filterGotchas(gotchasRes.gotchas)
+      : relatedGotchas.map(id => ({
+          id,
+          title: id,
+          severity: 'medium' as const,
+          resolutionRate: 0,
+        }));
+
+    const constraints = constraintsRes?.constraints
+      ? constraintsRes.constraints.map(c => ({
+          adr: {
+            id: c.adr.id,
+            title: c.adr.title,
+            summary: c.adr.summary,
+          },
+          source: c.relationship.source,
+        }))
+      : relatedADRs.map(id => ({
+          adr: { id, title: id },
+          source: 'sprint_definition',
+        }));
+
+    return { patterns, gotchas, constraints };
+  }
+
+  /**
    * Build AI context object for structured output (TASK-11)
    *
    * Creates a rich, structured context object that AI partners can parse.
    * This is the "AI UX" side of the dual output system.
    */
-  private buildAIContext(
+  private async buildAIContext(
     context: any,
     synthesis: SynthesisOutput | undefined,
     strategyContext: StrategyContext | undefined,
     eventContext: LoadedContext | undefined,
     sprintChecklist: any
-  ): AISessionContext {
+  ): Promise<AISessionContext> {
     const workMode = context.workMode || 'Think & Build';
 
     // Build sprint object
@@ -1024,6 +1182,18 @@ Example output structure:
       const progressPercent = sprintChecklist.progress?.total > 0
         ? Math.round((sprintChecklist.progress.complete / sprintChecklist.progress.total) * 100)
         : 0;
+
+      // Enrich task context from graph API (EPIC-002 Sprint 3 completion)
+      let enrichedTask: Awaited<ReturnType<typeof this.enrichTaskContext>> | undefined;
+      if (sprintChecklist.currentTask) {
+        enrichedTask = await this.enrichTaskContext(
+          sprintChecklist.currentTask.id,
+          sprintChecklist.currentTask.relatedPatterns || [],
+          sprintChecklist.currentTask.relatedGotchas || [],
+          sprintChecklist.currentTask.relatedADRs || [],
+          workMode
+        );
+      }
 
       sprint = {
         id: sprintChecklist.file || 'unknown',
@@ -1036,18 +1206,10 @@ Example output structure:
           status: sprintChecklist.currentTask.status || 'in_progress',
           files: sprintChecklist.currentTask.files || [],
           priority: sprintChecklist.currentTask.priority || 'medium',
-          // ADR constraints for current task (EPIC-002 Phase 1)
-          constraints: sprintChecklist.currentTask.relatedADRs?.map((adrId: string) => ({
-            adr: {
-              id: adrId,
-              title: adrId, // Title will be enriched by API if available
-            },
-            source: 'sprint_definition',
-          })),
-          // Pattern guidance for current task (EPIC-002 Sprint 3)
-          patterns: sprintChecklist.currentTask.relatedPatterns || [],
-          // Gotcha warnings for current task (EPIC-002 Sprint 3)
-          gotchas: sprintChecklist.currentTask.relatedGotchas || [],
+          // Enriched from graph API (EPIC-002 Sprint 3 completion)
+          constraints: enrichedTask?.constraints,
+          patterns: enrichedTask?.patterns,
+          gotchas: enrichedTask?.gotchas,
         } : undefined,
         tasks: (sprintChecklist.tasks || []).map((t: any) => ({
           id: t.id,

@@ -224,58 +224,63 @@ function parseSprintToGraph(content: string): SprintGraph {
       }
     }
 
-    // Extract related ADRs
+    // Extract related ADRs - preserve CLI format (ADR-XXX)
     const relatedADRs: string[] = [];
-    const adrPattern = /ADR-(\d{3})/g;
+    const adrPattern = /ADR-(\d{3})/gi;
     let adrMatch;
     while ((adrMatch = adrPattern.exec(section)) !== null) {
-      const adrId = `adr_${adrMatch[1]}`;
+      const adrId = `ADR-${adrMatch[1].padStart(3, '0')}`;
       if (!relatedADRs.includes(adrId)) {
         relatedADRs.push(adrId);
       }
     }
 
     // Extract related patterns (EPIC-002 Sprint 2)
-    // Patterns can be referenced as:
-    // - "Use pattern from file.ts" or "pattern in file.ts"
-    // - "See file.ts for example"
-    // - Explicit pattern IDs like "pattern_xxx"
+    // Preserve CLI format: kebab-case with -pattern suffix (e.g., retry-pattern)
     const relatedPatterns: string[] = [];
 
-    // Match "pattern from/in file.ts" references
+    // Match "pattern from/in file.ts" references - use filename as pattern ID
     const patternFileMatches = section.matchAll(/(?:use|apply|see|follow)\s+(?:the\s+)?(?:pattern|example)\s+(?:from|in)\s+[`"]?([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)[`"]?/gi);
     for (const match of patternFileMatches) {
-      const patternId = `pattern_${match[1].replace(/[^a-zA-Z0-9]/g, '_')}`;
+      // Keep the file path as-is for file-based patterns
+      const patternId = match[1];
       if (!relatedPatterns.includes(patternId)) {
         relatedPatterns.push(patternId);
       }
     }
 
-    // Match explicit pattern IDs
-    const explicitPatternMatches = section.matchAll(/pattern[_-]([a-zA-Z0-9_]+)/gi);
+    // Match explicit kebab-case pattern names (e.g., retry-pattern, output-formatter-pattern)
+    const explicitPatternMatches = section.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-pattern)\b/gi);
     for (const match of explicitPatternMatches) {
-      const patternId = `pattern_${match[1]}`;
+      const patternId = match[1].toLowerCase();
       if (!relatedPatterns.includes(patternId)) {
         relatedPatterns.push(patternId);
       }
     }
 
     // Extract related gotchas (EPIC-002 Sprint 2)
+    // Preserve CLI format: kebab-case with -gotcha suffix (e.g., timer-unref-gotcha)
     const relatedGotchas: string[] = [];
 
-    // Match "avoid X", "watch out for X", "gotcha: X"
-    const gotchaWarningMatches = section.matchAll(/(?:avoid|watch out for|beware of|gotcha:)\s+[`"]?([^`".\n]+)[`"]?/gi);
-    for (const match of gotchaWarningMatches) {
-      const gotchaId = `gotcha_${match[1].trim().toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+    // Priority: Match explicit kebab-case gotcha names first (e.g., timer-unref-gotcha)
+    const explicitGotchaMatches = section.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha)\b/gi);
+    for (const match of explicitGotchaMatches) {
+      const gotchaId = match[1].toLowerCase();
       if (!relatedGotchas.includes(gotchaId)) {
         relatedGotchas.push(gotchaId);
       }
     }
 
-    // Match explicit gotcha names (kebab-case with -gotcha suffix)
-    const explicitGotchaMatches = section.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha)\b/gi);
-    for (const match of explicitGotchaMatches) {
-      const gotchaId = `gotcha_${match[1].replace(/-/g, '_')}`;
+    // Fallback: Match "avoid X", "watch out for X" - convert to kebab-case
+    const gotchaWarningMatches = section.matchAll(/(?:avoid|watch out for|beware of|gotcha:)\s+[`"]?([^`".\n]+)[`"]?/gi);
+    for (const match of gotchaWarningMatches) {
+      // Skip if already captured via explicit pattern
+      const rawText = match[1].trim();
+      if (rawText.match(/[a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha/i)) {
+        continue;
+      }
+      // Convert to kebab-case gotcha ID
+      const gotchaId = rawText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-gotcha';
       if (!relatedGotchas.includes(gotchaId)) {
         relatedGotchas.push(gotchaId);
       }

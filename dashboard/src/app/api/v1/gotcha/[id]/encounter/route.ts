@@ -32,7 +32,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { runQuery, verifyConnection } from '../../../../graph/_neo4j';
+import { runQuery, verifyConnection } from '@/app/api/v1/graph/_neo4j';
 
 interface EncounterRequest {
   description?: string;
