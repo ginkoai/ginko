@@ -23,7 +23,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { extractReferences, type Reference } from '../utils/reference-parser.js';
 
-export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
+export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement' | 'gotcha';
 export type LogImpact = 'high' | 'medium' | 'low';
 
 export interface LogEntry {
@@ -109,6 +109,12 @@ branch: ${branch}
 <!-- Commits, merges, branch changes -->
 <!-- These entries also appear in Timeline for narrative coherence -->
 <!-- Log significant commits with: ginko log "Committed feature X" --category=git -->
+
+## Gotchas
+<!-- Pitfalls, traps, and "lessons learned the hard way" -->
+<!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
+<!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
+<!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 `;
 
     // Ensure user directory exists
@@ -156,11 +162,11 @@ Impact: ${entry.impact}
     const content = await fs.readFile(logPath, 'utf-8');
 
     // Determine sections to append to
-    // Logic: Categorized entries (decision/insight/git) use dual-routing for categorical access:
-    //        - Written to their categorical section (Decisions/Insights/Git Operations)
+    // Logic: Categorized entries (decision/insight/git/gotcha) use dual-routing for categorical access:
+    //        - Written to their categorical section (Decisions/Insights/Git Operations/Gotchas)
     //        - Also written to Timeline for narrative coherence
     //        fix/feature/achievement go to Timeline only
-    const shouldAppendToTimeline = ['decision', 'insight', 'git'].includes(entry.category);
+    const shouldAppendToTimeline = ['decision', 'insight', 'git', 'gotcha'].includes(entry.category);
 
     let sectionMarker: string;
     switch (entry.category) {
@@ -172,6 +178,9 @@ Impact: ${entry.impact}
         break;
       case 'git':
         sectionMarker = '## Git Operations';
+        break;
+      case 'gotcha':
+        sectionMarker = '## Gotchas';  // EPIC-002 Sprint 2: Pitfalls and traps
         break;
       case 'achievement':
         sectionMarker = '## Timeline';  // Achievements section removed per ADR-033 Addendum 2

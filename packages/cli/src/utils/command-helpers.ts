@@ -37,8 +37,14 @@ const CATEGORY_PATTERNS: Record<LogCategory, RegExp[]> = {
   ],
   insight: [
     /\b(discovered|learned|realized|found that)\b/i,
-    /\b(insight|pattern|observation|gotcha)\b/i,
+    /\b(insight|pattern|observation)\b/i,
     /\b(breakthrough|understanding|key finding)\b/i,
+  ],
+  gotcha: [
+    /\b(gotcha|pitfall|trap|footgun|caveat)\b/i,
+    /\b(watch out|be careful|don't|avoid|warning)\b/i,
+    /\b(lesson learned|the hard way|bit me|cost me)\b/i,
+    /\b(symptom|cause|solution|workaround)\b/i,
   ],
   achievement: [
     /\b(completed|finished|delivered|shipped)\b/i,
@@ -102,6 +108,7 @@ export function detectCategory(description: string): LogCategory | null {
     feature: 0,
     decision: 0,
     insight: 0,
+    gotcha: 0,
     achievement: 0,
     git: 0,
   };

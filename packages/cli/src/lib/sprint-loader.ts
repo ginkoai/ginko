@@ -42,7 +42,9 @@ export interface Task {
   pattern?: string;     // Pattern reference (e.g., "log.ts:45-67")
   effort?: string;      // Time estimate (e.g., "4-6h")
   priority?: string;    // Priority level
-  relatedADRs?: string[]; // ADR references (e.g., ["ADR-002", "ADR-043"]) - EPIC-002
+  relatedADRs?: string[]; // ADR references (e.g., ["ADR-002", "ADR-043"]) - EPIC-002 Sprint 1
+  relatedPatterns?: string[]; // Pattern references (e.g., ["retry-pattern", "event-queue"]) - EPIC-002 Sprint 2
+  relatedGotchas?: string[]; // Gotcha warnings (e.g., ["timer-unref", "async-cleanup"]) - EPIC-002 Sprint 2
 }
 
 /**
@@ -248,7 +250,7 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
       continue;
     }
 
-    // Extract ADR references from any line in task section (EPIC-002 Phase 1)
+    // Extract ADR references from any line in task section (EPIC-002 Sprint 1)
     if (parsingTask) {
       const adrMatches = line.matchAll(/ADR-(\d+)/gi);
       for (const match of adrMatches) {
@@ -256,6 +258,54 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
         parsingTask.relatedADRs = parsingTask.relatedADRs || [];
         if (!parsingTask.relatedADRs.includes(adrId)) {
           parsingTask.relatedADRs.push(adrId);
+        }
+      }
+
+      // Extract pattern references from any line in task section (EPIC-002 Sprint 2)
+      // Patterns can be referenced as:
+      // - "Use pattern from file.ts" or "pattern in file.ts"
+      // - "See file.ts for example"
+      // - Explicit pattern names like "retry-pattern", "event-queue-pattern"
+      const patternFromFileMatches = line.matchAll(/(?:use|apply|see|follow)\s+(?:the\s+)?(?:pattern|example)\s+(?:from|in)\s+[`"]?([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)[`"]?/gi);
+      for (const match of patternFromFileMatches) {
+        const patternId = match[1];
+        parsingTask.relatedPatterns = parsingTask.relatedPatterns || [];
+        if (!parsingTask.relatedPatterns.includes(patternId)) {
+          parsingTask.relatedPatterns.push(patternId);
+        }
+      }
+
+      // Match explicit pattern names (kebab-case with -pattern suffix)
+      const explicitPatternMatches = line.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-pattern)\b/gi);
+      for (const match of explicitPatternMatches) {
+        const patternId = match[1].toLowerCase();
+        parsingTask.relatedPatterns = parsingTask.relatedPatterns || [];
+        if (!parsingTask.relatedPatterns.includes(patternId)) {
+          parsingTask.relatedPatterns.push(patternId);
+        }
+      }
+
+      // Extract gotcha references from any line in task section (EPIC-002 Sprint 2)
+      // Gotchas can be referenced as:
+      // - "Avoid gotcha: timer keeps process alive"
+      // - "Watch out for X"
+      // - Explicit gotcha names like "timer-gotcha", "async-gotcha"
+      const gotchaWarningMatches = line.matchAll(/(?:avoid|watch out for|beware of|gotcha:)\s+[`"]?([^`".\n]+)[`"]?/gi);
+      for (const match of gotchaWarningMatches) {
+        const gotchaId = match[1].trim().toLowerCase().replace(/\s+/g, '-');
+        parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
+        if (!parsingTask.relatedGotchas.includes(gotchaId)) {
+          parsingTask.relatedGotchas.push(gotchaId);
+        }
+      }
+
+      // Match explicit gotcha names (kebab-case with -gotcha suffix)
+      const explicitGotchaMatches = line.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha)\b/gi);
+      for (const match of explicitGotchaMatches) {
+        const gotchaId = match[1].toLowerCase();
+        parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
+        if (!parsingTask.relatedGotchas.includes(gotchaId)) {
+          parsingTask.relatedGotchas.push(gotchaId);
         }
       }
     }
