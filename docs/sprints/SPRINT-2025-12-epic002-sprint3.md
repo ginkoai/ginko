@@ -5,7 +5,7 @@
 **Sprint Goal**: Surface pattern guidance and gotcha warnings to AI at session start
 **Duration**: 2 weeks (2025-12-01 to 2025-12-15)
 **Type**: Feature sprint (UX + API endpoints)
-**Progress:** 75% (3/4 tasks complete)
+**Progress:** 100% (4/4 tasks complete)
 
 **Success Criteria:**
 - Patterns and gotchas visible in ginko start output
@@ -118,18 +118,18 @@ Follow: ADR-002
 ---
 
 ### TASK-4: Gotcha Resolution Tracking (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Owner:** Chris Norton
 
 **Goal:** Track when gotchas are encountered and resolved to improve AI learning
 
 **Acceptance Criteria:**
-- [ ] Gotcha nodes have `encounters: number` property
-- [ ] Gotcha nodes have `resolutions: number` property
-- [ ] `ginko log --category=gotcha` increments encounter count
-- [ ] Resolution events link to fix commits
-- [ ] Gotcha effectiveness score: resolutions / encounters
+- [x] Gotcha nodes have `encounters: number` property
+- [x] Gotcha nodes have `resolutions: number` property
+- [x] `ginko log --category=gotcha` increments encounter count
+- [x] Resolution events link to fix commits
+- [x] Gotcha effectiveness score: resolutions / encounters
 
 **Implementation Notes:**
 Use pattern from packages/cli/src/lib/event-queue.ts for event tracking.
@@ -143,6 +143,15 @@ Gotcha: ensure atomic updates to counter properties.
 
 Follow: ADR-033, ADR-043
 
+**Completed:** 2025-11-25
+- Created POST /api/v1/gotcha/:id/encounter endpoint (atomic counter increment)
+- Created POST /api/v1/gotcha/:id/resolve endpoint (links to commit, creates RESOLVED_BY relationship)
+- Added GET /api/v1/gotcha/:id/resolve endpoint for resolution history
+- Added extractGotchaReferences() utility in command-helpers.ts (supports 4 patterns)
+- Added recordGotchaEncounter(), resolveGotcha(), getGotchaResolutions() to GraphApiClient
+- Updated ginko log to detect gotcha references and track encounters via API
+- Effectiveness score calculated as: (resolutions / encounters) * 100
+
 ---
 
 ## Related Documents
@@ -153,6 +162,7 @@ Follow: ADR-033, ADR-043
 
 ---
 
-**Sprint Status**: Not Started
+**Sprint Status**: Complete ✅
 **Start Date**: 2025-12-01
+**Completed**: 2025-11-25
 **Created By**: Chris Norton

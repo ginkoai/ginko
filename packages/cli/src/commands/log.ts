@@ -28,7 +28,8 @@ import {
   shouldCreateContextModule,
   getQualityDescription,
   getQualityBreakdown,
-  analyzeQuality
+  analyzeQuality,
+  extractGotchaReferences
 } from '../utils/command-helpers.js';
 import {
   extractReferences,
@@ -41,7 +42,8 @@ import { SessionInsight, InsightType } from '../types/session.js';
 import { initializeWriteDispatcher, appendLogEntry } from '../utils/dispatcher-logger.js';
 import { logEvent as logEventToStream, EventEntry } from '../lib/event-logger.js';
 import * as path from 'path';
-import { requireAuth } from '../utils/auth-storage.js';
+import { requireAuth, isAuthenticated } from '../utils/auth-storage.js';
+import { GraphApiClient } from './graph/api-client.js';
 
 interface LogOptions {
   files?: string;
@@ -230,6 +232,39 @@ export async function logCommand(description: string, options: LogOptions): Prom
       console.log(chalk.cyan('\nReferences:'), chalk.dim(`${references.length} detected`));
       for (const ref of references.slice(0, 3)) {
         console.log(chalk.dim(`  - ${ref.rawText}`));
+      }
+    }
+
+    // TASK-4: Track gotcha encounters when category=gotcha or gotcha references detected
+    // This enables AI learning from gotcha frequency and resolution patterns
+    if (category === 'gotcha' || await isAuthenticated()) {
+      const gotchaRefs = extractGotchaReferences(enhancedDescription);
+      if (gotchaRefs.length > 0 && await isAuthenticated()) {
+        try {
+          const graphClient = new GraphApiClient();
+          let encounteredCount = 0;
+
+          for (const gotchaId of gotchaRefs) {
+            try {
+              await graphClient.recordGotchaEncounter(gotchaId, {
+                description: enhancedDescription,
+              });
+              encounteredCount++;
+            } catch (err) {
+              // Individual gotcha tracking is non-critical
+              // May fail if gotcha doesn't exist in graph yet
+            }
+          }
+
+          if (encounteredCount > 0) {
+            console.log(chalk.cyan('\nGotchas:'), chalk.dim(`${encounteredCount} encounter(s) tracked`));
+            for (const ref of gotchaRefs.slice(0, 3)) {
+              console.log(chalk.dim(`  - ${ref}`));
+            }
+          }
+        } catch (err) {
+          // Graph API unavailable - gotcha tracking is non-critical
+        }
       }
     }
 

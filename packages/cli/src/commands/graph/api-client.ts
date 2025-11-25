@@ -398,6 +398,119 @@ export class GraphApiClient {
   async getTaskConstraints(taskId: string): Promise<TaskConstraintsResponse> {
     return this.request<TaskConstraintsResponse>('GET', `/api/v1/task/${taskId}/constraints`);
   }
+
+  /**
+   * Record a gotcha encounter (EPIC-002 Sprint 3 TASK-4)
+   * Called when `ginko log --category=gotcha` references a gotcha
+   *
+   * @param gotchaId - The gotcha ID to increment encounter count
+   * @param context - Optional context about the encounter
+   * @returns Updated gotcha stats including effectiveness score
+   */
+  async recordGotchaEncounter(
+    gotchaId: string,
+    context?: {
+      description?: string;
+      sessionId?: string;
+      commitHash?: string;
+    }
+  ): Promise<GotchaEncounterResponse> {
+    return this.request<GotchaEncounterResponse>(
+      'POST',
+      `/api/v1/gotcha/${gotchaId}/encounter`,
+      context || {}
+    );
+  }
+
+  /**
+   * Resolve a gotcha (EPIC-002 Sprint 3 TASK-4)
+   * Links the gotcha to a fix commit
+   *
+   * @param gotchaId - The gotcha ID to mark as resolved
+   * @param data - Resolution details including commit hash
+   * @returns Updated gotcha stats
+   */
+  async resolveGotcha(
+    gotchaId: string,
+    data: {
+      commitHash: string;
+      description?: string;
+      sessionId?: string;
+      files?: string[];
+    }
+  ): Promise<GotchaResolveResponse> {
+    return this.request<GotchaResolveResponse>(
+      'POST',
+      `/api/v1/gotcha/${gotchaId}/resolve`,
+      data
+    );
+  }
+
+  /**
+   * Get gotcha resolution history (EPIC-002 Sprint 3 TASK-4)
+   *
+   * @param gotchaId - The gotcha ID to get history for
+   * @returns Gotcha stats and resolution history
+   */
+  async getGotchaResolutions(gotchaId: string): Promise<GotchaResolutionsResponse> {
+    return this.request<GotchaResolutionsResponse>(
+      'GET',
+      `/api/v1/gotcha/${gotchaId}/resolve`
+    );
+  }
+}
+
+/**
+ * Gotcha encounter response (EPIC-002 Sprint 3 TASK-4)
+ */
+export interface GotchaEncounterResponse {
+  gotcha: {
+    id: string;
+    encounters: number;
+    resolutions: number;
+    effectivenessScore: number;
+  };
+  encounter: {
+    timestamp: string;
+    description?: string;
+  };
+}
+
+/**
+ * Gotcha resolve response (EPIC-002 Sprint 3 TASK-4)
+ */
+export interface GotchaResolveResponse {
+  gotcha: {
+    id: string;
+    encounters: number;
+    resolutions: number;
+    effectivenessScore: number;
+  };
+  resolution: {
+    timestamp: string;
+    commitHash: string;
+    description?: string;
+  };
+}
+
+/**
+ * Gotcha resolutions response (EPIC-002 Sprint 3 TASK-4)
+ */
+export interface GotchaResolutionsResponse {
+  gotcha: {
+    id: string;
+    title: string;
+    encounters: number;
+    resolutions: number;
+    effectivenessScore: number;
+  };
+  resolutionHistory: Array<{
+    commitHash: string;
+    timestamp: string;
+    description?: string;
+    sessionId?: string;
+    files?: string[];
+  }>;
 }
 
 /**

@@ -386,3 +386,54 @@ export function analyzeQuality(entry: LogEntry): { score: number; warnings: stri
     warnings: validation.warnings,
   };
 }
+
+/**
+ * Extract gotcha references from description
+ * Supports multiple patterns:
+ * - Explicit gotcha IDs: gotcha_xxx, gotcha-xxx
+ * - Kebab-case names with -gotcha suffix: verbose-output-gotcha
+ * - Natural language: "the verbose output gotcha", "gotcha: verbose output"
+ *
+ * EPIC-002 Sprint 3 TASK-4: Gotcha Resolution Tracking
+ */
+export function extractGotchaReferences(description: string): string[] {
+  if (!description || typeof description !== 'string') {
+    return [];
+  }
+
+  const gotchaIds = new Set<string>();
+
+  // Pattern 1: Explicit gotcha IDs (gotcha_xxx or gotcha-xxx)
+  const explicitPattern = /\bgotcha[_-]([a-zA-Z0-9_-]+)\b/gi;
+  let match;
+  while ((match = explicitPattern.exec(description)) !== null) {
+    // Normalize to gotcha_xxx format
+    const id = `gotcha_${match[1].replace(/-/g, '_')}`;
+    gotchaIds.add(id);
+  }
+
+  // Pattern 2: Kebab-case names ending with -gotcha
+  const kebabPattern = /\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha)\b/gi;
+  while ((match = kebabPattern.exec(description)) !== null) {
+    const id = `gotcha_${match[1].replace(/-/g, '_')}`;
+    gotchaIds.add(id);
+  }
+
+  // Pattern 3: Natural language "the X gotcha" pattern
+  const naturalPattern = /\bthe\s+([a-z][a-z0-9\s-]*)\s+gotcha\b/gi;
+  while ((match = naturalPattern.exec(description)) !== null) {
+    const name = match[1].trim().toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
+    const id = `gotcha_${name}_gotcha`;
+    gotchaIds.add(id);
+  }
+
+  // Pattern 4: "gotcha: X" pattern
+  const colonPattern = /\bgotcha:\s*([a-z][a-z0-9\s-]*?)(?:[.!?,;]|$)/gi;
+  while ((match = colonPattern.exec(description)) !== null) {
+    const name = match[1].trim().toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
+    const id = `gotcha_${name}`;
+    gotchaIds.add(id);
+  }
+
+  return Array.from(gotchaIds);
+}
