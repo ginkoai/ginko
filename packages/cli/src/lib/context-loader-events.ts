@@ -983,7 +983,10 @@ export function formatContextSummary(context: LoadedContext): string {
   }
 
   if (context.sprint) {
-    lines.push(`   - Sprint: ${context.sprint.title} (${context.sprint.progress}% complete)`);
+    const progressDisplay = context.sprint.progress >= 100
+      ? 'Completed (100%)'
+      : `${context.sprint.progress}% complete`;
+    lines.push(`   - Sprint: ${context.sprint.title} (${progressDisplay})`);
   }
 
   lines.push(`   - Estimated tokens: ${context.token_estimate.toLocaleString()}`);

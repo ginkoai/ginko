@@ -1020,11 +1020,16 @@ Example output structure:
     // Build sprint object
     let sprint: AISessionContext['sprint'] | undefined;
     if (sprintChecklist) {
+      // Calculate progress percentage from SprintChecklist.progress object
+      const progressPercent = sprintChecklist.progress?.total > 0
+        ? Math.round((sprintChecklist.progress.complete / sprintChecklist.progress.total) * 100)
+        : 0;
+
       sprint = {
-        id: sprintChecklist.sprintId || 'unknown',
-        name: sprintChecklist.sprintName || 'Active Sprint',
+        id: sprintChecklist.file || 'unknown',
+        name: sprintChecklist.name || 'Active Sprint',
         goal: synthesis?.sprintContext?.goal || '',
-        progress: sprintChecklist.progress || 0,
+        progress: progressPercent,
         currentTask: sprintChecklist.currentTask ? {
           id: sprintChecklist.currentTask.id,
           title: sprintChecklist.currentTask.title,

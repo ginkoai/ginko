@@ -201,7 +201,10 @@ export function formatHumanOutput(
   if (context.sprint && !minimal) {
     const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
     const sprintName = context.sprint.name || 'Active Sprint';
-    lines.push(chalk.white('Sprint: ') + chalk.cyan(sprintName) + chalk.dim(` (${progress}%)`));
+    const progressDisplay = progress >= 100
+      ? chalk.green('Completed (100%)')
+      : chalk.dim(`(${progress}%)`);
+    lines.push(chalk.white('Sprint: ') + chalk.cyan(sprintName) + ' ' + progressDisplay);
 
     // Show current task if available
     if (context.sprint.currentTask) {
