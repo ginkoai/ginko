@@ -1124,7 +1124,8 @@ Example output structure:
     };
 
     // Process API responses with fallback to ID-only
-    const patterns = patternsRes?.patterns
+    // Note: Check length > 0 since empty array is truthy
+    const patterns = patternsRes?.patterns?.length
       ? filterPatterns(patternsRes.patterns)
       : relatedPatterns.map(id => ({
           id,
@@ -1134,7 +1135,7 @@ Example output structure:
           usageCount: 0,
         }));
 
-    const gotchas = gotchasRes?.gotchas
+    const gotchas = gotchasRes?.gotchas?.length
       ? filterGotchas(gotchasRes.gotchas)
       : relatedGotchas.map(id => ({
           id,
@@ -1143,7 +1144,7 @@ Example output structure:
           resolutionRate: 0,
         }));
 
-    const constraints = constraintsRes?.constraints
+    const constraints = constraintsRes?.constraints?.length
       ? constraintsRes.constraints.map(c => ({
           adr: {
             id: c.adr.id,
