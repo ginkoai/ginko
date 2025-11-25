@@ -38,6 +38,7 @@ import { runQuery, verifyConnection } from '../../../graph/_neo4j';
 interface GotchaStats {
   encounters: number;
   resolutions: number;
+  resolutionRate: number; // TASK-3: percentage (0-100)
 }
 
 interface GotchaReference {
@@ -45,6 +46,8 @@ interface GotchaReference {
     id: string;
     title: string;
     severity: string;
+    confidence: string; // TASK-3: high | medium | low
+    confidenceScore: number; // TASK-3: 0-100 for sorting
     symptom?: string;
     cause?: string;
     solution?: string;
@@ -83,6 +86,7 @@ export async function GET(
     }
 
     // Query task and its AVOID_GOTCHA relationships
+    // TASK-3: Include confidence for sorting
     const query = `
       MATCH (t:Task {id: $taskId})
       OPTIONAL MATCH (t)-[r:AVOID_GOTCHA]->(g:Gotcha)
@@ -93,6 +97,8 @@ export async function GET(
                gotchaId: g.id,
                gotchaTitle: g.title,
                gotchaSeverity: g.severity,
+               gotchaConfidence: g.confidence,
+               gotchaConfidenceScore: g.confidenceScore,
                gotchaSymptom: g.symptom,
                gotchaCause: g.cause,
                gotchaSolution: g.solution,
@@ -122,11 +128,18 @@ export async function GET(
       // Skip null entries (from tasks with no gotcha relationships)
       if (!g.gotchaId) continue;
 
+      // Calculate resolution rate
+      const encounters = g.encounters || 0;
+      const resolutions = g.resolutions || 0;
+      const resolutionRate = encounters > 0 ? Math.round((resolutions / encounters) * 100) : 0;
+
       gotchas.push({
         gotcha: {
           id: g.gotchaId,
           title: g.gotchaTitle || g.gotchaId,
           severity: g.gotchaSeverity || 'medium',
+          confidence: g.gotchaConfidence || 'medium', // TASK-3
+          confidenceScore: g.gotchaConfidenceScore ?? 50, // TASK-3
           symptom: g.gotchaSymptom,
           cause: g.gotchaCause,
           solution: g.gotchaSolution,
@@ -136,22 +149,26 @@ export async function GET(
           extracted_at: g.extractedAt || new Date().toISOString(),
         },
         stats: {
-          encounters: g.encounters || 0,
-          resolutions: g.resolutions || 0,
+          encounters,
+          resolutions,
+          resolutionRate, // TASK-3
         },
       });
     }
 
-    // Sort by severity (critical > high > medium > low)
+    // Sort by severity first (critical > high > medium > low), then by confidence score
     const severityOrder: Record<string, number> = {
       critical: 0,
       high: 1,
       medium: 2,
       low: 3,
     };
-    gotchas.sort((a, b) =>
-      (severityOrder[a.gotcha.severity] || 2) - (severityOrder[b.gotcha.severity] || 2)
-    );
+    gotchas.sort((a, b) => {
+      const severityDiff = (severityOrder[a.gotcha.severity] || 2) - (severityOrder[b.gotcha.severity] || 2);
+      if (severityDiff !== 0) return severityDiff;
+      // Within same severity, sort by confidence (highest first)
+      return b.gotcha.confidenceScore - a.gotcha.confidenceScore;
+    });
 
     const response: TaskGotchasResponse = {
       task: {

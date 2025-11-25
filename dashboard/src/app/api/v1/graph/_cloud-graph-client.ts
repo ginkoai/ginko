@@ -254,6 +254,67 @@ export class CloudGraphClient {
   }
 
   /**
+   * Merge (upsert) a node - create if not exists, update if exists
+   * Useful for Pattern/Gotcha nodes that may be referenced multiple times
+   * Tracks usageCount for confidence scoring (TASK-3: EPIC-002 Sprint 3)
+   *
+   * @param label - Node label (Pattern, Gotcha, etc.)
+   * @param id - Node ID to merge on
+   * @param data - Properties to set/update
+   * @param incrementUsage - If true, increments usageCount on existing nodes
+   * @returns Object with id and isNew flag
+   */
+  async mergeNode(
+    label: string,
+    id: string,
+    data: NodeData,
+    incrementUsage: boolean = false
+  ): Promise<{ id: string; isNew: boolean }> {
+    // Remove id from data to avoid duplication
+    const { id: _id, ...props } = data;
+
+    const query = incrementUsage
+      ? `MATCH (g:Graph {graphId: $graphId, userId: $userId})
+         MERGE (g)-[:CONTAINS]->(n:${label} {id: $nodeId})
+         ON CREATE SET
+           n = $props,
+           n.id = $nodeId,
+           n.usageCount = 1,
+           n.createdAt = datetime(),
+           n.updatedAt = datetime()
+         ON MATCH SET
+           n += $props,
+           n.usageCount = COALESCE(n.usageCount, 0) + 1,
+           n.lastUsedAt = datetime(),
+           n.updatedAt = datetime()
+         RETURN n.id as id, n.usageCount = 1 as isNew`
+      : `MATCH (g:Graph {graphId: $graphId, userId: $userId})
+         MERGE (g)-[:CONTAINS]->(n:${label} {id: $nodeId})
+         ON CREATE SET
+           n = $props,
+           n.id = $nodeId,
+           n.createdAt = datetime(),
+           n.updatedAt = datetime()
+         ON MATCH SET
+           n += $props,
+           n.updatedAt = datetime()
+         RETURN n.id as id, n.createdAt = n.updatedAt as isNew`;
+
+    const result = await runQuery<{ id: string; isNew: boolean }>(query, {
+      graphId: this.context.graphId,
+      userId: this.context.userId,
+      nodeId: id,
+      props,
+    });
+
+    if (result.length === 0) {
+      throw new Error(`Failed to merge node. Graph ${this.context.graphId} may not exist.`);
+    }
+
+    return { id: result[0].id, isNew: result[0].isNew };
+  }
+
+  /**
    * Update a node by ID
    * Only updates provided properties, preserves others
    */

@@ -48,7 +48,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
   describe('Token Budget Comparison', () => {
     it('should load context with <30K tokens using event-based approach', async () => {
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,  // ~3 sessions worth
         includeTeam: false,
         documentDepth: 2
       });
@@ -66,7 +66,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
       });
 
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,  // ~3 sessions worth
         includeTeam: false,
         documentDepth: 2
       });
@@ -93,7 +93,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
       });
 
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: false,
         documentDepth: 2
       });
@@ -111,7 +111,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
 
     it('should extract document references from event descriptions', async () => {
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: false
       });
 
@@ -131,7 +131,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
       const start = Date.now();
 
       await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: false,
         documentDepth: 2
       });
@@ -153,7 +153,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
 
       const eventStart = Date.now();
       await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: false,
         documentDepth: 2
       });
@@ -172,7 +172,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
   describe('Team Context Loading', () => {
     it('should load team high-signal events when enabled', async () => {
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: true,
         teamEventLimit: 20,
         teamDays: 7
@@ -187,7 +187,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
 
     it('should filter team events to high-signal categories only', async () => {
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: true,
         teamEventLimit: 20
       });
@@ -215,7 +215,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
 
     it('should provide comprehensive context summary', async () => {
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: true
       });
 
@@ -229,7 +229,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
 
     it('should maintain token budget under 30K even with team events', async () => {
       const eventContext = await loadContextFromCursor(mockCursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: true,
         teamEventLimit: 20,
         documentDepth: 2
@@ -251,7 +251,7 @@ describe('Context Loader Comparison (ADR-043)', () => {
       const { cursor } = await import('../../src/lib/session-cursor.js').then(m => m.getOrCreateCursor({}));
 
       const eventContext = await loadContextFromCursor(cursor, {
-        eventLimit: 50,
+        eventLimit: 15,
         includeTeam: false,
         documentDepth: 2
       });

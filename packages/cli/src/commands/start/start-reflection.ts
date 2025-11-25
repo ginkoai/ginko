@@ -132,9 +132,9 @@ export class StartReflectionCommand extends ReflectionCommand {
           const projectInfo = await import('../../utils/helpers.js').then(m => m.getProjectInfo());
           eventContext = await import('../../lib/context-loader-events.js').then(m =>
             m.loadRecentEvents(userEmail, projectInfo.name, {
-              eventLimit: 50,
+              eventLimit: 15,  // ~3 sessions worth of events (ADR-043 optimization)
               includeTeam: options.team || false,
-              teamEventLimit: 20,
+              teamEventLimit: 10,
               documentDepth: 2,
               teamDays: 7,
             })

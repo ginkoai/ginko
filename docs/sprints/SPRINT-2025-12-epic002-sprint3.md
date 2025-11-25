@@ -5,7 +5,7 @@
 **Sprint Goal**: Surface pattern guidance and gotcha warnings to AI at session start
 **Duration**: 2 weeks (2025-12-01 to 2025-12-15)
 **Type**: Feature sprint (UX + API endpoints)
-**Progress:** 50% (2/4 tasks complete)
+**Progress:** 75% (3/4 tasks complete)
 
 **Success Criteria:**
 - Patterns and gotchas visible in ginko start output
@@ -84,17 +84,17 @@ Follow: ADR-043
 ---
 
 ### TASK-3: Pattern Severity & Confidence Levels (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Owner:** Chris Norton
 
 **Goal:** Add metadata to patterns for prioritization and trust
 
 **Acceptance Criteria:**
-- [ ] Pattern nodes have `confidence: high | medium | low` property
-- [ ] Confidence based on usage count and age
-- [ ] Higher confidence patterns shown first in output
-- [ ] API endpoints return confidence in response
+- [x] Pattern nodes have `confidence: high | medium | low` property
+- [x] Confidence based on usage count and age
+- [x] Higher confidence patterns shown first in output
+- [x] API endpoints return confidence in response
 
 **Implementation Notes:**
 Apply pattern_progressive_trust for confidence calculation.
@@ -106,6 +106,14 @@ Watch out for cold-start issues with new patterns (default to medium).
 - Create: `packages/cli/src/utils/pattern-confidence.ts`
 
 Follow: ADR-002
+
+**Completed:** 2025-11-25
+- Created pattern-confidence.ts utility with confidence calculation (usage count + age)
+- Added mergeNode() method to CloudGraphClient for upsert with usage tracking
+- Updated sprint sync to use mergeNode for patterns/gotchas with confidence properties
+- Updated patterns API to return confidenceScore/usageCount and sort by confidence
+- Updated gotchas API to return confidence and sort by severity then confidence
+- Gotchas now include resolutionRate calculation
 
 ---
 

@@ -419,15 +419,24 @@ async function syncSprintToGraph(
 
   // Create Task → Pattern relationships (APPLIES_PATTERN) - EPIC-002 Sprint 2
   // Enables AI pattern reuse: when picking up a task, AI knows which patterns to apply
+  // TASK-3: Track usage count for confidence scoring
   for (const task of graph.tasks) {
     for (const patternId of task.relatedPatterns) {
-      // Ensure Pattern node exists (merge pattern)
-      await client.createNode('Pattern', {
-        id: patternId,
-        category: 'pattern',
-        // Pattern details enriched via context module API
-      });
-      nodeCount++;
+      // Merge Pattern node (upsert) - increments usageCount for confidence
+      const { isNew } = await client.mergeNode(
+        'Pattern',
+        patternId,
+        {
+          id: patternId,
+          category: 'pattern',
+          // Default confidence for new patterns (medium)
+          // Will be recalculated based on usageCount and age
+          confidence: 'medium',
+          confidenceScore: 50,
+        },
+        true // incrementUsage = true
+      );
+      if (isNew) nodeCount++;
 
       // Create APPLIES_PATTERN relationship
       await client.createRelationship(task.id, patternId, {
@@ -453,16 +462,26 @@ async function syncSprintToGraph(
 
   // Create Task → Gotcha relationships (AVOID_GOTCHA) - EPIC-002 Sprint 2
   // Enables AI gotcha awareness: when picking up a task, AI knows what pitfalls to avoid
+  // TASK-3: Track encounters for confidence scoring
   for (const task of graph.tasks) {
     for (const gotchaId of task.relatedGotchas) {
-      // Ensure Gotcha node exists (merge pattern)
-      await client.createNode('Gotcha', {
-        id: gotchaId,
-        category: 'gotcha',
-        severity: 'medium', // Default severity
-        // Gotcha details enriched via context module API or ginko log --category=gotcha
-      });
-      nodeCount++;
+      // Merge Gotcha node (upsert) - increments encounters for confidence
+      const { isNew } = await client.mergeNode(
+        'Gotcha',
+        gotchaId,
+        {
+          id: gotchaId,
+          category: 'gotcha',
+          severity: 'medium', // Default severity
+          // Default confidence for new gotchas
+          confidence: 'medium',
+          confidenceScore: 50,
+          encounters: 0, // Will be incremented via ginko log --category=gotcha
+          resolutions: 0, // Will be incremented via gotcha resolution API
+        },
+        true // incrementUsage = true (tracks reference count)
+      );
+      if (isNew) nodeCount++;
 
       // Create AVOID_GOTCHA relationship
       await client.createRelationship(task.id, gotchaId, {

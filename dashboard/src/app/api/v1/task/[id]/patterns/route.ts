@@ -46,6 +46,8 @@ interface PatternReference {
     title: string;
     category: string;
     confidence: string;
+    confidenceScore: number; // TASK-3: Numeric score for sorting (0-100)
+    usageCount: number; // TASK-3: Number of times pattern has been applied
     content?: string;
   };
   relationship: {
@@ -83,6 +85,7 @@ export async function GET(
 
     // Query task and its APPLIES_PATTERN relationships
     // Also fetch APPLIED_IN relationships to show where patterns are used
+    // TASK-3: Include confidenceScore and usageCount for sorting
     const query = `
       MATCH (t:Task {id: $taskId})
       OPTIONAL MATCH (t)-[r:APPLIES_PATTERN]->(p:Pattern)
@@ -99,6 +102,8 @@ export async function GET(
                patternTitle: p.title,
                patternCategory: p.category,
                patternConfidence: p.confidence,
+               patternConfidenceScore: p.confidenceScore,
+               patternUsageCount: p.usageCount,
                patternContent: p.content,
                source: r.source,
                extractedAt: r.extracted_at,
@@ -131,6 +136,8 @@ export async function GET(
           title: p.patternTitle || p.patternId,
           category: p.patternCategory || 'pattern',
           confidence: p.patternConfidence || 'medium',
+          confidenceScore: p.patternConfidenceScore ?? 50, // TASK-3: Default to medium
+          usageCount: p.patternUsageCount ?? 1, // TASK-3: At least 1 usage
           content: p.patternContent,
         },
         relationship: {
@@ -140,6 +147,9 @@ export async function GET(
         usages: (p.usages || []).filter((u: PatternUsage) => u.fileId),
       });
     }
+
+    // TASK-3: Sort patterns by confidence score (highest first)
+    patterns.sort((a, b) => b.pattern.confidenceScore - a.pattern.confidenceScore);
 
     const response: TaskPatternsResponse = {
       task: {

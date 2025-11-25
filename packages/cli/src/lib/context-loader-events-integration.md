@@ -58,9 +58,9 @@ const { cursor, isNew } = await getOrCreateCursor({});
 
 // 2. Load context from event stream
 const eventContext = await loadContextFromCursor(cursor, {
-  eventLimit: 50,          // My recent events
+  eventLimit: 15,          // ~3 sessions worth of events
   includeTeam: true,       // Include team high-signal events
-  teamEventLimit: 20,      // Team event limit
+  teamEventLimit: 10,      // Team event limit
   categories: undefined,   // All categories (optional filter)
   documentDepth: 2,        // Follow relationships 2 hops
   teamDays: 7             // Team events from last 7 days
