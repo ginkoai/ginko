@@ -1,9 +1,9 @@
 ---
 type: decision
 status: approved
-updated: 2025-01-31
+updated: 2025-11-24
 tags: [ai-optimization, code-organization, developer-experience, contextmcp-mission]
-related: [BP-001-ai-optimized-documentation.md, system-design-overview.md]
+related: [BP-001-ai-optimized-documentation.md, system-design-overview.md, ADR-033, ADR-043]
 priority: critical
 audience: [developer, ai-agent]
 estimated-read: 10-min
@@ -349,6 +349,137 @@ Returns the ADRs a task must follow:
   "count": 2
 }
 ```
+
+## Pattern and Gotcha Integration (EPIC-002 Sprint 2)
+
+### Pattern References
+
+Patterns are reusable code approaches that can be referenced in sprint tasks. When a task references a pattern, the AI receives guidance on implementation approach.
+
+#### Pattern Detection Syntax
+
+Sprint tasks can reference patterns in several ways:
+
+```markdown
+### TASK-6: Implement Event Streaming
+**Status:** Not Started
+
+Use pattern from packages/cli/src/lib/event-queue.ts for the queue implementation.
+Apply pattern_exponential_backoff for retry logic.
+See example from src/services/cache.ts for caching approach.
+
+**Files:**
+- Create: `src/services/event-stream.ts`
+```
+
+The sprint sync detects:
+- `Use pattern from file.ts` → creates `pattern_file_ts` node
+- `pattern_xxx` → creates `pattern_xxx` node
+- `See example from file.ts` → creates pattern reference
+
+#### Graph Relationships
+
+```cypher
+// Task applies a pattern
+(task:Task {id: "task_6"})-[:APPLIES_PATTERN]->(pattern:Pattern {id: "pattern_exponential_backoff"})
+
+// Pattern is applied in files
+(pattern:Pattern)-[:APPLIED_IN]->(file:File {path: "src/services/event-stream.ts"})
+```
+
+### Gotcha Warnings
+
+Gotchas are documented pitfalls that AI assistants should avoid. They capture lessons learned from past mistakes.
+
+#### Gotcha Detection Syntax
+
+Sprint tasks can reference gotchas in several ways:
+
+```markdown
+### TASK-7: Optimize Event Queue
+**Status:** Not Started
+
+Avoid the timer-unref-gotcha that causes process hang.
+Watch out for async cleanup issues in long-running processes.
+Beware of memory leaks when buffering events.
+Gotcha: race conditions in concurrent queue updates.
+
+**Files:**
+- Update: `packages/cli/src/lib/event-queue.ts`
+```
+
+The sprint sync detects:
+- `Avoid X` → creates gotcha node
+- `Watch out for X` → creates gotcha node
+- `Beware of X` → creates gotcha node
+- `Gotcha: X` → creates gotcha node
+- `xxx-gotcha` → creates explicit gotcha reference
+
+#### Graph Relationships
+
+```cypher
+// Task should avoid gotcha
+(task:Task {id: "task_7"})-[:AVOID_GOTCHA]->(gotcha:Gotcha {id: "gotcha_timer_unref"})
+
+// Gotcha has metadata
+(:Gotcha {
+  id: "gotcha_timer_unref",
+  category: "gotcha",
+  severity: "medium"
+})
+```
+
+### Combined Example
+
+A task can reference ADRs, patterns, and gotchas together:
+
+```markdown
+### TASK-8: Refactor Context Loader
+**Status:** In Progress
+**Priority:** HIGH
+
+Apply pattern_cursor for pagination through events.
+Use pattern from context-loader-events.ts for streaming approach.
+Avoid the memory-leak-gotcha when processing large files.
+Watch out for timeout issues with slow connections.
+
+**Files:**
+- Update: `packages/cli/src/lib/context-loader.ts`
+
+Follow: ADR-002, ADR-033, ADR-043
+```
+
+Creates the following graph structure:
+```cypher
+// ADR constraints
+(task:Task)-[:MUST_FOLLOW]->(adr:ADR {id: "adr_002"})
+(task:Task)-[:MUST_FOLLOW]->(adr:ADR {id: "adr_033"})
+(task:Task)-[:MUST_FOLLOW]->(adr:ADR {id: "adr_043"})
+
+// Pattern guidance
+(task:Task)-[:APPLIES_PATTERN]->(pattern:Pattern {id: "pattern_cursor"})
+(task:Task)-[:APPLIES_PATTERN]->(pattern:Pattern {id: "pattern_context_loader_events_ts"})
+
+// Gotcha warnings
+(task:Task)-[:AVOID_GOTCHA]->(gotcha:Gotcha {id: "gotcha_memory_leak"})
+(task:Task)-[:AVOID_GOTCHA]->(gotcha:Gotcha {id: "gotcha_timeout_issues_with_slow_connections"})
+```
+
+### AI Session Context
+
+At session start, the AI receives:
+```
+Sprint: EPIC-002 Sprint 2 (80%)
+  [@] TASK-8: Refactor Context Loader
+      Follow: ADR-002, ADR-033, ADR-043
+      Patterns: cursor, context-loader-events streaming
+      Avoid: memory-leak, timeout issues
+```
+
+This comprehensive context enables the AI to:
+1. **Follow constraints** (ADRs) - mandatory architectural decisions
+2. **Apply patterns** - recommended implementation approaches
+3. **Avoid gotchas** - known pitfalls from past experience
 
 ## References
 - [ADR-001: Infrastructure Stack Selection](./ADR-001-infrastructure-stack-selection.md)
