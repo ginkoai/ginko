@@ -7,8 +7,8 @@
 **Estimated Duration:** 8-12 weeks (4 sprints)
 **Priority:** Critical - Core Differentiator
 
-**Current Sprint:** Phase 1 - Core Infrastructure (sprint_epic002_phase1)
-**Sprint Goal:** Prove AI-native sprint graph value with minimal viable relationships
+**Current Sprint:** Sprint 2 - Pattern & Constraint Library (SPRINT-2025-11-epic002-sprint2)
+**Sprint Goal:** Reduce rework through constraint awareness and pattern reuse
 
 ---
 

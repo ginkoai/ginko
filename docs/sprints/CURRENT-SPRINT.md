@@ -1,15 +1,22 @@
 # Current Sprint Status
 
 **Status**: Active
-**Current Sprint**: SPRINT-2025-11-epic002-phase1
+**Current Sprint**: SPRINT-2025-11-epic002-sprint2
 **Mode**: Think & Build
 **Updated**: 2025-11-25
 
 ## Current Status
 
-**Active Sprint**: [EPIC-002 Phase 1 - Core Infrastructure](./SPRINT-2025-11-epic002-phase1.md)
+**Active Sprint**: [EPIC-002 Sprint 2 - Pattern & Constraint Library](./SPRINT-2025-11-epic002-sprint2.md)
 
-See: SPRINT-2025-11-epic002-phase1.md
+See: SPRINT-2025-11-epic002-sprint2.md
+
+### Recently Completed
+
+**EPIC-002 Sprint 1**: Core Infrastructure ✅ (2025-11-24)
+- Task → MUST_FOLLOW → ADR relationships operational
+- 18 integration tests, 17 unit tests
+- Query performance baselined
 
 ### What's Next?
 
