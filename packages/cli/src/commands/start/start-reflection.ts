@@ -1044,6 +1044,10 @@ Example output structure:
             },
             source: 'sprint_definition',
           })),
+          // Pattern guidance for current task (EPIC-002 Sprint 3)
+          patterns: sprintChecklist.currentTask.relatedPatterns || [],
+          // Gotcha warnings for current task (EPIC-002 Sprint 3)
+          gotchas: sprintChecklist.currentTask.relatedGotchas || [],
         } : undefined,
         tasks: (sprintChecklist.tasks || []).map((t: any) => ({
           id: t.id,

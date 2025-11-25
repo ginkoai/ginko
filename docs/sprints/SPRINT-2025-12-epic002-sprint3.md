@@ -5,7 +5,7 @@
 **Sprint Goal**: Surface pattern guidance and gotcha warnings to AI at session start
 **Duration**: 2 weeks (2025-12-01 to 2025-12-15)
 **Type**: Feature sprint (UX + API endpoints)
-**Progress:** 0% (0/4 tasks complete)
+**Progress:** 50% (2/4 tasks complete)
 
 **Success Criteria:**
 - Patterns and gotchas visible in ginko start output
@@ -18,17 +18,17 @@
 ## Sprint Tasks
 
 ### TASK-1: Display Patterns & Gotchas in ginko start (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Owner:** Chris Norton
 
 **Goal:** Show pattern guidance and gotcha warnings alongside ADR constraints in session start
 
 **Acceptance Criteria:**
-- [ ] Patterns displayed under current task: `Patterns: cursor, exponential-backoff`
-- [ ] Gotchas displayed under current task: `Avoid: memory-leak, timeout-issues`
-- [ ] Work mode affects verbosity (Hack & Ship minimal, Full Planning detailed)
-- [ ] Integration with existing sprint checklist display
+- [x] Patterns displayed under current task: `Apply: output-formatter.ts`
+- [x] Gotchas displayed under current task: `Avoid: verbose-output-gotcha`
+- [ ] Work mode affects verbosity (deferred - Hack & Ship minimal, Full Planning detailed)
+- [x] Integration with existing sprint checklist display
 
 **Implementation Notes:**
 Use pattern from packages/cli/src/lib/output-formatter.ts for display structure.
@@ -42,20 +42,27 @@ Avoid the verbose-output-gotcha that overwhelms users with too much context.
 
 Follow: ADR-002, ADR-033, ADR-043
 
+**Completed:** 2025-11-25
+- Added patterns/gotchas to AISessionContext interface
+- Added display in formatHumanOutput() with color coding (blue=patterns, red=gotchas)
+- Updated buildAIContext() to populate patterns/gotchas from sprint task
+- Improved gotcha extraction regex to prioritize explicit kebab-case names
+- Fixed pre-existing type errors in log.ts and event-logger.ts (added 'gotcha' category)
+
 ---
 
 ### TASK-2: API Endpoints for Pattern & Gotcha Queries (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Owner:** Chris Norton
 
 **Goal:** Enable programmatic access to task patterns and gotchas
 
 **Acceptance Criteria:**
-- [ ] GET /api/v1/task/:id/patterns - returns patterns for a task
-- [ ] GET /api/v1/task/:id/gotchas - returns gotchas for a task
-- [ ] GET /api/v1/pattern/:id/usages - returns where a pattern is applied
-- [ ] Response includes relationship metadata (source, extracted_at)
+- [x] GET /api/v1/task/:id/patterns - returns patterns for a task
+- [x] GET /api/v1/task/:id/gotchas - returns gotchas for a task
+- [x] GET /api/v1/pattern/:id/usages - returns where a pattern is applied
+- [x] Response includes relationship metadata (source, extracted_at)
 
 **Implementation Notes:**
 See example from dashboard/src/app/api/v1/task/[id]/constraints/route.ts for structure.
@@ -67,6 +74,12 @@ Use pattern_cypher_query for Neo4j graph queries.
 - Create: `dashboard/src/app/api/v1/pattern/[id]/usages/route.ts`
 
 Follow: ADR-043
+
+**Completed:** 2025-11-25
+- Created patterns endpoint with APPLIES_PATTERN relationship queries
+- Created gotchas endpoint with AVOID_GOTCHA relationship queries, sorted by severity
+- Created pattern usages endpoint showing APPLIED_IN (files) and APPLIES_PATTERN (tasks)
+- All endpoints follow constraints route pattern with relationship metadata
 
 ---
 

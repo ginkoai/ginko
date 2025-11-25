@@ -365,7 +365,8 @@ function mapCategoryToInsightType(category: LogCategory): InsightType {
     fix: 'gotcha',
     feature: 'pattern',
     git: 'configuration',
-    achievement: 'discovery'
+    achievement: 'discovery',
+    gotcha: 'gotcha'
   };
 
   return mapping[category] || 'discovery';
@@ -440,7 +441,8 @@ function estimateTimeSaving(category: LogCategory, impact: LogImpact): number {
     decision: 90,
     insight: 120,
     git: 15,
-    achievement: 30
+    achievement: 30,
+    gotcha: 45
   };
 
   const impactMultiplier: Record<LogImpact, number> = {

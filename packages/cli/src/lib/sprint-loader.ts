@@ -286,26 +286,33 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
       }
 
       // Extract gotcha references from any line in task section (EPIC-002 Sprint 2)
-      // Gotchas can be referenced as:
-      // - "Avoid gotcha: timer keeps process alive"
-      // - "Watch out for X"
-      // - Explicit gotcha names like "timer-gotcha", "async-gotcha"
-      const gotchaWarningMatches = line.matchAll(/(?:avoid|watch out for|beware of|gotcha:)\s+[`"]?([^`".\n]+)[`"]?/gi);
-      for (const match of gotchaWarningMatches) {
-        const gotchaId = match[1].trim().toLowerCase().replace(/\s+/g, '-');
-        parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
-        if (!parsingTask.relatedGotchas.includes(gotchaId)) {
-          parsingTask.relatedGotchas.push(gotchaId);
-        }
-      }
-
-      // Match explicit gotcha names (kebab-case with -gotcha suffix)
+      // Priority: explicit kebab-case gotcha names like "timer-gotcha", "async-gotcha"
       const explicitGotchaMatches = line.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha)\b/gi);
       for (const match of explicitGotchaMatches) {
         const gotchaId = match[1].toLowerCase();
         parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
         if (!parsingTask.relatedGotchas.includes(gotchaId)) {
           parsingTask.relatedGotchas.push(gotchaId);
+        }
+      }
+
+      // Fallback: extract from warning phrases only if no explicit gotcha found on this line
+      // - "Avoid gotcha: timer keeps process alive"
+      // - "Watch out for X"
+      // - "Beware of Y"
+      if (!line.match(/[a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha/i)) {
+        const gotchaWarningMatches = line.matchAll(/(?:avoid|watch out for|beware of|gotcha:)\s+[`"]?([^`".\n]+)[`"]?/gi);
+        for (const match of gotchaWarningMatches) {
+          // Skip if the phrase contains "gotcha" - it's likely referring to an explicit gotcha
+          if (match[1].toLowerCase().includes('gotcha')) continue;
+          const gotchaId = match[1].trim().toLowerCase().replace(/\s+/g, '-');
+          // Only add if reasonably short (likely a gotcha name, not a sentence)
+          if (gotchaId.length <= 40) {
+            parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
+            if (!parsingTask.relatedGotchas.includes(gotchaId)) {
+              parsingTask.relatedGotchas.push(gotchaId);
+            }
+          }
         }
       }
     }
@@ -460,6 +467,16 @@ export function formatCurrentTaskDetails(task: Task): string {
 
   if (task.effort) {
     output += `  Effort: ${task.effort}\n`;
+  }
+
+  // EPIC-002 Sprint 3: Show pattern guidance (TASK-1)
+  if (task.relatedPatterns && task.relatedPatterns.length > 0) {
+    output += `  Apply: ${task.relatedPatterns.join(', ')}\n`;
+  }
+
+  // EPIC-002 Sprint 3: Show gotcha warnings (TASK-1)
+  if (task.relatedGotchas && task.relatedGotchas.length > 0) {
+    output += `  Avoid: ${task.relatedGotchas.join(', ')}\n`;
   }
 
   return output;

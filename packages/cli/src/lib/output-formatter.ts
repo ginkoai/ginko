@@ -99,6 +99,10 @@ export interface AISessionContext {
         };
         source: string;
       }>;
+      /** Pattern guidance for this task (EPIC-002 Sprint 3) */
+      patterns?: string[];
+      /** Gotcha warnings for this task (EPIC-002 Sprint 3) */
+      gotchas?: string[];
     };
     tasks: Array<{
       id: string;
@@ -216,6 +220,18 @@ export function formatHumanOutput(
           .map(c => c.adr.id)
           .join(', ');
         lines.push(chalk.dim('      Follow: ') + chalk.magenta(adrList));
+      }
+
+      // Show pattern guidance for current task (EPIC-002 Sprint 3)
+      if (context.sprint.currentTask.patterns && context.sprint.currentTask.patterns.length > 0) {
+        const patternList = context.sprint.currentTask.patterns.slice(0, 3).join(', ');
+        lines.push(chalk.dim('      Apply: ') + chalk.blue(patternList));
+      }
+
+      // Show gotcha warnings for current task (EPIC-002 Sprint 3)
+      if (context.sprint.currentTask.gotchas && context.sprint.currentTask.gotchas.length > 0) {
+        const gotchaList = context.sprint.currentTask.gotchas.slice(0, 2).join(', ');
+        lines.push(chalk.dim('      Avoid: ') + chalk.red(gotchaList));
       }
     }
   }

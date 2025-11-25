@@ -1,15 +1,15 @@
 # Current Sprint Status
 
 **Status**: Active
-**Current Sprint**: SPRINT-2025-11-epic002-sprint2
+**Current Sprint**: SPRINT-2025-12-epic002-sprint3
 **Mode**: Think & Build
 **Updated**: 2025-11-25
 
 ## Current Status
 
-**Active Sprint**: [EPIC-002 Sprint 2 - Pattern & Constraint Library](./SPRINT-2025-11-epic002-sprint2.md)
+**Active Sprint**: [EPIC-002 Sprint 3 - Pattern & Gotcha Surfacing](./SPRINT-2025-12-epic002-sprint3.md)
 
-See: SPRINT-2025-11-epic002-sprint2.md
+See: SPRINT-2025-12-epic002-sprint3.md
 
 ### Recently Completed
 

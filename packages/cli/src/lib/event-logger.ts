@@ -19,7 +19,7 @@ import { execSync } from 'child_process';
  * Event entry structure (aligned with ADR-043)
  */
 export interface EventEntry {
-  category: 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
+  category: 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement' | 'gotcha';
   description: string;
   files?: string[];
   impact?: 'high' | 'medium' | 'low';
