@@ -1,10 +1,14 @@
 # EPIC-002: AI-Native Sprint Graphs
 
-**Status:** Proposed
+**Status:** In Progress
 **Created:** 2025-11-21
+**Started:** 2025-11-24
 **Owner:** Chris Norton
 **Estimated Duration:** 8-12 weeks (4 sprints)
 **Priority:** Critical - Core Differentiator
+
+**Current Sprint:** Phase 1 - Core Infrastructure (sprint_epic002_phase1)
+**Sprint Goal:** Prove AI-native sprint graph value with minimal viable relationships
 
 ---
 
