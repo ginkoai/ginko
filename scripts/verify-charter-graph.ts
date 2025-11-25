@@ -1,13 +1,16 @@
 /**
  * Verify charter nodes and relationships in Neo4j
+ *
+ * Usage: npx tsx scripts/verify-charter-graph.ts
  */
 
 import neo4j from 'neo4j-driver';
+import { config, validateConfig } from './lib/config';
 
-const NEO4J_URI = process.env.NEO4J_URI || 'neo4j+s://b475ee2d.databases.neo4j.io';
-const NEO4J_USER = process.env.NEO4J_USER || 'neo4j';
-const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD || 'znBGJwInpD-1QYA8tfx_fRAFX2ZqAMtm4FINzALoXog';
-const GRAPH_ID = 'gin_1762125961056_dg4bsd';
+validateConfig();
+
+const { uri: NEO4J_URI, user: NEO4J_USER, password: NEO4J_PASSWORD } = config.neo4j;
+const GRAPH_ID = config.graph.id;
 const USER_ID = 'user_dGVzdF90';
 
 async function verifyCharterGraph() {

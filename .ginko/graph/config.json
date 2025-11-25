@@ -1,8 +1,8 @@
 {
   "version": "1.0",
-  "graphId": "gin_1763490304054_ecc735",
-  "namespace": "user-placeholder/cli",
-  "projectName": "cli",
+  "graphId": "gin_1762125961056_dg4bsd",
+  "namespace": "chris/ginko",
+  "projectName": "ginko",
   "visibility": "private",
   "apiEndpoint": "https://app.ginkoai.com",
   "documents": {
