@@ -42,6 +42,7 @@ export interface Task {
   pattern?: string;     // Pattern reference (e.g., "log.ts:45-67")
   effort?: string;      // Time estimate (e.g., "4-6h")
   priority?: string;    // Priority level
+  relatedADRs?: string[]; // ADR references (e.g., ["ADR-002", "ADR-043"]) - EPIC-002
 }
 
 /**
@@ -245,6 +246,18 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
         j++;
       }
       continue;
+    }
+
+    // Extract ADR references from any line in task section (EPIC-002 Phase 1)
+    if (parsingTask) {
+      const adrMatches = line.matchAll(/ADR-(\d+)/gi);
+      for (const match of adrMatches) {
+        const adrId = `ADR-${match[1].padStart(3, '0')}`;
+        parsingTask.relatedADRs = parsingTask.relatedADRs || [];
+        if (!parsingTask.relatedADRs.includes(adrId)) {
+          parsingTask.relatedADRs.push(adrId);
+        }
+      }
     }
   }
 

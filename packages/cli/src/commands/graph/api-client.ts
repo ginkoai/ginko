@@ -390,6 +390,39 @@ export class GraphApiClient {
       events
     });
   }
+
+  /**
+   * Get ADR constraints for a task (EPIC-002 Phase 1)
+   * Returns MUST_FOLLOW relationships between task and ADRs
+   */
+  async getTaskConstraints(taskId: string): Promise<TaskConstraintsResponse> {
+    return this.request<TaskConstraintsResponse>('GET', `/api/v1/task/${taskId}/constraints`);
+  }
+}
+
+/**
+ * Task constraints response from API (EPIC-002 Phase 1)
+ */
+export interface TaskConstraintsResponse {
+  task: {
+    id: string;
+    title: string;
+    status: string;
+  };
+  constraints: Array<{
+    adr: {
+      id: string;
+      title: string;
+      status: string;
+      summary: string;
+      filePath?: string;
+    };
+    relationship: {
+      source: string;
+      extracted_at: string;
+    };
+  }>;
+  count: number;
 }
 
 /**

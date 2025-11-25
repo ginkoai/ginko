@@ -346,6 +346,27 @@ async function syncSprintToGraph(
     }
   }
 
+  // Create Task → ADR relationships (MUST_FOLLOW) - EPIC-002 Phase 1
+  // Enables AI constraint awareness: when picking up a task, AI knows which ADRs to follow
+  for (const task of graph.tasks) {
+    for (const adrId of task.relatedADRs) {
+      // Ensure ADR node exists (merge pattern)
+      await client.createNode('ADR', {
+        id: adrId,
+        // Minimal data - ADR details loaded separately via adr-loader
+      });
+      nodeCount++;
+
+      // Create MUST_FOLLOW relationship
+      await client.createRelationship(task.id, adrId, {
+        type: 'MUST_FOLLOW',
+        source: 'sprint_definition', // Where the reference came from
+        extracted_at: new Date().toISOString(),
+      });
+      relCount++;
+    }
+  }
+
   return {
     nodes: nodeCount,
     relationships: relCount,

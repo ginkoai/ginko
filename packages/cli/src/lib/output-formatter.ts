@@ -90,6 +90,15 @@ export interface AISessionContext {
       status: string;
       files: string[];
       priority: string;
+      /** ADR constraints this task must follow (EPIC-002 Phase 1) */
+      constraints?: Array<{
+        adr: {
+          id: string;
+          title: string;
+          summary?: string;
+        };
+        source: string;
+      }>;
     };
     tasks: Array<{
       id: string;
@@ -197,6 +206,14 @@ export function formatHumanOutput(
     // Show current task if available
     if (context.sprint.currentTask) {
       lines.push(chalk.dim('  [@] ') + chalk.yellow(`${context.sprint.currentTask.id}: ${context.sprint.currentTask.title}`));
+
+      // Show ADR constraints for current task (EPIC-002 Phase 1)
+      if (context.sprint.currentTask.constraints && context.sprint.currentTask.constraints.length > 0) {
+        const adrList = context.sprint.currentTask.constraints
+          .map(c => c.adr.id)
+          .join(', ');
+        lines.push(chalk.dim('      Follow: ') + chalk.magenta(adrList));
+      }
     }
   }
 

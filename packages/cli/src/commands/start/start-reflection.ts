@@ -1031,6 +1031,14 @@ Example output structure:
           status: sprintChecklist.currentTask.status || 'in_progress',
           files: sprintChecklist.currentTask.files || [],
           priority: sprintChecklist.currentTask.priority || 'medium',
+          // ADR constraints for current task (EPIC-002 Phase 1)
+          constraints: sprintChecklist.currentTask.relatedADRs?.map((adrId: string) => ({
+            adr: {
+              id: adrId,
+              title: adrId, // Title will be enriched by API if available
+            },
+            source: 'sprint_definition',
+          })),
         } : undefined,
         tasks: (sprintChecklist.tasks || []).map((t: any) => ({
           id: t.id,

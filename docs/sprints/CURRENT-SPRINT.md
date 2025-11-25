@@ -1,13 +1,15 @@
 # Current Sprint Status
 
-**Status**: Between Sprints
-**Last Completed**: SPRINT-2025-003-polish-ux
-**Mode**: Ready for next sprint
-**Updated**: 2025-11-24
+**Status**: Active
+**Current Sprint**: SPRINT-2025-11-epic002-phase1
+**Mode**: Think & Build
+**Updated**: 2025-11-25
 
 ## Current Status
 
-**No active sprint** - EPIC-001 complete, polish sprint complete.
+**Active Sprint**: [EPIC-002 Phase 1 - Core Infrastructure](./SPRINT-2025-11-epic002-phase1.md)
+
+See: SPRINT-2025-11-epic002-phase1.md
 
 ### What's Next?
 
