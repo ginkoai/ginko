@@ -496,10 +496,45 @@
       "relevance": "critical",
       "created": "2025-11-21T21:58:32.720Z",
       "sessionId": "session-chris-at-watchhill-ai-1763762312703"
+    },
+    {
+      "filename": "gotcha-fixed-resume-point-selecting-oldest-event-instead-.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-24T23:08:13.358Z",
+      "sessionId": "session-chris-at-watchhill-ai-1764025693343"
+    },
+    {
+      "filename": "gotcha-fixed-two-display-bugs-in-ginko-start-1-last-0-day.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-24T23:18:23.573Z",
+      "sessionId": "session-chris-at-watchhill-ai-1764026303560"
+    },
+    {
+      "filename": "decision-decision-doc-taxonomy-established.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "git"
+      ],
+      "relevance": "critical",
+      "created": "2025-11-24T23:56:20.163Z",
+      "sessionId": "session-chris-at-watchhill-ai-1764028580151"
     }
   ],
-  "lastUpdated": "2025-11-21T21:58:32.721Z",
-  "totalModules": 33,
+  "lastUpdated": "2025-11-24T23:56:20.163Z",
+  "totalModules": 36,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

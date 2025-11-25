@@ -293,6 +293,63 @@ ContextMCP's approach works so well that implementing it accelerated our own dev
 - **✅ Effectiveness Review**: Measured immediately (originally: after 1 week)  
 - **🔄 Full Review**: Will conduct after 1 month of continued usage
 
+## MUST_FOLLOW Pattern (EPIC-002)
+
+### Integration with Sprint Graphs
+
+ADR-002 is automatically linked to sprint tasks via the `MUST_FOLLOW` relationship in Ginko's knowledge graph. When a task references ADR-002, the AI receives this ADR as context at session start.
+
+### Example Sprint Task Definition
+
+```markdown
+### TASK-5: Add frontmatter to new authentication module
+**Status:** Not Started
+**Priority:** HIGH
+**Owner:** Developer Name
+
+**Goal:** Apply ADR-002 frontmatter standards to auth module
+
+**Files:**
+- Update: `src/auth/provider.ts`
+- Update: `src/auth/hooks.ts`
+
+Follow: ADR-002, ADR-043
+```
+
+### Graph Relationship
+
+The sprint sync creates:
+```cypher
+(task:Task {id: "task_5"})-[:MUST_FOLLOW]->(adr:ADR {id: "adr_002"})
+```
+
+### AI Constraint Awareness
+
+At session start, `ginko start` displays:
+```
+Sprint: Active Sprint (25%)
+  [@] TASK-5: Add frontmatter to new authentication module
+      Follow: ADR-002, ADR-043
+```
+
+This ensures the AI assistant follows the correct frontmatter patterns when implementing the task.
+
+### Querying Task Constraints
+
+API endpoint: `GET /api/v1/task/{id}/constraints`
+
+Returns the ADRs a task must follow:
+```json
+{
+  "task": { "id": "task_5", "title": "Add frontmatter..." },
+  "constraints": [
+    { "adr": { "id": "adr_002", "title": "AI-Readable Code File Frontmatter" } },
+    { "adr": { "id": "adr_043", "title": "Event-Based Context Loading" } }
+  ],
+  "count": 2
+}
+```
+
 ## References
 - [ADR-001: Infrastructure Stack Selection](./ADR-001-infrastructure-stack-selection.md)
 - [BP-001: AI-Optimized Documentation](../best-practices/BP-001-ai-optimized-documentation.md)
