@@ -255,8 +255,8 @@ async function viewEpics(projectRoot: string): Promise<void> {
 async function syncEpicToGraph(projectRoot: string): Promise<void> {
   console.log(chalk.blue('\n📡 Syncing epic to graph...\n'));
 
-  // Check for graph configuration
-  const graphConfigPath = path.join(projectRoot, '.ginko', 'graph.json');
+  // Check for graph configuration (in .ginko/graph/config.json)
+  const graphConfigPath = path.join(projectRoot, '.ginko', 'graph', 'config.json');
   if (!existsSync(graphConfigPath)) {
     console.log(chalk.yellow('⚠️  Graph not configured'));
     console.log(chalk.dim('   Run `ginko graph init` first\n'));
