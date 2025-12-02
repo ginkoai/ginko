@@ -9,6 +9,8 @@
 ginko start                    # Begin/resume session (< 2s startup)
 ginko log "description"        # Log insights (defensive logging)
 ginko handoff "summary"        # Optional session handoff
+ginko charter                  # Create project charter (AI-mediated)
+ginko epic                     # Create epic with sprints (AI-mediated)
 ```
 
 ### AI Assistant Instructions
@@ -22,6 +24,8 @@ When the user types a **single word** that matches a ginko command (`start`, `ha
 - User input: `handoff` → Execute: `ginko handoff`
 - User input: `status` → Execute: `ginko status`
 - User input: `log` → Ask for description, then execute
+- User input: `charter` → Execute: `ginko charter`, then guide conversation
+- User input: `epic` → Execute: `ginko epic`, then guide conversation
 
 **DO NOT:**
 - Announce what you're about to do
@@ -247,6 +251,69 @@ Activate these reflexes naturally during work (not mechanical checklists):
 - **Hack & Ship:** Less frequent, focus on speed
 - **Think & Build:** Balanced, pattern-aware (default)
 - **Full Planning:** Frequent, strict hierarchy checking
+
+---
+
+## Answering Project Questions (EPIC-003)
+
+When users ask factual questions about the project, query available data sources directly.
+
+### Graph API - Requires `GINKO_BEARER_TOKEN` and `GINKO_GRAPH_ID`
+
+**Setup credentials:**
+1. Run `ginko login` to authenticate (stores token in ~/.ginko/auth.json)
+2. Run `ginko graph init` to create graph (stores ID in .ginko/graph/config.json)
+3. Export for shell use: `export GINKO_BEARER_TOKEN=$(cat ~/.ginko/auth.json | jq -r .api_key)`
+4. Export graph ID: `export GINKO_GRAPH_ID=$(cat .ginko/graph/config.json | jq -r .graphId)`
+
+**Semantic search** - finds content similar to query:
+```bash
+curl -X POST https://app.ginkoai.com/api/v1/graph/query \
+  -H "Authorization: Bearer $GINKO_BEARER_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"graphId": "'"$GINKO_GRAPH_ID"'", "query": "YOUR_SEARCH_TERM", "limit": 5}'
+```
+
+**List nodes by type** (ADR, PRD, Pattern, Gotcha, Event, Sprint, Task):
+```bash
+curl "https://app.ginkoai.com/api/v1/graph/nodes?graphId=$GINKO_GRAPH_ID&labels=ADR&limit=10" \
+  -H "Authorization: Bearer $GINKO_BEARER_TOKEN"
+```
+
+**Filter by property** (e.g., events by user):
+```bash
+curl "https://app.ginkoai.com/api/v1/graph/nodes?graphId=$GINKO_GRAPH_ID&labels=Event&user_id=USER_EMAIL&limit=20" \
+  -H "Authorization: Bearer $GINKO_BEARER_TOKEN"
+```
+
+### Local Files (Fallback when graph unavailable)
+
+| Question Type | File Location |
+|--------------|---------------|
+| Sprint progress | `docs/sprints/CURRENT-SPRINT.md` |
+| Architecture decisions | `docs/adr/ADR-*.md` |
+| Project goals | `docs/PROJECT-CHARTER.md` |
+| Recent activity | `.ginko/sessions/[user]/current-events.jsonl` |
+| Session logs | `.ginko/sessions/[user]/current-session-log.md` |
+
+### Common Query Recipes
+
+**"What's our sprint progress?"**
+→ Read `docs/sprints/CURRENT-SPRINT.md`, count checkboxes:
+```bash
+grep -c "\[x\]" docs/sprints/CURRENT-SPRINT.md  # complete
+grep -c "\[@\]" docs/sprints/CURRENT-SPRINT.md  # in progress
+grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
+```
+
+**"How do we handle X?" / "What's our approach to X?"**
+→ Semantic search: `{"query": "X"}` OR local: `grep -l -i "X" docs/adr/*.md`
+
+**"What is [person] working on?"**
+→ Query events by user_id OR: `grep -i "person" .ginko/sessions/*/current-session-log.md`
+
+**"Show me ADRs about [topic]"**
+→ Semantic search with `labels=ADR` filter OR: `grep -l -i "topic" docs/adr/*.md`
 
 ---
 
@@ -573,4 +640,4 @@ npm run test:cli           # Test CLI only
 
 ---
 
-*Last updated: 2025-11-06 | Version: 2.0 (optimized)*
+*Last updated: 2025-11-25 | Version: 2.1 (EPIC-003: Natural Language Queries)*

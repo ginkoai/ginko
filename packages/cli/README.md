@@ -33,6 +33,19 @@ ginko status
 - `ginko start [sessionId]` - Start or resume a session
 - `ginko handoff [message]` - Create a session handoff
 - `ginko status` - Show current session status
+- `ginko log [description]` - Log events to session (ADR-033 defensive logging)
+
+### Planning & Organization
+- `ginko charter` - Create and manage project charter (AI-assisted)
+  - Default: Output template for AI-mediated conversation
+  - `--view` - View existing charter
+  - `--edit` - Edit charter conversationally
+  - `--no-ai` - Interactive CLI mode
+- `ginko epic` - Create and manage epics with sprint breakdown (AI-assisted)
+  - Default: Output template for AI-mediated conversation
+  - `--list` - List existing epics
+  - `--view` - View epic details with sprint progress
+  - `--sync` - Sync epic to graph database
 
 ### Context & Configuration
 - `ginko context` - Manage session context
@@ -178,6 +191,27 @@ ginko ship "Add user authentication"  # Creates PR
 ginko context --add "src/auth/*"      # Track auth files
 ginko context --show                  # View tracked files
 ginko compact                          # Clean up old context
+```
+
+### Planning with Epics
+```bash
+ginko epic                           # AI guides epic creation conversation
+# AI asks about goals, success criteria, scope, sprints
+# Creates docs/sprints/EPIC-XXX-name.md and sprint files
+
+ginko epic --list                    # List all epics
+ginko epic --view                    # View epic with sprint progress
+ginko epic --sync                    # Sync to graph database
+```
+
+### Project Charter
+```bash
+ginko charter                        # AI guides charter conversation
+# AI asks about purpose, users, success criteria, scope
+# Creates docs/PROJECT-CHARTER.md
+
+ginko charter --view                 # View existing charter
+ginko charter --edit                 # Refine charter conversationally
 ```
 
 ## Future Features
