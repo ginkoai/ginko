@@ -57,6 +57,7 @@ import { logoutCommand } from './commands/logout.js';
 import { whoamiCommand } from './commands/whoami.js';
 import { handoffCommand } from './commands/handoff.js';
 import { charterCommand, charterExamples } from './commands/charter.js';
+import { epicCommand, epicExamples } from './commands/epic.js';
 
 const program = new Command();
 
@@ -132,6 +133,26 @@ program
       return;
     }
     return charterCommand(options);
+  });
+
+program
+  .command('epic')
+  .description('Create and manage epics with sprint breakdown (AI-assisted by default)')
+  .option('--no-ai', 'Run interactive mode instead of outputting template')
+  .option('--list', 'List existing epics')
+  .option('--view', 'View epic details with sprint breakdown')
+  .option('--sync', 'Sync epic to graph database')
+  .option('--examples', 'Show epic command examples')
+  .action((options) => {
+    if (options.examples) {
+      console.log(chalk.green('\n📋 Epic Command Examples:\n'));
+      epicExamples.forEach(example => {
+        console.log(chalk.dim(`  ${example}`));
+      });
+      console.log('');
+      return;
+    }
+    return epicCommand(options);
   });
 
 program

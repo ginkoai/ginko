@@ -474,6 +474,30 @@ export class GraphApiClient {
       `/api/v1/gotcha/${gotchaId}/resolve`
     );
   }
+
+  /**
+   * Sync an epic to the graph database
+   * Creates Epic node with relationships to sprints
+   */
+  async syncEpic(epicData: EpicSyncData): Promise<EpicSyncResponse> {
+    return this.request<EpicSyncResponse>(
+      'POST',
+      '/api/v1/epic/sync',
+      epicData
+    );
+  }
+
+  /**
+   * Sync a sprint to the graph database
+   * Creates Sprint and Task nodes with relationships
+   */
+  async syncSprint(graphId: string, sprintContent: string): Promise<SprintSyncResponse> {
+    return this.request<SprintSyncResponse>(
+      'POST',
+      '/api/v1/sprint/sync',
+      { graphId, sprintContent }
+    );
+  }
 }
 
 /**
@@ -616,6 +640,44 @@ export interface TaskGotchasResponse {
     };
   }>;
   count: number;
+}
+
+/**
+ * Sync an epic to the graph database
+ */
+export interface EpicSyncData {
+  id: string;
+  title: string;
+  goal: string;
+  vision: string;
+  status: string;
+  progress: number;
+  successCriteria: string[];
+  inScope: string[];
+  outOfScope: string[];
+}
+
+export interface EpicSyncResponse {
+  success: boolean;
+  epic: {
+    id: string;
+    title: string;
+    status: string;
+  };
+  nodesCreated: number;
+  relationshipsCreated: number;
+}
+
+export interface SprintSyncResponse {
+  success: boolean;
+  sprint: {
+    id: string;
+    name: string;
+    progress: number;
+  };
+  nodes: number;
+  relationships: number;
+  nextTask?: string;
 }
 
 /**
