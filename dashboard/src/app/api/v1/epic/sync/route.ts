@@ -108,6 +108,19 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Convert Neo4j Integer/BigInt to JavaScript number
+ */
+function toNumber(value: any): number {
+  if (typeof value === 'bigint') {
+    return Number(value);
+  }
+  if (typeof value === 'object' && value !== null && 'toNumber' in value) {
+    return value.toNumber();
+  }
+  return Number(value) || 0;
+}
+
+/**
  * Sync epic data to Neo4j graph
  */
 async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse> {
@@ -145,7 +158,7 @@ async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse>
     outOfScope: epic.outOfScope || [],
   });
 
-  if (epicResult.length > 0 && epicResult[0].created === 1) {
+  if (epicResult.length > 0 && toNumber(epicResult[0].created) === 1) {
     nodesCreated += 1;
   }
 
@@ -206,7 +219,7 @@ async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse>
   });
 
   if (linkResult.length > 0) {
-    relationshipsCreated += linkResult[0].newLinks || 0;
+    relationshipsCreated += toNumber(linkResult[0].newLinks);
   }
 
   return {
