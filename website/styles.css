@@ -152,6 +152,7 @@ body {
     color: var(--color-text);
     background-color: var(--color-bg);
     transition: background-color var(--transition-base), color var(--transition-base);
+    overflow-x: hidden; /* Prevent horizontal scroll from corner brackets */
 }
 
 /* Typography */
@@ -373,7 +374,7 @@ html:not([data-theme="dark"]) .theme-icon-dark {
 
 .btn-secondary:hover {
     background-color: var(--color-accent);
-    color: white;
+    color: #0A0A0A;
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
@@ -675,6 +676,7 @@ pre {
 }
 
 .hero-content {
+    position: relative;
     text-align: center;
     max-width: 900px;
     margin: 0 auto;
@@ -922,6 +924,7 @@ pre {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: var(--space-8);
+    padding: var(--space-2); /* Prevent corner brackets from overflowing viewport */
 }
 
 .problem-card {
@@ -1017,7 +1020,7 @@ pre {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     background-color: var(--color-accent);
-    color: white;
+    color: #0A0A0A;
     border-radius: 50%;
 }
 
@@ -1086,7 +1089,7 @@ pre {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-bold);
     background-color: var(--color-accent);
-    color: white;
+    color: #0A0A0A;
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     margin-left: var(--space-2);
@@ -1467,7 +1470,7 @@ pre {
     font-family: var(--font-mono);
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
-    color: white;
+    color: var(--color-accent);
     margin-bottom: var(--space-4);
 }
 

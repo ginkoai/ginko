@@ -1,21 +1,22 @@
-# Ginko Marketing Site Design Direction
+# Ginko Marketing Site Design Direction & Style Guide
 
 **Epic:** EPIC-003 Sprint 1
 **Created:** 2025-12-02
-**Status:** APPROVED
+**Updated:** 2025-12-03
+**Status:** IMPLEMENTED
 
 ## Confirmed Decisions
 
-- **Primary Accent:** #22C55E (ginko green) ✓
-- **Theme Support:** Dual themes from day one (light + dark) ✓
-- **Style Priority:** Brass Hands aesthetic (industrial precision, corner brackets) with usability as top priority ✓
+- **Primary Accent:** #aeff00 (electric lime ginko green)
+- **Theme Support:** Dual themes (light + dark) via `data-theme` attribute
+- **Style Priority:** Brass Hands aesthetic (industrial precision, corner brackets)
 
 ---
 
 ## Design Philosophy
 
 Synthesized from style references:
-- **Brass Hands** - Industrial precision, monospace authenticity, minimal color palette
+- **Brass Hands** - Industrial precision, monospace authenticity, corner bracket decorations
 - **Stripe Dev** - Developer-first patterns, keyboard shortcuts, clean hierarchy
 - **Cloudflare Docs** - Scannable organization, hands-on pathways, dual theme support
 - **Monospace Web** - Typography as structure, constraint-driven design, terminal authenticity
@@ -24,29 +25,54 @@ Synthesized from style references:
 
 **"Technical precision meets developer empathy"**
 
-The design should feel like a well-crafted tool: precise, predictable, and efficient. It should signal to developers that ginko understands their world—terminals, code editors, and the value of flow state.
+The design should feel like a well-crafted tool: precise, predictable, and efficient. It signals to developers that ginko understands their world - terminals, code editors, and the value of flow state.
 
 ---
 
 ## Typography
 
-### Primary Font Stack
+### Font Stack
 
 ```css
---font-mono: "JetBrains Mono", "Fira Code", "SF Mono", "Consolas", monospace;
---font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+--font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+--font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 ```
 
-### Usage
+### Font Size Scale (16px base)
+
+```css
+--font-size-xs: 0.75rem;      /* 12px */
+--font-size-sm: 0.875rem;     /* 14px */
+--font-size-base: 1rem;       /* 16px */
+--font-size-lg: 1.125rem;     /* 18px */
+--font-size-xl: 1.25rem;      /* 20px */
+--font-size-2xl: 1.5rem;      /* 24px */
+--font-size-3xl: 2rem;        /* 32px */
+--font-size-4xl: 2.5rem;      /* 40px */
+--font-size-5xl: 3rem;        /* 48px */
+--font-size-6xl: 3.5rem;      /* 56px */
+```
+
+### Font Weights
+
+```css
+--font-weight-normal: 400;
+--font-weight-medium: 500;
+--font-weight-semibold: 600;
+--font-weight-bold: 700;
+--font-weight-extrabold: 800;
+```
+
+### Usage Guidelines
 
 | Element | Font | Weight | Size |
 |---------|------|--------|------|
-| Hero headline | Mono | 700 | 48-64px |
-| Section headers | Mono | 600 | 32-40px |
-| Subheadings | Mono | 500 | 24px |
+| Hero headline | Mono | 700-800 | 56px (6xl) |
+| Section headers | Mono | 600-700 | 40px (4xl) |
+| Subheadings | Mono | 500-600 | 24px (2xl) |
 | Body text | Sans | 400 | 16-18px |
-| Code/technical | Mono | 400 | 14-16px |
-| UI labels | Mono | 500 | 12-14px |
+| Code/terminal | Mono | 400-500 | 14-16px |
+| UI labels | Mono | 500-600 | 12-14px |
 | Navigation | Mono | 500 | 14px |
 
 ### Hierarchy Principles
@@ -54,91 +80,180 @@ The design should feel like a well-crafted tool: precise, predictable, and effic
 - Headlines in monospace establish technical credibility
 - Body copy in sans-serif ensures readability for longer content
 - All code, commands, and technical references in monospace
-- Consider keyboard shortcut hints à la Stripe Dev: `[G] Get Started`
+- Line height: 1.2 for headings, 1.6 for body text
 
 ---
 
 ## Color Palette
 
-### Light Mode (Primary)
+### Light Mode (Default)
 
 ```css
 /* Backgrounds */
---bg-primary: #FAFAFA;      /* Main background */
---bg-secondary: #F5F5F5;    /* Cards, sections */
---bg-code: #1E1E1E;         /* Code blocks (dark) */
+--color-bg: #FAFAFA;
+--color-surface: #FFFFFF;
+--color-surface-hover: #F5F5F5;
 
 /* Text */
---text-primary: #171717;    /* Headings, primary content */
---text-secondary: #525252;  /* Body text, descriptions */
---text-muted: #A3A3A3;      /* Tertiary, timestamps */
+--color-text: #0A0A0A;
+--color-text-secondary: #525252;
+--color-text-tertiary: #737373;
 
-/* Accents */
---accent-primary: #22C55E;  /* Primary CTA - ginko green */
---accent-secondary: #16A34A;/* Hover states */
---accent-highlight: #86EFAC;/* Subtle highlights */
+/* Accents - Electric Lime */
+--color-accent: #aeff00;
+--color-accent-hover: #9ae600;
+--color-accent-light: rgba(174, 255, 0, 0.15);
+--color-accent-dark: #8acc00;
 
-/* Borders & Lines */
---border-subtle: #E5E5E5;   /* Dividers */
---border-strong: #D4D4D4;   /* Card borders */
+/* Borders */
+--color-border: #E5E5E5;
+--color-border-strong: #D4D4D4;
+
+/* Terminal */
+--color-terminal-bg: #171717;
+--color-terminal-text: #D4D4D4;
+--color-terminal-prompt: #aeff00;
+--color-terminal-comment: #737373;
+--color-terminal-header: #262626;
 ```
 
 ### Dark Mode
 
 ```css
-/* Backgrounds */
---bg-primary: #0A0A0A;      /* Main background */
---bg-secondary: #171717;    /* Cards, sections */
---bg-code: #1E1E1E;         /* Code blocks */
-
-/* Text */
---text-primary: #FAFAFA;    /* Headings, primary content */
---text-secondary: #A3A3A3;  /* Body text, descriptions */
---text-muted: #525252;      /* Tertiary, timestamps */
-
-/* Accents */
---accent-primary: #22C55E;  /* Primary CTA - ginko green */
---accent-secondary: #4ADE80;/* Hover states */
---accent-highlight: #166534;/* Subtle highlights */
-
-/* Borders & Lines */
---border-subtle: #262626;   /* Dividers */
---border-strong: #404040;   /* Card borders */
+[data-theme="dark"] {
+    --color-bg: #0A0A0A;
+    --color-surface: #171717;
+    --color-surface-hover: #262626;
+    --color-text: #FAFAFA;
+    --color-text-secondary: #A3A3A3;
+    --color-text-tertiary: #737373;
+    --color-border: #262626;
+    --color-border-strong: #404040;
+    --color-accent-light: #14532D;
+    --color-terminal-bg: #0A0A0A;
+    --color-terminal-header: #171717;
+}
 ```
 
 ### Semantic Colors
 
 ```css
---success: #22C55E;         /* Success states */
---warning: #F59E0B;         /* Warnings */
---error: #EF4444;           /* Errors */
---info: #3B82F6;            /* Informational */
+--color-success: #22C55E;
+--color-warning: #F59E0B;
+--color-danger: #EF4444;
+--color-info: #3B82F6;
 ```
 
 ---
 
 ## Spacing System
 
-Based on 4px base unit, monospace-friendly:
+Based on 4px base unit:
 
 ```css
---space-1: 4px;
---space-2: 8px;
---space-3: 12px;
---space-4: 16px;
---space-6: 24px;
---space-8: 32px;
---space-12: 48px;
---space-16: 64px;
---space-24: 96px;
+--space-1: 0.25rem;    /* 4px */
+--space-2: 0.5rem;     /* 8px */
+--space-3: 0.75rem;    /* 12px */
+--space-4: 1rem;       /* 16px */
+--space-5: 1.25rem;    /* 20px */
+--space-6: 1.5rem;     /* 24px */
+--space-8: 2rem;       /* 32px */
+--space-10: 2.5rem;    /* 40px */
+--space-12: 3rem;      /* 48px */
+--space-16: 4rem;      /* 64px */
+--space-20: 5rem;      /* 80px */
+--space-24: 6rem;      /* 96px */
 ```
 
 ### Section Spacing
 
-- Hero: `--space-24` vertical padding
-- Content sections: `--space-16` vertical padding
-- Cards: `--space-6` internal padding
+- Hero: `--space-16` + 60px top, `--space-12` bottom
+- Content sections: `--space-16` to `--space-20` vertical
+- Cards: `--space-6` to `--space-8` internal padding
 - Inline elements: `--space-2` to `--space-4`
+
+---
+
+## Border Radius
+
+```css
+--radius-sm: 0.25rem;   /* 4px */
+--radius-md: 0.5rem;    /* 8px */
+--radius-lg: 0.75rem;   /* 12px */
+--radius-xl: 1rem;      /* 16px */
+```
+
+**Special:** Buttons use `border-radius: 9999px` (pill shape)
+
+---
+
+## Shadows
+
+### Light Mode
+
+```css
+--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+```
+
+### Dark Mode
+
+```css
+--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+```
+
+---
+
+## Motion & Transitions
+
+### Timing
+
+```css
+--transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+--transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+--transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+### Standard Hover Effects
+
+```css
+/* Button lift */
+:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Card lift (pricing) */
+:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+```
+
+### Animations
+
+```css
+@keyframes cursor-blink {
+    0%, 50%   { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+```
+
+### Reduced Motion Support
+
+```css
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+```
 
 ---
 
@@ -146,280 +261,340 @@ Based on 4px base unit, monospace-friendly:
 
 ### Buttons
 
-**Primary CTA:**
+**Primary Button** (`.btn-primary`)
 ```css
-.btn-primary {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  background: var(--accent-primary);
-  color: var(--bg-primary);
-  padding: var(--space-3) var(--space-6);
-  border: none;
-  transition: background 150ms ease;
-}
-.btn-primary:hover {
-  background: var(--accent-secondary);
+background: var(--color-accent);      /* #aeff00 */
+color: #0A0A0A;
+border: 2px solid var(--color-accent);
+border-radius: 9999px;               /* pill-shaped */
+padding: var(--space-3) var(--space-6);
+font-family: var(--font-mono);
+font-weight: 500;
+
+:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 ```
 
-**Secondary:**
+**Secondary Button** (`.btn-secondary`)
 ```css
-.btn-secondary {
-  font-family: var(--font-mono);
-  background: transparent;
-  color: var(--text-primary);
-  border: 1px solid var(--border-strong);
-  padding: var(--space-3) var(--space-6);
+background: transparent;
+color: var(--color-accent);
+border: 2px solid var(--color-accent);
+
+:hover {
+    background: var(--color-accent);
+    color: white;
 }
 ```
+
+**Outline Button** (`.btn-outline`)
+```css
+background: transparent;
+color: var(--color-text);
+border: 2px solid var(--color-border-strong);
+
+:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+```
+
+**Size Variants:**
+- `.btn-large`: `padding: var(--space-4) var(--space-8)`
+- `.btn-primary-large` / `.btn-secondary-large`: Full-sized versions
 
 ### Cards
 
-Inspired by Brass Hands' geometric framing:
-
+**Base Card**
 ```css
 .card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
-  padding: var(--space-6);
-  position: relative;
-}
-
-/* Optional: Corner brackets for emphasis */
-.card--featured::before,
-.card--featured::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--accent-primary);
-}
-.card--featured::before {
-  top: -1px;
-  left: -1px;
-  border-right: none;
-  border-bottom: none;
-}
-.card--featured::after {
-  bottom: -1px;
-  right: -1px;
-  border-left: none;
-  border-top: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    position: relative; /* for corner brackets */
 }
 ```
 
-### Code Blocks
-
-Terminal-authentic styling:
-
+**Featured Card**
 ```css
-.code-block {
-  font-family: var(--font-mono);
-  background: var(--bg-code);
-  color: #E5E5E5;
-  padding: var(--space-4);
-  border-radius: 4px;
-  overflow-x: auto;
-}
-
-.code-block--with-header {
-  /* Terminal-style header */
-}
-.code-header {
-  background: #2D2D2D;
-  padding: var(--space-2) var(--space-4);
-  font-size: 12px;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-.code-header::before {
-  content: '●  ●  ●';
-  color: #525252;
-  font-size: 10px;
+.card.featured {
+    border-color: var(--color-accent);
+    background: var(--color-accent-light);
 }
 ```
 
-### Navigation
+### Corner Brackets (Brass Hands Signature)
+
+```html
+<div class="[component]">
+    <div class="corner-bracket top-left"></div>
+    <div class="corner-bracket top-right"></div>
+    <!-- Content -->
+    <div class="corner-bracket bottom-left"></div>
+    <div class="corner-bracket bottom-right"></div>
+</div>
+```
 
 ```css
-.nav {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  display: flex;
-  gap: var(--space-6);
+.corner-bracket {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-color: var(--color-accent);
+    border-style: solid;
 }
+.top-left     { top: -6px; left: -6px; border-width: 2px 0 0 2px; }
+.top-right    { top: -6px; right: -6px; border-width: 2px 2px 0 0; }
+.bottom-left  { bottom: -6px; left: -6px; border-width: 0 0 2px 2px; }
+.bottom-right { bottom: -6px; right: -6px; border-width: 0 2px 2px 0; }
+```
 
-.nav-item {
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: color 150ms ease;
-}
-.nav-item:hover {
-  color: var(--text-primary);
-}
-.nav-item--active {
-  color: var(--accent-primary);
-}
+**Used on:** Hero content, all cards, terminal windows, testimonials, CTA sections
 
-/* Optional keyboard hints */
-.nav-item kbd {
-  font-size: 11px;
-  padding: 2px 4px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: 2px;
-  margin-right: var(--space-1);
+### Terminal Components
+
+**Terminal Window**
+```html
+<div class="terminal-window">
+    <div class="corner-bracket top-left"></div>
+    <div class="corner-bracket top-right"></div>
+    <div class="terminal-header">
+        <div class="terminal-controls">
+            <span class="control red"></span>
+            <span class="control yellow"></span>
+            <span class="control green"></span>
+        </div>
+        <span class="terminal-title">terminal</span>
+    </div>
+    <div class="terminal-body">
+        <div class="terminal-line">
+            <span class="prompt">$</span> ginko start
+        </div>
+        <div class="terminal-line response">
+            <span class="status-icon">✓</span> Session restored
+        </div>
+    </div>
+    <div class="corner-bracket bottom-left"></div>
+    <div class="corner-bracket bottom-right"></div>
+</div>
+```
+
+**Inline Terminal (Copyable)**
+```html
+<div class="terminal-inline terminal-copyable terminal-bracketed"
+     data-copy="npm install -g @ginkoai/cli">
+    <div class="corner-bracket top-left"></div>
+    <div class="corner-bracket top-right"></div>
+    <span class="terminal-prompt">$</span>
+    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+    <button class="copy-btn" aria-label="Copy to clipboard">
+        <span class="copy-icon">⧉</span>
+        <span class="copy-success">✓</span>
+    </button>
+    <div class="corner-bracket bottom-left"></div>
+    <div class="corner-bracket bottom-right"></div>
+</div>
+```
+
+### Section Dividers
+
+```html
+<div class="section-divider"></div>
+<div class="section-divider--inverted section-divider"></div>
+```
+
+```css
+.section-divider {
+    height: 20px;
+    background: repeating-linear-gradient(
+        -45deg,
+        var(--color-accent),
+        var(--color-accent) 2px,
+        transparent 2px,
+        transparent 10px
+    );
 }
 ```
 
 ---
 
-## Layout Grid
+## Layout
 
 ### Container Widths
 
 ```css
---container-sm: 640px;   /* Blog content */
---container-md: 768px;   /* Standard content */
---container-lg: 1024px;  /* Wide content */
---container-xl: 1280px;  /* Full-width sections */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-6);
+}
 ```
 
 ### Responsive Breakpoints
 
 ```css
---bp-sm: 640px;
---bp-md: 768px;
---bp-lg: 1024px;
---bp-xl: 1280px;
+/* Tablet */
+@media (max-width: 1024px) {
+    .container { padding: 0 var(--space-4); }
+    /* Reduce hero title to font-size-5xl */
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    --font-size-6xl: 2.5rem;
+    --font-size-5xl: 2rem;
+    --font-size-4xl: 1.75rem;
+    /* Single column grids */
+    /* Stack buttons vertically */
+}
 ```
 
----
-
-## Motion & Animation
-
-### Principles
-
-- Subtle, purposeful animations only
-- No decorative motion that distracts
-- Respect `prefers-reduced-motion`
-
-### Timing
+### Grid Patterns
 
 ```css
---duration-fast: 150ms;
---duration-normal: 250ms;
---duration-slow: 400ms;
---easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+/* Problem/Feature grids */
+.problem-grid, .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-8);
+}
+
+/* Pricing grid (3 columns) */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-6);
+}
 ```
 
-### Standard Transitions
+---
+
+## Navigation
+
+```html
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-logo">
+            <span class="logo-text">ginko</span>
+        </div>
+        <div class="nav-menu">
+            <a href="#developers" class="nav-link">Developers</a>
+            <a href="#teams" class="nav-link">Teams</a>
+            <a href="#pricing" class="nav-link">Pricing</a>
+            <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+        </div>
+        <div class="nav-actions">
+            <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Get Started</a>
+        </div>
+    </div>
+</nav>
+```
 
 ```css
-/* Hover states */
-transition: color var(--duration-fast) var(--easing-default);
-transition: background var(--duration-fast) var(--easing-default);
+.navbar {
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+    background: rgba(250, 250, 250, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+}
 
-/* Page transitions (if using) */
-transition: opacity var(--duration-normal) var(--easing-default);
+[data-theme="dark"] .navbar {
+    background: rgba(10, 10, 10, 0.8);
+}
 ```
 
 ---
 
-## Iconography
+## Page Structure Template
 
-### Approach
+```html
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - [Page Title]</title>
+    <meta name="description" content="[Description]">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">...</nav>
 
-- Line icons, consistent 24px base size
-- Consider Lucide, Heroicons, or Phosphor
-- Monochrome, inheriting text color
-- Used sparingly to support, not replace, text
+    <section class="hero">
+        <div class="container">...</div>
+    </section>
 
-### Usage Guidelines
+    <div class="section-divider"></div>
 
-- Navigation: Icons optional, text primary
-- Feature cards: Icon + text label
-- CTAs: Text only (icons can distract)
-- Status indicators: Small icons with text labels
+    <section class="[section-name]">
+        <div class="container">...</div>
+    </section>
 
----
+    <div class="section-divider"></div>
 
-## Key Design Patterns
+    <!-- More sections -->
 
-### 1. Terminal Authenticity
+    <div class="section-divider--inverted section-divider"></div>
 
-Elements that feel familiar to developers:
-- Monospace typography
-- Dark code blocks with syntax highlighting
-- Command-line style prompts: `$ ginko start`
-- Status indicators with technical terminology
+    <footer class="footer">...</footer>
 
-### 2. Scannable Hierarchy
-
-From Cloudflare Docs:
-- Clear visual sections with consistent headers
-- Card-based grouping for related content
-- Progressive disclosure (overview → details)
-- Generous whitespace between sections
-
-### 3. Developer-First CTAs
-
-From Stripe Dev:
-- Keyboard shortcut hints
-- Quick-start paths prominent
-- "Try it" / playground integrations where possible
-- Copy-to-clipboard on code snippets
-
-### 4. Geometric Precision
-
-From Brass Hands:
-- Corner bracket accents on featured elements
-- Grid-aligned layouts
-- Minimal color usage for maximum impact
-- Industrial aesthetic without coldness
+    <div id="toast" class="toast">Copied!</div>
+    <script src="script.js"></script>
+</body>
+</html>
+```
 
 ---
 
-## Current Site Audit Summary
+## Accessibility
 
-### What to Keep
+### Focus States
 
-- Clear problem/solution narrative
-- Quantified benefits (metrics)
-- Developer-centric language
-- Pricing transparency
+```css
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+```
 
-### What to Change
+### ARIA Requirements
 
-- Hero: State what ginko IS before the problem
-- Typography: Shift to monospace-forward
-- Color: Simplify to green accent on neutral base
-- Layout: More whitespace, cleaner sections
-- CTAs: Reduce repetition, increase clarity
-- Remove: Speculative roadmap, emoji overuse
-
----
-
-## Next Steps
-
-1. [ ] Review and approve design direction
-2. [ ] Select/confirm font licensing (JetBrains Mono is free)
-3. [ ] Create Figma/design mockups (optional)
-4. [ ] Implement design tokens in code
-5. [ ] Build component library
+- All icon buttons: `aria-label="[description]"`
+- Interactive elements without text must have labels
+- Proper heading hierarchy (h1 > h2 > h3)
 
 ---
 
-## Resolved Decisions
+## Key Design Principles Summary
 
-1. **Green accent color**: `#22C55E` confirmed ✓
+1. **Corner brackets everywhere** - Brass Hands signature on all cards/containers
+2. **Electric lime accent** - #aeff00 for CTAs and highlights
+3. **Pill-shaped buttons** - border-radius: 9999px
+4. **Monospace headings** - JetBrains Mono for technical feel
+5. **Terminal authenticity** - Dark backgrounds, proper prompt styling
+6. **Lift on hover** - translateY(-2px) for interactive elements
+7. **Section dividers** - Diagonal stripes between sections
+8. **Dual theme** - Light/dark via data-theme attribute
+9. **4px spacing scale** - Consistent spacing multiples
+10. **Container pattern** - All sections wrap content in .container
 
-2. **Dark mode priority**: Dual themes from day one ✓
+---
 
-3. **Existing brand assets**: TBD - review lighthouse-logo.svg in website/
+## File References
 
-4. **Inspiration priority**: Brass Hands (industrial precision) with usability first ✓
+- **Styles:** `/website/styles.css` (1503 lines)
+- **Homepage:** `/website/index.html` (409 lines)
+- **JavaScript:** `/website/script.js` (298 lines)
 
-5. **Corner brackets**: Use sparingly for featured elements (usability > style) ✓
+---
+
+*Last updated: 2025-12-03 | Version: 2.0 (Implemented)*

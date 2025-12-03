@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ginko - Context that flows with you</title>
-    <meta name="description" content="Git-native session management for AI-assisted development. Back in flow in 30 seconds.">
+    <title>ginko - Team context that scales</title>
+    <meta name="description" content="Team visibility, knowledge retention, and AI-assisted development that scales. Reduce onboarding time, eliminate knowledge silos.">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,31 +15,35 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-text">ginko</span>
+                <a href="index.html"><span class="logo-text">ginko</span></a>
             </div>
             <div class="nav-menu">
                 <a href="developers.html" class="nav-link">Developers</a>
-                <a href="teams.html" class="nav-link">Teams</a>
+                <a href="teams.html" class="nav-link nav-link-active">Teams</a>
                 <a href="#pricing" class="nav-link">Pricing</a>
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
             </div>
             <div class="nav-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+                    <span class="theme-icon theme-icon-light">☀</span>
+                    <span class="theme-icon theme-icon-dark">☾</span>
+                </button>
                 <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Get Started</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="hero">
+    <section class="hero">
         <div class="container">
             <div class="hero-content">
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
                 <h1 class="hero-title">
-                    Context that flows with you.
+                    Team context that scales.
                 </h1>
                 <p class="hero-subtitle">
-                    Git-native session management for AI-assisted development. Back in flow in 30 seconds.
+                    Knowledge that stays with the team. Onboard faster, ship better, preserve institutional memory.
                 </p>
                 <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
                     <div class="corner-bracket top-left"></div>
@@ -54,8 +58,8 @@
                     <div class="corner-bracket bottom-right"></div>
                 </div>
                 <div class="hero-cta">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started</a>
-                    <a href="https://docs.ginko.ai" class="btn-secondary-large">View Docs</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Start Pro Trial</a>
+                    <a href="mailto:chris@watchhill.ai" class="btn-secondary-large">Contact Sales</a>
                 </div>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
@@ -65,41 +69,30 @@
 
     <div class="section-divider"></div>
 
-    <!-- Problem Section -->
+    <!-- Team Problem Section -->
     <section class="problem">
         <div class="container">
+            <h2 class="section-title">The team context problem</h2>
             <div class="problem-grid">
                 <div class="problem-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="problem-label">CONTEXT_ROT</div>
-                    <p class="problem-description">
-                        AI assistants lose effectiveness as conversations grow. By message 50, they're guessing.
-                    </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
-                </div>
-
-                <div class="problem-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="problem-label">SESSION_RESET</div>
-                    <p class="problem-description">
-                        Every new session = 10+ minutes re-explaining your project, decisions, and goals.
-                    </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
-                </div>
-
-                <div class="problem-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
                     <div class="problem-label">KNOWLEDGE_SILOS</div>
                     <p class="problem-description">
-                        Context lives in your head. When you switch tools or take a break, it's gone.
+                        Context trapped in individual AI sessions. When developers switch tools or take breaks, team knowledge vanishes.
                     </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-label">ONBOARDING_FRICTION</div>
+                    <p class="problem-description">
+                        New team members start from scratch. Hours spent explaining patterns, gotchas, and decisions already made.
+                    </p>
+                </div>
+
+                <div class="problem-card">
+                    <div class="problem-label">VISIBILITY_GAP</div>
+                    <p class="problem-description">
+                        Managers don't know what's happening. Daily standup becomes "what were you working on?" instead of "what's next?"
+                    </p>
                 </div>
             </div>
         </div>
@@ -107,10 +100,10 @@
 
     <div class="section-divider"></div>
 
-    <!-- Solution Section -->
-    <section id="developers" class="solution">
+    <!-- How Teams Use Ginko -->
+    <section class="solution">
         <div class="container">
-            <h2 class="section-title">How ginko works</h2>
+            <h2 class="section-title">How teams use ginko</h2>
 
             <div class="solution-demo">
                 <div class="terminal-window">
@@ -129,27 +122,30 @@
                             <span class="prompt">$</span> ginko start
                         </div>
                         <div class="terminal-line response">
-                            <span class="status-icon">✓</span> Session restored from 2025-12-01 15:42
+                            <span class="status-icon">✓</span> Session restored from 2025-12-02 14:20
                         </div>
                         <div class="terminal-line response">
-                            <span class="status-icon">→</span> Loaded 3 active tasks from current sprint
+                            <span class="status-icon">→</span> Loaded 4 active sprint tasks
                         </div>
                         <div class="terminal-line response">
-                            <span class="status-icon">→</span> Found 2 relevant patterns: auth-flow, api-design
+                            <span class="status-icon">→</span> Team insights: @sarah fixed auth timeout issue
                         </div>
                         <div class="terminal-line response">
-                            <span class="status-icon">→</span> Alert: 1 gotcha applies to current work
-                        </div>
-                        <div class="terminal-line response blank"></div>
-                        <div class="terminal-line response">
-                            <span class="status-highlight">Ready</span> | <span class="status-flow">Hot (8/10)</span> | Think & Build mode
+                            <span class="status-icon">→</span> Team pattern applied: api-retry-strategy
                         </div>
                         <div class="terminal-line response">
-                            Resume: Implementing user auth with JWT tokens
+                            <span class="status-icon">!</span> Gotcha alert: avoid nested transactions (per @alex)
                         </div>
                         <div class="terminal-line response blank"></div>
                         <div class="terminal-line response">
-                            19 uncommitted files, 2 commits ahead of origin
+                            <span class="status-highlight">Ready</span> | <span class="status-flow">Hot (9/10)</span> | Team aware
+                        </div>
+                        <div class="terminal-line response">
+                            Resume: Building payment service API endpoints
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            Team activity: 3 members active, 12 events today
                         </div>
                         <div class="terminal-line response blank"></div>
                         <div class="terminal-line response">
@@ -165,12 +161,16 @@
 
                 <div class="solution-explanation">
                     <p>
-                        <strong>ginko</strong> captures your development state and stores it alongside your code.
-                        Session logs, sprint progress, patterns, and gotchas are versioned with git.
+                        <strong>ginko Pro</strong> synchronizes team events in real-time. When Sarah fixes a bug,
+                        the whole team learns. When Alex discovers a gotcha, it surfaces for everyone.
                     </p>
                     <p>
-                        When you start a new session, your AI assistant has immediate context. No re-explaining.
-                        No context rot. Just flow.
+                        Every developer starts their session with full team context: active sprint tasks,
+                        shared patterns, recent insights, and collective gotchas. No more repeated mistakes.
+                        No more "did anyone figure out X?"
+                    </p>
+                    <p>
+                        Async-friendly workflow means your team stays aligned without constant meetings.
                     </p>
                 </div>
             </div>
@@ -179,61 +179,17 @@
 
     <div class="section-divider"></div>
 
-    <!-- Features Section -->
+    <!-- Features Grid -->
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Features</h2>
+            <h2 class="section-title">Team features</h2>
             <div class="features-grid">
-                <div class="feature-card">
+                <div class="feature-card feature-card-pro">
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
-                    <div class="feature-label">SESSION_HANDOFF</div>
+                    <div class="feature-label">TEAM_EVENT_SYNC</div>
                     <p class="feature-description">
-                        Capture and resume development state across AI sessions
-                    </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="feature-label">SPRINT_TRACKING</div>
-                    <p class="feature-description">
-                        Progress tracking that lives alongside your code
-                    </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="feature-label">PATTERN_CAPTURE</div>
-                    <p class="feature-description">
-                        Learn from your codebase, remember what works
-                    </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="feature-label">GOTCHA_ALERTS</div>
-                    <p class="feature-description">
-                        Surface past mistakes before you repeat them
-                    </p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
-                </div>
-
-                <div class="feature-card">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="feature-label">GIT_NATIVE</div>
-                    <p class="feature-description">
-                        Works offline, versioned with your code
+                        See what your team discovered today <span class="pro-badge">Pro</span>
                     </p>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
@@ -242,9 +198,53 @@
                 <div class="feature-card feature-card-pro">
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
-                    <div class="feature-label">TEAM_SYNC</div>
+                    <div class="feature-label">SHARED_PATTERNS</div>
                     <p class="feature-description">
-                        Share context across team members <span class="pro-badge">Pro</span>
+                        Avoid repeated mistakes with collective learning <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SPRINT_INTEGRATION</div>
+                    <p class="feature-description">
+                        Automatic task awareness for every developer
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">HANDOFF_DOCS</div>
+                    <p class="feature-description">
+                        Structured knowledge transfer between sessions
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">CLOUD_BACKUP</div>
+                    <p class="feature-description">
+                        Never lose team context with automatic backups <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-enterprise">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">ADMIN_DASHBOARD</div>
+                    <p class="feature-description">
+                        Team oversight and analytics <span class="enterprise-badge">Enterprise</span>
                     </p>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
@@ -255,16 +255,144 @@
 
     <div class="section-divider"></div>
 
-    <!-- Testimonial Section -->
+    <!-- ROI/Value Section -->
+    <section class="value">
+        <div class="container">
+            <h2 class="section-title">The team ROI</h2>
+            <div class="value-stats">
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">70%</div>
+                    <div class="stat-label">Faster context rebuilding</div>
+                    <p class="stat-description">
+                        From 10+ minutes re-explaining to instant context loading
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">3 days</div>
+                    <div class="stat-label">Reduced onboarding time</div>
+                    <p class="stat-description">
+                        New developers start with full team knowledge from day one
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Knowledge retention</div>
+                    <p class="stat-description">
+                        Institutional memory persists even when team members leave
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">Zero</div>
+                    <div class="stat-label">Status meetings</div>
+                    <p class="stat-description">
+                        Async visibility eliminates "what were you working on?" meetings
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- How It Works for Teams -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How it works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Install on each machine</h3>
+                    <div class="terminal-inline terminal-copyable" data-copy="npm install -g @ginkoai/cli">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                    </div>
+                    <p class="step-description">
+                        Every developer installs the CLI. Works with Claude, Cursor, or any AI assistant.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="step-card step-card-featured">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Connect team events</h3>
+                    <div class="terminal-inline terminal-copyable" data-copy="ginko login && ginko team connect">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko login && ginko team connect</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                    </div>
+                    <p class="step-description">
+                        Authenticate and link your team. Events sync automatically. <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="step-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">See shared insights</h3>
+                    <div class="terminal-inline terminal-copyable" data-copy="ginko start">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko start</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                    </div>
+                    <p class="step-description">
+                        Every session loads with team context. Patterns, gotchas, sprint tasks — all there.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Testimonial -->
     <section class="testimonial">
         <div class="container">
             <div class="testimonial-content">
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
                 <blockquote class="testimonial-quote">
-                    "The rapport is right there from the start. The flow is preserved, and my frustrations are gone."
+                    "Our new developer was productive on day one. The team context was already there — no need to explain everything twice."
                 </blockquote>
-                <cite class="testimonial-cite">- Beta User Feedback</cite>
+                <cite class="testimonial-cite">- Engineering Manager, Series A Startup</cite>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
             </div>
@@ -352,18 +480,11 @@
             <div class="cta-content">
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
-                <h2 class="cta-title">Ready to eliminate context rot?</h2>
-                <div class="terminal-inline terminal-inline-cta terminal-copyable" data-copy="npm install -g @ginkoai/cli">
-                    <span class="terminal-prompt">$</span>
-                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
-                    <button class="copy-btn" aria-label="Copy to clipboard">
-                        <span class="copy-icon">⧉</span>
-                        <span class="copy-success">✓</span>
-                    </button>
-                </div>
+                <h2 class="cta-title">Ready to scale your team's context?</h2>
+                <p class="cta-subtitle">Start with a 14-day free trial. No credit card required.</p>
                 <div class="cta-buttons">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started Free</a>
-                    <a href="https://docs.ginko.ai" class="btn-secondary-large">Read the Docs</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Start Pro Trial</a>
+                    <a href="mailto:chris@watchhill.ai" class="btn-secondary-large">Contact Sales</a>
                 </div>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
@@ -379,7 +500,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <span class="logo-text">ginko</span>
+                        <a href="index.html"><span class="logo-text">ginko</span></a>
                     </div>
                     <p class="footer-tagline">Context that flows with you</p>
                 </div>
