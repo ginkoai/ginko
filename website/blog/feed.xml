@@ -5,9 +5,37 @@
     <link>https://ginkoai.com/blog/</link>
     <description>Insights on AI-assisted development and context management</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 03 Dec 2025 20:22:49 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 03 Dec 2025 21:05:08 GMT</lastBuildDate>
     <atom:link href="https://ginkoai.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
     
+    <item>
+      <title>Patterns and Gotchas: Teaching Your AI Partner</title>
+      <link>https://ginkoai.com/blog/patterns-and-gotchas/</link>
+      <guid isPermaLink="true">https://ginkoai.com/blog/patterns-and-gotchas/</guid>
+      <pubDate>Fri, 26 Dec 2025 00:00:00 GMT</pubDate>
+      <description>Your codebase has patterns that work and pitfalls to avoid. Here&apos;s how to teach them to your AI assistant so it stops making the same mistakes.</description>
+      <author>Chris Norton</author>
+      <category>ai-collaboration</category>
+      <category>patterns</category>
+      <category>best-practices</category>
+      <category>developer-tools</category>
+    </item>
+  
+
+    <item>
+      <title>Back in Flow in 30 Seconds: The ginko start Experience</title>
+      <link>https://ginkoai.com/blog/back-in-flow-30-seconds/</link>
+      <guid isPermaLink="true">https://ginkoai.com/blog/back-in-flow-30-seconds/</guid>
+      <pubDate>Wed, 17 Dec 2025 00:00:00 GMT</pubDate>
+      <description>Starting a new coding session shouldn&apos;t mean starting from scratch. Learn how ginko gets you back into flow state in under 30 seconds.</description>
+      <author>Chris Norton</author>
+      <category>developer-productivity</category>
+      <category>flow-state</category>
+      <category>context-management</category>
+      <category>workflow</category>
+    </item>
+  
+
     <item>
       <title>Why AI Assistants Forget Everything (And How to Fix It)</title>
       <link>https://ginkoai.com/blog/why-ai-assistants-forget/</link>

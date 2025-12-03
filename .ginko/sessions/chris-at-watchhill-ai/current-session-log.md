@@ -71,3 +71,33 @@ Updated ai-instructions-template.ts with new 'Last session:' and 'Next up:' outp
 
 Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/cursors.json, CLAUDE.md
 Impact: low
+
+### 16:00 - [achievement]
+# [ACHIEVEMENT] 16:00
+
+Completed TASK-2: Content Strategy & Editorial Calendar. Created website/content/CONTENT-STRATEGY.md with 6 content pillars, 2 audience profiles, 5 post formats, 4-week editorial calendar, content guidelines, and success metrics. Stock-and-flow philosophy guides evergreen vs timely content.
+
+**Files:**
+- docs/sprints/SPRINT-2025-12-epic003-sprint2.md
+
+**Impact:** medium
+**Timestamp:** 2025-12-03T21:00:43.608Z
+
+Files: docs/sprints/SPRINT-2025-12-epic003-sprint2.md
+Impact: medium
+
+### 16:03 - [achievement]
+# [ACHIEVEMENT] 16:03
+
+Completed TASK-3: 3 developer-focused blog posts. Wrote 'Back in Flow in 30 Seconds' (ginko start experience, flow state, session anatomy) and 'Patterns and Gotchas' (tribal knowledge capture, team amplification). Combined with existing 'Why AI Assistants Forget', all 3 posts complete with developer-to-developer tone and subtle CTAs.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- docs/sprints/SPRINT-2025-12-epic003-sprint2.md
+
+**Impact:** high
+**Timestamp:** 2025-12-03T21:03:54.911Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/SPRINT-2025-12-epic003-sprint2.md
+Impact: high

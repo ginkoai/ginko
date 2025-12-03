@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Why AI Assistants Forget Everything (And How to Fix It) - ginko blog</title>
-    <meta name="description" content="AI assistants are transforming how we build software, but they have a critical flaw: they forget everything. Learn why context rot happens and how to fix it.">
+    <title>Patterns and Gotchas: Teaching Your AI Partner - ginko blog</title>
+    <meta name="description" content="Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.">
 
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="article">
-    <meta property="og:title" content="Why AI Assistants Forget Everything (And How to Fix It)">
-    <meta property="og:description" content="AI assistants are transforming how we build software, but they have a critical flaw: they forget everything. Learn why context rot happens and how to fix it.">
-    <meta property="og:url" content="https://ginkoai.com/blog/why-ai-assistants-forget/">
-    <meta property="article:published_time" content="2025-12-10T00:00:00.000Z">
+    <meta property="og:title" content="Patterns and Gotchas: Teaching Your AI Partner">
+    <meta property="og:description" content="Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.">
+    <meta property="og:url" content="https://ginkoai.com/blog/patterns-and-gotchas/">
+    <meta property="article:published_time" content="2025-12-26T00:00:00.000Z">
     <meta property="article:author" content="Chris Norton">
     <meta name="twitter:card" content="summary_large_image">
 
@@ -339,7 +339,7 @@
     <!-- Blog Header -->
     <header class="blog-header" id="main">
         <div class="blog-header-content">
-            <h1 class="blog-title">Why AI Assistants Forget Everything (And How to Fix It)</h1>
+            <h1 class="blog-title">Patterns and Gotchas: Teaching Your AI Partner</h1>
 
             <div class="blog-meta">
                 <span class="blog-meta-item">
@@ -353,7 +353,7 @@
                 </span>
             </div>
 
-            <p class="blog-description">AI assistants are transforming how we build software, but they have a critical flaw: they forget everything. Learn why context rot happens and how to fix it.</p>
+            <p class="blog-description">Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.</p>
 
             <div class="blog-tags">
                 {{tags}}
@@ -373,95 +373,128 @@
 
     <!-- Blog Content -->
     <article class="blog-post-content">
-        <h1>Why AI Assistants Forget Everything (And How to Fix It)</h1>
-<p>You&#39;re three hours into a coding session with your AI assistant. You&#39;ve explained your architecture, walked through your design decisions, and carefully described the patterns you&#39;re following. The assistant is firing on all cylinders—suggesting elegant refactors, catching edge cases, helping you ship features fast.</p>
-<p>Then you close the session.</p>
-<p>Tomorrow, when you open a new chat, it&#39;s like starting from scratch. &quot;What framework are we using again?&quot; &quot;Can you remind me about the authentication flow?&quot; &quot;Wait, why did we decide to avoid that pattern?&quot;</p>
-<p>Your AI assistant has amnesia. And it&#39;s costing you hours of productivity every week.</p>
-<h2>The Context Rot Problem</h2>
-<p>AI-assisted development has a dirty secret: the longer your conversation goes, the less effective your assistant becomes. This isn&#39;t a bug—it&#39;s a fundamental limitation of how large language models work.</p>
-<p><strong>Context windows are finite.</strong> Modern AI assistants can hold thousands of tokens in memory, but that&#39;s still a drop in the bucket compared to the size of a real codebase. As your conversation grows, older context gets pushed out to make room for new information.</p>
-<p><strong>Session resets are devastating.</strong> Every time you start a new chat, you&#39;re starting from zero. All that carefully built-up context—the explanations, the decisions, the gotchas you discovered—vanishes. You spend the first 20 minutes of every session just getting the AI back up to speed.</p>
-<p><strong>Knowledge silos emerge.</strong> Different AI sessions become isolated islands. The solution you found on Monday doesn&#39;t inform the work you&#39;re doing on Thursday. Patterns that worked well last week need to be re-explained from scratch.</p>
-<p>This is what I call &quot;context rot&quot;—the gradual decay of useful information that happens when there&#39;s no persistent memory layer.</p>
-<h2>Why Traditional Solutions Fall Short</h2>
-<p>Developers have tried various workarounds:</p>
-<p><strong>Copy-pasting context</strong> into every new session works, but it&#39;s tedious and error-prone. You end up with massive walls of text that the AI has to re-read every time. Plus, you need to manually curate what&#39;s relevant.</p>
-<p><strong>Custom instructions</strong> help establish baseline knowledge, but they&#39;re static. They can&#39;t capture the evolving decisions and patterns that emerge during active development.</p>
-<p><strong>Long-running conversations</strong> seem ideal until you hit the context limit. Then the AI starts &quot;forgetting&quot; earlier parts of the conversation, making contradictory suggestions, or losing track of your project structure.</p>
-<p>What we really need is a memory layer that&#39;s:</p>
-<ul>
-<li><strong>Persistent</strong> across sessions</li>
-<li><strong>Automatic</strong> without manual intervention</li>
-<li><strong>Git-native</strong> to match how developers already work</li>
-<li><strong>Selective</strong> to surface relevant context when needed</li>
-</ul>
-<h2>A Git-Native Approach to Context</h2>
-<p>Here&#39;s the key insight: your git repository already contains most of the context your AI assistant needs. Commits, branches, file changes, project structure—it&#39;s all there.</p>
-<p>The problem isn&#39;t that the information doesn&#39;t exist. The problem is that AI assistants don&#39;t know how to leverage it.</p>
-<p>This is where a git-native context management tool can help. Instead of fighting against context limits, you work with them by:</p>
-<p><strong>Capturing decisions as you go.</strong> When you make an architectural choice, log it. When you discover a gotcha, record it. These insights get stored in your repository alongside your code.</p>
-<pre><code class="language-bash"># After implementing a tricky auth flow
-ginko log &quot;Used OAuth PKCE flow for mobile clients. Tried implicit flow first but ran into security issues with token storage. PKCE provides better security for public clients.&quot;
+        <h1>Patterns and Gotchas: Teaching Your AI Partner</h1>
+<p>Every codebase has tribal knowledge—the patterns that work, the approaches that don&#39;t, the weird edge cases that burned someone three sprints ago. This knowledge usually lives in developers&#39; heads, surfacing only when someone&#39;s about to make a mistake.</p>
+<p>&quot;Oh, don&#39;t use setTimeout there—it&#39;ll keep the process alive.&quot;</p>
+<p>&quot;We tried that approach last month. It doesn&#39;t scale.&quot;</p>
+<p>&quot;Make sure you call .unref() on that timer or the tests will hang.&quot;</p>
+<p>Your AI assistant doesn&#39;t have access to this tribal knowledge. It suggests the obvious solution, not knowing that your team learned the hard way why that doesn&#39;t work here. You catch the mistake, explain why, and move on. Next session? The AI suggests the same thing again.</p>
+<p>What if your AI could actually learn from your team&#39;s experience?</p>
+<h2>The Pattern Problem</h2>
+<p>Patterns are the solutions that work well in your specific context. They&#39;re not universal best practices—they&#39;re the approaches your team has validated through real usage.</p>
+<p>Some examples:</p>
+<p><strong>Retry Pattern</strong>: &quot;When calling external APIs, use exponential backoff with jitter. Start at 100ms, max 3 retries, cap at 2 seconds.&quot;</p>
+<p><strong>Output Formatter Pattern</strong>: &quot;All CLI output goes through the dual formatter—human-readable to console, structured JSON to the context file.&quot;</p>
+<p><strong>Event Queue Pattern</strong>: &quot;Background syncs use the event queue with a 5-minute interval and 5-event threshold for batching.&quot;</p>
+<p>These patterns emerge from your codebase. They&#39;re proven. They&#39;re consistent. And they should inform how your AI assistant suggests solutions.</p>
+<h2>The Gotcha Problem</h2>
+<p>Gotchas are the inverse—the mistakes that look reasonable but cause problems. Every team accumulates these through painful experience:</p>
+<p><strong>Timer Gotcha</strong>: &quot;Node.js timers (setInterval, setTimeout) keep the event loop alive. Always call .unref() on timers in CLI tools, or the process won&#39;t exit.&quot;</p>
+<p><strong>Verbose Output Gotcha</strong>: &quot;Don&#39;t dump full context to the console. Users get overwhelmed. Use the formatter&#39;s truncate function.&quot;</p>
+<p><strong>Async Cleanup Gotcha</strong>: &quot;In tests, always await cleanup functions. Unhandled promises cause flaky test failures that are nearly impossible to debug.&quot;</p>
+<p>These gotchas cost hours when you hit them. They cost more hours when someone else hits them later because the knowledge wasn&#39;t captured.</p>
+<h2>How Ginko Captures Patterns and Gotchas</h2>
+<p>When you&#39;re working with ginko, pattern and gotcha capture happens naturally:</p>
+<h3>During Development</h3>
+<p>You solve a tricky problem. Instead of just moving on, you log it:</p>
+<pre><code class="language-bash">ginko log &quot;Fixed EventQueue timer hanging process. Root cause: setInterval
+without .unref() keeps Node event loop alive. Solution: timer.unref()
+allows clean exit. Reduced startup from 90s to 2s.&quot; --category=fix
 </code></pre>
-<p><strong>Loading context automatically.</strong> When you start a new session, relevant context loads from your git history. No copy-pasting. No manual curation. Just the information your AI assistant needs to be effective immediately.</p>
-<pre><code class="language-bash"># Start a new session
-ginko start
+<p>Ginko extracts the pattern or gotcha automatically. The timer gotcha is now documented with context, cause, and solution.</p>
+<h3>Through Sprint Tasks</h3>
+<p>When you define sprint tasks, you can reference patterns and gotchas:</p>
+<pre><code class="language-markdown">### TASK-7: Optimize Event Queue
 
-# Context loads automatically from git history
-# - Recent commits and their messages
-# - Active branch and work-in-progress
-# - Logged decisions and patterns
-# - Project structure and key files
-</code></pre>
-<p><strong>Tracking work chronologically.</strong> Session logs create a narrative thread through your development. An AI assistant can read this chronology and understand not just what you built, but why you built it that way.</p>
-<p><strong>Handoffs become trivial.</strong> Whether you&#39;re switching AI assistants, onboarding a team member, or resuming work after a break, the full context is preserved in your repository.</p>
-<pre><code class="language-bash"># End your session with a handoff
-ginko handoff &quot;Completed OAuth integration. Next: Add refresh token rotation.&quot;
+Use the retry-pattern from src/utils/api-client.ts for resilient calls.
+Apply the output-formatter-pattern for dual output.
 
-# Tomorrow, or on another machine:
-ginko start
-# AI immediately understands where you left off
+Avoid the timer-unref-gotcha that causes process hang.
+Watch out for verbose-output issues.
 </code></pre>
-<h2>What This Looks Like in Practice</h2>
-<p>Let me show you a real example. You&#39;re building an API and decide to use event sourcing for audit trails. You have a great conversation with your AI about the tradeoffs, implement it, and log the decision:</p>
-<pre><code class="language-bash">ginko log &quot;Implemented event sourcing for user actions. Considered append-only audit table but event sourcing gives us better replay capabilities and scales better for analytics queries. Trade-off: more complex to query current state, but worth it for audit requirements.&quot;
+<p>When someone starts this task, ginko surfaces the relevant context:</p>
+<pre><code>Next up: TASK-7 - Optimize Event Queue (start)
+
+Sprint: Performance Sprint 45%
+  Apply: retry-pattern ★, output-formatter-pattern ◐
+  Avoid: 💡 timer-unref-gotcha, 💡 verbose-output-gotcha
 </code></pre>
-<p>Three weeks later, you&#39;re working on a new feature that touches the same system. You start a fresh session, and your AI assistant already knows:</p>
+<p>The patterns tell you <em>what to do</em>. The gotchas tell you <em>what not to do</em>. Both come from your team&#39;s real experience.</p>
+<h2>Confidence Levels</h2>
+<p>Not all patterns are equally proven. Ginko tracks confidence based on usage:</p>
 <ul>
-<li>You&#39;re using event sourcing</li>
-<li>Why you chose it over alternatives</li>
-<li>What trade-offs you considered</li>
-<li>The specific requirements that drove the decision</li>
+<li><strong>★ High confidence</strong>: Pattern used successfully in 3+ places</li>
+<li><strong>◐ Medium confidence</strong>: Pattern used in 1-2 places, promising</li>
+<li><strong>○ Low confidence</strong>: Newly documented, needs validation</li>
 </ul>
-<p>No re-explaining. No context tax. Just productive development from line one.</p>
-<h2>The Bigger Picture</h2>
-<p>Context management isn&#39;t just about making AI assistants smarter—it&#39;s about making your team more effective. When knowledge is captured automatically and loaded on demand, you get:</p>
-<p><strong>Faster onboarding.</strong> New team members (human or AI) can read through session logs to understand how the project evolved.</p>
-<p><strong>Better decisions.</strong> When you can easily see what you tried before and why it didn&#39;t work, you avoid repeating mistakes.</p>
-<p><strong>Institutional memory.</strong> Knowledge doesn&#39;t live in someone&#39;s head or scattered across Slack threads. It lives in your repository, versioned alongside your code.</p>
-<p><strong>Continuity across tools.</strong> Whether you&#39;re using Claude, ChatGPT, Cursor, or whatever comes next, the context layer remains consistent.</p>
-<h2>Moving Forward</h2>
-<p>AI-assisted development is still in its infancy. We&#39;re figuring out the patterns and practices that work. But one thing is clear: context management can&#39;t be an afterthought.</p>
-<p>If you&#39;re tired of re-explaining your codebase every time you start a new AI session, it might be time to try a different approach. One that treats your git repository as the source of truth and gives AI assistants the persistent memory they need to stay effective over time.</p>
-<p>Your future self (and your AI assistant) will thank you.</p>
+<p>Similarly, gotchas have severity levels:</p>
+<ul>
+<li><strong>🚨 Critical</strong>: Causes data loss or security issues</li>
+<li><strong>⚠️ High</strong>: Causes significant bugs or outages</li>
+<li><strong>💡 Medium/Low</strong>: Causes inconvenience or minor issues</li>
+</ul>
+<p>This helps you prioritize. A high-confidence pattern is safe to apply widely. A critical gotcha demands immediate attention.</p>
+<h2>Building Your Pattern Library</h2>
+<p>Start simple. You don&#39;t need to document everything upfront. Capture patterns as they prove valuable:</p>
+<h3>When You Solve a Recurring Problem</h3>
+<p>If you&#39;ve solved the same type of problem twice, it&#39;s a pattern:</p>
+<pre><code class="language-bash">ginko log &quot;API retry pattern: exponential backoff starting at 100ms,
+max 3 attempts, jitter to prevent thundering herd. Used in auth-client
+and data-sync.&quot; --category=insight
+</code></pre>
+<h3>When You Hit a Non-Obvious Bug</h3>
+<p>If the fix wasn&#39;t obvious, document it:</p>
+<pre><code class="language-bash">ginko log &quot;Gotcha: Next.js App Router caches fetch() by default.
+Add { cache: &#39;no-store&#39; } for dynamic data. Cost us 2 hours debugging
+stale data issues.&quot; --category=insight
+</code></pre>
+<h3>When You Make an Architecture Decision</h3>
+<p>Decisions are patterns waiting to happen:</p>
+<pre><code class="language-bash">ginko log &quot;Decision: Using cursor-based pagination over offset-based.
+Scales better with large datasets, consistent results during updates.
+Trade-off: slightly more complex client code.&quot; --category=decision
+</code></pre>
+<h2>Team Knowledge Amplification</h2>
+<p>The magic happens when patterns and gotchas flow across your team:</p>
+<p><strong>Monday</strong>: Alice hits a weird timer bug. Spends 2 hours debugging. Documents the gotcha.</p>
+<p><strong>Wednesday</strong>: Bob starts a related task. Ginko shows: &quot;Avoid: 💡 timer-unref-gotcha&quot;</p>
+<p><strong>Wednesday</strong>: Bob avoids 2 hours of debugging. Ships feature on time.</p>
+<p><strong>Next Month</strong>: New hire Carol sees the same gotcha surfaced during onboarding. The tribal knowledge transfers without a meeting.</p>
+<p>This is compound interest on documentation. Every gotcha documented saves time for everyone who comes after.</p>
+<h2>Practical Tips</h2>
+<p><strong>Keep it specific</strong>: &quot;Use retry logic&quot; is too vague. &quot;Exponential backoff, 100ms start, 3 max attempts, jitter&quot; is actionable.</p>
+<p><strong>Include the why</strong>: Patterns without rationale get ignored. Explain the trade-offs.</p>
+<p><strong>Reference the code</strong>: &quot;See src/utils/retry.ts for implementation&quot; makes patterns concrete.</p>
+<p><strong>Update when wrong</strong>: Patterns evolve. If you find a better approach, update the documentation.</p>
+<p><strong>Don&#39;t over-document</strong>: Not everything is a pattern. Focus on recurring solutions and painful gotchas.</p>
+<h2>Getting Started</h2>
+<pre><code class="language-bash"># Log a pattern you just discovered
+ginko log &quot;Pattern: [description with context and rationale]&quot; --category=insight
+
+# Log a gotcha you just hit
+ginko log &quot;Gotcha: [what happened, why, and how to avoid]&quot; --category=fix
+
+# See patterns for your current task
+ginko start  # Shows Apply: and Avoid: sections
+</code></pre>
+<p>Your AI assistant will never have the intuition that comes from hitting bugs at 2 AM. But with captured patterns and gotchas, it can at least benefit from the lessons your team has learned.</p>
 <hr>
-<p><strong>Want to try git-native context management?</strong> Check out <a href="https://ginkoai.com">Ginko</a>—a CLI tool that brings persistent context to AI-assisted development. No cloud required. Just git, sessions, and smarter AI collaboration.</p>
+<p><em>Stop re-teaching your AI the same lessons. <a href="https://ginkoai.com">Ginko</a> captures patterns and gotchas so your whole team—human and AI—can learn from experience.</em></p>
 
     </article>
 
     <!-- Post Navigation -->
     <nav class="post-navigation" aria-label="Post navigation">
+        <div class="nav-card nav-prev nav-empty"></div>
         
-        <a href="/blog/back-in-flow-30-seconds/" class="nav-card nav-prev" rel="prev">
+        <a href="/blog/back-in-flow-30-seconds/" class="nav-card nav-next" rel="next">
             <div class="corner-bracket top-left"></div>
             <div class="corner-bracket top-right"></div>
-            <span class="nav-label">← Previous</span>
+            <span class="nav-label">Next →</span>
             <span class="nav-title">Back in Flow in 30 Seconds: The ginko start Experience</span>
             <div class="corner-bracket bottom-left"></div>
             <div class="corner-bracket bottom-right"></div>
         </a>
-        <div class="nav-card nav-next nav-empty"></div>
     </nav>
 
     <div class="section-divider--inverted section-divider"></div>

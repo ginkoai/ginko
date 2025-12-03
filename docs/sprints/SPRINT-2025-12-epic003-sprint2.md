@@ -5,7 +5,7 @@
 **Sprint Goal**: Establish blog infrastructure and create initial "stock" content pieces
 **Duration**: 2 weeks (2025-12-16 to 2025-12-29)
 **Type**: Content & Infrastructure sprint
-**Progress:** 20% (1/5 tasks complete)
+**Progress:** 60% (3/5 tasks complete)
 
 **Success Criteria:**
 - Blog section live on marketing site
@@ -44,7 +44,7 @@
 ---
 
 ### TASK-2: Content Strategy & Editorial Calendar (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Define content themes and create initial publishing schedule
@@ -68,10 +68,20 @@
 - 4-week editorial calendar
 - Post template/structure guide
 
+**Completion Notes:**
+- Created `website/content/CONTENT-STRATEGY.md` with:
+  - 6 content pillars with audience mapping
+  - 2 audience profiles (Developers, Engineering Managers)
+  - 5 post formats with structure templates
+  - 4-week editorial calendar (6 posts planned)
+  - Content guidelines (voice, CTA, SEO, quality checklist)
+  - Success metrics and post pipeline
+- Verified 2025-12-03
+
 ---
 
 ### TASK-3: Initial Blog Posts - Developer Focus (8h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Write 3 developer-focused blog posts
@@ -93,6 +103,15 @@
    - Practical examples
 
 **Tone:** Collegial, helpful, developer-to-developer
+
+**Completion Notes:**
+- Post 1: `2025-12-10-why-ai-assistants-forget.md` (from TASK-1)
+- Post 2: `2025-12-17-back-in-flow.md` - ginko start experience, flow state, session anatomy
+- Post 3: `2025-12-26-patterns-and-gotchas.md` - tribal knowledge, pattern/gotcha capture, team amplification
+- All posts follow Problem/Solution or How-To format from content strategy
+- Collegial developer-to-developer tone throughout
+- Subtle CTAs at end of each post
+- Verified 2025-12-03
 
 ---
 
