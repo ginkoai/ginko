@@ -1,0 +1,20 @@
+{
+  "name": "ginko-marketing-site",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node build-blog.js",
+    "build:blog": "node build-blog.js",
+    "watch:blog": "node watch-blog.js",
+    "dev": "node watch-blog.js"
+  },
+  "dependencies": {
+    "marked": "^11.1.1",
+    "gray-matter": "^4.0.3",
+    "highlight.js": "^11.9.0"
+  },
+  "devDependencies": {
+    "chokidar": "^3.5.3"
+  }
+}

@@ -5,7 +5,7 @@
 **Sprint Goal**: Establish blog infrastructure and create initial "stock" content pieces
 **Duration**: 2 weeks (2025-12-16 to 2025-12-29)
 **Type**: Content & Infrastructure sprint
-**Progress:** 0% (0/5 tasks complete)
+**Progress:** 20% (1/5 tasks complete)
 
 **Success Criteria:**
 - Blog section live on marketing site
@@ -19,7 +19,7 @@
 ## Sprint Tasks
 
 ### TASK-1: Blog Infrastructure Setup (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Add blog functionality to marketing site
@@ -137,15 +137,28 @@
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2025-12-03: Blog Infrastructure Complete (TASK-1)
+- Created ADR-050 documenting architecture decision (static markdown + build script)
+- Built lightweight Node.js build system:
+  - `build-blog.js` - Markdown → HTML with syntax highlighting
+  - `watch-blog.js` - Development mode with auto-rebuild
+  - Templates matching Brass Hands aesthetic
+- Added first blog post: "Why AI Assistants Forget Everything"
+- Generated RSS feed at `/blog/feed.xml`
+- Updated navigation on all pages with Blog link
+- Updated `vercel.json` for automated builds
+- Files: `website/build-blog.js`, `website/templates/`, `website/content/blog/`
 
 ## Next Steps
 
-[To be updated during sprint]
+1. TASK-2: Content Strategy & Editorial Calendar
+2. TASK-3: Write 3 developer-focused blog posts
+3. TASK-4: Write 1-2 manager-focused blog posts
+4. TASK-5: SEO & discoverability setup
 
 ## Blockers
 
-- Sprint 1 (website redesign) should be substantially complete
+- ~~Sprint 1 (website redesign) should be substantially complete~~ ✅ Complete
 
 ---
 
