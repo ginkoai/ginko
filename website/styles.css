@@ -1688,3 +1688,702 @@ pre {
 .mt-6 { margin-top: var(--space-6); }
 .mt-8 { margin-top: var(--space-8); }
 .mt-12 { margin-top: var(--space-12); }
+
+/* ============================================================================
+   HOW IT WORKS - ARCHITECTURE DIAGRAM
+   ============================================================================ */
+
+.architecture-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.arch-layer {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-6);
+    width: 100%;
+}
+
+.arch-layer-wide {
+    flex-wrap: wrap;
+}
+
+.arch-card {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-6);
+    min-width: 280px;
+    max-width: 350px;
+    flex: 1;
+}
+
+.arch-card-highlight {
+    border-color: var(--color-accent);
+    background: linear-gradient(135deg, var(--color-surface), var(--color-accent-light));
+}
+
+.arch-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin-bottom: var(--space-3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.arch-content code {
+    display: block;
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-2);
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--color-text);
+}
+
+.arch-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+}
+
+.arch-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.arch-item {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-text);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.arch-arrow {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xl);
+    color: var(--color-text-tertiary);
+    line-height: 1;
+}
+
+/* ============================================================================
+   HOW IT WORKS - FEATURE CARDS LARGE
+   ============================================================================ */
+
+.feature-card-large {
+    padding: var(--space-8);
+}
+
+.feature-card-large .feature-label {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-4);
+}
+
+.feature-card-large .feature-description {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--space-4);
+}
+
+.feature-detail {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.feature-detail code {
+    background-color: var(--color-terminal-bg);
+    color: var(--color-accent);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: none;
+}
+
+/* ============================================================================
+   HOW IT WORKS - FILE STRUCTURE TERMINAL
+   ============================================================================ */
+
+.terminal-folder {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-medium);
+}
+
+.terminal-file {
+    color: var(--color-terminal-text);
+}
+
+.terminal-indent {
+    color: var(--color-terminal-comment);
+    user-select: none;
+}
+
+.terminal-comment {
+    color: var(--color-terminal-comment);
+    margin-left: var(--space-4);
+    font-size: var(--font-size-xs);
+}
+
+/* ============================================================================
+   GET STARTED - INSTALL OPTIONS
+   ============================================================================ */
+
+.install-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-6);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.install-card {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-6);
+}
+
+.install-card-primary {
+    border-color: var(--color-accent);
+}
+
+.install-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--space-4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.install-note {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    margin-top: var(--space-4);
+    margin-bottom: 0;
+}
+
+/* ============================================================================
+   GET STARTED - QUICKSTART STEPS
+   ============================================================================ */
+
+.quickstart-steps {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.quickstart-step {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-8);
+}
+
+.step-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.quickstart-step .step-number {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-accent);
+    color: #0A0A0A;
+    font-family: var(--font-mono);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-lg);
+    border-radius: var(--radius-sm);
+    flex-shrink: 0;
+}
+
+.quickstart-step .step-title {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin: 0;
+}
+
+.terminal-small {
+    margin-bottom: var(--space-4);
+}
+
+.terminal-small .terminal-body {
+    padding: var(--space-4);
+}
+
+.step-note {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+}
+
+.step-note code {
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-text);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: var(--font-size-xs);
+}
+
+/* ============================================================================
+   GET STARTED - COMMANDS GRID
+   ============================================================================ */
+
+.commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-6);
+}
+
+.command-card {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-6);
+    transition: border-color var(--transition-fast);
+}
+
+.command-card:hover {
+    border-color: var(--color-accent);
+}
+
+.command-name {
+    display: block;
+    font-size: var(--font-size-lg);
+    color: var(--color-accent);
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin-bottom: var(--space-3);
+}
+
+.command-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+}
+
+.command-description code {
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-text);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: var(--font-size-xs);
+}
+
+/* ============================================================================
+   GET STARTED - PRO FEATURES
+   ============================================================================ */
+
+.pro-features {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: var(--space-8);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.pro-card {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 2px solid var(--color-accent);
+    padding: var(--space-8);
+}
+
+.pro-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+}
+
+.pro-badge-large {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: #0A0A0A;
+    background-color: var(--color-accent);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+}
+
+.pro-price {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+}
+
+.pro-period {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-secondary);
+}
+
+.pro-list {
+    list-style: none;
+    margin-bottom: var(--space-6);
+}
+
+.pro-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+    color: var(--color-text-secondary);
+}
+
+.pro-list .feature-check {
+    color: var(--color-accent);
+    font-weight: var(--font-weight-bold);
+}
+
+.pro-cta {
+    text-align: center;
+}
+
+.pro-setup {
+    display: flex;
+    flex-direction: column;
+}
+
+.pro-setup h3 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-4);
+}
+
+.pro-note {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-4);
+    margin-bottom: 0;
+}
+
+/* ============================================================================
+   GET STARTED - NEXT STEPS
+   ============================================================================ */
+
+.next-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-8);
+}
+
+.next-step-card {
+    display: block;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-5);
+    text-decoration: none;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.next-step-card:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+}
+
+.next-step-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    margin-bottom: var(--space-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.next-step-card p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+}
+
+/* ============================================================================
+   KNOWLEDGE GRAPH SECTION
+   ============================================================================ */
+
+.graph-section {
+    background-color: var(--color-bg);
+}
+
+.section-subtitle {
+    text-align: center;
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-12);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.graph-overview {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    margin-bottom: var(--space-12);
+}
+
+.graph-visual {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.graph-diagram {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.graph-node {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    border-radius: 50%;
+    text-transform: uppercase;
+}
+
+.graph-node-center {
+    width: 80px;
+    height: 80px;
+    background-color: var(--color-accent);
+    color: #0A0A0A;
+    position: absolute;
+    z-index: 2;
+    font-size: var(--font-size-sm);
+}
+
+.graph-connections {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.graph-node-satellite {
+    width: 60px;
+    height: 60px;
+    background-color: var(--color-terminal-bg);
+    color: var(--color-terminal-text);
+    border: 2px solid var(--color-border);
+    position: absolute;
+    font-size: var(--font-size-xs);
+}
+
+.graph-node-satellite:nth-child(1) { top: 0; left: 50%; transform: translateX(-50%); }
+.graph-node-satellite:nth-child(2) { top: 20%; right: 5%; }
+.graph-node-satellite:nth-child(3) { bottom: 20%; right: 5%; }
+.graph-node-satellite:nth-child(4) { bottom: 0; left: 50%; transform: translateX(-50%); }
+.graph-node-satellite:nth-child(5) { bottom: 20%; left: 5%; }
+.graph-node-satellite:nth-child(6) { top: 20%; left: 5%; }
+
+.graph-caption {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    margin-top: var(--space-6);
+    margin-bottom: 0;
+    text-align: center;
+}
+
+.graph-features {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.graph-feature {
+    position: relative;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: var(--space-5);
+    transition: border-color var(--transition-fast);
+}
+
+.graph-feature:hover {
+    border-color: var(--color-accent);
+}
+
+.graph-feature .feature-label {
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--space-2);
+}
+
+.graph-feature .feature-description {
+    font-size: var(--font-size-sm);
+    margin-bottom: 0;
+}
+
+/* Graph flow diagram */
+.graph-how-it-works {
+    margin-bottom: var(--space-12);
+}
+
+.graph-how-it-works h3 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xl);
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.graph-flow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+}
+
+.graph-flow-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 180px;
+}
+
+.flow-number {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-accent);
+    color: #0A0A0A;
+    font-family: var(--font-mono);
+    font-weight: var(--font-weight-bold);
+    border-radius: 50%;
+    margin-bottom: var(--space-3);
+}
+
+.flow-content strong {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    display: block;
+    margin-bottom: var(--space-2);
+}
+
+.flow-content p {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-bottom: 0;
+}
+
+.graph-flow-arrow {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xl);
+    color: var(--color-text-tertiary);
+    margin-top: var(--space-2);
+    display: flex;
+    align-items: center;
+}
+
+/* Graph example terminal */
+.graph-example {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* ============================================================================
+   RESPONSIVE - HOW IT WORKS & GET STARTED
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+    .graph-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .graph-flow {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .graph-flow-arrow {
+        transform: rotate(90deg);
+        margin: var(--space-2) 0;
+    }
+
+    .graph-flow-step {
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 768px) {
+    .arch-layer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .arch-card {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .pro-features {
+        grid-template-columns: 1fr;
+    }
+
+    .quickstart-step {
+        padding: var(--space-6);
+    }
+
+    .step-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .graph-diagram {
+        width: 240px;
+        height: 240px;
+    }
+
+    .graph-node-center {
+        width: 60px;
+        height: 60px;
+        font-size: var(--font-size-xs);
+    }
+
+    .graph-node-satellite {
+        width: 50px;
+        height: 50px;
+        font-size: 0.65rem;
+    }
+}

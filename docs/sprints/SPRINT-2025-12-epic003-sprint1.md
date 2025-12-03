@@ -5,7 +5,7 @@
 **Sprint Goal**: Transform ginkoai.com into a modern, developer-focused marketing site with clear value propositions
 **Duration**: 2 weeks (2025-12-02 to 2025-12-15)
 **Type**: Design & Development sprint
-**Progress:** 67% (4/6 tasks complete)
+**Progress:** 83% (5/6 tasks complete)
 
 **Success Criteria:**
 - Modern monospace design implemented
@@ -110,7 +110,7 @@
 ---
 
 ### TASK-5: Technical Overview & Getting Started (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Provide brief technical context and clear installation path
@@ -122,8 +122,8 @@
 - Link to full documentation
 
 **Files:**
-- `marketing-site/src/pages/how-it-works.tsx`
-- `marketing-site/src/pages/get-started.tsx`
+- `website/how-it-works.html`
+- `website/get-started.html`
 
 ---
 
@@ -199,11 +199,33 @@
   - Pricing CTA section (Pro + Enterprise)
 - Both pages follow Brass Hands aesthetic with full corner bracket implementation
 
+### 2025-12-03: Technical Overview & Getting Started Pages Complete
+- Created how-it-works.html (15KB):
+  - Architecture diagram showing context flow: Project → Sessions → CLI → AI
+  - Core concepts section: Event Stream, Cursor Tracking, Session Handoffs, Pattern Capture
+  - Daily flow workflow (START → WORK → COMMIT → HANDOFF)
+  - File structure terminal demo showing .ginko/ contents
+  - Integrations section (Claude Code, Cursor, Git)
+- Created get-started.html (18KB):
+  - Installation section with npm command and verification
+  - 4-step quickstart guide with terminal demos:
+    1. Initialize project (ginko init)
+    2. Start session (ginko start)
+    3. Work and capture insights (ginko log)
+    4. Resume tomorrow
+  - Essential commands grid (init, start, log, handoff, charter, --help)
+  - Pro features section with cloud sync setup
+  - Next steps navigation to docs, architecture, developers, teams pages
+- Updated navigation across all pages:
+  - Added "How It Works" link to nav menu
+  - Updated "Get Started" button to link to get-started.html
+  - Added theme toggle to index.html nav
+- Added ~500 lines of new CSS for architecture diagrams, quickstart steps, commands grid, pro features sections
+
 ## Next Steps
 
-1. TASK-5: Technical Overview & Getting Started pages
-2. TASK-6: Responsive polish and final QA
-3. Deploy to Vercel and test production
+1. TASK-6: Responsive polish and final QA
+2. Deploy to Vercel and test production
 
 ## Blockers
 

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Get Started</title>
+    <meta name="description" content="Install ginko in 30 seconds. Quick start guide for git-native AI context management.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" class="logo-text">ginko</a>
+            </div>
+            <div class="nav-menu">
+                <a href="developers.html" class="nav-link">Developers</a>
+                <a href="teams.html" class="nav-link">Teams</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" aria-label="Toggle theme">
+                    <span class="theme-icon theme-icon-light">☀</span>
+                    <span class="theme-icon theme-icon-dark">☾</span>
+                </button>
+                <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h1 class="hero-title">
+                    Get started.
+                </h1>
+                <p class="hero-subtitle">
+                    From install to first session in under 2 minutes. No account required for local use.
+                </p>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Quick Install -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">Installation</h2>
+
+            <div class="install-options">
+                <div class="install-card install-card-primary">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="install-label">NPM (Recommended)</div>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                    <p class="install-note">Requires Node.js 18+</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="install-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="install-label">Verify Installation</div>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="ginko --version">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko --version</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                    <p class="install-note">Should print version number</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Quick Start Steps -->
+    <section class="workflow">
+        <div class="container">
+            <h2 class="section-title">Quick start</h2>
+
+            <div class="quickstart-steps">
+                <div class="quickstart-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-header">
+                        <span class="step-number">1</span>
+                        <h3 class="step-title">Initialize in your project</h3>
+                    </div>
+                    <div class="terminal-window terminal-small">
+                        <div class="terminal-header">
+                            <div class="terminal-controls">
+                                <span class="control red"></span>
+                                <span class="control yellow"></span>
+                                <span class="control green"></span>
+                            </div>
+                            <span class="terminal-title">terminal</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> cd your-project
+                            </div>
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko init
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Initialized ginko in .ginko/
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Created CLAUDE.md with project instructions
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">→</span> Run 'ginko start' to begin your first session
+                            </div>
+                        </div>
+                    </div>
+                    <p class="step-note">Creates <code>.ginko/</code> directory and <code>CLAUDE.md</code> for AI instructions.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="quickstart-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-header">
+                        <span class="step-number">2</span>
+                        <h3 class="step-title">Start a session</h3>
+                    </div>
+                    <div class="terminal-window terminal-small">
+                        <div class="terminal-header">
+                            <div class="terminal-controls">
+                                <span class="control red"></span>
+                                <span class="control yellow"></span>
+                                <span class="control green"></span>
+                            </div>
+                            <span class="terminal-title">terminal</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko start
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Session started
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">→</span> Context loaded (0 events)
+                            </div>
+                            <div class="terminal-line response blank"></div>
+                            <div class="terminal-line response">
+                                <span class="status-highlight">Ready</span> | <span class="status-flow">Cold (0/10)</span> | Think & Build mode
+                            </div>
+                            <div class="terminal-line response blank"></div>
+                            <div class="terminal-line response">
+                                What would you like to work on?
+                            </div>
+                        </div>
+                    </div>
+                    <p class="step-note">First session is "cold" - it warms up as you work and capture context.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="quickstart-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-header">
+                        <span class="step-number">3</span>
+                        <h3 class="step-title">Work and capture insights</h3>
+                    </div>
+                    <div class="terminal-window terminal-small">
+                        <div class="terminal-header">
+                            <div class="terminal-controls">
+                                <span class="control red"></span>
+                                <span class="control yellow"></span>
+                                <span class="control green"></span>
+                            </div>
+                            <span class="terminal-title">terminal</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko log "Fixed auth bug - was missing token refresh"
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Event logged
+                            </div>
+                            <div class="terminal-line response blank"></div>
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko log "Pattern: always validate tokens on API routes"
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Event logged
+                            </div>
+                        </div>
+                    </div>
+                    <p class="step-note">Log insights, decisions, and patterns as you work. They'll surface in future sessions.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="quickstart-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-header">
+                        <span class="step-number">4</span>
+                        <h3 class="step-title">Resume tomorrow</h3>
+                    </div>
+                    <div class="terminal-window terminal-small">
+                        <div class="terminal-header">
+                            <div class="terminal-controls">
+                                <span class="control red"></span>
+                                <span class="control yellow"></span>
+                                <span class="control green"></span>
+                            </div>
+                            <span class="terminal-title">terminal (next day)</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko start
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Session restored from yesterday
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">→</span> Loaded 12 events
+                            </div>
+                            <div class="terminal-line response blank"></div>
+                            <div class="terminal-line response">
+                                <span class="status-highlight">Ready</span> | <span class="status-flow">Warm (4/10)</span> | Think & Build mode
+                            </div>
+                            <div class="terminal-line response">
+                                Resume: Fixed auth bug, implemented token refresh
+                            </div>
+                            <div class="terminal-line response blank"></div>
+                            <div class="terminal-line response">
+                                What would you like to work on?
+                            </div>
+                        </div>
+                    </div>
+                    <p class="step-note">Your AI now knows your recent context. No re-explaining needed.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Essential Commands -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Essential commands</h2>
+            <div class="commands-grid">
+                <div class="command-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <code class="command-name">ginko init</code>
+                    <p class="command-description">Initialize ginko in a project. Creates <code>.ginko/</code> and <code>CLAUDE.md</code>.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="command-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <code class="command-name">ginko start</code>
+                    <p class="command-description">Start or resume a session. Loads context and shows resume point.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="command-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <code class="command-name">ginko log "..."</code>
+                    <p class="command-description">Capture an insight, decision, or achievement. Surfaces in future sessions.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="command-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <code class="command-name">ginko handoff "..."</code>
+                    <p class="command-description">Create a session summary for clean transitions between sessions.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="command-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <code class="command-name">ginko charter</code>
+                    <p class="command-description">Create a project charter with AI guidance. Defines goals and success criteria.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="command-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <code class="command-name">ginko --help</code>
+                    <p class="command-description">See all available commands and options.</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pro Features -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">Unlock more with Pro</h2>
+
+            <div class="pro-features">
+                <div class="pro-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="pro-header">
+                        <span class="pro-badge-large">Pro</span>
+                        <span class="pro-price">$9<span class="pro-period">/user/mo</span></span>
+                    </div>
+                    <ul class="pro-list">
+                        <li><span class="feature-check">✓</span> Cloud backup & sync</li>
+                        <li><span class="feature-check">✓</span> Team context sharing</li>
+                        <li><span class="feature-check">✓</span> Natural language project queries</li>
+                        <li><span class="feature-check">✓</span> Knowledge graph visualization</li>
+                        <li><span class="feature-check">✓</span> Priority email support</li>
+                    </ul>
+                    <div class="pro-cta">
+                        <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Start Pro Trial</a>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="pro-setup">
+                    <h3>Enable cloud sync</h3>
+                    <div class="terminal-window terminal-small">
+                        <div class="terminal-header">
+                            <div class="terminal-controls">
+                                <span class="control red"></span>
+                                <span class="control yellow"></span>
+                                <span class="control green"></span>
+                            </div>
+                            <span class="terminal-title">terminal</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko login
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">→</span> Opening browser for authentication...
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Logged in as chris@example.com
+                            </div>
+                            <div class="terminal-line response blank"></div>
+                            <div class="terminal-line">
+                                <span class="prompt">$</span> ginko graph init
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Knowledge graph created
+                            </div>
+                            <div class="terminal-line response">
+                                <span class="status-icon">✓</span> Cloud sync enabled
+                            </div>
+                        </div>
+                    </div>
+                    <p class="pro-note">Events sync automatically. Access your context from any machine.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Next Steps -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2 class="cta-title">Next steps</h2>
+                <div class="next-steps-grid">
+                    <a href="https://docs.ginko.ai" class="next-step-card">
+                        <div class="next-step-label">FULL_DOCS</div>
+                        <p>Complete documentation with advanced features and configuration.</p>
+                    </a>
+                    <a href="how-it-works.html" class="next-step-card">
+                        <div class="next-step-label">ARCHITECTURE</div>
+                        <p>Learn how ginko stores and surfaces context under the hood.</p>
+                    </a>
+                    <a href="developers.html" class="next-step-card">
+                        <div class="next-step-label">FOR_DEVELOPERS</div>
+                        <p>Deep dive into developer workflows and productivity features.</p>
+                    </a>
+                    <a href="teams.html" class="next-step-card">
+                        <div class="next-step-label">FOR_TEAMS</div>
+                        <p>Team context sharing, onboarding, and collaboration features.</p>
+                    </a>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider--inverted section-divider"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">ginko</span>
+                    </div>
+                    <p class="footer-tagline">Context that flows with you</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="developers.html">For Developers</a></li>
+                        <li><a href="teams.html">For Teams</a></li>
+                        <li><a href="how-it-works.html">How It Works</a></li>
+                        <li><a href="get-started.html">Get Started</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://docs.ginko.ai">Documentation</a></li>
+                        <li><a href="https://github.com/ginkoai">GitHub</a></li>
+                        <li><a href="https://docs.ginko.ai/api">API Reference</a></li>
+                        <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 ginko. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="script.js"></script>
+</body>
+</html>

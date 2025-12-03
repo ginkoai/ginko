@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - How It Works</title>
+    <meta name="description" content="Learn how ginko preserves AI context using git-native session management. Event-based loading, session handoffs, and pattern capture.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" class="logo-text">ginko</a>
+            </div>
+            <div class="nav-menu">
+                <a href="developers.html" class="nav-link">Developers</a>
+                <a href="teams.html" class="nav-link">Teams</a>
+                <a href="how-it-works.html" class="nav-link nav-link-active">How It Works</a>
+                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+            </div>
+            <div class="nav-actions">
+                <button class="theme-toggle" aria-label="Toggle theme">
+                    <span class="theme-icon theme-icon-light">☀</span>
+                    <span class="theme-icon theme-icon-dark">☾</span>
+                </button>
+                <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h1 class="hero-title">
+                    How ginko works.
+                </h1>
+                <p class="hero-subtitle">
+                    Git-native context management that captures what matters and surfaces it exactly when you need it.
+                </p>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Architecture Overview -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">The architecture</h2>
+
+            <div class="architecture-diagram">
+                <div class="arch-layer">
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">YOUR_PROJECT</div>
+                        <div class="arch-content">
+                            <code>.ginko/</code>
+                            <p class="arch-description">All context lives in your repo. Versioned with git. Works offline.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="arch-arrow">↓</div>
+
+                <div class="arch-layer arch-layer-wide">
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">SESSION_CONTEXT</div>
+                        <div class="arch-content">
+                            <div class="arch-items">
+                                <span class="arch-item">events.jsonl</span>
+                                <span class="arch-item">session-log.md</span>
+                                <span class="arch-item">cursors.json</span>
+                            </div>
+                            <p class="arch-description">Chronological event stream. Every insight, decision, and achievement captured.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">PROJECT_DOCS</div>
+                        <div class="arch-content">
+                            <div class="arch-items">
+                                <span class="arch-item">CLAUDE.md</span>
+                                <span class="arch-item">ADRs</span>
+                                <span class="arch-item">Sprints</span>
+                            </div>
+                            <p class="arch-description">AI instructions, architecture decisions, and sprint context.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="arch-arrow">↓</div>
+
+                <div class="arch-layer">
+                    <div class="arch-card arch-card-highlight">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">GINKO_CLI</div>
+                        <div class="arch-content">
+                            <code>ginko start</code>
+                            <p class="arch-description">Sub-second context loading. Event-based, cursor-tracked, zero re-parsing.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="arch-arrow">↓</div>
+
+                <div class="arch-layer">
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">AI_ASSISTANT</div>
+                        <div class="arch-content">
+                            <p class="arch-description">Claude Code, Cursor, or any AI that reads CLAUDE.md. Full context, zero re-explaining.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Core Concepts -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Core concepts</h2>
+            <div class="features-grid">
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">EVENT_STREAM</div>
+                    <p class="feature-description">
+                        Every session captures events: insights, fixes, decisions, achievements. Stored as append-only JSONL.
+                        Fast to write, fast to read.
+                    </p>
+                    <div class="feature-detail">
+                        <code>ginko log "Fixed auth flow"</code> → captured instantly, surfaced on next session.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">CURSOR_TRACKING</div>
+                    <p class="feature-description">
+                        Ginko remembers where you left off. On start, it loads only new events since your last session.
+                        No re-processing, no stale context.
+                    </p>
+                    <div class="feature-detail">
+                        Session 1: 147 events → Session 2: loads only new events since cursor.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SESSION_HANDOFFS</div>
+                    <p class="feature-description">
+                        When you end a session, ginko creates a handoff summary. When you start fresh, your AI knows exactly
+                        what was happening.
+                    </p>
+                    <div class="feature-detail">
+                        <code>ginko handoff "Completed auth, starting payments"</code> → next session resumes smoothly.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">PATTERN_CAPTURE</div>
+                    <p class="feature-description">
+                        Patterns that work get recorded. Gotchas that bite get flagged. Your AI learns from your codebase,
+                        not just documentation.
+                    </p>
+                    <div class="feature-detail">
+                        "Always use <code>.unref()</code> on timers" → surfaced automatically when relevant.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- The Flow -->
+    <section class="workflow">
+        <div class="container">
+            <h2 class="section-title">The daily flow</h2>
+
+            <div class="workflow-timeline">
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="step-title">START</h3>
+                        <p class="step-description">Run <code>ginko start</code>. Context loads in under 2 seconds. Your AI knows where you left off.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="step-title">WORK</h3>
+                        <p class="step-description">Code as normal. Log insights with <code>ginko log</code>. Context captures automatically.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="step-title">COMMIT</h3>
+                        <p class="step-description">Commit your code. Context is versioned alongside. Session logs included if you want.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3 class="step-title">HANDOFF</h3>
+                        <p class="step-description">Optional: <code>ginko handoff</code> creates a summary. Tomorrow's session starts instantly.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- File Structure -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">What's in .ginko/</h2>
+
+            <div class="solution-demo">
+                <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="terminal-title">project/.ginko/</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="terminal-folder">sessions/</span>
+                            <span class="terminal-comment"># Per-user session data</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">└── </span><span class="terminal-file">chris/</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    ├── </span><span class="terminal-file">current-events.jsonl</span>
+                            <span class="terminal-comment"># Event stream</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    ├── </span><span class="terminal-file">current-session-log.md</span>
+                            <span class="terminal-comment"># Human-readable log</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    ├── </span><span class="terminal-file">cursors.json</span>
+                            <span class="terminal-comment"># Session position tracker</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    └── </span><span class="terminal-folder">archive/</span>
+                            <span class="terminal-comment"># Past sessions</span>
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line">
+                            <span class="terminal-folder">context/</span>
+                            <span class="terminal-comment"># Shared project context</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">├── </span><span class="terminal-file">patterns.json</span>
+                            <span class="terminal-comment"># Reusable patterns</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">└── </span><span class="terminal-file">gotchas.json</span>
+                            <span class="terminal-comment"># Known pitfalls</span>
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line">
+                            <span class="terminal-folder">graph/</span>
+                            <span class="terminal-comment"># Cloud sync config (Pro)</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">└── </span><span class="terminal-file">config.json</span>
+                            <span class="terminal-comment"># Graph connection</span>
+                        </div>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Knowledge Graph Section -->
+    <section class="graph-section">
+        <div class="container">
+            <h2 class="section-title">The ginko collaboration graph</h2>
+            <p class="section-subtitle">
+                Local context is powerful. Cloud-synced context is transformative. <span class="pro-badge">Pro</span>
+            </p>
+
+            <div class="graph-overview">
+                <div class="graph-visual">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="graph-diagram">
+                        <div class="graph-node graph-node-center">
+                            <span class="node-label">PROJECT</span>
+                        </div>
+                        <div class="graph-connections">
+                            <div class="graph-node graph-node-satellite">
+                                <span class="node-label">Events</span>
+                            </div>
+                            <div class="graph-node graph-node-satellite">
+                                <span class="node-label">Patterns</span>
+                            </div>
+                            <div class="graph-node graph-node-satellite">
+                                <span class="node-label">ADRs</span>
+                            </div>
+                            <div class="graph-node graph-node-satellite">
+                                <span class="node-label">Sprints</span>
+                            </div>
+                            <div class="graph-node graph-node-satellite">
+                                <span class="node-label">Gotchas</span>
+                            </div>
+                            <div class="graph-node graph-node-satellite">
+                                <span class="node-label">Team</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="graph-caption">Neo4j-powered knowledge graph with vector embeddings</p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="graph-features">
+                    <div class="graph-feature">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="feature-label">REAL_TIME_SYNC</div>
+                        <p class="feature-description">
+                            Events sync to the cloud as you work. Team members see updates instantly.
+                            No manual exports, no stale context.
+                        </p>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+
+                    <div class="graph-feature">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="feature-label">SEMANTIC_SEARCH</div>
+                        <p class="feature-description">
+                            Ask questions in natural language. "How do we handle authentication?" returns
+                            relevant ADRs, patterns, and recent decisions.
+                        </p>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+
+                    <div class="graph-feature">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="feature-label">KNOWLEDGE_TRAVERSAL</div>
+                        <p class="feature-description">
+                            AI navigates relationships: Pattern → related ADR → implementing sprint →
+                            relevant gotchas. Context arrives pre-connected.
+                        </p>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+
+                    <div class="graph-feature">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="feature-label">TEAM_CONTEXT</div>
+                        <p class="feature-description">
+                            See what teammates discovered. Patterns from Sarah's session surface in yours
+                            when relevant. Knowledge compounds across the team.
+                        </p>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-how-it-works">
+                <h3>How it works</h3>
+                <div class="graph-flow">
+                    <div class="graph-flow-step">
+                        <div class="flow-number">1</div>
+                        <div class="flow-content">
+                            <strong>Local capture</strong>
+                            <p>Events logged locally in JSONL format. Works offline, zero latency.</p>
+                        </div>
+                    </div>
+                    <div class="graph-flow-arrow">→</div>
+                    <div class="graph-flow-step">
+                        <div class="flow-number">2</div>
+                        <div class="flow-content">
+                            <strong>Background sync</strong>
+                            <p>Events batch-sync to cloud graph every 5 minutes or on threshold.</p>
+                        </div>
+                    </div>
+                    <div class="graph-flow-arrow">→</div>
+                    <div class="graph-flow-step">
+                        <div class="flow-number">3</div>
+                        <div class="flow-content">
+                            <strong>Vector embedding</strong>
+                            <p>Each event embedded for semantic similarity. Relationships auto-detected.</p>
+                        </div>
+                    </div>
+                    <div class="graph-flow-arrow">→</div>
+                    <div class="graph-flow-step">
+                        <div class="flow-number">4</div>
+                        <div class="flow-content">
+                            <strong>AI retrieval</strong>
+                            <p>Queries traverse graph + vectors. Most relevant context surfaces first.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-example">
+                <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="terminal-title">semantic query</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span> curl -X POST https://app.ginkoai.com/api/v1/graph/query \
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">  </span>-d '{"query": "How do we handle rate limiting?"}'
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            <span class="terminal-comment"># Returns: ADR-012, retry-pattern, rate-limit-gotcha,</span>
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="terminal-comment"># Sprint-2025-11 task, and 3 related events</span>
+                        </div>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Integration -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Integrations</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">CLAUDE_CODE</div>
+                    <p class="problem-description">
+                        Reads CLAUDE.md automatically. Full context on every session. First-class support.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">CURSOR</div>
+                    <p class="problem-description">
+                        Works via .cursor rules. Same context, different editor. Seamless switching.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">GIT</div>
+                    <p class="problem-description">
+                        Native integration. Context versions with code. Branching, merging, diffing all work.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2 class="cta-title">Ready to try it?</h2>
+                <p class="cta-subtitle">Install in 30 seconds. No account required for local use.</p>
+                <div class="terminal-inline terminal-inline-cta terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+                <div class="cta-buttons">
+                    <a href="get-started.html" class="btn-primary-large">Get Started</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large">Full Documentation</a>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider--inverted section-divider"></div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-text">ginko</span>
+                    </div>
+                    <p class="footer-tagline">Context that flows with you</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="developers.html">For Developers</a></li>
+                        <li><a href="teams.html">For Teams</a></li>
+                        <li><a href="how-it-works.html">How It Works</a></li>
+                        <li><a href="get-started.html">Get Started</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://docs.ginko.ai">Documentation</a></li>
+                        <li><a href="https://github.com/ginkoai">GitHub</a></li>
+                        <li><a href="https://docs.ginko.ai/api">API Reference</a></li>
+                        <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 ginko. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
