@@ -542,10 +542,22 @@
       "relevance": "critical",
       "created": "2025-12-03T19:14:48.064Z",
       "sessionId": "session-chris-at-watchhill-ai-1764789288031"
+    },
+    {
+      "filename": "gotcha-fixed-sprint-loader-to-correctly-identify-active-s.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-03T21:19:27.016Z",
+      "sessionId": "session-chris-at-watchhill-ai-1764796767003"
     }
   ],
-  "lastUpdated": "2025-12-03T19:14:48.065Z",
-  "totalModules": 37,
+  "lastUpdated": "2025-12-03T21:19:27.016Z",
+  "totalModules": 38,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

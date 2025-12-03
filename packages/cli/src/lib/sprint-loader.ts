@@ -132,14 +132,27 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       .sort()
       .reverse();
 
-    // Find first sprint that's not complete
+    // Two-pass approach:
+    // Pass 1: Find sprints that are actively in progress (1-99% progress or [@] tasks)
+    // Pass 2: Find sprints that haven't started yet (0% progress)
+    // This ensures we resume in-progress work before starting new sprints
+
+    interface SprintCandidate {
+      file: string;
+      progress: number;
+      hasInProgress: boolean;
+    }
+
+    const candidates: SprintCandidate[] = [];
+
     for (const file of sprintFiles) {
       const filePath = path.join(sprintsDir, file);
       const content = await fs.readFile(filePath, 'utf-8');
 
       // Check if sprint is marked complete
-      const statusMatch = content.match(/\*\*Sprint Status\*\*:\s*(.+)/);
-      const progressMatch = content.match(/\*\*Progress\*\*:\s*(\d+)%/);
+      // Note: Support both **Progress:** and **Progress**: formats
+      const statusMatch = content.match(/\*\*Sprint Status:?\*\*:?\s*(.+)/);
+      const progressMatch = content.match(/\*\*Progress:?\*\*:?\s*(\d+)%/);
 
       // Skip if explicitly marked complete or 100% progress
       if (statusMatch && statusMatch[1].toLowerCase().includes('complete') &&
@@ -147,11 +160,28 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
         continue;
       }
 
-      if (progressMatch && parseInt(progressMatch[1]) === 100) {
+      const progress = progressMatch ? parseInt(progressMatch[1]) : 0;
+      if (progress === 100) {
         continue;
       }
 
-      return filePath;
+      // Check for in-progress tasks ([@] markers)
+      const hasInProgress = content.includes('[@]') || (progress > 0 && progress < 100);
+
+      candidates.push({ file: filePath, progress, hasInProgress });
+    }
+
+    // Prioritize in-progress sprints over not-started ones
+    const inProgressSprints = candidates.filter(c => c.hasInProgress);
+    if (inProgressSprints.length > 0) {
+      // Return the one with highest progress (closest to completion)
+      inProgressSprints.sort((a, b) => b.progress - a.progress);
+      return inProgressSprints[0].file;
+    }
+
+    // Fall back to first not-started sprint
+    if (candidates.length > 0) {
+      return candidates[0].file;
     }
 
     // No active sprint found
