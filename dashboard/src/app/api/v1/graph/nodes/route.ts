@@ -10,7 +10,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { runQuery, verifyConnection, getSession } from '../_neo4j';
+import { verifyConnection, getSession } from '../_neo4j';
+import neo4j from 'neo4j-driver';
 
 interface NodeData {
   id: string;
@@ -28,6 +29,163 @@ interface CreateNodeResponse {
   label: string;
   graphId: string;
   created: boolean;
+}
+
+interface ListNodesResponse {
+  nodes: Array<{
+    id: string;
+    label: string;
+    properties: Record<string, any>;
+  }>;
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/**
+ * GET /api/v1/graph/nodes
+ * List and filter nodes from the knowledge graph
+ *
+ * Query params:
+ * - graphId (required): The graph namespace
+ * - labels (optional): Comma-separated node labels to filter (e.g., "ADR,PRD")
+ * - limit (optional): Max results (default 20, max 100)
+ * - offset (optional): Pagination offset (default 0)
+ * - [any other param]: Filter by property (e.g., user_id=alice@example.com)
+ */
+export async function GET(request: NextRequest) {
+  console.log('[Nodes API] GET /api/v1/graph/nodes called');
+
+  try {
+    // Verify Neo4j connection
+    const isConnected = await verifyConnection();
+    if (!isConnected) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Graph database is unavailable. Please try again later.',
+          },
+        },
+        { status: 503 }
+      );
+    }
+
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'AUTH_REQUIRED',
+            message: 'Authentication required. Include Bearer token in Authorization header.',
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    // Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const graphId = searchParams.get('graphId');
+    const labelsParam = searchParams.get('labels');
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+
+    if (!graphId) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'MISSING_GRAPH_ID',
+            message: 'graphId query parameter is required',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Build property filters from remaining query params
+    const reservedParams = ['graphId', 'labels', 'limit', 'offset'];
+    const propertyFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      if (!reservedParams.includes(key)) {
+        propertyFilters[key] = value;
+      }
+    });
+
+    // Build Cypher query
+    const labels = labelsParam ? labelsParam.split(',').map(l => l.trim()) : [];
+    const labelClause = labels.length > 0 ? `:${labels.join('|')}` : '';
+
+    // Build WHERE clause for property filters
+    // Note: Some nodes use graphId (camelCase), others use graph_id (snake_case)
+    const whereConditions = ['(n.graph_id = $graphId OR n.graphId = $graphId)'];
+    const params: Record<string, any> = { graphId, limit: neo4j.int(limit), offset: neo4j.int(offset) };
+
+    Object.entries(propertyFilters).forEach(([key, value], index) => {
+      const paramName = `prop_${index}`;
+      whereConditions.push(`n.${key} = $${paramName}`);
+      params[paramName] = value;
+    });
+
+    const whereClause = whereConditions.join(' AND ');
+
+    const session = getSession();
+    try {
+      // Get total count
+      const countResult = await session.executeRead(async (tx) => {
+        return tx.run(
+          `MATCH (n${labelClause}) WHERE ${whereClause} RETURN count(n) as total`,
+          params
+        );
+      });
+      const total = countResult.records[0]?.get('total')?.toNumber() || 0;
+
+      // Get nodes with pagination
+      const nodesResult = await session.executeRead(async (tx) => {
+        return tx.run(
+          `MATCH (n${labelClause}) WHERE ${whereClause}
+           RETURN n, labels(n) as nodeLabels
+           ORDER BY n.created_at DESC
+           SKIP $offset LIMIT $limit`,
+          params
+        );
+      });
+
+      const nodes = nodesResult.records.map((record) => {
+        const node = record.get('n');
+        const nodeLabels = record.get('nodeLabels') as string[];
+        return {
+          id: node.properties.id,
+          label: nodeLabels[0] || 'Unknown',
+          properties: { ...node.properties },
+        };
+      });
+
+      const response: ListNodesResponse = {
+        nodes,
+        total,
+        limit,
+        offset,
+      };
+
+      console.log('[Nodes API] Returning', nodes.length, 'nodes of', total, 'total');
+      return NextResponse.json(response);
+    } finally {
+      await session.close();
+    }
+  } catch (error) {
+    console.error('[Nodes API] ERROR listing nodes:', error);
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to list nodes',
+        },
+      },
+      { status: 500 }
+    );
+  }
 }
 
 /**

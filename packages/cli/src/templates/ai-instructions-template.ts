@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-08-28
- * @tags: [template, ai-instructions, frontmatter, ai-optimization, model-agnostic]
+ * @updated: 2025-11-25
+ * @tags: [template, ai-instructions, frontmatter, ai-optimization, model-agnostic, graph-queries, epic-003]
  * @related: [init.ts, project-analyzer.ts, ai-adapter.ts]
  * @priority: high
  * @complexity: medium
@@ -50,6 +50,44 @@ When the user types a **single word** that matches a ginko command, **IMMEDIATEL
 - Add any commentary before execution
 
 **Why:** Eliminates 9+ seconds of response latency (28s → <2s startup)
+
+### After Execution: Concise Readiness Message
+
+After \`ginko start\` completes, provide a brief readiness message (6-10 lines):
+
+**Template:**
+\`\`\`
+Ready | [Flow State] | [Work Mode]
+Last session: [What was done/in progress last time]
+Next up: [TASK-ID] - [Task title] (start|continue)
+
+Sprint: [Sprint Name] [Progress]%
+  Follow: [ADR constraints]
+  Apply: [Pattern guidance with confidence icons]
+  Avoid: [Gotcha warnings]
+Branch: [branch] ([uncommitted count] uncommitted files)
+\`\`\`
+
+**Example:**
+\`\`\`
+Ready | Hot (10/10) | Think & Build mode
+Last session: EPIC-003 Sprint 2 TASK-1 complete (Blog infrastructure)
+Next up: TASK-2 - Verify human output format (start)
+
+Sprint: Enrichment Test 50%
+  Follow: ADR-002, ADR-033
+  Apply: retry-pattern ◐, output-formatter-pattern ◐
+  Avoid: 💡 timer-unref-gotcha
+Branch: main (12 uncommitted files)
+\`\`\`
+
+**Guidelines:**
+- Line 1: Flow state and work mode
+- Line 2: "Last session:" - what happened before
+- Line 3: "Next up:" - what to work on now (start/continue)
+- Sprint block: Progress + cognitive scaffolding (Follow/Apply/Avoid)
+- Confidence icons: ★ high, ◐ medium, ○ low
+- Severity icons: 🚨 critical, ⚠️ high, 💡 medium/low
 
 ### New Project Onboarding
 
@@ -166,6 +204,69 @@ These "mental reflexes" activate naturally without explicit prompting to maintai
 These reflexes maintain continuous context awareness while preserving natural workflow.
 `;
 
+  private static readonly PROJECT_KNOWLEDGE_QUERIES = `
+## 🔍 Answering Project Questions (EPIC-003)
+
+When users ask factual questions about the project, query available data sources directly.
+
+### Graph API - Requires \`GINKO_BEARER_TOKEN\` and \`GINKO_GRAPH_ID\`
+
+**Setup credentials:**
+1. Run \`ginko login\` to authenticate (stores token in ~/.ginko/auth.json)
+2. Run \`ginko graph init\` to create graph (stores ID in .ginko/graph/config.json)
+3. Export for shell use: \`export GINKO_BEARER_TOKEN=$(cat ~/.ginko/auth.json | jq -r .api_key)\`
+4. Export graph ID: \`export GINKO_GRAPH_ID=$(cat .ginko/graph/config.json | jq -r .graphId)\`
+
+**Semantic search** - finds content similar to query:
+\`\`\`bash
+curl -X POST https://app.ginkoai.com/api/v1/graph/query \\
+  -H "Authorization: Bearer $GINKO_BEARER_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"graphId": "'"$GINKO_GRAPH_ID"'", "query": "YOUR_SEARCH_TERM", "limit": 5}'
+\`\`\`
+
+**List nodes by type** (ADR, PRD, Pattern, Gotcha, Event, Sprint, Task):
+\`\`\`bash
+curl "https://app.ginkoai.com/api/v1/graph/nodes?graphId=$GINKO_GRAPH_ID&labels=ADR&limit=10" \\
+  -H "Authorization: Bearer $GINKO_BEARER_TOKEN"
+\`\`\`
+
+**Filter by property** (e.g., events by user):
+\`\`\`bash
+curl "https://app.ginkoai.com/api/v1/graph/nodes?graphId=$GINKO_GRAPH_ID&labels=Event&user_id=USER_EMAIL&limit=20" \\
+  -H "Authorization: Bearer $GINKO_BEARER_TOKEN"
+\`\`\`
+
+### Local Files (Fallback when graph unavailable)
+
+| Question Type | File Location |
+|--------------|---------------|
+| Sprint progress | \`docs/sprints/CURRENT-SPRINT.md\` |
+| Architecture decisions | \`docs/adr/ADR-*.md\` |
+| Project goals | \`docs/PROJECT-CHARTER.md\` |
+| Recent activity | \`.ginko/sessions/[user]/current-events.jsonl\` |
+| Session logs | \`.ginko/sessions/[user]/current-session-log.md\` |
+
+### Common Query Recipes
+
+**"What's our sprint progress?"**
+→ Read \`docs/sprints/CURRENT-SPRINT.md\`, count checkboxes:
+\`\`\`bash
+grep -c "\\[x\\]" docs/sprints/CURRENT-SPRINT.md  # complete
+grep -c "\\[@\\]" docs/sprints/CURRENT-SPRINT.md  # in progress
+grep -c "\\[ \\]" docs/sprints/CURRENT-SPRINT.md  # pending
+\`\`\`
+
+**"How do we handle X?" / "What's our approach to X?"**
+→ Semantic search: \`{"query": "X"}\` OR local: \`grep -l -i "X" docs/adr/*.md\`
+
+**"What is [person] working on?"**
+→ Query events by user_id OR: \`grep -i "person" .ginko/sessions/*/current-session-log.md\`
+
+**"Show me ADRs about [topic]"**
+→ Semantic search with \`labels=ADR\` filter OR: \`grep -l -i "topic" docs/adr/*.md\`
+`;
+
   static generate(variables: TemplateVariables, modelSpecificContent?: string): string {
     const aiName = variables.aiModel || 'AI Assistant';
     return `# ${variables.projectName} - ${aiName} Collaboration Guide
@@ -188,6 +289,8 @@ ${this.FRONTMATTER_SECTION}
 ${this.DEVELOPMENT_WORKFLOW}
 
 ${this.CONTEXT_REFLEXES}
+
+${this.PROJECT_KNOWLEDGE_QUERIES}
 
 ${this.generateProjectSpecificSection(variables)}
 

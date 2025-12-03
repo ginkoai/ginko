@@ -212,34 +212,43 @@ export function formatHumanOutput(
     chalk.white(`${context.session.workMode} mode`)
   );
 
-  // Line 2: Resume point (most important!)
+  // Line 2: Last session (what was done/in progress)
   if (context.synthesis?.resumePoint) {
-    const resumeShort = truncate(context.synthesis.resumePoint, 80);
-    lines.push(chalk.white('Resume: ') + chalk.dim(resumeShort));
+    const resumeShort = truncate(context.synthesis.resumePoint, 70);
+    lines.push(chalk.white('Last session: ') + chalk.dim(resumeShort));
+  }
+
+  // Line 3: Next up (what to work on now)
+  if (context.sprint?.currentTask) {
+    const task = context.sprint.currentTask;
+    const statusLabel = task.status === 'in_progress' ? 'continue' : 'start';
+    lines.push(
+      chalk.white('Next up: ') +
+      chalk.yellow(`${task.id}`) +
+      chalk.dim(` - ${truncate(task.title, 50)} (${statusLabel})`)
+    );
   }
 
   // Empty line for spacing
   lines.push('');
 
-  // Line 3-4: Sprint + Branch context
+  // Sprint context with cognitive scaffolding for current task
   if (context.sprint && !minimal) {
     const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
     const sprintName = context.sprint.name || 'Active Sprint';
     const progressDisplay = progress >= 100
-      ? chalk.green('Completed (100%)')
-      : chalk.dim(`(${progress}%)`);
+      ? chalk.green('Complete')
+      : chalk.dim(`${progress}%`);
     lines.push(chalk.white('Sprint: ') + chalk.cyan(sprintName) + ' ' + progressDisplay);
 
-    // Show current task if available
+    // Show cognitive scaffolding for current task (patterns, gotchas, constraints)
     if (context.sprint.currentTask) {
-      lines.push(chalk.dim('  [@] ') + chalk.yellow(`${context.sprint.currentTask.id}: ${context.sprint.currentTask.title}`));
-
       // Show ADR constraints for current task (EPIC-002 Phase 1, enriched)
       if (context.sprint.currentTask.constraints && context.sprint.currentTask.constraints.length > 0) {
         const adrList = context.sprint.currentTask.constraints
-          .map(c => c.adr.summary ? `${c.adr.id} (${truncate(c.adr.summary, 30)})` : c.adr.id)
+          .map(c => c.adr.id)
           .join(', ');
-        lines.push(chalk.dim('      Follow: ') + chalk.magenta(adrList));
+        lines.push(chalk.dim('  Follow: ') + chalk.magenta(adrList));
       }
 
       // Show pattern guidance for current task (EPIC-002 Sprint 3, enriched from graph)
@@ -248,7 +257,7 @@ export function formatHumanOutput(
           const confIcon = p.confidence === 'high' ? '★' : p.confidence === 'medium' ? '◐' : '○';
           return `${p.title} ${confIcon}`;
         }).join(', ');
-        lines.push(chalk.dim('      Apply: ') + chalk.blue(patternList));
+        lines.push(chalk.dim('  Apply: ') + chalk.blue(patternList));
       }
 
       // Show gotcha warnings for current task (EPIC-002 Sprint 3, enriched from graph)
@@ -257,7 +266,7 @@ export function formatHumanOutput(
           const sevIcon = g.severity === 'critical' ? '🚨' : g.severity === 'high' ? '⚠️' : '💡';
           return `${sevIcon} ${g.title}`;
         }).join(', ');
-        lines.push(chalk.dim('      Avoid: ') + chalk.red(gotchaList));
+        lines.push(chalk.dim('  Avoid: ') + chalk.red(gotchaList));
       }
     }
   }
@@ -297,12 +306,10 @@ export function formatHumanOutput(
     warnings.forEach(w => lines.push(w));
   }
 
-  // Next action / ready message
-  lines.push('');
-  if (context.synthesis?.nextAction) {
-    lines.push(chalk.white('Next: ') + chalk.dim(context.synthesis.nextAction));
-  } else {
-    lines.push(chalk.white('Next: ') + chalk.dim('What would you like to work on?'));
+  // Ready prompt (only if no "Next up" was shown)
+  if (!context.sprint?.currentTask) {
+    lines.push('');
+    lines.push(chalk.dim('What would you like to work on?'));
   }
 
   return lines.join('\n');

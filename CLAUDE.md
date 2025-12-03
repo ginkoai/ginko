@@ -120,35 +120,58 @@ AI: ✓ Charter created at docs/PROJECT-CHARTER.md
 
 **After Execution: Concise Readiness Message**
 
-After `ginko start` completes, provide a brief readiness message (max 6 lines) that preserves flow:
+After `ginko start` completes, provide a brief readiness message (6-10 lines) that preserves flow:
 
 **Template:**
 ```
 Ready | [Flow State] | [Work Mode]
-Resume: [One-line resume point summary]
+Last session: [What was done/in progress last time]
+Next up: [TASK-ID] - [Task title] (start|continue)
 
-[Key context if relevant - 1-2 lines]
+Sprint: [Sprint Name] [Progress]%
+  Follow: [ADR constraints]
+  Apply: [Pattern guidance with confidence icons]
+  Avoid: [Gotcha warnings]
+Branch: [branch] ([uncommitted count] uncommitted files)
 
-[Next immediate action or question]
+⚠️  [Warning if critical]
 ```
 
-**Example:**
+**Example (with cognitive scaffolding):**
 ```
 Ready | Hot (10/10) | Think & Build mode
-Resume: Removed deprecated ginko-mcp tools and references
+Last session: EPIC-003 Sprint 2 TASK-1 complete (Blog infrastructure)
+Next up: TASK-2 - Verify human output format (start)
 
-19 uncommitted files, 2 commits ahead of origin
+Sprint: Enrichment Test - Cognitive Scaffolding Demo 50%
+  Follow: ADR-002, ADR-033
+  Apply: retry-pattern ◐, output-formatter-pattern ◐
+  Avoid: 💡 timer-unref-gotcha, 💡 verbose-output-gotcha
+Branch: main (12 uncommitted files)
 
-What would you like to work on?
+⚠️  12 uncommitted files
+```
+
+**Example (task in progress from last session):**
+```
+Ready | Hot (10/10) | Think & Build mode
+Last session: EPIC-003 Sprint 2 TASK-1 in progress (Blog infrastructure)
+Next up: TASK-1 - Deploy and validate blog infrastructure (continue)
+
+Sprint: Enrichment Test 25%
+  Follow: ADR-002
+Branch: main (5 uncommitted files)
 ```
 
 **Guidelines:**
-- Maximum 6 lines total
-- Highlight flow state and work mode in first line
-- Summarize resume point concisely
-- Include critical alerts (uncommitted changes, blockers)
-- End with clear next action or open question
-- Preserve momentum and flow continuity
+- Typically 6-10 lines
+- Line 1: Flow state and work mode
+- Line 2: "Last session:" - what happened before (completed or in-progress)
+- Line 3: "Next up:" - what to work on now (with start/continue hint)
+- Sprint block: Progress + cognitive scaffolding (Follow/Apply/Avoid)
+- Confidence icons: ★ high, ◐ medium, ○ low
+- Severity icons: 🚨 critical, ⚠️ high, 💡 medium/low
+- If sprint complete or no current task, show "What would you like to work on?"
 
 ---
 
