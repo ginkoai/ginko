@@ -5,12 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ginko - For Developers</title>
     <meta name="description" content="Stay in flow. Ship faster. AI collaboration without context loss. Back in flow in 30 seconds.">
-    <link rel="stylesheet" href="styles.css">
+
+    <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#0A0A0A">
 </head>
 <body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
@@ -29,11 +40,17 @@
                     <span class="theme-icon theme-icon-dark">☾</span>
                 </button>
                 <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Get Started</a>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
+    <main id="main">
     <section class="hero">
         <div class="container">
             <div class="hero-content">
@@ -499,6 +516,8 @@
             </div>
         </div>
     </section>
+
+    </main>
 
     <div class="section-divider--inverted section-divider"></div>
 
