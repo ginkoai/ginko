@@ -5,9 +5,23 @@
     <link>https://ginkoai.com/blog/</link>
     <description>Insights on AI-assisted development and context management</description>
     <language>en-us</language>
-    <lastBuildDate>Wed, 03 Dec 2025 21:05:08 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 03 Dec 2025 22:23:01 GMT</lastBuildDate>
     <atom:link href="https://ginkoai.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
     
+    <item>
+      <title>Measuring AI Collaboration ROI</title>
+      <link>https://ginkoai.com/blog/measuring-ai-collaboration-roi/</link>
+      <guid isPermaLink="true">https://ginkoai.com/blog/measuring-ai-collaboration-roi/</guid>
+      <pubDate>Wed, 31 Dec 2025 00:00:00 GMT</pubDate>
+      <description>AI coding tools promise productivity gains, but how do you actually measure the return? Here&apos;s a practical framework for engineering leaders.</description>
+      <author>Chris Norton</author>
+      <category>engineering-management</category>
+      <category>productivity-metrics</category>
+      <category>roi</category>
+      <category>ai-development</category>
+    </item>
+  
+
     <item>
       <title>Patterns and Gotchas: Teaching Your AI Partner</title>
       <link>https://ginkoai.com/blog/patterns-and-gotchas/</link>
@@ -19,6 +33,20 @@
       <category>patterns</category>
       <category>best-practices</category>
       <category>developer-tools</category>
+    </item>
+  
+
+    <item>
+      <title>AI-Assisted Development Without the Chaos</title>
+      <link>https://ginkoai.com/blog/ai-development-without-chaos/</link>
+      <guid isPermaLink="true">https://ginkoai.com/blog/ai-development-without-chaos/</guid>
+      <pubDate>Fri, 19 Dec 2025 00:00:00 GMT</pubDate>
+      <description>AI coding assistants are powerful, but they&apos;re creating new coordination challenges for teams. Here&apos;s how to get the benefits without the chaos.</description>
+      <author>Chris Norton</author>
+      <category>team-collaboration</category>
+      <category>engineering-management</category>
+      <category>ai-development</category>
+      <category>knowledge-management</category>
     </item>
   
 

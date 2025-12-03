@@ -270,7 +270,8 @@ section {
     transition: color var(--transition-fast);
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.nav-link-active {
     color: var(--color-accent);
 }
 

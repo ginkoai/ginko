@@ -382,21 +382,34 @@ async function generatePostPage(post, template, prevPost, nextPost) {
  * @param {string} template - Blog list template
  */
 async function generateBlogListPage(posts, template) {
-  const postsHtml = posts.map(post => `
-    <article class="blog-list-item">
-      <h2><a href="/blog/${post.slug}/">${post.title}</a></h2>
-      <div class="post-meta">
-        <time datetime="${post.dateISO}">${post.dateFormatted}</time>
-        <span class="author">by ${post.author}</span>
+  // Map tags to categories for filtering
+  const getCategory = (tags) => {
+    const tagStr = tags.join(' ').toLowerCase();
+    if (tagStr.includes('ai-development') || tagStr.includes('ai-collaboration') || tagStr.includes('developer-tools')) return 'ai-development';
+    if (tagStr.includes('context') || tagStr.includes('knowledge')) return 'context-management';
+    if (tagStr.includes('productivity') || tagStr.includes('flow') || tagStr.includes('workflow')) return 'productivity';
+    if (tagStr.includes('tutorial') || tagStr.includes('how-to') || tagStr.includes('getting-started')) return 'tutorials';
+    return 'ai-development'; // default
+  };
+
+  const postsHtml = posts.map(post => {
+    const category = getCategory(post.tags);
+    return `
+    <a href="/blog/${post.slug}/" class="post-card" data-category="${category}">
+      <div class="post-card-header">
+        <span class="post-date">${post.dateFormatted} · by ${post.author}</span>
+        <h2 class="post-title">${post.title}</h2>
       </div>
-      <p>${post.description}</p>
+      <p class="post-excerpt">${post.description}</p>
       ${post.tags.length > 0 ? `
-        <div class="tags">
-          ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+        <div class="post-tags">
+          ${post.tags.slice(0, 4).map(tag => `<span class="post-tag">${tag}</span>`).join('')}
         </div>
       ` : ''}
-    </article>
-  `).join('\n');
+      <span class="post-read-cta">Read</span>
+    </a>
+  `;
+  }).join('\n');
 
   const html = renderTemplate(template, { posts: postsHtml });
   const outputPath = path.join(CONFIG.outputDir, 'index.html');

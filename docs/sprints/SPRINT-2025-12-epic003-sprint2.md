@@ -5,7 +5,7 @@
 **Sprint Goal**: Establish blog infrastructure and create initial "stock" content pieces
 **Duration**: 2 weeks (2025-12-16 to 2025-12-29)
 **Type**: Content & Infrastructure sprint
-**Progress:** 60% (3/5 tasks complete)
+**Progress:** 80% (4/5 tasks complete)
 
 **Success Criteria:**
 - Blog section live on marketing site
@@ -116,7 +116,7 @@
 ---
 
 ### TASK-4: Initial Blog Posts - Manager/Team Focus (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Write 1-2 posts for engineering managers
@@ -131,6 +131,14 @@
    - What to track
    - How ginko helps
    - Team productivity metrics
+
+**Completion Notes:**
+- Post 1: `2025-12-19-ai-development-without-chaos.md` - Team coordination challenges, knowledge evaporation, making AI work visible
+- Post 2: `2025-12-31-measuring-ai-collaboration-roi.md` - ROI framework, key metrics (time to first commit, rework rate, knowledge propagation, onboarding velocity, context recovery time)
+- Both posts follow Thought Leadership format from content strategy
+- Manager-focused tone: strategic perspective, ROI-oriented, team coordination focus
+- Subtle CTAs at end of each post
+- Verified 2025-12-03
 
 ---
 
@@ -168,12 +176,16 @@
 - Updated `vercel.json` for automated builds
 - Files: `website/build-blog.js`, `website/templates/`, `website/content/blog/`
 
+### 2025-12-03: Manager-Focused Blog Posts Complete (TASK-4)
+- Created 2 thought leadership posts for engineering managers:
+  1. "AI-Assisted Development Without the Chaos" - Addresses team coordination challenges, knowledge evaporation, context fragmentation, invisible work. Provides actionable patterns for building team AI workflows.
+  2. "Measuring AI Collaboration ROI" - Comprehensive framework for measuring AI tool ROI. Key metrics: time to first commit, rework rate, knowledge propagation time, onboarding velocity, context recovery time.
+- Both posts ~1200-1500 words, strategic tone, manager-focused
+- Files: `website/content/blog/2025-12-19-ai-development-without-chaos.md`, `website/content/blog/2025-12-31-measuring-ai-collaboration-roi.md`
+
 ## Next Steps
 
-1. TASK-2: Content Strategy & Editorial Calendar
-2. TASK-3: Write 3 developer-focused blog posts
-3. TASK-4: Write 1-2 manager-focused blog posts
-4. TASK-5: SEO & discoverability setup
+1. TASK-5: SEO & discoverability setup (final task)
 
 ## Blockers
 

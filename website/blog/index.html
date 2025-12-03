@@ -21,41 +21,14 @@
 
     <!-- Blog list specific styles -->
     <style>
-        /* Blog Hero */
-        .blog-hero {
-            padding: calc(var(--space-16) + 60px) 0 var(--space-12);
-            min-height: auto;
-            display: flex;
-            align-items: center;
-            background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
-        }
-
-        .blog-hero-content {
-            position: relative;
-            text-align: center;
-            max-width: 700px;
-            margin: 0 auto;
-        }
-
-        .blog-hero-title {
-            font-family: var(--font-mono);
-            font-size: var(--font-size-6xl);
-            font-weight: var(--font-weight-extrabold);
-            line-height: 1.1;
-            margin-bottom: var(--space-6);
-            color: var(--color-text);
-        }
-
-        .blog-hero-subtitle {
-            font-size: var(--font-size-xl);
-            color: var(--color-text-secondary);
-            margin-bottom: 0;
-            line-height: 1.6;
+        /* Active nav link */
+        .nav-link-active {
+            color: var(--color-accent) !important;
         }
 
         /* Blog Grid */
         .blog-section {
-            padding: var(--space-20) 0;
+            padding: calc(var(--space-16) + 80px) 0 var(--space-20);
             background-color: var(--color-bg);
         }
 
@@ -104,11 +77,11 @@
 
         .post-title {
             font-family: var(--font-mono);
-            font-size: var(--font-size-2xl);
+            font-size: var(--font-size-lg);
             font-weight: var(--font-weight-bold);
             line-height: 1.3;
             color: var(--color-text);
-            margin-bottom: var(--space-4);
+            margin-bottom: var(--space-3);
         }
 
         .post-excerpt {
@@ -128,12 +101,40 @@
 
         .post-tag {
             font-family: var(--font-mono);
-            font-size: var(--font-size-xs);
+            font-size: 10px;
             background-color: var(--color-bg);
-            color: var(--color-text-secondary);
-            padding: var(--space-1) var(--space-3);
+            color: var(--color-text-tertiary);
+            padding: 2px 8px;
             border: 1px solid var(--color-border);
             border-radius: 9999px;
+            text-transform: lowercase;
+        }
+
+        .post-read-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-accent);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            margin-top: auto;
+            align-self: flex-end;
+        }
+
+        .post-read-cta:hover {
+            gap: var(--space-3);
+        }
+
+        .post-read-cta::after {
+            content: '→';
+            transition: transform var(--transition-fast);
+        }
+
+        .post-card:hover .post-read-cta::after {
+            transform: translateX(4px);
         }
 
         .post-meta {
@@ -162,11 +163,11 @@
         }
 
         .post-card-featured .post-title {
-            font-size: var(--font-size-3xl);
+            font-size: var(--font-size-xl);
         }
 
         .post-card-featured .post-excerpt {
-            font-size: var(--font-size-lg);
+            font-size: var(--font-size-base);
         }
 
         /* Filter/Sort Bar */
@@ -377,11 +378,11 @@
 
         @media (max-width: 480px) {
             .post-title {
-                font-size: var(--font-size-xl);
+                font-size: var(--font-size-base);
             }
 
             .post-card-featured .post-title {
-                font-size: var(--font-size-2xl);
+                font-size: var(--font-size-lg);
             }
         }
     </style>
@@ -399,14 +400,10 @@
                 <a href="../developers.html" class="nav-link">Developers</a>
                 <a href="../teams.html" class="nav-link">Teams</a>
                 <a href="../how-it-works.html" class="nav-link">How It Works</a>
+                <a href="/blog/" class="nav-link nav-link-active">Blog</a>
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
-                <a href="blog-list.html" class="nav-link">Blog</a>
             </div>
             <div class="nav-actions">
-                <button class="theme-toggle" aria-label="Toggle theme">
-                    <span class="theme-icon theme-icon-light">☀</span>
-                    <span class="theme-icon theme-icon-dark">☾</span>
-                </button>
                 <a href="../get-started.html" class="btn-primary">Get Started</a>
                 <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
                     <span></span>
@@ -417,84 +414,96 @@
         </div>
     </nav>
 
-    <!-- Blog Hero -->
-    <section class="blog-hero" id="main">
-        <div class="container">
-            <div class="blog-hero-content">
-                <div class="corner-bracket top-left"></div>
-                <div class="corner-bracket top-right"></div>
-                <h1 class="blog-hero-title">Blog</h1>
-                <p class="blog-hero-subtitle">
-                    Insights on AI-assisted development, context management, and developer productivity.
-                </p>
-                <div class="corner-bracket bottom-left"></div>
-                <div class="corner-bracket bottom-right"></div>
-            </div>
-        </div>
-    </section>
-
-    <div class="section-divider"></div>
-
     <!-- Blog Section -->
     <section class="blog-section">
         <div class="container">
             <!-- Filters -->
             <div class="blog-filters">
                 <div class="blog-filter-tags">
-                    <button class="filter-tag active">All</button>
-                    <button class="filter-tag">AI Development</button>
-                    <button class="filter-tag">Context Management</button>
-                    <button class="filter-tag">Productivity</button>
-                    <button class="filter-tag">Tutorials</button>
+                    <button class="filter-tag active" data-filter="all">All</button>
+                    <button class="filter-tag" data-filter="ai-development">AI Development</button>
+                    <button class="filter-tag" data-filter="context-management">Context Management</button>
+                    <button class="filter-tag" data-filter="productivity">Productivity</button>
+                    <button class="filter-tag" data-filter="tutorials">Tutorials</button>
                 </div>
             </div>
 
             <!-- Blog Grid -->
             <div class="blog-grid">
                 
-    <article class="blog-list-item">
-      <h2><a href="/blog/patterns-and-gotchas/">Patterns and Gotchas: Teaching Your AI Partner</a></h2>
-      <div class="post-meta">
-        <time datetime="2025-12-26T00:00:00.000Z">December 25, 2025</time>
-        <span class="author">by Chris Norton</span>
+    <a href="/blog/measuring-ai-collaboration-roi/" class="post-card" data-category="ai-development">
+      <div class="post-card-header">
+        <span class="post-date">December 30, 2025 · by Chris Norton</span>
+        <h2 class="post-title">Measuring AI Collaboration ROI</h2>
       </div>
-      <p>Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.</p>
+      <p class="post-excerpt">AI coding tools promise productivity gains, but how do you actually measure the return? Here's a practical framework for engineering leaders.</p>
       
-        <div class="tags">
-          <span class="tag">ai-collaboration</span><span class="tag">patterns</span><span class="tag">best-practices</span><span class="tag">developer-tools</span>
+        <div class="post-tags">
+          <span class="post-tag">engineering-management</span><span class="post-tag">productivity-metrics</span><span class="post-tag">roi</span><span class="post-tag">ai-development</span>
         </div>
       
-    </article>
+      <span class="post-read-cta">Read</span>
+    </a>
   
 
-    <article class="blog-list-item">
-      <h2><a href="/blog/back-in-flow-30-seconds/">Back in Flow in 30 Seconds: The ginko start Experience</a></h2>
-      <div class="post-meta">
-        <time datetime="2025-12-17T00:00:00.000Z">December 16, 2025</time>
-        <span class="author">by Chris Norton</span>
+    <a href="/blog/patterns-and-gotchas/" class="post-card" data-category="ai-development">
+      <div class="post-card-header">
+        <span class="post-date">December 25, 2025 · by Chris Norton</span>
+        <h2 class="post-title">Patterns and Gotchas: Teaching Your AI Partner</h2>
       </div>
-      <p>Starting a new coding session shouldn't mean starting from scratch. Learn how ginko gets you back into flow state in under 30 seconds.</p>
+      <p class="post-excerpt">Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.</p>
       
-        <div class="tags">
-          <span class="tag">developer-productivity</span><span class="tag">flow-state</span><span class="tag">context-management</span><span class="tag">workflow</span>
+        <div class="post-tags">
+          <span class="post-tag">ai-collaboration</span><span class="post-tag">patterns</span><span class="post-tag">best-practices</span><span class="post-tag">developer-tools</span>
         </div>
       
-    </article>
+      <span class="post-read-cta">Read</span>
+    </a>
   
 
-    <article class="blog-list-item">
-      <h2><a href="/blog/why-ai-assistants-forget/">Why AI Assistants Forget Everything (And How to Fix It)</a></h2>
-      <div class="post-meta">
-        <time datetime="2025-12-10T00:00:00.000Z">December 9, 2025</time>
-        <span class="author">by Chris Norton</span>
+    <a href="/blog/ai-development-without-chaos/" class="post-card" data-category="ai-development">
+      <div class="post-card-header">
+        <span class="post-date">December 18, 2025 · by Chris Norton</span>
+        <h2 class="post-title">AI-Assisted Development Without the Chaos</h2>
       </div>
-      <p>AI assistants are transforming how we build software, but they have a critical flaw: they forget everything. Learn why context rot happens and how to fix it.</p>
+      <p class="post-excerpt">AI coding assistants are powerful, but they're creating new coordination challenges for teams. Here's how to get the benefits without the chaos.</p>
       
-        <div class="tags">
-          <span class="tag">context-management</span><span class="tag">ai-collaboration</span><span class="tag">developer-tools</span><span class="tag">productivity</span>
+        <div class="post-tags">
+          <span class="post-tag">team-collaboration</span><span class="post-tag">engineering-management</span><span class="post-tag">ai-development</span><span class="post-tag">knowledge-management</span>
         </div>
       
-    </article>
+      <span class="post-read-cta">Read</span>
+    </a>
+  
+
+    <a href="/blog/back-in-flow-30-seconds/" class="post-card" data-category="context-management">
+      <div class="post-card-header">
+        <span class="post-date">December 16, 2025 · by Chris Norton</span>
+        <h2 class="post-title">Back in Flow in 30 Seconds: The ginko start Experience</h2>
+      </div>
+      <p class="post-excerpt">Starting a new coding session shouldn't mean starting from scratch. Learn how ginko gets you back into flow state in under 30 seconds.</p>
+      
+        <div class="post-tags">
+          <span class="post-tag">developer-productivity</span><span class="post-tag">flow-state</span><span class="post-tag">context-management</span><span class="post-tag">workflow</span>
+        </div>
+      
+      <span class="post-read-cta">Read</span>
+    </a>
+  
+
+    <a href="/blog/why-ai-assistants-forget/" class="post-card" data-category="ai-development">
+      <div class="post-card-header">
+        <span class="post-date">December 9, 2025 · by Chris Norton</span>
+        <h2 class="post-title">Why AI Assistants Forget Everything (And How to Fix It)</h2>
+      </div>
+      <p class="post-excerpt">AI assistants are transforming how we build software, but they have a critical flaw: they forget everything. Learn why context rot happens and how to fix it.</p>
+      
+        <div class="post-tags">
+          <span class="post-tag">context-management</span><span class="post-tag">ai-collaboration</span><span class="post-tag">developer-tools</span><span class="post-tag">productivity</span>
+        </div>
+      
+      <span class="post-read-cta">Read</span>
+    </a>
   
             </div>
 
@@ -606,12 +615,25 @@
 
     <!-- Blog filters script -->
     <script>
-        // Simple filter functionality (can be enhanced)
+        // Filter functionality
         document.querySelectorAll('.filter-tag').forEach(tag => {
             tag.addEventListener('click', () => {
+                // Update active state
                 document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
                 tag.classList.add('active');
-                // Add filtering logic here
+
+                // Get filter value
+                const filter = tag.getAttribute('data-filter');
+
+                // Filter posts
+                document.querySelectorAll('.post-card').forEach(post => {
+                    if (filter === 'all') {
+                        post.style.display = 'flex';
+                    } else {
+                        const category = post.getAttribute('data-category');
+                        post.style.display = category === filter ? 'flex' : 'none';
+                    }
+                });
             });
         });
     </script>

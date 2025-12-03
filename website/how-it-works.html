@@ -18,6 +18,69 @@
 
     <!-- Theme color for mobile browsers -->
     <meta name="theme-color" content="#0A0A0A">
+
+    <!-- Page-specific styles -->
+    <style>
+        /* Workflow steps - horizontal layout with number on left */
+        .workflow-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .workflow-step {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: var(--space-6);
+            padding: var(--space-6);
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .workflow-step .step-number {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            background-color: var(--color-accent);
+            color: #0A0A0A;
+            border-radius: 50%;
+        }
+
+        .workflow-step .step-content {
+            flex: 1;
+        }
+
+        .workflow-step .step-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+        }
+
+        .workflow-step .step-description {
+            color: var(--color-text-secondary);
+            margin: 0;
+        }
+
+        @media (max-width: 480px) {
+            .workflow-step {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 <body>
     <a href="#main" class="skip-link">Skip to main content</a>
@@ -36,10 +99,6 @@
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
             </div>
             <div class="nav-actions">
-                <button class="theme-toggle" aria-label="Toggle theme">
-                    <span class="theme-icon theme-icon-light">☀</span>
-                    <span class="theme-icon theme-icon-dark">☾</span>
-                </button>
                 <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Get Started</a>
                 <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
                     <span></span>

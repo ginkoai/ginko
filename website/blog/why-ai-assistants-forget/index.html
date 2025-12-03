@@ -30,11 +30,16 @@
 
     <!-- Blog-specific styles -->
     <style>
+        /* Active nav link */
+        .nav-link-active {
+            color: var(--color-accent) !important;
+        }
+
         /* Blog Post Typography */
         .blog-post-content {
             max-width: 720px;
             margin: 0 auto;
-            padding: var(--space-8) var(--space-6);
+            padding: 0 var(--space-6) var(--space-8);
         }
 
         .blog-post-content h1,
@@ -45,6 +50,10 @@
             margin-top: var(--space-10);
             margin-bottom: var(--space-4);
             line-height: 1.3;
+        }
+
+        .blog-post-content h1:first-child {
+            margin-top: 0;
         }
 
         .blog-post-content h1 { font-size: var(--font-size-4xl); }
@@ -118,82 +127,6 @@
             color: var(--color-accent-hover);
         }
 
-        /* Blog Header */
-        .blog-header {
-            position: relative;
-            padding: calc(var(--space-16) + 60px) 0 var(--space-12);
-            background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
-            text-align: center;
-        }
-
-        .blog-header-content {
-            position: relative;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0 var(--space-6);
-        }
-
-        .blog-title {
-            font-family: var(--font-mono);
-            font-size: var(--font-size-6xl);
-            font-weight: var(--font-weight-extrabold);
-            line-height: 1.2;
-            margin-bottom: var(--space-6);
-            color: var(--color-text);
-        }
-
-        .blog-meta {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-6);
-            flex-wrap: wrap;
-            font-family: var(--font-mono);
-            font-size: var(--font-size-sm);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-6);
-        }
-
-        .blog-meta-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .blog-description {
-            font-size: var(--font-size-xl);
-            color: var(--color-text-secondary);
-            line-height: 1.6;
-            max-width: 650px;
-            margin: 0 auto var(--space-8);
-        }
-
-        .blog-tags {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-3);
-            flex-wrap: wrap;
-        }
-
-        .blog-tag {
-            display: inline-block;
-            font-family: var(--font-mono);
-            font-size: var(--font-size-xs);
-            font-weight: var(--font-weight-semibold);
-            background-color: var(--color-surface);
-            color: var(--color-text);
-            padding: var(--space-2) var(--space-4);
-            border: 1px solid var(--color-border);
-            border-radius: 9999px;
-            transition: all var(--transition-fast);
-            text-decoration: none;
-        }
-
-        .blog-tag:hover {
-            border-color: var(--color-accent);
-            color: var(--color-accent);
-        }
-
         /* Post Navigation */
         .post-navigation {
             position: relative;
@@ -252,11 +185,18 @@
             color: var(--color-text);
         }
 
-        /* Back to Blog */
-        .back-to-blog {
+        /* Back to Blog - positioned top left of article column */
+        .back-to-blog-top {
             max-width: 720px;
-            margin: 0 auto var(--space-8);
-            padding: 0 var(--space-6);
+            margin: 0 auto;
+            padding: calc(80px + var(--space-6)) var(--space-6) var(--space-4);
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        /* Green headline */
+        .blog-post-content h1:first-child {
+            color: var(--color-accent);
         }
 
         .back-link {
@@ -276,19 +216,6 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .blog-title {
-                font-size: var(--font-size-4xl);
-            }
-
-            .blog-meta {
-                flex-direction: column;
-                gap: var(--space-3);
-            }
-
-            .blog-description {
-                font-size: var(--font-size-base);
-            }
-
             .blog-post-content {
                 padding: var(--space-6) var(--space-4);
             }
@@ -299,8 +226,16 @@
                 font-size: var(--font-size-base);
             }
 
+            .blog-post-content h1 {
+                font-size: var(--font-size-3xl);
+            }
+
             .post-navigation {
                 grid-template-columns: 1fr;
+            }
+
+            .back-to-blog-top {
+                padding-top: calc(70px + var(--space-4));
             }
         }
     </style>
@@ -315,17 +250,13 @@
                 <span class="logo-text">ginko</span>
             </a>
             <div class="nav-menu">
-                <a href="../developers.html" class="nav-link">Developers</a>
-                <a href="../teams.html" class="nav-link">Teams</a>
-                <a href="../how-it-works.html" class="nav-link">How It Works</a>
+                <a href="../../developers.html" class="nav-link">Developers</a>
+                <a href="../../teams.html" class="nav-link">Teams</a>
+                <a href="../../how-it-works.html" class="nav-link">How It Works</a>
+                <a href="/blog/" class="nav-link nav-link-active">Blog</a>
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
-                <a href="blog-list.html" class="nav-link">Blog</a>
             </div>
             <div class="nav-actions">
-                <button class="theme-toggle" aria-label="Toggle theme">
-                    <span class="theme-icon theme-icon-light">☀</span>
-                    <span class="theme-icon theme-icon-dark">☾</span>
-                </button>
                 <a href="../get-started.html" class="btn-primary">Get Started</a>
                 <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
                     <span></span>
@@ -336,43 +267,16 @@
         </div>
     </nav>
 
-    <!-- Blog Header -->
-    <header class="blog-header" id="main">
-        <div class="blog-header-content">
-            <h1 class="blog-title">Why AI Assistants Forget Everything (And How to Fix It)</h1>
-
-            <div class="blog-meta">
-                <span class="blog-meta-item">
-                    <span>By Chris Norton</span>
-                </span>
-                <span class="blog-meta-item">
-                    <span>{{date}}</span>
-                </span>
-                <span class="blog-meta-item">
-                    <span>{{readingTime}} min read</span>
-                </span>
-            </div>
-
-            <p class="blog-description">AI assistants are transforming how we build software, but they have a critical flaw: they forget everything. Learn why context rot happens and how to fix it.</p>
-
-            <div class="blog-tags">
-                {{tags}}
-            </div>
-        </div>
-    </header>
-
-    <div class="section-divider"></div>
-
-    <!-- Back to Blog -->
-    <div class="back-to-blog">
-        <a href="blog-list.html" class="back-link">
+    <!-- Back to Blog (top right) -->
+    <div class="back-to-blog-top">
+        <a href="/blog/" class="back-link">
             <span>←</span>
             <span>Back to Blog</span>
         </a>
     </div>
 
     <!-- Blog Content -->
-    <article class="blog-post-content">
+    <article class="blog-post-content" id="main">
         <h1>Why AI Assistants Forget Everything (And How to Fix It)</h1>
 <p>You&#39;re three hours into a coding session with your AI assistant. You&#39;ve explained your architecture, walked through your design decisions, and carefully described the patterns you&#39;re following. The assistant is firing on all cylinders—suggesting elegant refactors, catching edge cases, helping you ship features fast.</p>
 <p>Then you close the session.</p>
@@ -463,8 +367,6 @@ ginko start
         </a>
         <div class="nav-card nav-next nav-empty"></div>
     </nav>
-
-    <div class="section-divider--inverted section-divider"></div>
 
     <!-- Footer -->
     <footer class="footer">
