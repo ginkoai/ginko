@@ -1,247 +1,354 @@
-// Smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
+/**
+ * Ginko Marketing Site - Interactive Features
+ * Modern ES6+ implementation with accessibility and performance in mind
+ */
 
-// Navbar background on scroll
-window.addEventListener('scroll', function() {
-    const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 50) {
-        navbar.style.background = 'rgba(255, 255, 255, 0.98)';
-        navbar.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-    } else {
-        navbar.style.background = 'rgba(255, 255, 255, 0.95)';
-        navbar.style.boxShadow = 'none';
-    }
-});
+// ============================================================================
+// THEME - Dark mode only
+// ============================================================================
 
-// Animate elements on scroll
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+const initTheme = () => {
+  const html = document.documentElement;
+  // Always use dark mode
+  html.setAttribute('data-theme', 'dark');
 };
 
-const observer = new IntersectionObserver(function(entries) {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
+// ============================================================================
+// MOBILE MENU
+// ============================================================================
+
+const initMobileMenu = () => {
+  const hamburger = document.querySelector('.hamburger');
+  const navMenu = document.querySelector('.nav-menu');
+  const navLinks = document.querySelectorAll('.nav-menu a');
+  const body = document.body;
+
+  if (!hamburger || !navMenu) return;
+
+  // Toggle menu open/closed
+  const toggleMenu = () => {
+    const isActive = navMenu.classList.toggle('active');
+    hamburger.classList.toggle('active');
+    hamburger.setAttribute('aria-expanded', isActive);
+
+    // Prevent body scroll when menu is open
+    body.style.overflow = isActive ? 'hidden' : '';
+  };
+
+  // Close menu
+  const closeMenu = () => {
+    navMenu.classList.remove('active');
+    hamburger.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
+    body.style.overflow = '';
+  };
+
+  // Hamburger click
+  hamburger.addEventListener('click', toggleMenu);
+
+  // Close menu when nav link clicked
+  navLinks.forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (navMenu.classList.contains('active') &&
+        !navMenu.contains(e.target) &&
+        !hamburger.contains(e.target)) {
+      closeMenu();
+    }
+  });
+
+  // Close menu on escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navMenu.classList.contains('active')) {
+      closeMenu();
+    }
+  });
+};
+
+// ============================================================================
+// SMOOTH SCROLL
+// ============================================================================
+
+const initSmoothScroll = () => {
+  const navHeight = document.querySelector('.navbar')?.offsetHeight || 80;
+
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      const targetId = this.getAttribute('href');
+
+      // Skip if href is just "#"
+      if (targetId === '#') return;
+
+      const targetElement = document.querySelector(targetId);
+
+      if (targetElement) {
+        e.preventDefault();
+
+        const targetPosition = targetElement.getBoundingClientRect().top +
+                              window.pageYOffset -
+                              navHeight - 20; // Extra 20px breathing room
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+
+        // Update URL without jumping
+        history.pushState(null, '', targetId);
+      }
     });
-}, observerOptions);
+  });
+};
 
-// Observe all sections for animation
-document.querySelectorAll('section').forEach(section => {
-    section.style.opacity = '0';
-    section.style.transform = 'translateY(30px)';
-    section.style.transition = 'opacity 0.8s ease-out, transform 0.8s ease-out';
-    observer.observe(section);
-});
+// ============================================================================
+// SCROLL EFFECTS - NAVBAR SHADOW
+// ============================================================================
 
-// Terminal typing animation
-function typeText(element, text, speed = 50) {
-    let i = 0;
-    element.innerHTML = '';
-    const timer = setInterval(() => {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-        } else {
-            clearInterval(timer);
-        }
-    }, speed);
-}
+const initScrollEffects = () => {
+  const navbar = document.querySelector('.navbar');
+  if (!navbar) return;
 
-// Initialize terminal animation when hero is visible
-const heroObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            setTimeout(() => {
-                const terminalLines = document.querySelectorAll('.terminal-line');
-                terminalLines.forEach((line, index) => {
-                    setTimeout(() => {
-                        line.style.opacity = '1';
-                    }, index * 800);
-                });
-            }, 1000);
-            heroObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.5 });
+  let lastScrollY = window.scrollY;
+  let ticking = false;
 
-const hero = document.querySelector('.hero');
-if (hero) {
-    heroObserver.observe(hero);
-}
+  const updateNavbar = () => {
+    const scrollY = window.scrollY;
 
-// ROI Calculator Animation
-function animateCounter(element, target, duration = 2000) {
-    const start = 0;
-    const increment = target / (duration / 16);
-    let current = start;
-    
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) {
-            current = target;
-            clearInterval(timer);
-        }
-        
-        if (element.textContent.includes('%')) {
-            element.textContent = Math.floor(current).toLocaleString() + '%';
-        } else if (element.textContent.includes('$')) {
-            element.textContent = '$' + Math.floor(current).toLocaleString();
-        } else {
-            element.textContent = Math.floor(current).toLocaleString();
-        }
-    }, 16);
-}
-
-// Animate ROI numbers when section is visible
-const roiObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const numbers = entry.target.querySelectorAll('.roi-number .number');
-            numbers.forEach(number => {
-                const text = number.textContent;
-                const value = parseInt(text.replace(/[^0-9]/g, ''));
-                if (value > 0) {
-                    setTimeout(() => {
-                        animateCounter(number, value);
-                    }, 500);
-                }
-            });
-            roiObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.3 });
-
-const roiSection = document.querySelector('.roi');
-if (roiSection) {
-    roiObserver.observe(roiSection);
-}
-
-// Pricing card hover effects
-document.querySelectorAll('.pricing-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
-        if (!this.classList.contains('featured')) {
-            this.style.transform = 'translateY(-8px)';
-            this.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
-        }
-    });
-    
-    card.addEventListener('mouseleave', function() {
-        if (!this.classList.contains('featured')) {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)';
-        }
-    });
-});
-
-// Feature cards stagger animation
-const featureObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const cards = entry.target.querySelectorAll('.feature-card');
-            cards.forEach((card, index) => {
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
-            featureObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.2 });
-
-const featuresSection = document.querySelector('.features');
-if (featuresSection) {
-    // Initially hide feature cards
-    document.querySelectorAll('.feature-card').forEach(card => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        card.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-    });
-    featureObserver.observe(featuresSection);
-}
-
-// Mobile menu toggle (if needed)
-function toggleMobileMenu() {
-    const navMenu = document.querySelector('.nav-menu');
-    navMenu.classList.toggle('show');
-}
-
-// Add mobile menu button if screen is small
-function handleResize() {
-    const navContainer = document.querySelector('.nav-container');
-    const navMenu = document.querySelector('.nav-menu');
-    
-    if (window.innerWidth <= 768) {
-        if (!document.querySelector('.mobile-menu-btn')) {
-            const mobileBtn = document.createElement('button');
-            mobileBtn.className = 'mobile-menu-btn';
-            mobileBtn.innerHTML = '☰';
-            mobileBtn.onclick = toggleMobileMenu;
-            navContainer.appendChild(mobileBtn);
-        }
-        navMenu.style.display = 'none';
+    if (scrollY > 50) {
+      navbar.classList.add('scrolled');
     } else {
-        const mobileBtn = document.querySelector('.mobile-menu-btn');
-        if (mobileBtn) {
-            mobileBtn.remove();
-        }
-        navMenu.style.display = 'flex';
+      navbar.classList.remove('scrolled');
     }
+
+    lastScrollY = scrollY;
+    ticking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(updateNavbar);
+      ticking = true;
+    }
+  });
+
+  // Initial check
+  updateNavbar();
+};
+
+// ============================================================================
+// INTERSECTION OBSERVER - FADE IN ANIMATIONS
+// ============================================================================
+
+const initScrollAnimations = () => {
+  // Respect user's motion preferences
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  if (prefersReducedMotion) return;
+
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('fade-in-visible');
+        observer.unobserve(entry.target); // Only animate once
+      }
+    });
+  }, observerOptions);
+
+  // Observe all sections and feature cards
+  document.querySelectorAll('section, .feature-card, .cta-section').forEach(el => {
+    el.classList.add('fade-in');
+    observer.observe(el);
+  });
+};
+
+// ============================================================================
+// TERMINAL ANIMATION
+// ============================================================================
+
+const initTerminalAnimation = () => {
+  const terminal = document.querySelector('.terminal-demo');
+  if (!terminal) return;
+
+  // Respect user's motion preferences
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  if (prefersReducedMotion) {
+    // Show all lines immediately
+    terminal.querySelectorAll('.terminal-line').forEach(line => {
+      line.style.opacity = '1';
+    });
+    return;
+  }
+
+  const lines = terminal.querySelectorAll('.terminal-line');
+  let hasAnimated = false;
+
+  const animateTerminal = () => {
+    if (hasAnimated) return;
+    hasAnimated = true;
+
+    lines.forEach((line, index) => {
+      setTimeout(() => {
+        line.style.opacity = '0';
+        line.style.transform = 'translateY(10px)';
+
+        requestAnimationFrame(() => {
+          line.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+          line.style.opacity = '1';
+          line.style.transform = 'translateY(0)';
+        });
+      }, index * 200); // Stagger by 200ms
+    });
+  };
+
+  // Trigger animation when terminal comes into view
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animateTerminal();
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(terminal);
+};
+
+// ============================================================================
+// COPY TO CLIPBOARD
+// ============================================================================
+
+const initCopyButtons = () => {
+  const copyables = document.querySelectorAll('.terminal-copyable');
+  const toast = document.getElementById('toast');
+  let toastTimeout;
+
+  const showToast = () => {
+    // Clear any existing timeout
+    if (toastTimeout) {
+      clearTimeout(toastTimeout);
+    }
+
+    // Show toast
+    toast.classList.add('show');
+
+    // Hide after 2 seconds
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2000);
+  };
+
+  // Fallback copy method for Safari/non-HTTPS contexts
+  const fallbackCopy = (text) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+      return true;
+    } catch (err) {
+      console.error('Fallback copy failed:', err);
+      return false;
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  };
+
+  // Copy to clipboard with fallback
+  const copyToClipboard = async (text) => {
+    // Try modern Clipboard API first (requires HTTPS in Safari)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        // Fall through to fallback
+      }
+    }
+
+    // Fallback for Safari on HTTP or older browsers
+    return fallbackCopy(text);
+  };
+
+  copyables.forEach(element => {
+    const copyText = element.dataset.copy;
+    if (!copyText) return;
+
+    // Click handler for entire element
+    element.addEventListener('click', async (e) => {
+      // Prevent if clicking a link inside
+      if (e.target.tagName === 'A') return;
+
+      const success = await copyToClipboard(copyText);
+
+      if (success) {
+        // Show success state on element
+        element.classList.add('copied');
+
+        // Show toast
+        showToast();
+
+        // Reset element after 2 seconds
+        setTimeout(() => {
+          element.classList.remove('copied');
+        }, 2000);
+      }
+    });
+  });
+};
+
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
+
+// Wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
 }
 
-window.addEventListener('resize', handleResize);
-window.addEventListener('load', handleResize);
+function init() {
+  initTheme();
+  initMobileMenu();
+  initSmoothScroll();
+  initScrollEffects();
+  initScrollAnimations();
+  initTerminalAnimation();
+  initCopyButtons();
 
-// Add CSS for mobile menu button
-const style = document.createElement('style');
-style.textContent = `
-    .mobile-menu-btn {
-        display: none;
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        color: var(--gray-700);
-        cursor: pointer;
-        padding: 0.5rem;
-    }
-    
-    @media (max-width: 768px) {
-        .mobile-menu-btn {
-            display: block;
-        }
-        
-        .nav-menu.show {
-            display: flex !important;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px);
-            flex-direction: column;
-            padding: 1rem;
-            border-top: 1px solid var(--gray-200);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .nav-menu.show .nav-link {
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--gray-100);
-        }
-    }
-`;
-document.head.appendChild(style);
+  // Log initialization in development
+  if (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1') {
+    console.log('✅ Ginko site initialized');
+  }
+}
+
+// ============================================================================
+// UTILITY - Handle external links
+// ============================================================================
+
+// Add security attributes to external links
+document.querySelectorAll('a[href^="http"]').forEach(link => {
+  if (!link.hostname.includes(window.location.hostname)) {
+    link.setAttribute('rel', 'noopener noreferrer');
+  }
+});

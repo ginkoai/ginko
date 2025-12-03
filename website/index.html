@@ -1,32 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ginko - Intelligent Context Management for Claude Code</title>
-    <meta name="description" content="Transform your development workflow with AI-powered context awareness. Ginko learns from your coding patterns and provides intelligent suggestions to accelerate your development process.">
+    <title>ginko - Context that flows with you</title>
+    <meta name="description" content="Git-native session management for AI-assisted development. Back in flow in 30 seconds.">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-text">Ginko<span class="ai-gradient">AI</span></span>
+                <span class="logo-text">ginko</span>
             </div>
             <div class="nav-menu">
-                <a href="#home" class="nav-link">Home</a>
-                <a href="#product" class="nav-link">Product</a>
-                <a href="#pricing" class="nav-link">Pricing</a>
-                <a href="#enterprise" class="nav-link">Enterprise</a>
                 <a href="#developers" class="nav-link">Developers</a>
-                <a href="#company" class="nav-link">Company</a>
+                <a href="#teams" class="nav-link">Teams</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
             </div>
-            <div class="nav-cta">
-                <a href="https://app.ginkoai.com/auth/login" class="btn-secondary">Sign In</a>
+            <div class="nav-actions">
                 <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Get Started</a>
             </div>
         </div>
@@ -36,391 +33,345 @@
     <section id="home" class="hero">
         <div class="container">
             <div class="hero-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
                 <h1 class="hero-title">
-                    Intelligent Context Management for <span class="highlight">Claude Code</span>
+                    Context that flows with you.
                 </h1>
                 <p class="hero-subtitle">
-                    Transform your development workflow with AI-powered context awareness. Ginko learns from your coding patterns and provides intelligent suggestions to accelerate your development process.
+                    Git-native session management for AI-assisted development. Back in flow in 30 seconds.
                 </p>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">40-60%</span>
-                        <span class="stat-label">Less Context Switching</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">30-50%</span>
-                        <span class="stat-label">AI Cost Reduction</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">Zero</span>
-                        <span class="stat-label">Installation Required</span>
-                    </div>
+                <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
                 <div class="hero-cta">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Start Free Trial →</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large">View Docs</a>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Problem Section -->
+    <section class="problem">
+        <div class="container">
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">CONTEXT_ROT</div>
+                    <p class="problem-description">
+                        AI assistants lose effectiveness as conversations grow. By message 50, they're guessing.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">SESSION_RESET</div>
+                    <p class="problem-description">
+                        Every new session = 10+ minutes re-explaining your project, decisions, and goals.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">KNOWLEDGE_SILOS</div>
+                    <p class="problem-description">
+                        Context lives in your head. When you switch tools or take a break, it's gone.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
             </div>
-            <div class="hero-visual">
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Solution Section -->
+    <section id="developers" class="solution">
+        <div class="container">
+            <h2 class="section-title">How ginko works</h2>
+
+            <div class="solution-demo">
                 <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
                     <div class="terminal-header">
                         <div class="terminal-controls">
                             <span class="control red"></span>
                             <span class="control yellow"></span>
                             <span class="control green"></span>
                         </div>
-                        <span class="terminal-title">Claude Code with Ginko</span>
+                        <span class="terminal-title">terminal</span>
                     </div>
                     <div class="terminal-body">
                         <div class="terminal-line">
-                            <span class="prompt">❯</span> claude "Help me implement a payment system with Stripe"
+                            <span class="prompt">$</span> ginko start
                         </div>
                         <div class="terminal-line response">
-                            🔄 Loading context from Ginko...
+                            <span class="status-icon">✓</span> Session restored from 2025-12-01 15:42
                         </div>
                         <div class="terminal-line response">
-                            ✅ Found 3 relevant sessions from your team
+                            <span class="status-icon">→</span> Loaded 3 active tasks from current sprint
                         </div>
                         <div class="terminal-line response">
-                            📋 Loaded best practices: API Security, Payment Processing
+                            <span class="status-icon">→</span> Found 2 relevant patterns: auth-flow, api-design
                         </div>
                         <div class="terminal-line response">
-                            🧠 Context ready. I can see you're using Next.js with TypeScript.
+                            <span class="status-icon">→</span> Alert: 1 gotcha applies to current work
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            <span class="status-highlight">Ready</span> | <span class="status-flow">Hot (8/10)</span> | Think & Build mode
                         </div>
                         <div class="terminal-line response">
-                            
+                            Resume: Implementing user auth with JWT tokens
                         </div>
+                        <div class="terminal-line response blank"></div>
                         <div class="terminal-line response">
-                            I'll help you implement Stripe payments. Based on your codebase, I'll:
+                            19 uncommitted files, 2 commits ahead of origin
                         </div>
+                        <div class="terminal-line response blank"></div>
                         <div class="terminal-line response">
-                            1. Create a payment service in /services/stripe.ts
-                        </div>
-                        <div class="terminal-line response">
-                            2. Add webhook handlers for payment events
-                        </div>
-                        <div class="terminal-line response">
-                            3. Implement the checkout flow with your existing auth
+                            What would you like to work on?
                         </div>
                         <div class="terminal-line">
-                            <span class="prompt">❯</span> <span class="typing-cursor">|</span>
+                            <span class="prompt">$</span> <span class="typing-cursor">|</span>
                         </div>
                     </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="solution-explanation">
+                    <p>
+                        <strong>ginko</strong> captures your development state and stores it alongside your code.
+                        Session logs, sprint progress, patterns, and gotchas are versioned with git.
+                    </p>
+                    <p>
+                        When you start a new session, your AI assistant has immediate context. No re-explaining.
+                        No context rot. Just flow.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Problem Section -->
-    <section class="problem">
-        <div class="container">
-            <h2 class="section-title">The Context Rot Problem</h2>
-            <div class="problem-grid">
-                <div class="problem-item">
-                    <div class="problem-icon">😤</div>
-                    <h3>Long Conversations Lose Focus</h3>
-                    <p>AI assistants become less effective as conversations grow, making mistakes and losing track of project context.</p>
-                </div>
-                <div class="problem-item">
-                    <div class="problem-icon">🔄</div>
-                    <h3>Constant Context Rebuilding</h3>
-                    <p>Every new session requires 10-15 minutes of re-explaining project status, decisions, and goals.</p>
-                </div>
-                <div class="problem-item">
-                    <div class="problem-icon">👥</div>
-                    <h3>No Team Collaboration</h3>
-                    <p>Context lives in individual sessions with no way to share knowledge or maintain team consistency.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Solution Section -->
-    <section id="product" class="solution">
-        <div class="container">
-            <h2 class="section-title">Introducing Session Handoff</h2>
-            <p class="section-subtitle">The breakthrough feature that preserves context and rapport across AI sessions</p>
-            
-            <div class="solution-demo">
-                <div class="demo-step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h3>Capture Your Session</h3>
-                        <p>Before context rot sets in, capture your complete development state with one command.</p>
-                        <code>capture_session "Implementing user authentication"</code>
-                    </div>
-                </div>
-                <div class="demo-step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h3>Resume Anywhere</h3>
-                        <p>Start a fresh AI session and instantly resume with full context preservation.</p>
-                        <code>resume_session --latest</code>
-                    </div>
-                </div>
-                <div class="demo-step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h3>Maintain Rapport</h3>
-                        <p>The AI assistant immediately understands your context and continues naturally - rapport preserved!</p>
-                        <div class="testimonial">
-                            <blockquote>"The rapport is right there from the start. The flow is preserved, and my frustrations are gone."</blockquote>
-                            <cite>- Beta User Feedback</cite>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <div class="section-divider"></div>
 
     <!-- Features Section -->
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Core Features</h2>
+            <h2 class="section-title">Features</h2>
             <div class="features-grid">
                 <div class="feature-card">
-                    <div class="feature-icon">🧠</div>
-                    <h3>Smart Context Management</h3>
-                    <p>Intelligent caching and invalidation keeps your team's context fresh and relevant.</p>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SESSION_HANDOFF</div>
+                    <p class="feature-description">
+                        Capture and resume development state across AI sessions
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
+
                 <div class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <h3>Real-time Collaboration</h3>
-                    <p>Share context across team members with Socket.io-powered real-time updates.</p>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SPRINT_TRACKING</div>
+                    <p class="feature-description">
+                        Progress tracking that lives alongside your code
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
+
                 <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Best Practices Integration</h3>
-                    <p>Automated team standards enforcement with customizable practice definitions.</p>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">PATTERN_CAPTURE</div>
+                    <p class="feature-description">
+                        Learn from your codebase, remember what works
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
+
                 <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Session Analytics</h3>
-                    <p>Measure development velocity improvements with comprehensive metrics dashboard.</p>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">GOTCHA_ALERTS</div>
+                    <p class="feature-description">
+                        Surface past mistakes before you repeat them
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
+
                 <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Enterprise Security</h3>
-                    <p>Complete audit trails, SSO integration, and compliance-ready data governance.</p>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">GIT_NATIVE</div>
+                    <p class="feature-description">
+                        Works offline, versioned with your code
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌐</div>
-                    <h3>Universal Compatibility</h3>
-                    <p>Works with Claude Code, Cursor, VS Code, and any AI coding assistant.</p>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">TEAM_SYNC</div>
+                    <p class="feature-description">
+                        Share context across team members <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ROI Section -->
-    <section class="roi">
+    <div class="section-divider"></div>
+
+    <!-- Testimonial Section -->
+    <section class="testimonial">
         <div class="container">
-            <h2 class="section-title">Measurable ROI</h2>
-            <div class="roi-calculation">
-                <div class="roi-item">
-                    <h3>Time Savings per Developer</h3>
-                    <div class="calculation">
-                        <div class="calc-line">Context switching: <strong>33 minutes/day</strong></div>
-                        <div class="calc-line">Redundant queries: <strong>15 minutes/day</strong></div>
-                        <div class="calc-line">Knowledge seeking: <strong>25 minutes/day</strong></div>
-                        <div class="calc-line">Quality fixes: <strong>20 minutes/day</strong></div>
-                        <div class="calc-total">Total: <strong>93 minutes/day = 1.55 hours</strong></div>
-                    </div>
-                </div>
-                <div class="roi-result">
-                    <div class="roi-numbers">
-                        <div class="roi-number">
-                            <span class="number">$29,062</span>
-                            <span class="label">Annual Value per Developer</span>
-                        </div>
-                        <div class="roi-number">
-                            <span class="number">$588</span>
-                            <span class="label">Ginko Annual Cost</span>
-                        </div>
-                        <div class="roi-number highlight">
-                            <span class="number">4,940%</span>
-                            <span class="label">Return on Investment</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="testimonial-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <blockquote class="testimonial-quote">
+                    "The rapport is right there from the start. The flow is preserved, and my frustrations are gone."
+                </blockquote>
+                <cite class="testimonial-cite">- Beta User Feedback</cite>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
             </div>
         </div>
     </section>
+
+    <div class="section-divider"></div>
 
     <!-- Pricing Section -->
     <section id="pricing" class="pricing">
         <div class="container">
-            <h2 class="section-title">Simple, Transparent Pricing</h2>
+            <h2 class="section-title">Pricing</h2>
             <div class="pricing-grid">
                 <div class="pricing-card">
-                    <h3 class="plan-name">Free</h3>
-                    <div class="plan-price">
-                        <span class="price">$0</span>
-                        <span class="period">/month</span>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="plan-header">
+                        <h3 class="plan-name">Free</h3>
+                        <div class="plan-price">
+                            <span class="price">$0</span>
+                        </div>
                     </div>
                     <ul class="plan-features">
-                        <li>1 user, 1 project</li>
-                        <li>Local context management</li>
-                        <li>Basic best practices</li>
-                        <li>Git integration</li>
-                        <li>Community support</li>
+                        <li><span class="feature-check">✓</span> 1 user, 1 project</li>
+                        <li><span class="feature-check">✓</span> Local context only</li>
+                        <li><span class="feature-check">✓</span> Git integration</li>
+                        <li><span class="feature-check">✓</span> Community support</li>
                     </ul>
                     <a href="https://app.ginkoai.com/auth/signup" class="btn-outline">Get Started</a>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
-                
-                <div class="pricing-card featured">
-                    <div class="popular-badge">Most Popular</div>
-                    <h3 class="plan-name">Pro</h3>
-                    <div class="plan-price">
-                        <span class="price">$9</span>
-                        <span class="period">/user/month</span>
+
+                <div class="pricing-card pricing-card-featured">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="plan-header">
+                        <h3 class="plan-name">Pro</h3>
+                        <div class="plan-price">
+                            <span class="price">$9</span>
+                            <span class="period">/user/mo</span>
+                        </div>
                     </div>
                     <ul class="plan-features">
-                        <li>Unlimited users</li>
-                        <li>Team collaboration</li>
-                        <li>Session handoff</li>
-                        <li>Advanced analytics</li>
-                        <li>Custom best practices</li>
-                        <li>Email support</li>
+                        <li><span class="feature-check">✓</span> Unlimited users</li>
+                        <li><span class="feature-check">✓</span> Team context sync</li>
+                        <li><span class="feature-check">✓</span> Cloud backup</li>
+                        <li><span class="feature-check">✓</span> Team analytics</li>
+                        <li><span class="feature-check">✓</span> Email support</li>
                     </ul>
                     <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Start Pro Trial</a>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
-                
+
                 <div class="pricing-card">
-                    <h3 class="plan-name">Enterprise</h3>
-                    <div class="plan-price">
-                        <span class="price">$29</span>
-                        <span class="period">/user/month</span>
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="plan-header">
+                        <h3 class="plan-name">Enterprise</h3>
+                        <div class="plan-price">
+                            <span class="price">$29</span>
+                            <span class="period">/user/mo</span>
+                        </div>
                     </div>
                     <ul class="plan-features">
-                        <li>Unlimited projects</li>
-                        <li>SSO/SAML integration</li>
-                        <li>Advanced security</li>
-                        <li>On-premise deployment</li>
-                        <li>Priority support & SLA</li>
-                        <li>Custom integrations</li>
+                        <li><span class="feature-check">✓</span> SSO/SAML integration</li>
+                        <li><span class="feature-check">✓</span> Audit logging</li>
+                        <li><span class="feature-check">✓</span> On-premise deployment</li>
+                        <li><span class="feature-check">✓</span> Priority support & SLA</li>
                     </ul>
-                    <a href="mailto:chris@ginko.ai" class="btn-outline">Contact Sales</a>
+                    <a href="mailto:chris@watchhill.ai" class="btn-outline">Contact Sales</a>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Enterprise Section -->
-    <section id="enterprise" class="enterprise">
-        <div class="container">
-            <h2 class="section-title">Built for Enterprise</h2>
-            <div class="enterprise-features">
-                <div class="enterprise-item">
-                    <h3>🔒 Complete Auditability</h3>
-                    <p>Every context query logged with timestamps, user tracking, and compliance tags for SOX, HIPAA, PCI-DSS requirements.</p>
-                </div>
-                <div class="enterprise-item">
-                    <h3>🏢 Multi-Tenant Architecture</h3>
-                    <p>Secure team isolation with role-based access control and geographic data residency options.</p>
-                </div>
-                <div class="enterprise-item">
-                    <h3>📊 Advanced Analytics</h3>
-                    <p>Real-time monitoring of team activity, security events, and development velocity metrics.</p>
-                </div>
-                <div class="enterprise-item">
-                    <h3>🔧 Flexible Deployment</h3>
-                    <p>SaaS, on-premise, or hybrid deployment options with Docker, Kubernetes, and air-gap support.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Open Source Section -->
-    <section id="developers" class="open-source">
-        <div class="container">
-            <h2 class="section-title">Open Source at Heart</h2>
-            <p class="section-subtitle">Core engine MIT licensed, premium collaboration features for teams</p>
-            
-            <div class="open-source-grid">
-                <div class="os-column">
-                    <h3>🆓 Open Source (MIT)</h3>
-                    <ul class="os-features">
-                        <li><strong>ginko-core</strong> - Context engine</li>
-                        <li><strong>ginko-cli</strong> - Command line tools</li>
-                        <li><strong>ginko-integrations</strong> - Editor plugins</li>
-                        <li><strong>ginko-practices</strong> - Best practices framework</li>
-                    </ul>
-                    <div class="github-stats">
-                        <div class="stat">⭐ 2.5K+ stars</div>
-                        <div class="stat">👥 150+ contributors</div>
-                        <div class="stat">📦 50K+ downloads</div>
-                    </div>
-                </div>
-                
-                <div class="os-column">
-                    <h3>💼 Commercial Features</h3>
-                    <ul class="os-features">
-                        <li><strong>Team Collaboration</strong> - Real-time sharing</li>
-                        <li><strong>Database Persistence</strong> - PostgreSQL integration</li>
-                        <li><strong>Enterprise Security</strong> - SSO, RBAC, audit trails</li>
-                        <li><strong>Analytics Dashboard</strong> - Performance insights</li>
-                    </ul>
-                    <a href="#pricing" class="btn-primary">View Pricing</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Future Vision Section -->
-    <section class="future">
-        <div class="container">
-            <h2 class="section-title">The AI-First Future</h2>
-            <p class="section-subtitle">Positioning for the $200B+ AI coordination market</p>
-            
-            <div class="timeline">
-                <div class="timeline-item">
-                    <div class="timeline-year">2025</div>
-                    <div class="timeline-content">
-                        <h3>Team Productivity Tool</h3>
-                        <p>Focus on human developer efficiency and team collaboration</p>
-                        <div class="market-size">Market: $6.6B TAM</div>
-                    </div>
-                </div>
-                
-                <div class="timeline-item">
-                    <div class="timeline-year">2027</div>
-                    <div class="timeline-content">
-                        <h3>Platform & Ecosystem</h3>
-                        <p>Developer ecosystem with best practices and integrations</p>
-                        <div class="market-size">Market: Growing AI adoption</div>
-                    </div>
-                </div>
-                
-                <div class="timeline-item">
-                    <div class="timeline-year">2030+</div>
-                    <div class="timeline-content">
-                        <h3>AI Coordination Infrastructure</h3>
-                        <p>Mission-critical platform for AI agent orchestration</p>
-                        <div class="market-size">Market: $200B+ AI coordination</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="vision-quote">
-                <blockquote>
-                    "In a world where every organization depends on AI agents for software development, who controls the context that makes those agents effective?"
-                </blockquote>
-                <p>Ginko, positioned correctly, could own that critical infrastructure layer.</p>
-            </div>
-        </div>
-    </section>
+    <div class="section-divider"></div>
 
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
-            <h2>Ready to Eliminate Context Rot?</h2>
-            <p>Join the developers already using Ginko to accelerate their AI-assisted development</p>
-            <div class="cta-buttons">
-                <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Start Free Today</a>
-                <a href="mailto:chris@ginko.ai" class="btn-secondary-large">Contact Sales</a>
+            <div class="cta-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2 class="cta-title">Ready to eliminate context rot?</h2>
+                <div class="terminal-inline terminal-inline-cta terminal-copyable" data-copy="npm install -g @ginkoai/cli">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                </div>
+                <div class="cta-buttons">
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started Free</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large">Read the Docs</a>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
             </div>
         </div>
     </section>
+
+    <div class="section-divider--inverted section-divider"></div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -428,44 +379,44 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <div class="footer-logo">
-                        <span class="logo-text">Ginko<span class="ai-gradient">AI</span></span>
+                        <span class="logo-text">ginko</span>
                     </div>
-                    <p>Intelligent Context Management for Claude Code</p>
+                    <p class="footer-tagline">Context that flows with you</p>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Product</h4>
                     <ul>
-                        <li><a href="#product">Features</a></li>
+                        <li><a href="#developers">Features</a></li>
                         <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#enterprise">Enterprise</a></li>
-                        <li><a href="#developers">Open Source</a></li>
+                        <li><a href="https://docs.ginko.ai">Documentation</a></li>
+                        <li><a href="https://github.com/ginkoai">GitHub</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Company</h4>
                     <ul>
-                        <li><a href="#company">About</a></li>
-                        <li><a href="#company">Team</a></li>
-                        <li><a href="#company">Blog</a></li>
-                        <li><a href="#company">Careers</a></li>
+                        <li><a href="#teams">For Teams</a></li>
+                        <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section">
                     <h4>Resources</h4>
                     <ul>
-                        <li><a href="https://github.com/GinkoAI">GitHub</a></li>
-                        <li><a href="#developers">Documentation</a></li>
-                        <li><a href="#developers">Community</a></li>
-                        <li><a href="mailto:chris@ginko.ai">Support</a></li>
+                        <li><a href="https://docs.ginko.ai">Getting Started</a></li>
+                        <li><a href="https://docs.ginko.ai/api">API Reference</a></li>
+                        <li><a href="https://github.com/ginkoai/examples">Examples</a></li>
+                        <li><a href="mailto:chris@watchhill.ai">Support</a></li>
                     </ul>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
-                <p>&copy; 2025 Ginko. All rights reserved. Made with ❤️ in Rhode Island</p>
+                <p>&copy; 2025 ginko. All rights reserved.</p>
                 <div class="footer-links">
                     <a href="#">Privacy Policy</a>
                     <a href="#">Terms of Service</a>
@@ -474,6 +425,9 @@
             </div>
         </div>
     </footer>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
 
     <script src="script.js"></script>
 </body>
