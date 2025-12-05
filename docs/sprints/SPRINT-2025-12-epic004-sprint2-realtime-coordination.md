@@ -50,7 +50,7 @@ Update cursor position on significant actions, not just handoff:
 ---
 
 ### TASK-2: Event Stream Polling API
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `dashboard/src/app/api/v1/events/stream/route.ts`
 
@@ -61,15 +61,15 @@ Implement event streaming endpoint:
 - Include agent_id in event metadata
 
 **Acceptance:**
-- [ ] Returns events since specified ID
-- [ ] Long-poll holds connection when no events
-- [ ] Timeout returns empty array (not error)
-- [ ] Bearer token scopes to organization
+- [x] Returns events since specified ID
+- [x] Long-poll holds connection when no events
+- [x] Timeout returns empty array (not error)
+- [x] Bearer token scopes to organization
 
 ---
 
 ### TASK-3: SSE Alternative (Optional)
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `dashboard/src/app/api/v1/events/sse/route.ts`
 
@@ -79,10 +79,10 @@ Server-Sent Events for true push:
 - Automatic reconnection support
 
 **Acceptance:**
-- [ ] SSE connection stays open
-- [ ] Events pushed within 1 second
-- [ ] Client reconnection works correctly
-- [ ] Falls back to polling if SSE unavailable
+- [x] SSE connection stays open (edge runtime, 5min max)
+- [x] Events pushed within 1 second (1s poll interval)
+- [x] Client reconnection works correctly (Last-Event-ID header)
+- [x] Falls back to polling if SSE unavailable (uses stream endpoint internally)
 
 ---
 
@@ -243,9 +243,26 @@ LIMIT 100
 ## Progress
 
 **Started:** 2025-12-05
-**Completed:** 1/8 tasks (12.5%)
+**Completed:** 3/8 tasks (37.5%)
 
 ## Accomplishments This Sprint
+
+### 2025-12-05: TASK-3 SSE Alternative
+- Created `/api/v1/events/sse` endpoint with Server-Sent Events support
+- Uses edge runtime for Vercel SSE compatibility (5min max connection)
+- SSE events: `connected`, `event`, `heartbeat` (15s), `error`
+- Reconnection via `Last-Event-ID` header for seamless resume
+- Internally polls stream endpoint (composition pattern, no code duplication)
+- Events pushed within 1 second of creation
+- Files: `dashboard/src/app/api/v1/events/sse/route.ts`
+
+### 2025-12-05: TASK-2 Event Stream Polling API
+- Created `/api/v1/events/stream` endpoint with long-polling support
+- Query parameters: `since` (event ID), `timeout` (1-60s), `limit` (1-200), `graphId`, `categories`, `agent_id`
+- Returns events in chronological order with `hasMore` and `lastEventId` for pagination
+- Polls every 500ms during long-poll, returns empty array on timeout (not error)
+- Full Neo4j integration with proper auth and connection handling
+- Files: `dashboard/src/app/api/v1/events/stream/route.ts`
 
 ### 2025-12-05: TASK-1 Real-Time Cursor Updates
 - Created new `realtime-cursor.ts` module with debounced push updates
@@ -263,3 +280,5 @@ LIMIT 100
 |------|--------|
 | 2025-12-05 | Sprint created |
 | 2025-12-05 | TASK-1 completed: Real-time cursor updates |
+| 2025-12-05 | TASK-2 completed: Event stream polling API |
+| 2025-12-05 | TASK-3 completed: SSE alternative endpoint |
