@@ -36,6 +36,28 @@ import { execSync } from 'child_process';
 export type TaskState = 'todo' | 'in_progress' | 'paused' | 'complete';
 
 /**
+ * Acceptance criterion type - auto-detected from description (EPIC-004 Sprint 3)
+ * - test: Unit tests, specs, test suites
+ * - build: Compilation, build process
+ * - lint: Linting, code style checks
+ * - performance: Response time, latency metrics
+ * - manual: Human review, approval
+ * - custom: Other criteria with custom commands
+ */
+export type CriterionType = 'test' | 'build' | 'lint' | 'performance' | 'manual' | 'custom';
+
+/**
+ * Acceptance criterion for task verification (EPIC-004 Sprint 3)
+ */
+export interface AcceptanceCriterion {
+  id: string;                    // e.g., "AC-1"
+  description: string;           // Human-readable criterion
+  type: CriterionType;           // Auto-detected type
+  threshold?: number;            // For performance criteria (in ms)
+  command?: string;              // For custom criteria
+}
+
+/**
  * Individual task from sprint checklist
  */
 export interface Task {
@@ -49,6 +71,7 @@ export interface Task {
   relatedADRs?: string[]; // ADR references (e.g., ["ADR-002", "ADR-043"]) - EPIC-002 Sprint 1
   relatedPatterns?: string[]; // Pattern references (e.g., ["retry-pattern", "event-queue"]) - EPIC-002 Sprint 2
   relatedGotchas?: string[]; // Gotcha warnings (e.g., ["timer-unref", "async-cleanup"]) - EPIC-002 Sprint 2
+  acceptanceCriteria?: AcceptanceCriterion[]; // Verification criteria (EPIC-004 Sprint 3)
 }
 
 /**
@@ -269,6 +292,146 @@ function parseTaskState(symbol: string): TaskState {
 }
 
 /**
+ * Detect acceptance criterion type from description (EPIC-004 Sprint 3 TASK-1)
+ *
+ * Pattern matching based on keywords:
+ * - test: "test", "spec", "unit", "integration"
+ * - build: "build", "compile", "tsc"
+ * - lint: "lint", "eslint", "prettier", "format"
+ * - performance: "response", "latency", "ms", "seconds", "<", ">"
+ * - manual: "review", "approve", "verify manually"
+ * - custom: anything else
+ *
+ * @param description - Criterion description text
+ * @returns Detected criterion type
+ */
+function detectCriterionType(description: string): CriterionType {
+  const lower = description.toLowerCase();
+
+  // Test criteria
+  if (/\b(test|spec|unit|integration|e2e|coverage)\b/.test(lower)) {
+    return 'test';
+  }
+
+  // Build criteria
+  if (/\b(build|compile|tsc|typescript|compilation)\b/.test(lower)) {
+    return 'build';
+  }
+
+  // Lint criteria
+  if (/\b(lint|eslint|prettier|format|style)\b/.test(lower)) {
+    return 'lint';
+  }
+
+  // Performance criteria (contains time thresholds)
+  if (/\b(response|latency|performance|load\s+time)\b/.test(lower) ||
+      /[<>]\s*\d+\s*(ms|seconds?|s\b)/.test(lower) ||
+      /under\s+\d+\s*(ms|seconds?)/.test(lower)) {
+    return 'performance';
+  }
+
+  // Manual criteria
+  if (/\b(review|approve|manual|verify\s+manually|human)\b/.test(lower)) {
+    return 'manual';
+  }
+
+  return 'custom';
+}
+
+/**
+ * Parse performance threshold from description (EPIC-004 Sprint 3 TASK-1)
+ *
+ * Examples:
+ * - "API response < 200ms" → 200
+ * - "Load time under 3 seconds" → 3000
+ * - "Latency below 50 ms" → 50
+ *
+ * @param description - Criterion description
+ * @returns Threshold in milliseconds, or undefined if not found
+ */
+function parsePerformanceThreshold(description: string): number | undefined {
+  // Match patterns like "< 200ms", "> 100ms", "under 3 seconds"
+  const patterns = [
+    /[<>]\s*(\d+)\s*ms\b/i,           // < 200ms, > 100ms
+    /[<>]\s*(\d+)\s*seconds?\b/i,     // < 3 seconds
+    /under\s+(\d+)\s*ms\b/i,          // under 200ms
+    /under\s+(\d+)\s*seconds?\b/i,    // under 3 seconds
+    /below\s+(\d+)\s*ms\b/i,          // below 200ms
+    /below\s+(\d+)\s*seconds?\b/i,    // below 3 seconds
+    /within\s+(\d+)\s*ms\b/i,         // within 200ms
+    /within\s+(\d+)\s*seconds?\b/i,   // within 3 seconds
+  ];
+
+  for (const pattern of patterns) {
+    const match = description.match(pattern);
+    if (match) {
+      const value = parseInt(match[1], 10);
+      // Convert seconds to milliseconds if needed
+      if (/seconds?/i.test(match[0])) {
+        return value * 1000;
+      }
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Parse acceptance criteria from task section (EPIC-004 Sprint 3 TASK-1)
+ *
+ * Looks for:
+ * ```
+ * **Acceptance:**
+ * - [ ] Unit tests pass
+ * - [ ] Build succeeds
+ * ```
+ *
+ * @param lines - Lines from the task section
+ * @param startIndex - Starting line index
+ * @returns Array of parsed acceptance criteria
+ */
+function parseAcceptanceCriteria(lines: string[], startIndex: number): AcceptanceCriterion[] {
+  const criteria: AcceptanceCriterion[] = [];
+  let criterionIndex = 1;
+
+  for (let i = startIndex; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Stop at next section (### or **Heading:**)
+    if (line.match(/^###\s+/) || (line.match(/^\*\*[A-Z]/) && !line.startsWith('**Acceptance'))) {
+      break;
+    }
+
+    // Match criterion lines: - [ ] Description or - [x] Description
+    const criterionMatch = line.match(/^-\s+\[[x\s]\]\s+(.+)/i);
+    if (criterionMatch) {
+      const description = criterionMatch[1].trim();
+      const type = detectCriterionType(description);
+
+      const criterion: AcceptanceCriterion = {
+        id: `AC-${criterionIndex}`,
+        description,
+        type,
+      };
+
+      // Add threshold for performance criteria
+      if (type === 'performance') {
+        const threshold = parsePerformanceThreshold(description);
+        if (threshold !== undefined) {
+          criterion.threshold = threshold;
+        }
+      }
+
+      criteria.push(criterion);
+      criterionIndex++;
+    }
+  }
+
+  return criteria;
+}
+
+/**
  * Parse sprint markdown into task checklist
  *
  * Looks for:
@@ -338,6 +501,15 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
           parsingTask.files.push(fileMatch[1]);
         }
         j++;
+      }
+      continue;
+    }
+
+    // Match acceptance criteria section (EPIC-004 Sprint 3 TASK-1)
+    if (line.match(/^\*\*Acceptance:\*\*/) && parsingTask) {
+      const criteria = parseAcceptanceCriteria(lines, i + 1);
+      if (criteria.length > 0) {
+        parsingTask.acceptanceCriteria = criteria;
       }
       continue;
     }

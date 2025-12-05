@@ -59,6 +59,7 @@ import { whoamiCommand } from './commands/whoami.js';
 import { handoffCommand } from './commands/handoff.js';
 import { charterCommand, charterExamples } from './commands/charter.js';
 import { epicCommand, epicExamples } from './commands/epic.js';
+import { verifyCommand } from './commands/verify.js';
 
 const program = new Command();
 
@@ -192,6 +193,12 @@ program
     }
     return logCommand(description, options);
   });
+
+program
+  .command('verify <taskId>')
+  .description('Verify task completion by running acceptance criteria checks (EPIC-004 Sprint 3)')
+  .option('--json', 'Output results in JSON format')
+  .action((taskId, options) => verifyCommand(taskId, options));
 
 program
   .command('context')
