@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -173,8 +173,8 @@
                         <div class="terminal-line response">
                             What would you like to work on?
                         </div>
-                        <div class="terminal-line">
-                            <span class="prompt">$</span> <span class="typing-cursor">|</span>
+                        <div class="terminal-line terminal-input-line" tabindex="0">
+                            <span class="prompt">$</span> <span class="typing-cursor"></span>
                         </div>
                     </div>
                     <div class="corner-bracket bottom-left"></div>
@@ -445,6 +445,22 @@
             </div>
         </div>
     </footer>
+
+    <!-- Easter egg modal -->
+    <div id="cursor-modal" class="cursor-modal" aria-hidden="true">
+        <div class="cursor-modal-content">
+            <button class="cursor-modal-close" aria-label="Close">&times;</button>
+            <p class="cursor-modal-text">Paste into your environment to try ginko now!</p>
+            <div class="terminal-inline terminal-copyable cursor-modal-cta" data-copy="npm install -g @ginkoai/cli">
+                <span class="terminal-prompt">$</span>
+                <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                <button class="copy-btn" aria-label="Copy to clipboard">
+                    <span class="copy-icon">⧉</span>
+                    <span class="copy-success">✓</span>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Toast notification -->
     <div id="toast" class="toast">Copied!</div>

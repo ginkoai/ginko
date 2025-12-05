@@ -114,23 +114,19 @@
    ============================================================================ */
 
 [data-theme="dark"] {
-    --color-bg: #31332B;
-    --color-surface: #101010;
-    --color-surface-hover: #1a1a1a;
+    --color-bg: #0A0A0A;
+    --color-surface: #171717;
+    --color-surface-hover: #262626;
     --color-text: #FAFAFA;
-    --color-text-secondary: #C5C5B8;
-    --color-text-tertiary: #9A9A8A;
-    --color-border: #2a2a2a;
-    --color-border-strong: #3a3a3a;
+    --color-text-secondary: #A3A3A3;
+    --color-text-tertiary: #737373;
+    --color-border: #262626;
+    --color-border-strong: #404040;
 
-    --color-accent: #C1F500;
-    --color-accent-hover: #addc00;
-    --color-accent-light: rgba(193, 245, 0, 0.15);
-    --color-accent-dark: #99c200;
+    --color-accent-light: #14532D;
 
-    --color-terminal-bg: #101010;
-    --color-terminal-header: #1a1a1a;
-    --color-terminal-prompt: #C1F500;
+    --color-terminal-bg: #0A0A0A;
+    --color-terminal-header: #171717;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
@@ -912,8 +908,9 @@ pre {
 /* Toast notification */
 .toast {
     position: fixed;
-    top: -100px;
-    left: -100px;
+    bottom: var(--space-8);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
     background-color: var(--color-terminal-bg);
     color: var(--color-accent);
     font-family: var(--font-mono);
@@ -923,13 +920,13 @@ pre {
     border: 1px solid var(--color-accent);
     box-shadow: var(--shadow-lg);
     opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     z-index: 1000;
     pointer-events: none;
-    white-space: nowrap;
-    transition: opacity 0.2s ease;
 }
 
 .toast.show {
+    transform: translateX(-50%) translateY(0);
     opacity: 1;
 }
 
@@ -1046,7 +1043,7 @@ pre {
     position: relative;
     text-align: center;
     padding: var(--space-8);
-    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
 }
@@ -1088,7 +1085,7 @@ pre {
    ============================================================================ */
 
 .solution {
-    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    background-color: var(--color-bg);
 }
 
 .solution-demo {
@@ -1167,7 +1164,7 @@ pre {
     position: relative;
     padding: var(--space-8);
     text-align: center;
-    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    background-color: var(--color-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
@@ -1372,7 +1369,7 @@ pre {
    ============================================================================ */
 
 .pricing {
-    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    background-color: var(--color-bg);
 }
 
 .pricing-grid {
@@ -1392,7 +1389,7 @@ pre {
 
 .pricing-card {
     position: relative;
-    background: linear-gradient(135deg, var(--color-surface) 0%, #0a0a0a 100%);
+    background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     padding: var(--space-8);
@@ -1409,19 +1406,16 @@ pre {
 .pricing-card:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
-    border-color: var(--color-accent);
-    border-radius: 0;
-}
-
-/* Remove Pro card highlight when sibling cards are hovered */
-.pricing-grid:has(.pricing-card:hover) .pricing-card-featured:not(:hover) {
-    border-color: var(--color-border);
 }
 
 .pricing-card-featured {
     border-color: var(--color-accent);
-    border-width: 1px;
-    border-radius: 0;
+    border-width: 2px;
+}
+
+.pricing-card.featured {
+    border-color: var(--color-accent);
+    transform: scale(1.05);
 }
 
 .plan-header {

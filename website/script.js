@@ -235,18 +235,36 @@ const initCopyButtons = () => {
   const toast = document.getElementById('toast');
   let toastTimeout;
 
-  const showToast = () => {
+  const showToast = (element) => {
+    if (!toast) {
+      console.error('Toast element not found');
+      return;
+    }
+
     // Clear any existing timeout
     if (toastTimeout) {
       clearTimeout(toastTimeout);
+    }
+
+    // Position toast above the element
+    if (element) {
+      var rect = element.getBoundingClientRect();
+      var centerX = Math.round(rect.left + (rect.width / 2));
+      var topPos = Math.round(rect.top - 44);
+
+      toast.style.setProperty('left', centerX + 'px', 'important');
+      toast.style.setProperty('top', topPos + 'px', 'important');
+      toast.style.setProperty('transform', 'translateX(-50%)', 'important');
+      toast.style.setProperty('opacity', '1', 'important');
     }
 
     // Show toast
     toast.classList.add('show');
 
     // Hide after 2 seconds
-    toastTimeout = setTimeout(() => {
+    toastTimeout = setTimeout(function() {
       toast.classList.remove('show');
+      toast.style.setProperty('opacity', '0', 'important');
     }, 2000);
   };
 
@@ -288,30 +306,87 @@ const initCopyButtons = () => {
     return fallbackCopy(text);
   };
 
-  copyables.forEach(element => {
-    const copyText = element.dataset.copy;
+  copyables.forEach(function(element) {
+    var copyText = element.dataset.copy;
     if (!copyText) return;
 
     // Click handler for entire element
-    element.addEventListener('click', async (e) => {
+    element.addEventListener('click', function(e) {
       // Prevent if clicking a link inside
       if (e.target.tagName === 'A') return;
 
-      const success = await copyToClipboard(copyText);
+      console.log('Copy clicked');
+
+      // Use fallback directly for better Safari compatibility
+      var success = fallbackCopy(copyText);
+      console.log('Copy result:', success);
 
       if (success) {
         // Show success state on element
         element.classList.add('copied');
 
-        // Show toast
-        showToast();
+        // Show toast positioned above the element
+        console.log('Calling showToast');
+        showToast(element);
 
         // Reset element after 2 seconds
-        setTimeout(() => {
+        setTimeout(function() {
           element.classList.remove('copied');
         }, 2000);
       }
     });
+  });
+};
+
+// ============================================================================
+// CURSOR EASTER EGG MODAL
+// ============================================================================
+
+const initCursorEasterEgg = () => {
+  const inputLines = document.querySelectorAll('.terminal-input-line');
+  const modal = document.getElementById('cursor-modal');
+
+  if (!inputLines.length || !modal) return;
+
+  const closeBtn = modal.querySelector('.cursor-modal-close');
+
+  const openModal = () => {
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    closeBtn?.focus();
+  };
+
+  const closeModal = () => {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  };
+
+  // Click on terminal input line to open modal
+  inputLines.forEach(line => {
+    line.addEventListener('click', openModal);
+    line.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openModal();
+      }
+    });
+  });
+
+  // Close button
+  closeBtn?.addEventListener('click', closeModal);
+
+  // Click outside modal content to close
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+  // Escape key to close
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      closeModal();
+    }
   });
 };
 
@@ -334,6 +409,7 @@ function init() {
   initScrollAnimations();
   initTerminalAnimation();
   initCopyButtons();
+  initCursorEasterEgg();
 
   // Log initialization in development
   if (window.location.hostname === 'localhost' ||
