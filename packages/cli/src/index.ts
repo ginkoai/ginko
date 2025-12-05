@@ -100,6 +100,7 @@ program
   .option('--legacy', 'Use original implementation without reflection (deprecated)')
   .option('--strategic', 'Use strategic context loading instead of event-based (fallback mode)')
   .option('--team', 'Include team events in context loading')
+  .option('--no-realtime-cursor', 'Disable real-time cursor updates to cloud (EPIC-004)')
   .action((sessionId, options) => startCommand({ sessionId, ...options }));
 
 program

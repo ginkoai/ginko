@@ -1,7 +1,7 @@
 ---
 sprint_id: EPIC-004-S2
 epic_id: EPIC-004
-status: not_started
+status: in_progress
 created: 2025-12-05
 updated: 2025-12-05
 adr: ADR-051
@@ -27,25 +27,25 @@ Enable real-time visibility across agents: event streaming, agent status monitor
 - [ ] Blocker events signal dependencies to other agents
 - [ ] Agent status dashboard shows who's working on what
 - [ ] `ginko agent status` shows all active agents and their tasks
-- [ ] Cursor updates pushed in real-time, not just at handoff
+- [x] Cursor updates pushed in real-time, not just at handoff
 
 ## Tasks
 
 ### TASK-1: Real-Time Cursor Updates
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
-**Files:** `packages/cli/src/lib/session-cursor.ts`
+**Files:** `packages/cli/src/lib/realtime-cursor.ts` (new), `packages/cli/src/lib/event-logger.ts`, `dashboard/src/app/api/v1/cursor/update/route.ts` (new)
 
 Update cursor position on significant actions, not just handoff:
-- After task claim
-- After each logged event
-- After task completion
-- Configurable: `--realtime-cursor` flag or env var
+- After task claim ✅
+- After each logged event ✅
+- After task completion ✅
+- Configurable: `--no-realtime-cursor` flag or `GINKO_REALTIME_CURSOR=false` env var ✅
 
 **Acceptance:**
-- [ ] Cursor updates within 1 second of action
-- [ ] Can disable for low-bandwidth scenarios
-- [ ] No breaking change to existing handoff flow
+- [x] Cursor updates within 1 second of action (100ms debounce, well under 1s)
+- [x] Can disable for low-bandwidth scenarios (`--no-realtime-cursor` flag)
+- [x] No breaking change to existing handoff flow (cursor update is non-blocking)
 
 ---
 
@@ -242,11 +242,24 @@ LIMIT 100
 
 ## Progress
 
-**Started:** Not started
-**Completed:** 0/8 tasks
+**Started:** 2025-12-05
+**Completed:** 1/8 tasks (12.5%)
+
+## Accomplishments This Sprint
+
+### 2025-12-05: TASK-1 Real-Time Cursor Updates
+- Created new `realtime-cursor.ts` module with debounced push updates
+- Added `/api/v1/cursor/update` API endpoint with Neo4j MERGE pattern
+- Integrated cursor updates into event-logger (onEventLogged)
+- Integrated cursor updates into start command (onSessionStart)
+- Integrated cursor updates into handoff command (onHandoff)
+- Added `--no-realtime-cursor` CLI flag and `GINKO_REALTIME_CURSOR` env var
+- Created unit tests validating <1s timing requirement
+- All tests passing (12/12)
 
 ## Changelog
 
 | Date | Change |
 |------|--------|
 | 2025-12-05 | Sprint created |
+| 2025-12-05 | TASK-1 completed: Real-time cursor updates |

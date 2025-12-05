@@ -96,7 +96,15 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       console.warn(chalk.dim('Failed to archive session log:'), error);
     }
 
-    // 5. Display success message
+    // 5. EPIC-004: Push real-time cursor update on handoff
+    try {
+      const { onHandoff } = await import('../lib/realtime-cursor.js');
+      await onHandoff(finalEventId);
+    } catch {
+      // Cursor update is non-critical - don't block handoff
+    }
+
+    // 6. Display success message
     spinner.succeed('Work paused!');
     console.log('');
     console.log(chalk.green(`✓ Work paused on ${chalk.bold(cursor.branch)}`));

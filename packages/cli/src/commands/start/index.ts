@@ -20,6 +20,13 @@ export async function startCommand(options: any = {}) {
   // Require authentication
   await requireAuth('start');
 
+  // EPIC-004: Handle --no-realtime-cursor option
+  // Commander sets realtimeCursor to false when --no-realtime-cursor is passed
+  if (options.realtimeCursor === false) {
+    const { setRealtimeCursorEnabled } = await import('../../lib/realtime-cursor.js');
+    setRealtimeCursorEnabled(false);
+  }
+
   // ADR-033: Session synthesis now happens in StartReflectionCommand.execute()
   // at optimal 5-15% pressure (fresh AI reads log BEFORE archiving)
 

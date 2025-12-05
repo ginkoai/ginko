@@ -224,6 +224,15 @@ export async function logEvent(entry: EventEntry): Promise<Event> {
     }
   }
 
+  // EPIC-004: Real-time cursor update for multi-agent coordination
+  // Push cursor position to cloud so other agents see our progress
+  try {
+    const { onEventLogged } = await import('./realtime-cursor.js');
+    await onEventLogged(event.id);
+  } catch {
+    // Cursor update is non-critical - don't block event logging
+  }
+
   return event;
 }
 

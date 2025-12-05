@@ -254,6 +254,14 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       spinner.succeed('Session initialized with strategic context!');
 
+      // EPIC-004: Push real-time cursor update on session start
+      try {
+        const { onSessionStart } = await import('../../lib/realtime-cursor.js');
+        await onSessionStart();
+      } catch {
+        // Cursor update is non-critical - don't block session start
+      }
+
     } catch (error) {
       spinner.fail('Session initialization failed');
       console.error(chalk.red(`Start failed: ${error}`));
