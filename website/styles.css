@@ -258,6 +258,15 @@ section {
     color: var(--color-accent-hover);
 }
 
+.logo-icon {
+    color: var(--color-accent);
+}
+
+.nav-logo:hover .logo-icon,
+.footer-logo:hover .logo-icon {
+    color: var(--color-accent-hover);
+}
+
 .nav-menu {
     display: flex;
     align-items: center;
