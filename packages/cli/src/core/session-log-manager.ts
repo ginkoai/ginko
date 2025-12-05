@@ -23,7 +23,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { extractReferences, type Reference } from '../utils/reference-parser.js';
 
-export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement' | 'gotcha';
+export type LogCategory = 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement' | 'gotcha' | 'blocker';
 export type LogImpact = 'high' | 'medium' | 'low';
 
 export interface LogEntry {

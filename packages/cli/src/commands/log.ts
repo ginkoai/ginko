@@ -40,7 +40,7 @@ import {
 import { ModuleGenerator } from '../services/module-generator.js';
 import { SessionInsight, InsightType } from '../types/session.js';
 import { initializeWriteDispatcher, appendLogEntry } from '../utils/dispatcher-logger.js';
-import { logEvent as logEventToStream, EventEntry } from '../lib/event-logger.js';
+import { logEvent as logEventToStream, EventEntry, BlockerSeverity } from '../lib/event-logger.js';
 import * as path from 'path';
 import { requireAuth, isAuthenticated } from '../utils/auth-storage.js';
 import { GraphApiClient } from './graph/api-client.js';
@@ -55,6 +55,10 @@ interface LogOptions {
   quick?: boolean;
   refs?: boolean;
   shared?: boolean;
+  // Blocker-specific options (EPIC-004 Sprint 2 TASK-4)
+  blockedBy?: string;       // What's blocking (task ID, resource, etc.)
+  blockingTasks?: string;   // Comma-separated list of tasks that can't proceed
+  severity?: string;        // Blocker severity: low, medium, high, critical
 }
 
 /**
@@ -111,7 +115,7 @@ export async function logCommand(description: string, options: LogOptions): Prom
     if (options.category) {
       // User provided explicit category - validate it
       category = options.category as LogCategory;
-      const validCategories: LogCategory[] = ['fix', 'feature', 'decision', 'insight', 'git', 'achievement'];
+      const validCategories: LogCategory[] = ['fix', 'feature', 'decision', 'insight', 'git', 'achievement', 'blocker'];
       if (!validCategories.includes(category)) {
         console.error(chalk.red(`❌ Invalid category: ${options.category}`));
         console.error(chalk.dim(`   Valid categories: ${validCategories.join(', ')}`));
@@ -176,12 +180,40 @@ export async function logCommand(description: string, options: LogOptions): Prom
 
     // ALSO log to event stream (ADR-043 dual-write)
     try {
+      // Parse blocker-specific fields if category is blocker
+      let blockedBy: string | undefined;
+      let blockingTasks: string[] | undefined;
+      let blockerSeverity: BlockerSeverity | undefined;
+
+      if (category === 'blocker') {
+        blockedBy = options.blockedBy;
+        blockingTasks = options.blockingTasks
+          ? options.blockingTasks.split(',').map(t => t.trim())
+          : undefined;
+
+        if (options.severity) {
+          const validSeverities: BlockerSeverity[] = ['low', 'medium', 'high', 'critical'];
+          if (validSeverities.includes(options.severity as BlockerSeverity)) {
+            blockerSeverity = options.severity as BlockerSeverity;
+          } else {
+            console.warn(chalk.yellow(`⚠ Invalid severity: ${options.severity}, defaulting to 'medium'`));
+            blockerSeverity = 'medium';
+          }
+        } else {
+          blockerSeverity = 'medium'; // Default severity for blockers
+        }
+      }
+
       const eventEntry: EventEntry = {
         category,
         description: enhancedDescription,
         files,
         impact,
-        shared: options.shared || false
+        shared: options.shared || false,
+        // Blocker-specific fields (EPIC-004 Sprint 2 TASK-4)
+        blocked_by: blockedBy,
+        blocking_tasks: blockingTasks,
+        blocker_severity: blockerSeverity
       };
       await logEventToStream(eventEntry);
     } catch (error) {
@@ -233,6 +265,29 @@ export async function logCommand(description: string, options: LogOptions): Prom
       for (const ref of references.slice(0, 3)) {
         console.log(chalk.dim(`  - ${ref.rawText}`));
       }
+    }
+
+    // EPIC-004 Sprint 2 TASK-4: Show blocker details when logging a blocker
+    if (category === 'blocker') {
+      console.log(chalk.red('\n🚧 Blocker Signaled'));
+      if (options.blockedBy) {
+        console.log(chalk.dim(`  Blocked by: ${options.blockedBy}`));
+      }
+      if (options.blockingTasks) {
+        const tasks = options.blockingTasks.split(',').map((t: string) => t.trim());
+        console.log(chalk.dim(`  Affecting tasks: ${tasks.join(', ')}`));
+      }
+      if (options.severity) {
+        const severityColors: Record<string, (s: string) => string> = {
+          low: chalk.dim,
+          medium: chalk.yellow,
+          high: chalk.red,
+          critical: chalk.bgRed.white
+        };
+        const colorFn = severityColors[options.severity] || chalk.yellow;
+        console.log(chalk.dim('  Severity: ') + colorFn(options.severity.toUpperCase()));
+      }
+      console.log(chalk.dim('\n  Other agents will see this blocker via event stream'));
     }
 
     // TASK-4: Track gotcha encounters when category=gotcha or gotcha references detected
@@ -401,7 +456,8 @@ function mapCategoryToInsightType(category: LogCategory): InsightType {
     feature: 'pattern',
     git: 'configuration',
     achievement: 'discovery',
-    gotcha: 'gotcha'
+    gotcha: 'gotcha',
+    blocker: 'gotcha'  // Blockers are treated like gotchas for insight categorization
   };
 
   return mapping[category] || 'discovery';
@@ -477,7 +533,8 @@ function estimateTimeSaving(category: LogCategory, impact: LogImpact): number {
     insight: 120,
     git: 15,
     achievement: 30,
-    gotcha: 45
+    gotcha: 45,
+    blocker: 60  // Blockers can save significant time if resolved early
   };
 
   const impactMultiplier: Record<LogImpact, number> = {
@@ -751,24 +808,33 @@ export function logExamples(): void {
   console.log(chalk.red('BAD') + chalk.white(' - Decision without alternatives:'));
   console.log(chalk.dim('  ginko log "Chose JWT for auth" --category=decision\n'));
 
+  console.log(chalk.green('GOOD') + chalk.white(' - Blocker with details (EPIC-004):'));
+  console.log(chalk.dim('  ginko log "API rate limit exceeded, cannot proceed with integration tests" \\'));
+  console.log(chalk.dim('    --category=blocker --blocked-by="third-party-api" \\'));
+  console.log(chalk.dim('    --blocking-tasks="TASK-5,TASK-8" --severity=high\n'));
+
   console.log(chalk.cyan('Categories:'));
   console.log(chalk.dim('  fix         - Bug fixes and error resolution (include root cause)'));
   console.log(chalk.dim('  feature     - New functionality (explain WHY/problem solved)'));
   console.log(chalk.dim('  decision    - Key decisions (mention alternatives considered)'));
   console.log(chalk.dim('  insight     - Patterns, gotchas, learnings discovered'));
   console.log(chalk.dim('  git         - Git operations and version control'));
-  console.log(chalk.dim('  achievement - Milestones and completions\n'));
+  console.log(chalk.dim('  achievement - Milestones and completions'));
+  console.log(chalk.dim('  blocker     - Impediments blocking work (EPIC-004)\n'));
 
   console.log(chalk.cyan('Flags:'));
-  console.log(chalk.dim('  --category   - Entry category (default: feature)'));
-  console.log(chalk.dim('  --impact     - Impact level: high, medium, low (default: medium)'));
-  console.log(chalk.dim('  --files      - Comma-separated file paths (or auto-detected)'));
-  console.log(chalk.dim('  --quick      - Skip interactive prompts for speed'));
-  console.log(chalk.dim('  --why        - Force WHY prompt (useful for features)'));
-  console.log(chalk.dim('  --shared     - Mark event for team visibility (synced to graph)'));
-  console.log(chalk.dim('  --show       - Display current log with quality score'));
-  console.log(chalk.dim('  --validate   - Check log quality and get suggestions'));
-  console.log(chalk.dim('  --refs       - Show all references in session with validation\n'));
+  console.log(chalk.dim('  --category      - Entry category (default: feature)'));
+  console.log(chalk.dim('  --impact        - Impact level: high, medium, low (default: medium)'));
+  console.log(chalk.dim('  --files         - Comma-separated file paths (or auto-detected)'));
+  console.log(chalk.dim('  --quick         - Skip interactive prompts for speed'));
+  console.log(chalk.dim('  --why           - Force WHY prompt (useful for features)'));
+  console.log(chalk.dim('  --shared        - Mark event for team visibility (synced to graph)'));
+  console.log(chalk.dim('  --show          - Display current log with quality score'));
+  console.log(chalk.dim('  --validate      - Check log quality and get suggestions'));
+  console.log(chalk.dim('  --refs          - Show all references in session with validation'));
+  console.log(chalk.dim('  --blocked-by    - What is blocking (for blocker category)'));
+  console.log(chalk.dim('  --blocking-tasks- Tasks affected (comma-separated)'));
+  console.log(chalk.dim('  --severity      - Blocker severity: low, medium, high, critical\n'));
 
   console.log(chalk.cyan('Reference Linking (TASK-010):\n'));
   console.log(chalk.dim('  Use reference syntax in descriptions to link to other documents:'));

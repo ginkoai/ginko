@@ -16,10 +16,15 @@ import { getGinkoDir, getUserEmail, getProjectRoot } from '../utils/helpers.js';
 import { execSync } from 'child_process';
 
 /**
+ * Blocker severity levels for multi-agent coordination
+ */
+export type BlockerSeverity = 'low' | 'medium' | 'high' | 'critical';
+
+/**
  * Event entry structure (aligned with ADR-043)
  */
 export interface EventEntry {
-  category: 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement' | 'gotcha';
+  category: 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement' | 'gotcha' | 'blocker';
   description: string;
   files?: string[];
   impact?: 'high' | 'medium' | 'low';
@@ -27,6 +32,10 @@ export interface EventEntry {
   tags?: string[];
   shared?: boolean;
   commit_hash?: string;
+  // Blocker-specific fields (EPIC-004 Sprint 2 TASK-4)
+  blocked_by?: string;        // What's blocking (task ID, resource, etc.)
+  blocking_tasks?: string[];  // Tasks that can't proceed
+  blocker_severity?: BlockerSeverity;
 }
 
 /**
@@ -40,6 +49,8 @@ export interface Event extends EventEntry {
   timestamp: string;
   pressure?: number;
   synced_to_graph?: boolean;
+  // EPIC-004 Sprint 2 TASK-7: Agent attribution
+  agent_id?: string;  // ID of agent that created event (undefined for human users)
 }
 
 /**
@@ -50,6 +61,27 @@ interface EventContext {
   organization_id: string;
   project_id: string;
   branch: string;
+  // EPIC-004 Sprint 2 TASK-7: Agent attribution
+  agent_id?: string;  // ID of registered agent (undefined for human users)
+}
+
+/**
+ * Get agent ID from local config if registered (EPIC-004 Sprint 2 TASK-7)
+ * Returns undefined for human users (no agent registered)
+ */
+async function getAgentId(): Promise<string | undefined> {
+  try {
+    const ginkoDir = await getGinkoDir();
+    const agentConfigPath = path.join(ginkoDir, 'agent.json');
+
+    if (await fs.pathExists(agentConfigPath)) {
+      const config = await fs.readJson(agentConfigPath);
+      return config.agentId;
+    }
+  } catch {
+    // No agent registered or config unreadable - this is expected for human users
+  }
+  return undefined;
 }
 
 /**
@@ -75,11 +107,15 @@ async function getEventContext(): Promise<EventContext> {
   // Example: /Users/cnorton/Development/ginko -> "watchhill-ai"
   const orgId = 'watchhill-ai'; // Can be enhanced to read from config
 
+  // EPIC-004 Sprint 2 TASK-7: Get agent ID if registered
+  const agentId = await getAgentId();
+
   return {
     user_id: userEmail,
     organization_id: orgId,
     project_id: projectName,
-    branch
+    branch,
+    agent_id: agentId
   };
 }
 
@@ -171,7 +207,13 @@ export async function logEvent(entry: EventEntry): Promise<Event> {
     tags: entry.tags,
     shared: entry.shared || false,
     commit_hash: entry.commit_hash,
-    synced_to_graph: false
+    synced_to_graph: false,
+    // Blocker-specific fields (EPIC-004 Sprint 2 TASK-4)
+    blocked_by: entry.blocked_by,
+    blocking_tasks: entry.blocking_tasks,
+    blocker_severity: entry.blocker_severity,
+    // Agent attribution (EPIC-004 Sprint 2 TASK-7)
+    agent_id: context.agent_id
   };
 
   // TASK-012: Check cloud-only mode
@@ -198,7 +240,13 @@ export async function logEvent(entry: EventEntry): Promise<Event> {
         tags: event.tags,
         shared: event.shared,
         commit_hash: event.commit_hash,
-        pressure: event.pressure
+        pressure: event.pressure,
+        // Blocker-specific fields (EPIC-004 Sprint 2 TASK-4)
+        blocked_by: event.blocked_by,
+        blocking_tasks: event.blocking_tasks,
+        blocker_severity: event.blocker_severity,
+        // Agent attribution (EPIC-004 Sprint 2 TASK-7)
+        agent_id: event.agent_id
       };
 
       // Synchronous write to graph (fail loudly if it fails)

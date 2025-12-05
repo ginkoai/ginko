@@ -160,7 +160,7 @@ program
 program
   .command('log [description]')
   .description('Log an event to the current session (ADR-033 defensive logging)')
-  .option('-c, --category <category>', 'Event category: fix, feature, decision, insight, git, achievement (auto-detected if not provided)')
+  .option('-c, --category <category>', 'Event category: fix, feature, decision, insight, git, achievement, blocker (auto-detected if not provided)')
   .option('-i, --impact <impact>', 'Impact level: high, medium, low (auto-detected if not provided)')
   .option('-f, --files <files>', 'Comma-separated list of files affected')
   .option('-s, --show', 'Show current session log with quality score')
@@ -169,6 +169,10 @@ program
   .option('--why', 'Force WHY prompt (useful for features)')
   .option('--shared', 'Mark event for team visibility (synced to graph)')
   .option('--examples', 'Show logging examples with quality tips')
+  // Blocker-specific options (EPIC-004 Sprint 2 TASK-4)
+  .option('--blocked-by <resource>', 'What is blocking (task ID, resource, etc.)')
+  .option('--blocking-tasks <tasks>', 'Comma-separated list of tasks that cannot proceed')
+  .option('--severity <level>', 'Blocker severity: low, medium, high, critical')
   .action((description, options) => {
     if (options.examples) {
       logExamples();

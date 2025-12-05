@@ -58,6 +58,12 @@ const CATEGORY_PATTERNS: Record<LogCategory, RegExp[]> = {
     /\b(created?|made|new)\s+(feature\s+)?branch\b/i, // Branch operations
     /\bbranch\b.*\b(created?|new|made)\b/i, // Branch creation
   ],
+  blocker: [
+    /\b(blocked|blocking|blocker|impediment)\b/i,
+    /\b(can'?t proceed|waiting on|depends on|stuck)\b/i,
+    /\b(critical dependency|missing|unavailable|rate limit)\b/i,
+    /\b(blocks?|prevents?|halts?)\s+(work|progress|task)/i,
+  ],
 };
 
 /**
@@ -111,6 +117,7 @@ export function detectCategory(description: string): LogCategory | null {
     gotcha: 0,
     achievement: 0,
     git: 0,
+    blocker: 0,
   };
 
   // Check for low-confidence cases (very short descriptions)
