@@ -405,9 +405,16 @@ find . -name "*.ts" | xargs grep -l "@complexity: high"
 ## Tasks
 - [x] Implement event-based context loading (ADR-043)
 - [x] Fix EventQueue timer hanging process
-- [ ] Add team event filtering
-- [ ] Implement sprint command
+- [@] Add team event filtering (in progress)
+- [Z] Implement sprint command (paused/sleeping)
+- [ ] Add analytics dashboard
 ```
+
+**Checkbox States:**
+- `[ ]` - Todo (not started)
+- `[@]` - In progress (currently working on)
+- `[Z]` - Paused/sleeping (temporarily on hold)
+- `[x]` - Complete
 
 **2. Accomplishments Section**
 Add completed work with details:

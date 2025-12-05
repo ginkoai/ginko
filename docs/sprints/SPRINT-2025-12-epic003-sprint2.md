@@ -1,3 +1,12 @@
+---
+sprint_id: EPIC-003-S2
+epic_id: EPIC-003
+status: paused
+created: 2025-12-03
+updated: 2025-12-05
+paused_reason: Prioritizing EPIC-004 (AI-to-AI Collaboration)
+---
+
 # SPRINT: EPIC-003 Sprint 2 - Content Infrastructure & Initial Stock
 
 ## Sprint Overview

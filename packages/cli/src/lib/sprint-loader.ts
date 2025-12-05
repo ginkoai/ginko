@@ -28,8 +28,12 @@ import { execSync } from 'child_process';
 
 /**
  * Task state enumeration
+ * - todo: [ ] Not started
+ * - in_progress: [@] Currently being worked on
+ * - paused: [Z] Temporarily on hold (sleeping)
+ * - complete: [x] Finished
  */
-export type TaskState = 'todo' | 'in_progress' | 'complete';
+export type TaskState = 'todo' | 'in_progress' | 'paused' | 'complete';
 
 /**
  * Individual task from sprint checklist
@@ -37,7 +41,7 @@ export type TaskState = 'todo' | 'in_progress' | 'complete';
 export interface Task {
   id: string;           // e.g., "TASK-5"
   title: string;        // Task description
-  state: TaskState;     // [ ], [@], or [x]
+  state: TaskState;     // [ ], [@], [Z], or [x]
   files?: string[];     // Files mentioned in task
   pattern?: string;     // Pattern reference (e.g., "log.ts:45-67")
   effort?: string;      // Time estimate (e.g., "4-6h")
@@ -56,6 +60,7 @@ export interface SprintChecklist {
   progress: {
     complete: number;              // Count of [x] tasks
     inProgress: number;            // Count of [@] tasks
+    paused: number;                // Count of [Z] tasks
     todo: number;                  // Count of [ ] tasks
     total: number;                 // Total tasks
   };
@@ -80,12 +85,46 @@ async function findGitRoot(): Promise<string> {
 }
 
 /**
+ * Parse YAML frontmatter from markdown content
+ *
+ * @param content - Markdown content with optional frontmatter
+ * @returns Parsed frontmatter object or empty object
+ */
+function parseFrontmatter(content: string): Record<string, string> {
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!frontmatterMatch) {
+    return {};
+  }
+
+  const frontmatter: Record<string, string> = {};
+  const lines = frontmatterMatch[1].split('\n');
+  for (const line of lines) {
+    const colonIndex = line.indexOf(':');
+    if (colonIndex > 0) {
+      const key = line.slice(0, colonIndex).trim();
+      const value = line.slice(colonIndex + 1).trim();
+      frontmatter[key] = value;
+    }
+  }
+  return frontmatter;
+}
+
+/**
  * Find active sprint file
  *
  * Priority:
  * 1. Check CURRENT-SPRINT.md for "Between Sprints" status → return null
  * 2. Check CURRENT-SPRINT.md for sprint reference → return that file
  * 3. Fall back to scanning SPRINT-*.md files for first incomplete one
+ *    - Respects frontmatter `status` field: active > not_started > (skip paused/complete)
+ *
+ * Valid status values:
+ * - active: Currently being worked on
+ * - not_started: Planned but not yet started
+ * - paused: Temporarily on hold (skipped by auto-detection)
+ * - complete: Finished (skipped by auto-detection)
+ * - proposed: Not yet approved (skipped by auto-detection)
+ * - abandoned: Cancelled (skipped by auto-detection)
  *
  * @param projectRoot - Project root directory
  * @returns Path to active sprint file or null (if between sprints)
@@ -141,13 +180,26 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       file: string;
       progress: number;
       hasInProgress: boolean;
+      frontmatterStatus?: string;
     }
 
     const candidates: SprintCandidate[] = [];
 
+    // Status values that should be skipped during auto-detection
+    const skipStatuses = ['paused', 'complete', 'proposed', 'abandoned'];
+
     for (const file of sprintFiles) {
       const filePath = path.join(sprintsDir, file);
       const content = await fs.readFile(filePath, 'utf-8');
+
+      // Parse frontmatter for status field
+      const frontmatter = parseFrontmatter(content);
+      const frontmatterStatus = frontmatter.status?.toLowerCase();
+
+      // Skip sprints with paused/complete/proposed/abandoned status in frontmatter
+      if (frontmatterStatus && skipStatuses.includes(frontmatterStatus)) {
+        continue;
+      }
 
       // Check if sprint is marked complete
       // Note: Support both **Progress:** and **Progress**: formats
@@ -168,7 +220,16 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       // Check for in-progress tasks ([@] markers)
       const hasInProgress = content.includes('[@]') || (progress > 0 && progress < 100);
 
-      candidates.push({ file: filePath, progress, hasInProgress });
+      candidates.push({ file: filePath, progress, hasInProgress, frontmatterStatus });
+    }
+
+    // Prioritize by frontmatter status first, then by progress
+    // Priority: active > in-progress work > not_started
+    const activeSprints = candidates.filter(c => c.frontmatterStatus === 'active');
+    if (activeSprints.length > 0) {
+      // Return the active sprint with highest progress
+      activeSprints.sort((a, b) => b.progress - a.progress);
+      return activeSprints[0].file;
     }
 
     // Prioritize in-progress sprints over not-started ones
@@ -196,13 +257,14 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
 /**
  * Parse task state from checkbox symbol
  *
- * @param symbol - Checkbox content: ' ', '@', or 'x'
+ * @param symbol - Checkbox content: ' ', '@', 'Z', or 'x'
  * @returns Task state enum
  */
 function parseTaskState(symbol: string): TaskState {
   const trimmed = symbol.trim();
   if (trimmed === 'x' || trimmed === 'X') return 'complete';
   if (trimmed === '@') return 'in_progress';
+  if (trimmed === 'Z' || trimmed === 'z') return 'paused';
   return 'todo';
 }
 
@@ -212,7 +274,7 @@ function parseTaskState(symbol: string): TaskState {
  * Looks for:
  * - Sprint name from title (# SPRINT: ...)
  * - Tasks from ## Sprint Tasks or ### TASK-N sections
- * - Checkbox states: [ ], [@], [x]
+ * - Checkbox states: [ ], [@], [Z], [x]
  * - Task metadata (files, priority, effort)
  *
  * @param markdown - Sprint markdown content
@@ -356,6 +418,7 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
   // Calculate progress
   const complete = tasks.filter(t => t.state === 'complete').length;
   const inProgress = tasks.filter(t => t.state === 'in_progress').length;
+  const paused = tasks.filter(t => t.state === 'paused').length;
   const todo = tasks.filter(t => t.state === 'todo').length;
 
   // Find current task: first [@], or first [ ] if no [@] exists
@@ -373,6 +436,7 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
     progress: {
       complete,
       inProgress,
+      paused,
       todo,
       total: tasks.length,
     },
@@ -430,6 +494,9 @@ export function formatSprintChecklist(checklist: SprintChecklist, maxTasks: numb
   if (progress.inProgress > 0) {
     progressLine += `, ${progress.inProgress} in progress`;
   }
+  if (progress.paused > 0) {
+    progressLine += `, ${progress.paused} paused`;
+  }
   progressLine += ` (${progressPercent}%)`;
   output += progressLine + '\n\n';
 
@@ -445,7 +512,8 @@ export function formatSprintChecklist(checklist: SprintChecklist, maxTasks: numb
 
   for (const task of displayTasks) {
     const symbol = task.state === 'complete' ? '[x]' :
-                   task.state === 'in_progress' ? '[@]' : '[ ]';
+                   task.state === 'in_progress' ? '[@]' :
+                   task.state === 'paused' ? '[Z]' : '[ ]';
 
     const marker = currentTask && task.id === currentTask.id ? ' ← RESUME HERE' : '';
 
