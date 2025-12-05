@@ -1,7 +1,7 @@
 ---
 sprint_id: EPIC-004-S1
 epic_id: EPIC-004
-status: not_started
+status: complete
 created: 2025-12-05
 updated: 2025-12-05
 adr: ADR-051
@@ -20,19 +20,19 @@ Establish the foundational primitives for multi-agent coordination: agent identi
 
 ## Success Criteria
 
-- [ ] Agent node type exists in Neo4j with proper schema
-- [ ] POST /api/v1/agent creates agent with capabilities
-- [ ] GET /api/v1/agent lists agents with filters (status, capabilities)
-- [ ] POST /api/v1/task/:id/claim atomically claims task
-- [ ] Concurrent claim attempts return 409 Conflict
-- [ ] `ginko agent register` creates agent from CLI
-- [ ] `ginko agent list` shows active agents
-- [ ] Agent heartbeat updates last_active timestamp
+- [x] Agent node type exists in Neo4j with proper schema
+- [x] POST /api/v1/agent creates agent with capabilities
+- [x] GET /api/v1/agent lists agents with filters (status, capabilities)
+- [x] POST /api/v1/task/:id/claim atomically claims task
+- [x] Concurrent claim attempts return 409 Conflict
+- [x] `ginko agent register` creates agent from CLI
+- [x] `ginko agent list` shows active agents
+- [x] Agent heartbeat updates last_active timestamp
 
 ## Tasks
 
 ### TASK-1: Agent Node Schema
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Small
 **Files:** `src/graph/schema/agent.cypher`
 
@@ -53,7 +53,7 @@ FOR (a:Agent) REQUIRE a.id IS UNIQUE;
 ---
 
 ### TASK-2: Agent Registration API
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `dashboard/src/app/api/v1/agent/route.ts`
 **Depends:** TASK-1
@@ -73,7 +73,7 @@ Implement REST endpoints:
 ---
 
 ### TASK-3: Agent Heartbeat
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Small
 **Files:** `packages/cli/src/lib/agent-heartbeat.ts`, `dashboard/src/app/api/v1/agent/[id]/heartbeat/route.ts`
 **Depends:** TASK-2
@@ -91,7 +91,7 @@ Implement heartbeat mechanism:
 ---
 
 ### TASK-4: Task Claiming API
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `dashboard/src/app/api/v1/task/[id]/claim/route.ts`
 **Depends:** TASK-2
@@ -115,7 +115,7 @@ RETURN t, a
 ---
 
 ### TASK-5: Task Release API
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Small
 **Files:** `dashboard/src/app/api/v1/task/[id]/release/route.ts`
 **Depends:** TASK-4
@@ -133,7 +133,7 @@ Implement task release:
 ---
 
 ### TASK-6: CLI Agent Commands
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `packages/cli/src/commands/agent/register.ts`, `packages/cli/src/commands/agent/list.ts`, `packages/cli/src/commands/agent/status.ts`
 **Depends:** TASK-2, TASK-3
@@ -151,7 +151,7 @@ Implement CLI commands:
 ---
 
 ### TASK-7: Worker Self-Context Loading
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Small
 **Files:** `packages/cli/src/commands/agent/work.ts`, `docs/adr/ADR-051-ai-to-ai-collaboration-architecture.md`
 
@@ -180,7 +180,7 @@ Worker Startup Flow:
 ---
 
 ### TASK-8: Integration Tests
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `packages/cli/test/integration/agent-coordination.test.ts`
 **Depends:** TASK-1 through TASK-7
@@ -245,11 +245,30 @@ Agents use the same bearer token mechanism as human users. The agent's `organiza
 
 ## Progress
 
-**Started:** Not started
-**Completed:** 0/8 tasks
+**Started:** 2025-12-05
+**Completed:** 8/8 tasks ✅
+
+## Accomplishments
+
+### 2025-12-05: Sprint Complete
+- Built entire Agent Foundation infrastructure using parallel agents
+- Created 18 new files (+3,703 lines)
+- All 8 tasks completed in single session
+- Commit: f717119
+
+**Key Deliverables:**
+- Agent schema with unique constraints and indexes
+- Full CRUD API for agents (register/list/update/delete)
+- Atomic task claiming with 409 conflict detection
+- Task release API with ownership verification
+- CLI commands: `ginko agent register|list|status|work`
+- Agent heartbeat mechanism (30s interval, .unref() pattern)
+- Worker self-context loading via `ginko start`
+- 29 integration tests covering race conditions
 
 ## Changelog
 
 | Date | Change |
 |------|--------|
 | 2025-12-05 | Sprint created |
+| 2025-12-05 | Sprint completed - all 8 tasks done |
