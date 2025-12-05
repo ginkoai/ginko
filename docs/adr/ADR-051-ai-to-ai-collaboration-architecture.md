@@ -194,6 +194,102 @@ Real-time:
   GET    /api/v1/events/stream      - SSE or long-poll for events
 ```
 
+### Worker Self-Context Loading
+
+**Design Principle:** Workers are responsible for their own context acquisition, not orchestrators.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Worker Startup Flow                       │
+│                                                              │
+│  1. ginko agent work --capabilities typescript              │
+│     ↓                                                        │
+│  2. Register as worker (or use .ginko/agent.json)           │
+│     ↓                                                        │
+│  3. ginko start  ← FULL PROJECT CONTEXT LOAD                │
+│     • Event stream (ADR-043)                                │
+│     • Patterns and gotchas                                  │
+│     • Architecture Decision Records (ADRs)                  │
+│     • Sprint context and current tasks                      │
+│     • Session logs and handoffs                             │
+│     ↓                                                        │
+│  4. Start heartbeat (30s interval)                          │
+│     ↓                                                        │
+│  5. Poll for assignments (5s interval)                      │
+│     ↓                                                        │
+│  6. On assignment: LAZY LOAD task-specific context          │
+│     • GET /api/v1/task/:id/criteria                         │
+│     • GET /api/v1/task/:id/files                            │
+│     • GET /api/v1/task/:id/patterns                         │
+│     • GET /api/v1/task/:id/gotchas                          │
+│     • GET /api/v1/task/:id/constraints                      │
+│     ↓                                                        │
+│  7. Execute, log events, verify, complete                   │
+│     ↓                                                        │
+│  8. Return to polling                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Context Loading Strategy:**
+
+| Phase | What's Loaded | When | Why |
+|-------|---------------|------|-----|
+| **Startup** | Full project context | Once at initialization | Workers need project-wide patterns, ADRs, and conventions |
+| **Per-Task** | Task-specific context | On each assignment | Only load what's needed for the current task |
+| **Orchestrator** | Task metadata only | During assignment | Orchestrator provides WHAT to do, not HOW (context) |
+
+**Benefits:**
+
+1. **Decoupling:** Orchestrator doesn't need to know full context
+2. **Scalability:** Workers can be added/removed without orchestrator changes
+3. **Autonomy:** Workers self-sufficient, can operate independently
+4. **Efficiency:** Lazy loading reduces unnecessary data transfer
+5. **Consistency:** All workers use same `ginko start` context loading
+
+**Implementation:**
+
+```typescript
+// packages/cli/src/commands/agent/work.ts
+export async function workAgentCommand(options: WorkOptions) {
+  // 1. Register or discover existing agent
+  const agentConfig = await getOrRegisterAgent(options);
+
+  // 2. Load full project context via ginko start
+  await startCommand({ quiet: true });
+
+  // 3. Start heartbeat
+  startHeartbeat(agentConfig.agentId);
+
+  // 4. Enter polling loop
+  while (true) {
+    const task = await pollForTask(agentConfig);
+    if (task) {
+      // 5. Lazy load task-specific context
+      await loadTaskContext(task.id);
+
+      // 6. Execute task
+      await executeTask(task);
+    }
+  }
+}
+```
+
+**Contrast with Alternatives:**
+
+| Approach | Context Loading | Coupling | Scalability |
+|----------|----------------|----------|-------------|
+| **Worker Self-Loading** (chosen) | Worker calls `ginko start` | Low | High |
+| Orchestrator provides context | Orchestrator sends full context | High | Low |
+| Shared filesystem context | Workers read from shared FS | Medium | Medium |
+| No project context | Task metadata only | None | High (but brittle) |
+
+**Why Worker Self-Loading Wins:**
+
+- Uses existing `ginko start` infrastructure (no new code paths)
+- Workers can start/restart independently (resilient)
+- Orchestrator stays simple (just task metadata + assignment)
+- Natural fit with Ginko's session-based model
+
 ### Human-in-the-Loop Integration
 
 | Trigger | Human Action | AI Continues |
@@ -367,6 +463,10 @@ Existing users unaffected at each phase.
 - Event queue: `packages/cli/src/lib/event-queue.ts`
 - Graph API client: `packages/cli/src/commands/graph/api-client.ts`
 - Sprint loader: `packages/cli/src/lib/sprint-loader.ts`
+- Agent heartbeat: `packages/cli/src/lib/agent-heartbeat.ts`
+- Agent work command: `packages/cli/src/commands/agent/work.ts`
+- Agent client: `packages/cli/src/commands/agent/agent-client.ts`
+- Start command: `packages/cli/src/commands/start/index.ts`
 
 ---
 
@@ -375,3 +475,4 @@ Existing users unaffected at each phase.
 | Date | Author | Changes |
 |------|--------|---------|
 | 2025-12-05 | Chris Norton, Claude | Initial proposal |
+| 2025-12-05 | Chris Norton, Claude | Added Worker Self-Context Loading section (EPIC-004 Sprint 1 TASK-7) |

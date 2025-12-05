@@ -498,6 +498,30 @@ export class GraphApiClient {
       { graphId, sprintContent }
     );
   }
+
+  /**
+   * Send agent heartbeat to dashboard (EPIC-004)
+   * Updates last_heartbeat timestamp for agent liveness tracking
+   *
+   * @param agentId - Agent ID to send heartbeat for
+   * @returns Heartbeat confirmation with updated timestamp
+   */
+  async sendAgentHeartbeat(agentId: string): Promise<{
+    success: boolean;
+    agentId: string;
+    lastHeartbeat: string;
+    status: string;
+  }> {
+    return this.request<{
+      success: boolean;
+      agentId: string;
+      lastHeartbeat: string;
+      status: string;
+    }>(
+      'POST',
+      `/api/v1/agent/${agentId}/heartbeat`
+    );
+  }
 }
 
 /**
@@ -696,4 +720,17 @@ export async function createGraphEvents(events: any[]): Promise<void> {
   const graphId = process.env.GINKO_GRAPH_ID || 'default';
 
   await client.createEvents(graphId, events);
+}
+
+/**
+ * Helper function to send agent heartbeat to dashboard
+ * Used by agent-heartbeat for liveness tracking (EPIC-004)
+ */
+export async function sendAgentHeartbeat(agentId: string): Promise<void> {
+  if (!isAuthenticated()) {
+    throw new Error('Not authenticated. Run `ginko graph init` first.');
+  }
+
+  const client = new GraphApiClient();
+  await client.sendAgentHeartbeat(agentId);
 }
