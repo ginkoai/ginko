@@ -242,7 +242,7 @@ Working...
 ---
 
 ### TASK-9: Orchestrator Context Pressure Monitoring
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `packages/cli/src/lib/context-metrics.ts`, `packages/cli/src/commands/orchestrate.ts`
 
@@ -269,10 +269,10 @@ const MODEL_LIMITS = {
 ```
 
 **Acceptance:**
-- [ ] Token estimation within 10% accuracy
-- [ ] Pressure calculated correctly per model
-- [ ] Metrics updated on each orchestrator cycle
-- [ ] Warning logged at 70% pressure
+- [x] Token estimation within 10% accuracy
+- [x] Pressure calculated correctly per model
+- [x] Metrics updated on each orchestrator cycle
+- [x] Warning logged at 70% pressure
 
 ---
 
@@ -397,9 +397,26 @@ function canExecute(task: Task, agent: Agent): boolean {
 ## Progress
 
 **Started:** 2025-12-05
-**Completed:** 8/11 tasks (TASK-1-8)
+**Completed:** 9/11 tasks (TASK-1-9)
 
 ## Accomplishments
+
+### 2025-12-07: TASK-9 Orchestrator Context Pressure Monitoring Complete
+- Created `packages/cli/src/lib/context-metrics.ts` with comprehensive context monitoring
+- Features:
+  - Token estimation using character-based heuristic (~4 chars/token)
+  - Model-specific context limits (Claude 200K, GPT-4 128K, Gemini 1M)
+  - Pressure zone classification (optimal/elevated/warning/critical)
+  - ContextMonitor class with trend analysis
+  - Singleton pattern for global monitoring
+- Integrated into orchestrate.ts:
+  - Context pressure checked each orchestration cycle
+  - Respawn triggered at >80% pressure
+  - Warning logged at >70% pressure (throttled to every 5 min)
+  - Pressure metrics included in checkpoint files
+  - Verbose mode shows context metrics per cycle
+- Unit tests: 50 tests covering all functionality
+- Files: packages/cli/src/lib/context-metrics.ts, packages/cli/src/commands/orchestrate.ts, packages/cli/test/unit/context-metrics.test.ts
 
 ### 2025-12-07: TASK-8 Worker Agent Mode Complete
 - Implemented full worker agent loop in `ginko agent work` command
@@ -453,3 +470,4 @@ function canExecute(task: Task, agent: Agent): boolean {
 | 2025-12-05 | Tasks 1-6 complete - orchestration foundation |
 | 2025-12-07 | TASK-7 complete - CLI orchestrate command |
 | 2025-12-07 | TASK-8 complete - Worker agent mode |
+| 2025-12-07 | TASK-9 complete - Context pressure monitoring |

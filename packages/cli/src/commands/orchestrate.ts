@@ -49,6 +49,12 @@ import {
   getDependencyStats,
 } from '../lib/task-dependencies.js';
 import { startHeartbeat, stopHeartbeat, shutdownHeartbeat } from '../lib/agent-heartbeat.js';
+import {
+  ContextMonitor,
+  getContextMonitor,
+  resetContextMonitor,
+  getPressureColor,
+} from '../lib/context-metrics.js';
 
 // ============================================================
 // Types
@@ -80,6 +86,9 @@ interface OrchestratorState {
     assignedAt: Date;
     status: 'assigned' | 'completed' | 'released' | 'failed';
   }>;
+  // EPIC-004 Sprint 4 TASK-9: Context pressure monitoring
+  contextMonitor: ContextMonitor;
+  lastPressureWarning?: Date;
 }
 
 interface WorkerAgent {
@@ -246,6 +255,12 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
       };
     }
 
+    // Initialize context monitor for pressure tracking (TASK-9)
+    resetContextMonitor(); // Reset any previous session
+    const contextMonitor = getContextMonitor({
+      model: 'claude-opus-4-5-20251101', // Default to Opus for orchestrator
+    });
+
     state = {
       orchestratorId: registerResponse.agentId,
       orchestratorName: registerResponse.name,
@@ -258,6 +273,7 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
       inProgressTasks: new Map(),
       blockedTasks: new Set(),
       assignmentHistory: [],
+      contextMonitor,
     };
 
     // Mark already-completed tasks
@@ -392,6 +408,29 @@ async function runOrchestrationLoop(
       process.exit(EXIT_CODE_RESPAWN);
     }
 
+    // TASK-9: Check context pressure (>80% triggers respawn)
+    const pressure = state.contextMonitor.getPressure();
+    if (state.contextMonitor.shouldRespawn()) {
+      console.log(chalk.magenta(`\n📊 Context pressure critical (${(pressure * 100).toFixed(1)}%) - checkpointing and respawning`));
+      const projectRoot = await requireGinkoRoot();
+      await saveCheckpoint(state, projectRoot);
+      process.exit(EXIT_CODE_RESPAWN);
+    }
+
+    // TASK-9: Warn at 70% pressure (once per 5 minutes max)
+    if (state.contextMonitor.shouldWarn()) {
+      const now = new Date();
+      const shouldLog = !state.lastPressureWarning ||
+        (now.getTime() - state.lastPressureWarning.getTime()) > 5 * 60 * 1000;
+
+      if (shouldLog) {
+        const zone = state.contextMonitor.getZone();
+        const color = getPressureColor(zone);
+        console.log(chalk[color as 'yellow' | 'red'](`\n⚠️  Context pressure elevated: ${state.contextMonitor.formatMetrics()}`));
+        state.lastPressureWarning = now;
+      }
+    }
+
     // Check progress stall
     if (state.cyclesWithoutProgress >= MAX_CYCLES_WITHOUT_PROGRESS) {
       console.log(chalk.red('\n⚠️  No progress for 10 cycles - escalating'));
@@ -436,11 +475,20 @@ async function runOrchestrationLoop(
         lastEventId = event.id;
         state.lastProgressAt = new Date();
         state.cyclesWithoutProgress = 0;
+        // TASK-9: Track event processing in context metrics
+        state.contextMonitor.recordEvent();
       }
+
+      // TASK-9: Update context metrics for this cycle
+      // Estimate tokens from cycle activity (API calls, events, state updates)
+      const cycleTokenEstimate = 500 + (assignments * 200) + (events.length * 300);
+      state.contextMonitor.addTokens(cycleTokenEstimate);
 
       // Update status display
       if (options.verbose) {
         displayCycleStatus(state, tasks, workers.length, availableTasks.length);
+        // TASK-9: Show context pressure in verbose mode
+        console.log(chalk.dim(`  📊 Context: ${state.contextMonitor.formatMetrics()}`));
       } else {
         displayProgressBar(state, tasks);
       }
@@ -854,6 +902,9 @@ function extractCapabilities(task: any): string[] {
 async function saveCheckpoint(state: OrchestratorState, projectRoot: string): Promise<void> {
   const checkpointPath = path.join(projectRoot, '.ginko', 'orchestrator-checkpoint.json');
 
+  // TASK-9: Get context metrics for checkpoint
+  const contextMetrics = state.contextMonitor.getMetrics();
+
   const checkpoint = {
     orchestratorId: state.orchestratorId,
     orchestratorName: state.orchestratorName,
@@ -867,6 +918,16 @@ async function saveCheckpoint(state: OrchestratorState, projectRoot: string): Pr
       ...a,
       assignedAt: a.assignedAt.toISOString(),
     })),
+    // TASK-9: Include context metrics in checkpoint
+    contextMetrics: {
+      estimatedTokens: contextMetrics.estimatedTokens,
+      contextLimit: contextMetrics.contextLimit,
+      pressure: contextMetrics.pressure,
+      messageCount: contextMetrics.messageCount,
+      toolCallCount: contextMetrics.toolCallCount,
+      eventsSinceStart: contextMetrics.eventsSinceStart,
+      model: contextMetrics.model,
+    },
   };
 
   await fs.mkdir(path.dirname(checkpointPath), { recursive: true });
