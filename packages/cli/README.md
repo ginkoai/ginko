@@ -67,6 +67,38 @@ ginko status
   - `--no-push` - Skip pushing to remote
   - `--no-tests` - Skip running tests
 
+### Multi-Agent Orchestration (EPIC-004)
+Enable multiple AI agents to collaborate on complex projects.
+
+- `ginko agent` - Manage AI agents
+  - `register` - Register agent with capabilities
+  - `list` - List agents (filter by status/capability)
+  - `status` - Show current agent details
+  - `work` - Start worker mode (poll for tasks)
+- `ginko orchestrate` - Run as supervisor agent
+  - `--epic <id>` - Target specific epic
+  - `--dry-run` - Preview without executing
+  - `--resume` - Resume from checkpoint
+- `ginko verify <taskId>` - Verify task acceptance criteria
+- `ginko checkpoint` - Manage work state snapshots
+  - `create` - Create checkpoint before risky changes
+  - `list` - List checkpoints
+  - `show` - View checkpoint details
+- `ginko escalation` - Request human intervention
+  - `create` - Create escalation with severity
+  - `list` - List open/resolved escalations
+  - `resolve` - Record human decision
+- `ginko dlq` - Manage failed events (Dead Letter Queue)
+  - `list` - Show failed events
+  - `retry` - Retry specific or all entries
+  - `stats` - DLQ statistics
+- `ginko notifications` - Human observability
+  - `list` - Show configured hooks
+  - `test` - Test notification delivery
+  - `history` - View delivery log
+
+See [Multi-Agent Orchestration Guide](../../docs/guides/MULTI-AGENT-ORCHESTRATION.md) for details.
+
 ## Features
 
 ### Privacy First
