@@ -2,33 +2,39 @@
  * @fileType: command
  * @status: current
  * @updated: 2025-12-07
- * @tags: [cli, orchestrate, multi-agent, supervisor, epic-004, sprint-4]
- * @related: [agent/index.ts, agent/work.ts, ../lib/task-dependencies.ts, graph/api-client.ts]
+ * @tags: [cli, orchestrate, multi-agent, supervisor, epic-004, sprint-4, task-10]
+ * @related: [agent/index.ts, agent/work.ts, ../lib/task-dependencies.ts, graph/api-client.ts, ../lib/orchestrator-state.ts]
  * @priority: high
  * @complexity: high
  * @dependencies: [commander, chalk, ora, fs-extra]
  */
 
 /**
- * Orchestrate Command (EPIC-004 Sprint 4 TASK-7)
+ * Orchestrate Command (EPIC-004 Sprint 4 TASK-7, TASK-10)
  *
  * Run as supervisor agent to coordinate multi-agent task execution.
  *
  * The orchestrator:
- * 1. Registers as an orchestrator agent
+ * 1. Registers as an orchestrator agent (or resumes from checkpoint)
  * 2. Loads sprint tasks with dependencies
  * 3. Computes execution waves (topological ordering)
  * 4. Monitors available worker agents
  * 5. Assigns tasks to workers based on capabilities
  * 6. Reacts to task completion events
  * 7. Handles blockers and reassignment
+ * 8. Saves checkpoint on exit for seamless respawn (TASK-10)
  *
- * Exit Conditions:
- * - All tasks complete → success exit (code 0)
+ * Exit Conditions (TASK-10):
+ * - All tasks complete → success exit (code 0), checkpoint deleted
  * - Context pressure > 80% → checkpoint + respawn (code 75)
  * - No progress for 10 cycles → escalate + pause (code 1)
  * - Human interrupt (SIGINT) → graceful shutdown (code 0)
  * - Max runtime exceeded → checkpoint + respawn (code 75)
+ *
+ * Resume Flow (TASK-10):
+ * - Use --resume to continue from last checkpoint
+ * - Restores completed tasks, in-progress assignments, context metrics
+ * - New instance seamlessly continues orchestration
  */
 
 import chalk from 'chalk';
@@ -55,6 +61,16 @@ import {
   resetContextMonitor,
   getPressureColor,
 } from '../lib/context-metrics.js';
+import {
+  OrchestratorStateManager,
+  OrchestratorCheckpoint,
+  ExitReason,
+  EXIT_CODE_SUCCESS,
+  EXIT_CODE_ERROR,
+  EXIT_CODE_RESPAWN,
+  getExitCode,
+  getExitMessage,
+} from '../lib/orchestrator-state.js';
 
 // ============================================================
 // Types
@@ -67,6 +83,7 @@ export interface OrchestrateOptions {
   verbose?: boolean;
   maxRuntime?: number; // Max runtime in minutes
   pollInterval?: number; // Polling interval in seconds
+  resume?: boolean; // TASK-10: Resume from checkpoint
 }
 
 interface OrchestratorState {
@@ -117,7 +134,7 @@ interface OrchestratorTask {
 const MAX_CYCLES_WITHOUT_PROGRESS = 10;
 const DEFAULT_POLL_INTERVAL_SECONDS = 5;
 const DEFAULT_MAX_RUNTIME_MINUTES = 60;
-const EXIT_CODE_RESPAWN = 75;
+// EXIT_CODE_RESPAWN imported from orchestrator-state.ts
 
 // ============================================================
 // Main Command
@@ -130,6 +147,8 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
   let state: OrchestratorState | null = null;
   let spinner: Ora | null = null;
   let isShuttingDown = false;
+  let stateManager: OrchestratorStateManager | null = null;
+  let resumedFromCheckpoint = false;
 
   try {
     // ============================================================
@@ -144,6 +163,42 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
       spinner.fail(chalk.red('No graph configured'));
       console.error(chalk.red('  Run `ginko graph init` to initialize the graph first.'));
       process.exit(1);
+    }
+
+    // TASK-10: Initialize state manager
+    stateManager = new OrchestratorStateManager(projectRoot, graphConfig.graphId);
+
+    // TASK-10: Check for existing checkpoint
+    if (options.resume) {
+      spinner.text = 'Checking for checkpoint...';
+      const checkpoint = await stateManager.loadCheckpoint();
+
+      if (checkpoint) {
+        spinner.succeed(chalk.green('Found checkpoint from previous session'));
+        console.log(chalk.dim(`  Saved at: ${checkpoint.savedAt}`));
+        console.log(chalk.dim(`  Completed: ${checkpoint.completedTasks.length} tasks`));
+        console.log(chalk.dim(`  In progress: ${Object.keys(checkpoint.inProgressTasks).length} tasks`));
+
+        if (checkpoint.exitReason) {
+          console.log(chalk.dim(`  Exit reason: ${getExitMessage(checkpoint.exitReason)}`));
+        }
+
+        resumedFromCheckpoint = true;
+        spinner = ora('Resuming orchestration...').start();
+      } else {
+        spinner.warn(chalk.yellow('No checkpoint found - starting fresh'));
+        console.log(chalk.dim('  Use --resume only after a previous session saved a checkpoint'));
+      }
+    } else {
+      // Check if checkpoint exists and warn user
+      const hasCheckpoint = await stateManager.hasCheckpoint();
+      if (hasCheckpoint) {
+        spinner.info(chalk.cyan('Previous checkpoint found'));
+        console.log(chalk.dim('  Use --resume to continue from last session'));
+        console.log(chalk.dim('  Starting fresh will overwrite the checkpoint'));
+        console.log('');
+        spinner = ora('Starting fresh orchestration...').start();
+      }
     }
 
     // ============================================================
@@ -228,63 +283,118 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
     }
 
     // ============================================================
-    // PHASE 4: Register Orchestrator Agent
+    // PHASE 4: Register Orchestrator Agent (or restore from checkpoint)
     // ============================================================
-    spinner = ora('Registering orchestrator agent...').start();
 
-    const orchestratorName = `orchestrator-${Date.now()}`;
-    let registerResponse;
-    try {
-      registerResponse = await AgentClient.register({
-        name: orchestratorName,
-        capabilities: ['task-assignment', 'task-monitoring', 'orchestration'],
-        status: 'active',
+    // TASK-10: Check if resuming from checkpoint
+    let checkpoint: OrchestratorCheckpoint | null = null;
+    if (resumedFromCheckpoint && stateManager) {
+      checkpoint = await stateManager.loadCheckpoint();
+    }
+
+    if (checkpoint && resumedFromCheckpoint) {
+      // TASK-10: Restore state from checkpoint
+      spinner.text = 'Restoring state from checkpoint...';
+
+      // Restore context monitor with previous metrics
+      resetContextMonitor();
+      const contextMonitor = getContextMonitor({
+        model: checkpoint.contextMetrics.model || 'claude-opus-4-5-20251101',
       });
-    } catch (regError: any) {
-      spinner.warn(chalk.yellow(`Agent registration failed: ${regError.message}`));
-      console.log(chalk.dim('  Continuing with local-only orchestration...'));
 
-      // Create local-only state
-      registerResponse = {
-        agentId: `local-${Date.now()}`,
-        name: orchestratorName,
-        capabilities: ['task-assignment', 'task-monitoring', 'orchestration'],
-        status: 'active',
-        organizationId: 'local',
-        createdAt: new Date().toISOString(),
+      // Restore token count from checkpoint
+      contextMonitor.addTokens(checkpoint.contextMetrics.estimatedTokens);
+
+      // Restore state
+      const restored = stateManager.restoreFromCheckpoint(checkpoint);
+
+      state = {
+        orchestratorId: checkpoint.orchestratorId,
+        orchestratorName: checkpoint.orchestratorName,
+        graphId: checkpoint.graphId,
+        sprintId: checkpoint.sprintId,
+        startedAt: restored.startedAt,
+        lastProgressAt: new Date(), // Reset progress timer for new session
+        cyclesWithoutProgress: 0, // Reset cycle counter
+        completedTasks: restored.completedTasks,
+        inProgressTasks: restored.inProgressTasks,
+        blockedTasks: restored.blockedTasks,
+        assignmentHistory: restored.assignmentHistory,
+        contextMonitor,
       };
-    }
 
-    // Initialize context monitor for pressure tracking (TASK-9)
-    resetContextMonitor(); // Reset any previous session
-    const contextMonitor = getContextMonitor({
-      model: 'claude-opus-4-5-20251101', // Default to Opus for orchestrator
-    });
-
-    state = {
-      orchestratorId: registerResponse.agentId,
-      orchestratorName: registerResponse.name,
-      graphId: graphConfig.graphId,
-      sprintId: sprint.file,
-      startedAt: new Date(),
-      lastProgressAt: new Date(),
-      cyclesWithoutProgress: 0,
-      completedTasks: new Set(),
-      inProgressTasks: new Map(),
-      blockedTasks: new Set(),
-      assignmentHistory: [],
-      contextMonitor,
-    };
-
-    // Mark already-completed tasks
-    for (const task of tasks) {
-      if (task.status === 'complete') {
-        state.completedTasks.add(task.id);
+      // Update task statuses from restored state
+      for (const task of tasks) {
+        if (state.completedTasks.has(task.id)) {
+          task.status = 'complete';
+        } else if (state.inProgressTasks.has(task.id)) {
+          task.status = 'assigned';
+          task.assignedTo = state.inProgressTasks.get(task.id);
+        }
       }
-    }
 
-    spinner.succeed(chalk.green(`Registered as ${chalk.bold(state.orchestratorName)}`));
-    console.log(chalk.dim(`  Agent ID: ${state.orchestratorId}`));
+      spinner.succeed(chalk.green(`Resumed as ${chalk.bold(state.orchestratorName)}`));
+      console.log(chalk.dim(`  Agent ID: ${state.orchestratorId}`));
+      console.log(chalk.dim(`  Restored: ${state.completedTasks.size} completed, ${state.inProgressTasks.size} in progress`));
+
+    } else {
+      // Fresh start - register new orchestrator
+      spinner = ora('Registering orchestrator agent...').start();
+
+      const orchestratorName = `orchestrator-${Date.now()}`;
+      let registerResponse;
+      try {
+        registerResponse = await AgentClient.register({
+          name: orchestratorName,
+          capabilities: ['task-assignment', 'task-monitoring', 'orchestration'],
+          status: 'active',
+        });
+      } catch (regError: any) {
+        spinner.warn(chalk.yellow(`Agent registration failed: ${regError.message}`));
+        console.log(chalk.dim('  Continuing with local-only orchestration...'));
+
+        // Create local-only state
+        registerResponse = {
+          agentId: `local-${Date.now()}`,
+          name: orchestratorName,
+          capabilities: ['task-assignment', 'task-monitoring', 'orchestration'],
+          status: 'active',
+          organizationId: 'local',
+          createdAt: new Date().toISOString(),
+        };
+      }
+
+      // Initialize context monitor for pressure tracking (TASK-9)
+      resetContextMonitor(); // Reset any previous session
+      const contextMonitor = getContextMonitor({
+        model: 'claude-opus-4-5-20251101', // Default to Opus for orchestrator
+      });
+
+      state = {
+        orchestratorId: registerResponse.agentId,
+        orchestratorName: registerResponse.name,
+        graphId: graphConfig.graphId,
+        sprintId: sprint.file,
+        startedAt: new Date(),
+        lastProgressAt: new Date(),
+        cyclesWithoutProgress: 0,
+        completedTasks: new Set(),
+        inProgressTasks: new Map(),
+        blockedTasks: new Set(),
+        assignmentHistory: [],
+        contextMonitor,
+      };
+
+      // Mark already-completed tasks from sprint file
+      for (const task of tasks) {
+        if (task.status === 'complete') {
+          state.completedTasks.add(task.id);
+        }
+      }
+
+      spinner.succeed(chalk.green(`Registered as ${chalk.bold(state.orchestratorName)}`));
+      console.log(chalk.dim(`  Agent ID: ${state.orchestratorId}`));
+    }
 
     // ============================================================
     // PHASE 5: Start Heartbeat
@@ -304,9 +414,14 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
       console.log('');
       console.log(chalk.yellow(`\n📡 Received ${signal}, shutting down gracefully...`));
 
-      // Save checkpoint
-      if (state) {
-        await saveCheckpoint(state, projectRoot);
+      // TASK-10: Save checkpoint with exit reason
+      if (state && stateManager) {
+        const checkpoint = stateManager.createCheckpoint(state);
+        await stateManager.saveCheckpoint(checkpoint, {
+          exitReason: 'user_interrupt',
+          exitCode: EXIT_CODE_SUCCESS,
+        });
+        console.log(chalk.dim('  Checkpoint saved for later resume'));
       }
 
       // Stop heartbeat
@@ -314,7 +429,7 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
 
       console.log(chalk.green('✓ Orchestrator stopped'));
       displayFinalStatus(state!, tasks);
-      process.exit(0);
+      process.exit(EXIT_CODE_SUCCESS);
     };
 
     process.on('SIGINT', () => gracefulShutdown('SIGINT'));
@@ -337,6 +452,7 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
         pollInterval: (options.pollInterval || DEFAULT_POLL_INTERVAL_SECONDS) * 1000,
         maxRuntime: (options.maxRuntime || DEFAULT_MAX_RUNTIME_MINUTES) * 60 * 1000,
         verbose: options.verbose || false,
+        stateManager: stateManager!, // TASK-10: Pass state manager for checkpoints
       }
     );
 
@@ -347,8 +463,14 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
     console.log(chalk.bold.green('🎉 All tasks completed!'));
     displayFinalStatus(state, tasks);
 
+    // TASK-10: Delete checkpoint on successful completion
+    if (stateManager) {
+      await stateManager.deleteCheckpoint();
+      console.log(chalk.dim('  Checkpoint cleared (all tasks complete)'));
+    }
+
     await shutdownHeartbeat();
-    process.exit(0);
+    process.exit(EXIT_CODE_SUCCESS);
 
   } catch (error: any) {
     if (spinner) spinner.fail(chalk.red('Orchestration failed'));
@@ -356,6 +478,20 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
 
     if (options.verbose && error.stack) {
       console.error(chalk.dim(error.stack));
+    }
+
+    // TASK-10: Save checkpoint on error for recovery
+    if (state && stateManager) {
+      try {
+        const checkpoint = stateManager.createCheckpoint(state);
+        await stateManager.saveCheckpoint(checkpoint, {
+          exitReason: 'error',
+          exitCode: EXIT_CODE_ERROR,
+        });
+        console.log(chalk.dim('  Checkpoint saved for recovery'));
+      } catch {
+        // Ignore checkpoint save errors
+      }
     }
 
     // Cleanup
@@ -379,6 +515,7 @@ interface LoopOptions {
   pollInterval: number;
   maxRuntime: number;
   verbose: boolean;
+  stateManager: OrchestratorStateManager; // TASK-10: State manager for checkpoints
 }
 
 async function runOrchestrationLoop(
@@ -390,6 +527,7 @@ async function runOrchestrationLoop(
   const client = new GraphApiClient();
   let lastEventId: string | null = null;
   const startTime = Date.now();
+  const { stateManager } = options;
 
   while (true) {
     // Check exit conditions
@@ -403,8 +541,13 @@ async function runOrchestrationLoop(
     // Check max runtime
     if (Date.now() - startTime > options.maxRuntime) {
       console.log(chalk.yellow('\n⏰ Max runtime exceeded - checkpointing and exiting'));
-      const projectRoot = await requireGinkoRoot();
-      await saveCheckpoint(state, projectRoot);
+      // TASK-10: Save checkpoint with exit reason
+      const checkpoint = stateManager.createCheckpoint(state);
+      await stateManager.saveCheckpoint(checkpoint, {
+        exitReason: 'max_runtime',
+        exitCode: EXIT_CODE_RESPAWN,
+      });
+      console.log(chalk.dim('  Checkpoint saved for respawn'));
       process.exit(EXIT_CODE_RESPAWN);
     }
 
@@ -412,8 +555,13 @@ async function runOrchestrationLoop(
     const pressure = state.contextMonitor.getPressure();
     if (state.contextMonitor.shouldRespawn()) {
       console.log(chalk.magenta(`\n📊 Context pressure critical (${(pressure * 100).toFixed(1)}%) - checkpointing and respawning`));
-      const projectRoot = await requireGinkoRoot();
-      await saveCheckpoint(state, projectRoot);
+      // TASK-10: Save checkpoint with exit reason
+      const checkpoint = stateManager.createCheckpoint(state);
+      await stateManager.saveCheckpoint(checkpoint, {
+        exitReason: 'context_pressure',
+        exitCode: EXIT_CODE_RESPAWN,
+      });
+      console.log(chalk.dim('  Checkpoint saved for respawn'));
       process.exit(EXIT_CODE_RESPAWN);
     }
 
@@ -435,9 +583,14 @@ async function runOrchestrationLoop(
     if (state.cyclesWithoutProgress >= MAX_CYCLES_WITHOUT_PROGRESS) {
       console.log(chalk.red('\n⚠️  No progress for 10 cycles - escalating'));
       displayBlockers(state, tasks);
-      const projectRoot = await requireGinkoRoot();
-      await saveCheckpoint(state, projectRoot);
-      process.exit(1);
+      // TASK-10: Save checkpoint with exit reason
+      const checkpoint = stateManager.createCheckpoint(state);
+      await stateManager.saveCheckpoint(checkpoint, {
+        exitReason: 'no_progress',
+        exitCode: EXIT_CODE_ERROR,
+      });
+      console.log(chalk.dim('  Checkpoint saved for investigation'));
+      process.exit(EXIT_CODE_ERROR);
     }
 
     try {
@@ -896,45 +1049,9 @@ function extractCapabilities(task: any): string[] {
 }
 
 // ============================================================
-// State Persistence
+// State Persistence (TASK-10: Moved to orchestrator-state.ts)
 // ============================================================
-
-async function saveCheckpoint(state: OrchestratorState, projectRoot: string): Promise<void> {
-  const checkpointPath = path.join(projectRoot, '.ginko', 'orchestrator-checkpoint.json');
-
-  // TASK-9: Get context metrics for checkpoint
-  const contextMetrics = state.contextMonitor.getMetrics();
-
-  const checkpoint = {
-    orchestratorId: state.orchestratorId,
-    orchestratorName: state.orchestratorName,
-    graphId: state.graphId,
-    sprintId: state.sprintId,
-    startedAt: state.startedAt.toISOString(),
-    savedAt: new Date().toISOString(),
-    completedTasks: Array.from(state.completedTasks),
-    inProgressTasks: Object.fromEntries(state.inProgressTasks),
-    assignmentHistory: state.assignmentHistory.map(a => ({
-      ...a,
-      assignedAt: a.assignedAt.toISOString(),
-    })),
-    // TASK-9: Include context metrics in checkpoint
-    contextMetrics: {
-      estimatedTokens: contextMetrics.estimatedTokens,
-      contextLimit: contextMetrics.contextLimit,
-      pressure: contextMetrics.pressure,
-      messageCount: contextMetrics.messageCount,
-      toolCallCount: contextMetrics.toolCallCount,
-      eventsSinceStart: contextMetrics.eventsSinceStart,
-      model: contextMetrics.model,
-    },
-  };
-
-  await fs.mkdir(path.dirname(checkpointPath), { recursive: true });
-  await fs.writeFile(checkpointPath, JSON.stringify(checkpoint, null, 2), 'utf-8');
-
-  console.log(chalk.dim(`  Checkpoint saved: ${checkpointPath}`));
-}
+// State persistence is now handled by OrchestratorStateManager
 
 // ============================================================
 // Utilities

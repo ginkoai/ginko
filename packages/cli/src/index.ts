@@ -208,27 +208,33 @@ program
   .option('--epic <epic>', 'Target epic ID for orchestration')
   .option('--sprint <sprint>', 'Target sprint file path')
   .option('--dry-run', 'Show orchestration plan without executing')
+  .option('--resume', 'Resume from last checkpoint (TASK-10)')
   .option('--poll-interval <seconds>', 'Task polling interval in seconds (default: 5)', '5')
   .option('--max-runtime <minutes>', 'Maximum runtime in minutes (default: 60)', '60')
   .option('-v, --verbose', 'Show detailed orchestration output')
   .addHelpText('after', `
 ${chalk.gray('Orchestrator Flow:')}
-  ${chalk.dim('1. Register as orchestrator agent with capabilities')}
+  ${chalk.dim('1. Register as orchestrator agent (or resume from checkpoint)')}
   ${chalk.dim('2. Load sprint tasks with dependencies')}
   ${chalk.dim('3. Compute execution waves (topological ordering)')}
   ${chalk.dim('4. Discover available worker agents')}
   ${chalk.dim('5. Assign tasks based on capabilities')}
   ${chalk.dim('6. Monitor completion events')}
   ${chalk.dim('7. Handle blockers and reassignment')}
+  ${chalk.dim('8. Checkpoint on exit for seamless respawn')}
 
 ${chalk.gray('Exit Codes:')}
   ${chalk.dim('0  - All tasks completed successfully')}
   ${chalk.dim('1  - Error or stalled (no progress)')}
   ${chalk.dim('75 - Checkpoint saved, respawn needed')}
 
+${chalk.gray('Resume:')}
+  ${chalk.dim('Use --resume after exit code 75 to continue from checkpoint')}
+
 ${chalk.gray('Examples:')}
   ${chalk.green('ginko orchestrate')} ${chalk.dim('# Orchestrate current sprint')}
   ${chalk.green('ginko orchestrate --dry-run')} ${chalk.dim('# Preview plan without executing')}
+  ${chalk.green('ginko orchestrate --resume')} ${chalk.dim('# Resume from last checkpoint')}
   ${chalk.green('ginko orchestrate --verbose')} ${chalk.dim('# Show detailed status')}
   ${chalk.green('ginko orchestrate --max-runtime 120')} ${chalk.dim('# Run for up to 2 hours')}
 `)
@@ -237,6 +243,7 @@ ${chalk.gray('Examples:')}
       epic: options.epic,
       sprint: options.sprint,
       dryRun: options.dryRun,
+      resume: options.resume,
       pollInterval: parseInt(options.pollInterval, 10),
       maxRuntime: parseInt(options.maxRuntime, 10),
       verbose: options.verbose,
