@@ -94,6 +94,10 @@ export interface OrchestratorCheckpoint {
   exitReason?: ExitReason;
   exitCode?: number;
 
+  // Recovery tracking (TASK-8)
+  persistedAt?: string; // ISO timestamp of last graph persistence
+  recoveredFrom?: string; // Previous checkpoint ID if recovered
+
   // Version for migration
   version: number;
 }
@@ -322,14 +326,14 @@ export class OrchestratorStateManager {
 }
 
 // ============================================================
-// Graph Persistence (Future enhancement)
+// Graph Persistence (TASK-8: Orchestrator Recovery)
 // ============================================================
 
 /**
  * Save orchestrator state to graph
  * This enables cross-machine state recovery and team visibility
  */
-export async function saveStateToGraph(
+export async function persistStateToGraph(
   checkpoint: OrchestratorCheckpoint,
   graphApiClient: { request: <T>(method: string, endpoint: string, body?: unknown) => Promise<T> }
 ): Promise<void> {
@@ -342,22 +346,85 @@ export async function saveStateToGraph(
 }
 
 /**
- * Load orchestrator state from graph
+ * Recover orchestrator state from graph
+ * Attempts to find the most recent state for the given epic/sprint
  */
-export async function loadStateFromGraph(
+export async function recoverStateFromGraph(
   graphId: string,
-  orchestratorId: string,
+  epicId: string,
   graphApiClient: { request: <T>(method: string, endpoint: string, body?: unknown) => Promise<T> }
 ): Promise<OrchestratorCheckpoint | null> {
   try {
-    const response = await graphApiClient.request<{ state: OrchestratorCheckpoint }>(
+    // Query for most recent orchestrator state for this epic
+    const response = await graphApiClient.request<{ state: OrchestratorCheckpoint | null }>(
       'GET',
-      `/api/v1/orchestrator/state?graphId=${graphId}&orchestratorId=${orchestratorId}`,
+      `/api/v1/orchestrator/state?graphId=${graphId}&epicId=${epicId}`,
     );
     return response.state;
-  } catch {
+  } catch (error) {
+    // If endpoint doesn't exist yet or other error, return null
     return null;
   }
+}
+
+/**
+ * Reconcile task statuses after recovery
+ * Re-scans actual task status and compares with persisted state
+ * Handles discrepancies (e.g., task marked complete externally)
+ */
+export async function reconcileTaskStatuses(
+  checkpoint: OrchestratorCheckpoint,
+  actualTasks: Array<{ id: string; status: string }>,
+  graphApiClient: { request: <T>(method: string, endpoint: string, body?: unknown) => Promise<T> }
+): Promise<OrchestratorCheckpoint> {
+  const reconciledCheckpoint = { ...checkpoint };
+  const changes: string[] = [];
+
+  // Check completed tasks
+  for (const taskId of checkpoint.completedTasks) {
+    const actual = actualTasks.find(t => t.id === taskId);
+    if (actual && actual.status !== 'complete') {
+      // Task was marked incomplete externally - revert
+      reconciledCheckpoint.completedTasks = reconciledCheckpoint.completedTasks.filter(id => id !== taskId);
+      changes.push(`Task ${taskId} reverted from complete to ${actual.status}`);
+    }
+  }
+
+  // Check in-progress tasks
+  const inProgressEntries = Object.entries(checkpoint.inProgressTasks);
+  for (const [taskId, agentId] of inProgressEntries) {
+    const actual = actualTasks.find(t => t.id === taskId);
+    if (actual?.status === 'complete') {
+      // Task completed externally - move to completed
+      delete reconciledCheckpoint.inProgressTasks[taskId];
+      if (!reconciledCheckpoint.completedTasks.includes(taskId)) {
+        reconciledCheckpoint.completedTasks.push(taskId);
+      }
+      changes.push(`Task ${taskId} completed externally`);
+    } else if (!actual) {
+      // Task no longer exists - remove
+      delete reconciledCheckpoint.inProgressTasks[taskId];
+      changes.push(`Task ${taskId} no longer exists`);
+    }
+  }
+
+  // Check for newly completed tasks not in checkpoint
+  for (const task of actualTasks) {
+    if (task.status === 'complete' && !reconciledCheckpoint.completedTasks.includes(task.id)) {
+      reconciledCheckpoint.completedTasks.push(task.id);
+      changes.push(`Task ${task.id} completed externally`);
+    }
+  }
+
+  // Log reconciliation if changes detected
+  if (changes.length > 0) {
+    console.log(`Reconciled ${changes.length} task status changes:`);
+    for (const change of changes) {
+      console.log(`  - ${change}`);
+    }
+  }
+
+  return reconciledCheckpoint;
 }
 
 // ============================================================

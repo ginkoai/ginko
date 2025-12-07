@@ -22,6 +22,8 @@
     "node_modules",
     "dist",
     "src/_archive",
+    "src/**/*.test.ts",
+    "src/**/__tests__/**",
     "src/core/config/path-resolver.ts",
     "src/core/config/config-loader.ts",
     "src/core/config/config-migrator.ts",

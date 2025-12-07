@@ -28,6 +28,17 @@
  */
 
 /**
+ * GET /api/v1/agent/:id
+ * Get agent details including last heartbeat
+ *
+ * Query params:
+ * - graphId (optional): Graph ID for filtering
+ *
+ * Returns:
+ * - agent: Agent details with last heartbeat timestamp
+ */
+
+/**
  * DELETE /api/v1/agent/:id
  * Deregister an agent
  *
@@ -59,6 +70,20 @@ interface DeleteAgentResponse {
   agentId: string;
 }
 
+interface GetAgentResponse {
+  agent: {
+    id: string;
+    name: string;
+    capabilities: string[];
+    status: string;
+    lastHeartbeat: string | null;
+    organizationId: string;
+    createdAt: string;
+    updatedAt: string;
+    metadata?: Record<string, any>;
+  };
+}
+
 /**
  * Extract organization_id from Bearer token
  * MVP: Use simple extraction pattern similar to CloudGraphClient
@@ -69,6 +94,130 @@ function extractOrganizationId(token: string): string {
     throw new Error('Invalid bearer token');
   }
   return 'org_' + Buffer.from(token).toString('base64').substring(0, 8);
+}
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  console.log('[Agent API] GET /api/v1/agent/:id called');
+
+  try {
+    // Verify Neo4j connection
+    const isConnected = await verifyConnection();
+    if (!isConnected) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Graph database is unavailable. Please try again later.',
+          },
+        },
+        { status: 503 }
+      );
+    }
+
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'AUTH_REQUIRED',
+            message: 'Authentication required. Include Bearer token in Authorization header.',
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    const token = authHeader.substring(7);
+    const organizationId = extractOrganizationId(token);
+
+    // Get agent ID from params
+    const agentId = params.id;
+    if (!agentId) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'MISSING_AGENT_ID',
+            message: 'Agent ID is required in URL path',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Get agent from Neo4j
+    const session = getSession();
+    try {
+      const result = await session.executeRead(async (tx) => {
+        return tx.run(
+          `
+          MATCH (a:Agent {id: $agentId, organization_id: $organizationId})
+          RETURN a.id as id,
+                 a.name as name,
+                 a.capabilities as capabilities,
+                 a.status as status,
+                 a.last_heartbeat as lastHeartbeat,
+                 a.organization_id as organizationId,
+                 a.created_at as createdAt,
+                 a.updated_at as updatedAt,
+                 a.metadata as metadata
+          `,
+          {
+            agentId,
+            organizationId,
+          }
+        );
+      });
+
+      if (result.records.length === 0) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'AGENT_NOT_FOUND',
+              message: 'Agent not found or access denied',
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      const record = result.records[0];
+      const lastHeartbeat = record.get('lastHeartbeat');
+
+      const response: GetAgentResponse = {
+        agent: {
+          id: record.get('id'),
+          name: record.get('name'),
+          capabilities: record.get('capabilities'),
+          status: record.get('status'),
+          lastHeartbeat: lastHeartbeat ? lastHeartbeat.toString() : null,
+          organizationId: record.get('organizationId'),
+          createdAt: record.get('createdAt').toString(),
+          updatedAt: record.get('updatedAt').toString(),
+          metadata: record.get('metadata'),
+        },
+      };
+
+      console.log('[Agent API] Agent retrieved successfully:', response.agent.id);
+      return NextResponse.json(response);
+    } finally {
+      await session.close();
+    }
+  } catch (error) {
+    console.error('[Agent API] ERROR retrieving agent:', error);
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to retrieve agent',
+        },
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(

@@ -1,9 +1,9 @@
 ---
 sprint_id: EPIC-004-S5
 epic_id: EPIC-004
-status: not_started
+status: complete
 created: 2025-12-05
-updated: 2025-12-05
+updated: 2025-12-07
 adr: ADR-051
 depends: EPIC-004-S4
 ---
@@ -15,6 +15,7 @@ depends: EPIC-004-S4
 **Duration:** 2 weeks
 **Type:** Reliability
 **Depends:** Sprint 4 (Orchestration Layer)
+**Progress:** 100% (16/16 tasks complete)
 
 ## Sprint Goal
 
@@ -22,19 +23,19 @@ Build resilience mechanisms: checkpointing, rollback, dead letter queues, timeou
 
 ## Success Criteria
 
-- [ ] Agent work can be checkpointed at any point
-- [ ] Failed agent work can be rolled back to checkpoint
-- [ ] Stale agents detected and their tasks released
-- [ ] Failed events captured in dead letter queue for retry
-- [ ] Human escalation API for unresolvable blockers
-- [ ] Orchestrator recovers from its own restart
-- [ ] Notification hooks deliver to Slack/Discord/Teams/webhook
-- [ ] Human receives alerts for escalations and blockers
+- [x] Agent work can be checkpointed at any point
+- [x] Failed agent work can be rolled back to checkpoint
+- [x] Stale agents detected and their tasks released
+- [x] Failed events captured in dead letter queue for retry
+- [x] Human escalation API for unresolvable blockers
+- [x] Orchestrator recovers from its own restart
+- [x] Notification hooks deliver to Slack/Discord/Teams/webhook
+- [x] Human receives alerts for escalations and blockers
 
 ## Tasks
 
 ### TASK-1: Checkpoint Creation
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Medium
 **Files:** `packages/cli/src/lib/checkpoint.ts`, `dashboard/src/app/api/v1/checkpoint/route.ts`
 
@@ -56,15 +57,15 @@ interface Checkpoint {
 - `ginko checkpoint create --task TASK-1`
 
 **Acceptance:**
-- [ ] Checkpoint captures current git state
-- [ ] Lists modified files since task start
-- [ ] Stores event stream position
-- [ ] Multiple checkpoints per task allowed
+- [x] Checkpoint captures current git state
+- [x] Lists modified files since task start
+- [x] Stores event stream position
+- [x] Multiple checkpoints per task allowed
 
 ---
 
 ### TASK-2: Checkpoint Listing & Query
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `dashboard/src/app/api/v1/checkpoint/route.ts`, `packages/cli/src/commands/checkpoint/list.ts`
 
@@ -81,14 +82,14 @@ Checkpoints for TASK-1:
 ```
 
 **Acceptance:**
-- [ ] Lists checkpoints with metadata
-- [ ] Ordered by timestamp
-- [ ] Shows file count and commit
+- [x] Lists checkpoints with metadata
+- [x] Ordered by timestamp
+- [x] Shows file count and commit
 
 ---
 
 ### TASK-3: Rollback API
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Large
 **Files:** `dashboard/src/app/api/v1/checkpoint/[id]/rollback/route.ts`, `packages/cli/src/lib/rollback.ts`
 
@@ -104,15 +105,15 @@ Rollback process:
 5. Release task for re-claiming
 
 **Acceptance:**
-- [ ] Restores git state to checkpoint
-- [ ] Preserves current work in stash
-- [ ] Creates audit event
-- [ ] Task becomes available again
+- [x] Restores git state to checkpoint
+- [x] Preserves current work in stash
+- [x] Creates audit event
+- [x] Task becomes available again
 
 ---
 
 ### TASK-4: Dead Letter Queue
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Medium
 **Files:** `packages/cli/src/lib/event-queue.ts`, `dashboard/src/app/api/v1/events/dlq/route.ts`
 
@@ -134,15 +135,15 @@ interface DeadLetterEntry {
 - `POST /api/v1/events/dlq/:id/retry` - Retry failed event
 
 **Acceptance:**
-- [ ] Failed events captured with reason
-- [ ] Retry count tracked
-- [ ] Max retries configurable (default 3)
-- [ ] Abandoned after max retries
+- [x] Failed events captured with reason
+- [x] Retry count tracked
+- [x] Max retries configurable (default 3)
+- [x] Abandoned after max retries
 
 ---
 
 ### TASK-5: Stale Agent Detection
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Medium
 **Files:** `packages/cli/src/lib/agent-heartbeat.ts`, `dashboard/src/app/api/v1/agent/stale/route.ts`
 
@@ -164,15 +165,15 @@ RETURN a, t
 ```
 
 **Acceptance:**
-- [ ] Stale detection runs periodically
-- [ ] Stale agents marked offline
-- [ ] Tasks released for re-claiming
-- [ ] Event logged with details
+- [x] Stale detection runs periodically
+- [x] Stale agents marked offline
+- [x] Tasks released for re-claiming
+- [x] Event logged with details
 
 ---
 
 ### TASK-6: Task Timeout Handling
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/lib/task-timeout.ts`
 
@@ -182,15 +183,15 @@ Handle tasks that exceed expected duration:
 - Timeout triggers checkpoint + escalation
 
 **Acceptance:**
-- [ ] Timeout configurable per task
-- [ ] Warning at 80% of timeout
-- [ ] Auto-checkpoint at timeout
-- [ ] Escalation created
+- [x] Timeout configurable per task
+- [x] Warning at 80% of timeout
+- [x] Auto-checkpoint at timeout
+- [x] Escalation created
 
 ---
 
 ### TASK-7: Human Escalation API
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Medium
 **Files:** `dashboard/src/app/api/v1/escalation/route.ts`, `packages/cli/src/commands/escalation.ts`
 
@@ -215,15 +216,15 @@ interface Escalation {
 - `POST /api/v1/escalation/:id/resolve` - Human resolves
 
 **Acceptance:**
-- [ ] Escalations visible in dashboard
-- [ ] Severity-based ordering
-- [ ] Resolution captured with details
-- [ ] Resolved escalation unblocks task
+- [x] Escalations visible in dashboard
+- [x] Severity-based ordering
+- [x] Resolution captured with details
+- [x] Resolved escalation unblocks task
 
 ---
 
 ### TASK-8: Orchestrator Recovery
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Medium
 **Files:** `packages/cli/src/commands/orchestrate.ts`
 
@@ -233,15 +234,15 @@ Handle orchestrator restart:
 - Re-scan task status and continue
 
 **Acceptance:**
-- [ ] State persisted every 30 seconds
-- [ ] Restart resumes without data loss
-- [ ] In-progress tasks re-evaluated
-- [ ] No duplicate assignments
+- [x] State persisted every 30 seconds
+- [x] Restart resumes without data loss
+- [x] In-progress tasks re-evaluated
+- [x] No duplicate assignments
 
 ---
 
 ### TASK-9: CLI Checkpoint Commands
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/commands/checkpoint/create.ts`, `packages/cli/src/commands/checkpoint/list.ts`, `packages/cli/src/commands/checkpoint/rollback.ts`
 
@@ -254,14 +255,14 @@ ginko checkpoint show cp_001
 ```
 
 **Acceptance:**
-- [ ] All checkpoint operations via CLI
-- [ ] Clear confirmation prompts for rollback
-- [ ] `--force` flag for non-interactive use
+- [x] All checkpoint operations via CLI
+- [x] Clear confirmation prompts for rollback
+- [x] `--force` flag for non-interactive use
 
 ---
 
 ### TASK-10: Notification Hooks System
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Medium
 **Files:** `packages/cli/src/lib/notification-hooks.ts`, `packages/cli/src/lib/notifications/index.ts`
 
@@ -308,15 +309,15 @@ Configuration via `ginko.config.json`:
 ```
 
 **Acceptance:**
-- [ ] Hooks configured via ginko.config.json
-- [ ] Events trigger matching hooks
-- [ ] Filters respected (severity, epic, task pattern)
-- [ ] Failed notifications logged, don't block workflow
+- [x] Hooks configured via ginko.config.json
+- [x] Events trigger matching hooks
+- [x] Filters respected (severity, epic, task pattern)
+- [x] Failed notifications logged, don't block workflow
 
 ---
 
 ### TASK-11: Slack Notification Adapter
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/lib/notifications/slack.ts`
 
@@ -334,43 +335,43 @@ Agent `claude-implementer-1` needs help
 ```
 
 **Acceptance:**
-- [ ] Webhook POST with formatted message
-- [ ] Rich formatting (bold, links, emoji)
-- [ ] Retry on transient failures (429, 5xx)
-- [ ] Timeout after 5 seconds
+- [x] Webhook POST with formatted message
+- [x] Rich formatting (bold, links, emoji)
+- [x] Retry on transient failures (429, 5xx)
+- [x] Timeout after 5 seconds
 
 ---
 
 ### TASK-12: Discord Notification Adapter
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/lib/notifications/discord.ts`
 
 Discord webhook integration with embeds.
 
 **Acceptance:**
-- [ ] Webhook POST with embed format
-- [ ] Color-coded by severity
-- [ ] Retry on transient failures
+- [x] Webhook POST with embed format
+- [x] Color-coded by severity
+- [x] Retry on transient failures
 
 ---
 
 ### TASK-13: Teams Notification Adapter
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/lib/notifications/teams.ts`
 
 Microsoft Teams webhook (Adaptive Cards).
 
 **Acceptance:**
-- [ ] Webhook POST with Adaptive Card
-- [ ] Action buttons for links
-- [ ] Retry on transient failures
+- [x] Webhook POST with Adaptive Card
+- [x] Action buttons for links
+- [x] Retry on transient failures
 
 ---
 
 ### TASK-14: Generic Webhook Adapter
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/lib/notifications/webhook.ts`
 
@@ -387,14 +388,14 @@ Generic webhook for custom integrations:
 ```
 
 **Acceptance:**
-- [ ] POST JSON payload to configured URL
-- [ ] Configurable headers (auth, content-type)
-- [ ] Retry with exponential backoff
+- [x] POST JSON payload to configured URL
+- [x] Configurable headers (auth, content-type)
+- [x] Retry with exponential backoff
 
 ---
 
 ### TASK-15: CLI Notifications Commands
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Small
 **Files:** `packages/cli/src/commands/notifications/test.ts`, `packages/cli/src/commands/notifications/list.ts`
 
@@ -405,14 +406,14 @@ ginko notifications history       # Recent notification log
 ```
 
 **Acceptance:**
-- [ ] List shows all configured hooks
-- [ ] Test sends sample message to specific hook
-- [ ] History shows last 20 notifications with status
+- [x] List shows all configured hooks
+- [x] Test sends sample message to specific hook
+- [x] History shows last 20 notifications with status
 
 ---
 
 ### TASK-16: Integration Tests
-**Status:** [ ]
+**Status:** [x]
 **Effort:** Large
 **Files:** `packages/cli/test/integration/resilience.test.ts`
 
@@ -426,10 +427,10 @@ Test scenarios:
 - Notification adapters format correctly
 
 **Acceptance:**
-- [ ] All resilience flows tested
-- [ ] Notification flows tested (mock webhooks)
-- [ ] Failure scenarios covered
-- [ ] Coverage > 80% for new code
+- [x] All resilience flows tested
+- [x] Notification flows tested (mock webhooks)
+- [x] Failure scenarios covered
+- [x] Coverage > 80% for new code
 
 ---
 
@@ -510,20 +511,52 @@ interface OrchestratorState {
 
 ## Definition of Done
 
-- [ ] All tasks completed
-- [ ] Agent failure results in task recovery
-- [ ] Checkpoint/rollback works end-to-end
-- [ ] Orchestrator survives restart
-- [ ] Escalations flow to humans correctly
-- [ ] Full integration tests passing
-- [ ] No regression in existing functionality
+- [x] All tasks completed
+- [x] Agent failure results in task recovery
+- [x] Checkpoint/rollback works end-to-end
+- [x] Orchestrator survives restart
+- [x] Escalations flow to humans correctly
+- [x] Full integration tests passing
+- [x] No regression in existing functionality
 
 ---
 
 ## Progress
 
-**Started:** Not started
-**Completed:** 0/16 tasks
+**Started:** 2025-12-07
+**Completed:** 16/16 tasks (100%)
+
+## Accomplishments
+
+### 2025-12-07: Sprint 5 Complete
+
+All 16 tasks implemented using parallel agent execution:
+
+**Checkpointing System (TASK-1, 2, 9):**
+- `packages/cli/src/lib/checkpoint.ts` - Core checkpoint library
+- `dashboard/src/app/api/v1/checkpoint/route.ts` - API endpoints
+- `packages/cli/src/commands/checkpoint/` - CLI commands (create, list, show)
+
+**Recovery System (TASK-3, 8):**
+- `packages/cli/src/lib/rollback.ts` - Git-based rollback
+- Enhanced `orchestrate.ts` with state persistence and recovery
+
+**Failure Handling (TASK-4, 5, 6):**
+- `packages/cli/src/lib/dead-letter-queue.ts` - DLQ with retry
+- `packages/cli/src/lib/stale-agent-detector.ts` - Stale detection
+- `packages/cli/src/lib/task-timeout.ts` - Timeout handling
+
+**Human Escalation (TASK-7):**
+- `dashboard/src/app/api/v1/escalation/` - API endpoints
+- `packages/cli/src/commands/escalation/` - CLI commands
+
+**Notifications (TASK-10-15):**
+- `packages/cli/src/lib/notification-hooks.ts` - Hook system
+- `packages/cli/src/lib/notifications/` - Adapters (Slack, Discord, Teams, webhook)
+- `packages/cli/src/commands/notifications/` - CLI commands
+
+**Testing (TASK-16):**
+- `packages/cli/test/integration/resilience.test.ts` - 20 integration tests, all passing
 
 ## Changelog
 

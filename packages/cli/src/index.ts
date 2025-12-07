@@ -51,6 +51,7 @@ import { projectCommand } from './commands/project/index.js';
 import { teamManagementCommand } from './commands/team/index.js';
 import { agentCommand } from './commands/agent/index.js';
 import { sprintCommand } from './commands/sprint/index.js';
+import { checkpointCommand } from './commands/checkpoint/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
 import { teamCommand } from './commands/team.js';
@@ -62,6 +63,9 @@ import { charterCommand, charterExamples } from './commands/charter.js';
 import { epicCommand, epicExamples } from './commands/epic.js';
 import { verifyCommand } from './commands/verify.js';
 import { orchestrateCommand } from './commands/orchestrate.js';
+import { dlqCommand } from './commands/dlq.js';
+import { escalationCommand } from './commands/escalation/index.js';
+import { notificationsCommand } from './commands/notifications/index.js';
 
 const program = new Command();
 
@@ -480,6 +484,18 @@ program.addCommand(agentCommand());
 
 // Sprint management commands (EPIC-004 Sprint 4)
 program.addCommand(sprintCommand());
+
+// Checkpoint management commands (EPIC-004 Sprint 5 TASK-1)
+program.addCommand(checkpointCommand());
+
+// Dead Letter Queue management commands (EPIC-004 Sprint 5 TASK-4)
+program.addCommand(dlqCommand);
+
+// Escalation management commands (EPIC-004 Sprint 5 TASK-7)
+program.addCommand(escalationCommand());
+
+// Notification management commands (EPIC-004 Sprint 5 TASK-15)
+program.addCommand(notificationsCommand());
 
 // Universal Reflection Pattern command
 program

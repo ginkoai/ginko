@@ -185,9 +185,20 @@ export class EventQueue {
         }
       }
 
-      // All retries failed
+      // All retries failed - add to Dead Letter Queue
       this.status.lastError = lastError?.message || 'Unknown error';
-      console.error('[EventQueue] ⚠ Graph sync failed after all retries, events remain in local log');
+      console.error('[EventQueue] ⚠ Graph sync failed after all retries, adding to Dead Letter Queue');
+
+      // Add each failed event to DLQ
+      try {
+        const { addToDeadLetter } = await import('./dead-letter-queue.js');
+        for (const event of batch) {
+          await addToDeadLetter(event, lastError?.message || 'Unknown sync error');
+        }
+      } catch (dlqError) {
+        console.error('[EventQueue] Failed to add events to DLQ:', dlqError instanceof Error ? dlqError.message : String(dlqError));
+        // Events remain in local log as fallback
+      }
     } finally {
       this.status.isRunning = false;
     }

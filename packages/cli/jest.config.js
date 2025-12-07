@@ -10,7 +10,7 @@ export default {
     '^(\.{1,2}/.*)\.js$': '$1'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(ora|chalk|cli-spinners|strip-ansi|ansi-regex|is-interactive|is-unicode-supported)/)',
+    'node_modules/(?!(ora|chalk|cli-spinners|strip-ansi|ansi-regex|is-interactive|is-unicode-supported|uuid)/)',
   ],
   collectCoverageFrom: [
     'src/**/*.ts',

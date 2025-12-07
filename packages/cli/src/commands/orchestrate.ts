@@ -70,6 +70,9 @@ import {
   EXIT_CODE_RESPAWN,
   getExitCode,
   getExitMessage,
+  persistStateToGraph,
+  recoverStateFromGraph,
+  reconcileTaskStatuses,
 } from '../lib/orchestrator-state.js';
 
 // ============================================================
@@ -106,6 +109,9 @@ interface OrchestratorState {
   // EPIC-004 Sprint 4 TASK-9: Context pressure monitoring
   contextMonitor: ContextMonitor;
   lastPressureWarning?: Date;
+  // EPIC-004 Sprint 5 TASK-8: Recovery tracking
+  lastGraphPersist?: Date;
+  recoveredFromCheckpointId?: string;
 }
 
 interface WorkerAgent {
@@ -165,29 +171,69 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
       process.exit(1);
     }
 
+    // ============================================================
+    // PHASE 2: Load Sprint & Tasks
+    // ============================================================
+    spinner.text = 'Loading sprint tasks...';
+
+    const sprint = await loadSprintChecklist(projectRoot);
+    if (!sprint) {
+      spinner.fail(chalk.red('No active sprint found'));
+      console.error(chalk.red('  Create a sprint file in docs/sprints/ first.'));
+      process.exit(1);
+    }
+
     // TASK-10: Initialize state manager
     stateManager = new OrchestratorStateManager(projectRoot, graphConfig.graphId);
+
+    // TASK-8: Try to recover from graph first (cross-machine recovery)
+    const client = new GraphApiClient();
+    let graphCheckpoint: OrchestratorCheckpoint | null = null;
 
     // TASK-10: Check for existing checkpoint
     if (options.resume) {
       spinner.text = 'Checking for checkpoint...';
-      const checkpoint = await stateManager.loadCheckpoint();
 
-      if (checkpoint) {
-        spinner.succeed(chalk.green('Found checkpoint from previous session'));
-        console.log(chalk.dim(`  Saved at: ${checkpoint.savedAt}`));
-        console.log(chalk.dim(`  Completed: ${checkpoint.completedTasks.length} tasks`));
-        console.log(chalk.dim(`  In progress: ${Object.keys(checkpoint.inProgressTasks).length} tasks`));
+      // TASK-8: Try graph recovery first
+      try {
+        const epicId = options.epic || sprint.file || 'unknown';
+        graphCheckpoint = await recoverStateFromGraph(graphConfig.graphId, epicId, client);
 
-        if (checkpoint.exitReason) {
-          console.log(chalk.dim(`  Exit reason: ${getExitMessage(checkpoint.exitReason)}`));
+        if (graphCheckpoint) {
+          spinner.succeed(chalk.green('Recovered state from graph (cross-machine recovery)'));
+          console.log(chalk.dim(`  Orchestrator: ${graphCheckpoint.orchestratorName}`));
+          console.log(chalk.dim(`  Last persisted: ${graphCheckpoint.persistedAt || graphCheckpoint.savedAt}`));
+          console.log(chalk.dim(`  Completed: ${graphCheckpoint.completedTasks.length} tasks`));
+          console.log(chalk.dim(`  In progress: ${Object.keys(graphCheckpoint.inProgressTasks).length} tasks`));
+          resumedFromCheckpoint = true;
+          spinner = ora('Resuming orchestration...').start();
         }
+      } catch (error) {
+        // Graph recovery not available, fall back to local checkpoint
+        console.log(chalk.dim('  Graph recovery unavailable, checking local checkpoint...'));
+      }
 
-        resumedFromCheckpoint = true;
-        spinner = ora('Resuming orchestration...').start();
-      } else {
-        spinner.warn(chalk.yellow('No checkpoint found - starting fresh'));
-        console.log(chalk.dim('  Use --resume only after a previous session saved a checkpoint'));
+      // Fall back to local checkpoint if graph recovery failed
+      if (!graphCheckpoint) {
+        const checkpoint = await stateManager.loadCheckpoint();
+
+        if (checkpoint) {
+          graphCheckpoint = checkpoint;
+          spinner.succeed(chalk.green('Found checkpoint from previous session (local recovery)'));
+          console.log(chalk.dim(`  Saved at: ${checkpoint.savedAt}`));
+          console.log(chalk.dim(`  Completed: ${checkpoint.completedTasks.length} tasks`));
+          console.log(chalk.dim(`  In progress: ${Object.keys(checkpoint.inProgressTasks).length} tasks`));
+
+          if (checkpoint.exitReason) {
+            console.log(chalk.dim(`  Exit reason: ${getExitMessage(checkpoint.exitReason)}`));
+          }
+
+          resumedFromCheckpoint = true;
+          spinner = ora('Resuming orchestration...').start();
+        } else {
+          spinner.warn(chalk.yellow('No checkpoint found - starting fresh'));
+          console.log(chalk.dim('  Use --resume only after a previous session saved a checkpoint'));
+        }
       }
     } else {
       // Check if checkpoint exists and warn user
@@ -199,18 +245,6 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
         console.log('');
         spinner = ora('Starting fresh orchestration...').start();
       }
-    }
-
-    // ============================================================
-    // PHASE 2: Load Sprint & Tasks
-    // ============================================================
-    spinner.text = 'Loading sprint tasks...';
-
-    const sprint = await loadSprintChecklist(projectRoot);
-    if (!sprint) {
-      spinner.fail(chalk.red('No active sprint found'));
-      console.error(chalk.red('  Create a sprint file in docs/sprints/ first.'));
-      process.exit(1);
     }
 
     // Convert sprint tasks to orchestrator tasks
@@ -286,13 +320,20 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
     // PHASE 4: Register Orchestrator Agent (or restore from checkpoint)
     // ============================================================
 
-    // TASK-10: Check if resuming from checkpoint
-    let checkpoint: OrchestratorCheckpoint | null = null;
-    if (resumedFromCheckpoint && stateManager) {
-      checkpoint = await stateManager.loadCheckpoint();
-    }
+    // TASK-10 & TASK-8: Check if resuming from checkpoint
+    let checkpoint: OrchestratorCheckpoint | null = graphCheckpoint;
 
     if (checkpoint && resumedFromCheckpoint) {
+      // TASK-8: Reconcile task statuses before restoration
+      spinner.text = 'Reconciling task statuses...';
+
+      const actualTasks = tasks.map(t => ({
+        id: t.id,
+        status: t.status === 'complete' ? 'complete' : t.status,
+      }));
+
+      checkpoint = await reconcileTaskStatuses(checkpoint, actualTasks, client);
+
       // TASK-10: Restore state from checkpoint
       spinner.text = 'Restoring state from checkpoint...';
 
@@ -321,6 +362,7 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
         blockedTasks: restored.blockedTasks,
         assignmentHistory: restored.assignmentHistory,
         contextMonitor,
+        recoveredFromCheckpointId: checkpoint.orchestratorId, // Track recovery source
       };
 
       // Update task statuses from restored state
@@ -336,6 +378,9 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
       spinner.succeed(chalk.green(`Resumed as ${chalk.bold(state.orchestratorName)}`));
       console.log(chalk.dim(`  Agent ID: ${state.orchestratorId}`));
       console.log(chalk.dim(`  Restored: ${state.completedTasks.size} completed, ${state.inProgressTasks.size} in progress`));
+      if (checkpoint.persistedAt) {
+        console.log(chalk.dim(`  Recovered from: ${checkpoint.recoveredFrom || 'graph state'}`));
+      }
 
     } else {
       // Fresh start - register new orchestrator
@@ -453,6 +498,7 @@ export async function orchestrateCommand(options: OrchestrateOptions = {}): Prom
         maxRuntime: (options.maxRuntime || DEFAULT_MAX_RUNTIME_MINUTES) * 60 * 1000,
         verbose: options.verbose || false,
         stateManager: stateManager!, // TASK-10: Pass state manager for checkpoints
+        graphClient: client, // TASK-8: Pass graph client for state persistence
       }
     );
 
@@ -516,6 +562,7 @@ interface LoopOptions {
   maxRuntime: number;
   verbose: boolean;
   stateManager: OrchestratorStateManager; // TASK-10: State manager for checkpoints
+  graphClient: GraphApiClient; // TASK-8: Graph client for state persistence
 }
 
 async function runOrchestrationLoop(
@@ -524,10 +571,14 @@ async function runOrchestrationLoop(
   waves: ExecutionWave[],
   options: LoopOptions
 ): Promise<void> {
-  const client = new GraphApiClient();
+  const client = options.graphClient;
   let lastEventId: string | null = null;
   const startTime = Date.now();
-  const { stateManager } = options;
+  const { stateManager, graphClient } = options;
+
+  // TASK-8: Track last graph persistence time
+  const GRAPH_PERSIST_INTERVAL = 30 * 1000; // 30 seconds
+  let lastGraphPersist = Date.now();
 
   while (true) {
     // Check exit conditions
@@ -651,6 +702,33 @@ async function runOrchestrationLoop(
         state.cyclesWithoutProgress++;
       }
 
+      // TASK-8: Persist state to graph every 30 seconds
+      const now = Date.now();
+      if (now - lastGraphPersist >= GRAPH_PERSIST_INTERVAL) {
+        try {
+          const checkpoint = stateManager.createCheckpoint(state);
+
+          // Add persistence timestamp
+          checkpoint.persistedAt = new Date().toISOString();
+          checkpoint.recoveredFrom = state.recoveredFromCheckpointId;
+
+          // Persist to graph (non-blocking)
+          await persistStateToGraph(checkpoint, graphClient);
+
+          lastGraphPersist = now;
+          state.lastGraphPersist = new Date();
+
+          if (options.verbose) {
+            console.log(chalk.dim(`  💾 State persisted to graph`));
+          }
+        } catch (persistError: any) {
+          // Log but don't fail - graph persistence is best-effort
+          if (options.verbose) {
+            console.log(chalk.yellow(`  ⚠️  Graph persistence failed: ${persistError.message}`));
+          }
+        }
+      }
+
       // Wait before next cycle
       await sleep(options.pollInterval);
 
@@ -741,6 +819,14 @@ async function assignTasks(
   );
 
   for (const task of sortedTasks) {
+    // TASK-8: Duplicate prevention - check if task already assigned
+    if (state.inProgressTasks.has(task.id)) {
+      if (verbose) {
+        console.log(chalk.dim(`  Skipping ${task.id} - already assigned`));
+      }
+      continue;
+    }
+
     // Find a capable worker
     const capableWorker = idleWorkers.find(worker =>
       task.requiredCapabilities.every(cap => worker.capabilities.includes(cap)) ||
@@ -756,6 +842,14 @@ async function assignTasks(
 
     // Assign task
     try {
+      // TASK-8: Double-check not already assigned (race condition protection)
+      if (state.inProgressTasks.has(task.id)) {
+        if (verbose) {
+          console.log(chalk.dim(`  Race condition detected for ${task.id} - skipping`));
+        }
+        continue;
+      }
+
       // Note: This would call the assign API in production
       // For now, we'll track locally
       console.log(chalk.green(`  → Assigned ${chalk.bold(task.id)} to ${capableWorker.name}`));

@@ -1,0 +1,93 @@
+{
+  "$schema": "https://ginkoai.com/schemas/ginko-config.json",
+  "version": "1.0",
+  "project": {
+    "name": "Example Project",
+    "type": "single"
+  },
+  "paths": {
+    "docs": "docs",
+    "sprints": "docs/sprints",
+    "currentSprint": "docs/sprints/CURRENT-SPRINT.md",
+    "prds": "docs/PRD",
+    "adrs": "docs/adr",
+    "architecture": "docs/architecture",
+    "backlog": "backlog",
+    "context": ".ginko/context/modules",
+    "sessions": ".ginko/sessions",
+    "bestPractices": ".ginko/best-practices"
+  },
+  "workMode": {
+    "default": "think-build",
+    "documentationDepth": {
+      "hack-ship": ["currentSprint", "sessions"],
+      "think-build": ["currentSprint", "sessions", "adrs", "prds"],
+      "full-planning": ["currentSprint", "sessions", "adrs", "prds", "architecture", "bestPractices"]
+    }
+  },
+  "contextLoading": {
+    "progressive": true,
+    "maxDepth": 3,
+    "followReferences": true,
+    "priorityOrder": ["sessions", "currentSprint", "prds", "adrs", "context"]
+  },
+  "notifications": {
+    "hooks": [
+      {
+        "id": "slack-escalations",
+        "events": ["escalation", "blocker"],
+        "destination": {
+          "type": "slack",
+          "config": {
+            "webhook_url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+          }
+        },
+        "filter": {
+          "severity": ["high", "critical"]
+        },
+        "enabled": true
+      },
+      {
+        "id": "discord-milestones",
+        "events": ["milestone", "completion"],
+        "destination": {
+          "type": "discord",
+          "config": {
+            "webhook_url": "https://discord.com/api/webhooks/YOUR/WEBHOOK"
+          }
+        },
+        "enabled": true
+      },
+      {
+        "id": "teams-critical-issues",
+        "events": ["escalation", "failure", "stale_agent"],
+        "destination": {
+          "type": "teams",
+          "config": {
+            "webhook_url": "https://outlook.office.com/webhook/YOUR/WEBHOOK"
+          }
+        },
+        "filter": {
+          "severity": ["critical"]
+        },
+        "enabled": true
+      },
+      {
+        "id": "webhook-epic-004",
+        "events": ["escalation", "blocker", "failure"],
+        "destination": {
+          "type": "webhook",
+          "config": {
+            "webhook_url": "https://example.com/webhooks/ginko",
+            "headers": "{\"Authorization\": \"Bearer YOUR_TOKEN\"}"
+          }
+        },
+        "filter": {
+          "epicId": "EPIC-004",
+          "severity": ["high", "critical"]
+        },
+        "enabled": false
+      }
+    ]
+  }
+}

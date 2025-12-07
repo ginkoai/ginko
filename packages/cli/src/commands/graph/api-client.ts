@@ -172,8 +172,10 @@ export class GraphApiClient {
    * - Rate limiting (429)
    *
    * Exponential backoff: 1s, 2s, 4s (max 3 attempts)
+   *
+   * Made public to allow external modules (like stale-agent-detector) to use it
    */
-  private async request<T>(
+  async request<T>(
     method: string,
     endpoint: string,
     body?: unknown,
