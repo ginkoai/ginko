@@ -72,6 +72,7 @@ export interface Task {
   relatedPatterns?: string[]; // Pattern references (e.g., ["retry-pattern", "event-queue"]) - EPIC-002 Sprint 2
   relatedGotchas?: string[]; // Gotcha warnings (e.g., ["timer-unref", "async-cleanup"]) - EPIC-002 Sprint 2
   acceptanceCriteria?: AcceptanceCriterion[]; // Verification criteria (EPIC-004 Sprint 3)
+  dependsOn?: string[]; // Task dependencies (e.g., ["TASK-1", "TASK-2"]) - EPIC-004 Sprint 4
 }
 
 /**
@@ -90,6 +91,7 @@ export interface SprintChecklist {
   tasks: Task[];                   // All tasks in order
   currentTask?: Task;              // First [@] or first [ ] task
   recentCompletions: Task[];       // Last 3 completed tasks
+  dependencyWarnings?: string[];   // Missing or circular dependency warnings - EPIC-004 Sprint 4
 }
 
 /**
@@ -490,6 +492,21 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
       continue;
     }
 
+    // Match task dependencies: **Depends:** TASK-1, TASK-2 (EPIC-004 Sprint 4)
+    const dependsMatch = line.match(/\*\*Depends:\*\*\s*(.+)/i);
+    if (dependsMatch && parsingTask) {
+      const depsString = dependsMatch[1].trim();
+      // Parse comma-separated task IDs
+      const deps = depsString.split(/[,\s]+/)
+        .map(d => d.trim())
+        .filter(d => /^TASK-\d+$/i.test(d))
+        .map(d => d.toUpperCase());
+      if (deps.length > 0) {
+        parsingTask.dependsOn = deps;
+      }
+      continue;
+    }
+
     // Match files section
     if (line.match(/^\*\*Files:\*\*/) && parsingTask) {
       // Look ahead for file list
@@ -602,6 +619,61 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
   const completedTasks = tasks.filter(t => t.state === 'complete');
   const recentCompletions = completedTasks.slice(-3).reverse();
 
+  // Validate dependencies (EPIC-004 Sprint 4)
+  const dependencyWarnings: string[] = [];
+  const taskIds = new Set(tasks.map(t => t.id));
+
+  // Check for missing dependencies
+  for (const task of tasks) {
+    if (task.dependsOn) {
+      for (const depId of task.dependsOn) {
+        if (!taskIds.has(depId)) {
+          dependencyWarnings.push(`${task.id} depends on non-existent task: ${depId}`);
+        }
+      }
+    }
+  }
+
+  // Check for circular dependencies using DFS
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+
+  function detectCycle(taskId: string, path: string[]): string[] | null {
+    if (inStack.has(taskId)) {
+      const cycleStart = path.indexOf(taskId);
+      return [...path.slice(cycleStart), taskId];
+    }
+    if (visited.has(taskId)) return null;
+
+    visited.add(taskId);
+    inStack.add(taskId);
+    path.push(taskId);
+
+    const task = tasks.find(t => t.id === taskId);
+    if (task?.dependsOn) {
+      for (const depId of task.dependsOn) {
+        if (taskIds.has(depId)) {
+          const cycle = detectCycle(depId, path);
+          if (cycle) return cycle;
+        }
+      }
+    }
+
+    path.pop();
+    inStack.delete(taskId);
+    return null;
+  }
+
+  for (const task of tasks) {
+    if (!visited.has(task.id)) {
+      const cycle = detectCycle(task.id, []);
+      if (cycle) {
+        dependencyWarnings.push(`Circular dependency: ${cycle.join(' → ')}`);
+        break; // Only report first cycle
+      }
+    }
+  }
+
   return {
     name: sprintName,
     file: filePath,
@@ -615,6 +687,7 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
     tasks,
     currentTask,
     recentCompletions,
+    dependencyWarnings: dependencyWarnings.length > 0 ? dependencyWarnings : undefined,
   };
 }
 

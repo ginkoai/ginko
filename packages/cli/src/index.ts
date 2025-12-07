@@ -50,6 +50,7 @@ import { knowledgeCommand } from './commands/knowledge/index.js';
 import { projectCommand } from './commands/project/index.js';
 import { teamManagementCommand } from './commands/team/index.js';
 import { agentCommand } from './commands/agent/index.js';
+import { sprintCommand } from './commands/sprint/index.js';
 import { magicSimpleCommand } from './commands/magic-simple.js';
 import { logCommand, logExamples } from './commands/log.js';
 import { teamCommand } from './commands/team.js';
@@ -427,6 +428,9 @@ program.addCommand(teamManagementCommand());
 
 // Agent management commands (EPIC-004 Sprint 1 TASK-6)
 program.addCommand(agentCommand());
+
+// Sprint management commands (EPIC-004 Sprint 4)
+program.addCommand(sprintCommand());
 
 // Universal Reflection Pattern command
 program
