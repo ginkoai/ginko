@@ -1,9 +1,9 @@
 ---
 sprint_id: EPIC-004-S4
 epic_id: EPIC-004
-status: not_started
+status: complete
 created: 2025-12-05
-updated: 2025-12-05
+updated: 2025-12-07
 adr: ADR-051
 depends: EPIC-004-S3
 ---
@@ -308,7 +308,7 @@ Respawn flow:
 ---
 
 ### TASK-11: Integration Tests
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
 **Files:** `packages/cli/test/integration/orchestration.test.ts`
 
@@ -322,10 +322,10 @@ Test scenarios:
 - State recovery after restart
 
 **Acceptance:**
-- [ ] Full orchestration flow tested
-- [ ] Edge cases: circular deps, no workers, etc.
-- [ ] Respawn flow tested
-- [ ] Coverage > 80% for new code
+- [x] Full orchestration flow tested (52 tests)
+- [x] Edge cases: circular deps, no workers, diamond/wide/deep graphs
+- [x] Respawn flow tested (context pressure + state recovery)
+- [x] Coverage > 80% for new code
 
 ---
 
@@ -385,21 +385,34 @@ function canExecute(task: Task, agent: Agent): boolean {
 
 ## Definition of Done
 
-- [ ] All tasks completed
-- [ ] Orchestrator can decompose, assign, and monitor
-- [ ] Workers can receive assignments and execute
-- [ ] Dependencies respected in execution order
-- [ ] Full integration test passing
-- [ ] No regression in existing functionality
+- [x] All tasks completed (11/11)
+- [x] Orchestrator can decompose, assign, and monitor
+- [x] Workers can receive assignments and execute
+- [x] Dependencies respected in execution order
+- [x] Full integration test passing (52 tests)
+- [x] No regression in existing functionality
 
 ---
 
 ## Progress
 
 **Started:** 2025-12-05
-**Completed:** 10/11 tasks (TASK-1-10)
+**Completed:** 11/11 tasks (100%)
 
 ## Accomplishments
+
+### 2025-12-07: TASK-11 Integration Tests Complete
+- Created comprehensive integration test suite: `packages/cli/test/integration/orchestration.test.ts`
+- **52 tests** covering all TASK-11 acceptance criteria:
+  - Dependency graph traversal: circular detection, validation, topological ordering
+  - Orchestrator-worker flow: task assignment based on dependencies
+  - Blocked tasks: identification and dependency tracking
+  - Context pressure: 80% respawn trigger, 70% warning threshold
+  - State recovery: checkpoint save/load, runtime state restoration
+  - Edge cases: circular deps, no workers, diamond/wide/deep graphs
+- Test coverage: Task dependencies, context metrics, orchestrator state modules
+- All tests passing in <2 seconds
+- Files: packages/cli/test/integration/orchestration.test.ts
 
 ### 2025-12-07: TASK-10 Orchestrator Lifecycle & Respawn Complete
 - Created `packages/cli/src/lib/orchestrator-state.ts` module for state persistence
@@ -492,3 +505,5 @@ function canExecute(task: Task, agent: Agent): boolean {
 | 2025-12-07 | TASK-8 complete - Worker agent mode |
 | 2025-12-07 | TASK-9 complete - Context pressure monitoring |
 | 2025-12-07 | TASK-10 complete - Orchestrator lifecycle & respawn |
+| 2025-12-07 | TASK-11 complete - Integration tests (52 tests) |
+| 2025-12-07 | **Sprint 4 Complete** - All 11 tasks finished |
