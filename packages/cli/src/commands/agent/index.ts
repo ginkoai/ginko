@@ -91,33 +91,37 @@ ${chalk.gray('Learn More:')}
       await statusAgentCommand();
     });
 
-  // Work command (EPIC-004 Sprint 1 TASK-7)
+  // Work command (EPIC-004 Sprint 4 TASK-8)
   agent
     .command('work')
     .description('Start worker agent that loads context and polls for task assignments')
     .option('--name <name>', 'Agent name (required if not already registered)')
     .option('--capabilities <capabilities>', 'Comma-separated capabilities (required if not already registered)')
     .option('--poll-interval <seconds>', 'Task polling interval in seconds (default: 5)', '5')
+    .option('--max-tasks <count>', 'Max tasks to process before exiting (0 = unlimited)', '0')
     .addHelpText('after', `
 ${chalk.gray('Worker Agent Flow:')}
   ${chalk.dim('1. Register as worker agent (or use existing from .ginko/agent.json)')}
   ${chalk.dim('2. Call ginko start to load project context (events, patterns, ADRs)')}
   ${chalk.dim('3. Start heartbeat to maintain online status')}
   ${chalk.dim('4. Enter polling loop for task assignments')}
-  ${chalk.dim('5. On assignment: load task-specific files + acceptance criteria')}
-  ${chalk.dim('6. Execute task, log events, verify, complete')}
-  ${chalk.dim('7. Return to polling')}
+  ${chalk.dim('5. On assignment: claim task atomically, load task-specific context')}
+  ${chalk.dim('6. Execute task (AI does the work), log events, verify')}
+  ${chalk.dim('7. Report completion/blocker via events')}
+  ${chalk.dim('8. Return to polling')}
 
 ${chalk.gray('Examples:')}
   ${chalk.green('ginko agent work --name "Worker-1" --capabilities typescript,testing')}
   ${chalk.green('ginko agent work')} ${chalk.dim('# Uses existing agent from .ginko/agent.json')}
   ${chalk.green('ginko agent work --poll-interval 10')} ${chalk.dim('# Poll every 10 seconds')}
+  ${chalk.green('ginko agent work --max-tasks 5')} ${chalk.dim('# Process 5 tasks then exit')}
 `)
     .action(async (options) => {
       await workAgentCommand({
         name: options.name,
         capabilities: options.capabilities,
         pollInterval: parseInt(options.pollInterval, 10),
+        maxTasks: parseInt(options.maxTasks, 10),
       });
     });
 

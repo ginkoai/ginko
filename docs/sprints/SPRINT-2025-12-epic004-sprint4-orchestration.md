@@ -215,9 +215,9 @@ Monitoring progress...
 ---
 
 ### TASK-8: Worker Agent Mode
-**Status:** [ ]
+**Status:** [x] Complete
 **Effort:** Medium
-**Files:** `packages/cli/src/commands/agent/work.ts`
+**Files:** `packages/cli/src/commands/agent/work.ts`, `packages/cli/src/commands/agent/agent-client.ts`
 
 Run as worker agent:
 ```
@@ -233,11 +233,11 @@ Working...
 ```
 
 **Acceptance:**
-- [ ] Registers with capabilities
-- [ ] Polls for assignments
-- [ ] Claims assigned tasks
-- [ ] Reports progress via events
-- [ ] Notifies on completion/blocker
+- [x] Registers with capabilities (via AgentClient.register)
+- [x] Polls for assignments (via AgentClient.getAvailableTasks)
+- [x] Claims assigned tasks (via AgentClient.claimTask with 409 handling)
+- [x] Reports progress via events (via logEvent on claim/start)
+- [x] Notifies on completion/blocker (via logEvent with achievement/blocker category)
 
 ---
 
@@ -397,9 +397,30 @@ function canExecute(task: Task, agent: Agent): boolean {
 ## Progress
 
 **Started:** 2025-12-05
-**Completed:** 7/11 tasks (TASK-1-6 + TASK-7)
+**Completed:** 8/11 tasks (TASK-1-8)
 
 ## Accomplishments
+
+### 2025-12-07: TASK-8 Worker Agent Mode Complete
+- Implemented full worker agent loop in `ginko agent work` command
+- Features:
+  - Registers as worker agent (with graceful fallback for API errors)
+  - Loads project context via `ginko start` at startup
+  - Polls for available tasks matching agent capabilities
+  - Claims tasks atomically with 409 conflict handling
+  - Loads task-specific context (files, patterns, gotchas, constraints)
+  - Presents task details for AI execution
+  - Reports progress via events (achievement/blocker categories)
+  - Tracks worker stats (completed, failed, released)
+  - Graceful shutdown with stats display
+- Added task management methods to AgentClient:
+  - `getAvailableTasks()` - Query available tasks by capabilities
+  - `claimTask()` - Atomic task claiming
+  - `releaseTask()` - Release claimed task
+  - `getTaskContext()` - Load task-specific context
+- Options: --name, --capabilities, --poll-interval, --max-tasks
+- Integration tests: 13 tests covering task types, capability matching, priority ordering, stats, errors
+- Files: packages/cli/src/commands/agent/work.ts, packages/cli/src/commands/agent/agent-client.ts
 
 ### 2025-12-07: TASK-7 CLI Orchestrate Command Complete
 - Implemented `ginko orchestrate` command for multi-agent task coordination
@@ -431,3 +452,4 @@ function canExecute(task: Task, agent: Agent): boolean {
 | 2025-12-05 | Sprint created |
 | 2025-12-05 | Tasks 1-6 complete - orchestration foundation |
 | 2025-12-07 | TASK-7 complete - CLI orchestrate command |
+| 2025-12-07 | TASK-8 complete - Worker agent mode |
