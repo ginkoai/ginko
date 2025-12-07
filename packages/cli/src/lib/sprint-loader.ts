@@ -180,7 +180,21 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       if (sprintRefMatch) {
         const referencedPath = path.join(sprintsDir, sprintRefMatch[1]);
         if (fs.existsSync(referencedPath)) {
-          return referencedPath;
+          // Validate referenced sprint isn't complete before returning
+          const referencedContent = await fs.readFile(referencedPath, 'utf-8');
+          const refFrontmatter = parseFrontmatter(referencedContent);
+          const refStatus = refFrontmatter.status?.toLowerCase();
+
+          // If referenced sprint is complete, don't return it - fall through to scanning
+          if (refStatus !== 'complete') {
+            // Also check progress percentage
+            const refProgressMatch = referencedContent.match(/\*\*Progress:?\*\*:?\s*(\d+)%/);
+            const refProgress = refProgressMatch ? parseInt(refProgressMatch[1]) : 0;
+            if (refProgress < 100) {
+              return referencedPath;
+            }
+          }
+          // Fall through to scan for next active sprint
         }
       }
 
