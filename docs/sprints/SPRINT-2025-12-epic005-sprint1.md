@@ -1,7 +1,8 @@
-# SPRINT: Market Readiness Sprint 1 - Product Positioning + Dashboard Foundation
+# EPIC-005 Sprint 1: Market Readiness - Product Positioning + Dashboard Foundation
 
 ## Sprint Overview
 
+**Epic:** EPIC-005 (Market Readiness)
 **Sprint Goal**: Crystallize ginko's product positioning for dual audiences and establish dashboard visual foundation aligned with marketing site branding.
 
 **Duration**: 2 weeks
