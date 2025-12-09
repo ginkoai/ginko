@@ -33,9 +33,11 @@ import {
   GraphApiClient,
   TaskPatternsResponse,
   TaskGotchasResponse,
-  TaskConstraintsResponse
+  TaskConstraintsResponse,
+  ActiveSprintResponse
 } from '../graph/api-client.js';
 import { isGraphInitialized, getGraphId } from '../graph/config.js';
+import { isAuthenticated } from '../../utils/auth-storage.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -58,6 +60,89 @@ export class StartReflectionCommand extends ReflectionCommand {
       raw: intent,
       type: 'session-start',
       context: {}
+    };
+  }
+
+  /**
+   * Convert graph API sprint response to local SprintChecklist format
+   * Enables graph-first loading with seamless fallback to local files
+   * Handles both clean API responses and raw Neo4j node format
+   */
+  private convertGraphSprintToChecklist(graphSprint: any): any {
+    // Helper to extract properties (handles Neo4j raw format vs clean format)
+    const getProps = (obj: any): any => obj?.properties || obj;
+
+    // Map graph task status to local TaskState format
+    const mapStatus = (status: string): 'todo' | 'in_progress' | 'paused' | 'complete' => {
+      switch (status?.toLowerCase()) {
+        case 'complete':
+        case 'completed':
+          return 'complete';
+        case 'in_progress':
+        case 'in-progress':
+          return 'in_progress';
+        case 'paused':
+        case 'sleeping':
+          return 'paused';
+        default:
+          return 'todo';
+      }
+    };
+
+    const sprintProps = getProps(graphSprint.sprint);
+
+    // Convert tasks
+    const tasks = (graphSprint.tasks || []).map((t: any) => {
+      const taskProps = getProps(t);
+      return {
+        id: taskProps.id,
+        title: taskProps.title,
+        state: mapStatus(taskProps.status),
+        status: taskProps.status,
+        files: taskProps.files || [],
+        priority: taskProps.priority || 'medium',
+        relatedADRs: taskProps.relatedADRs || [],
+      };
+    });
+
+    // Find current task (first in_progress or first todo)
+    const inProgressTask = tasks.find((t: any) => t.state === 'in_progress');
+    const todoTask = tasks.find((t: any) => t.state === 'todo');
+    let currentTask = inProgressTask || todoTask;
+
+    // Use nextTask from API if available
+    if (graphSprint.nextTask) {
+      const nextTaskProps = getProps(graphSprint.nextTask);
+      currentTask = {
+        id: nextTaskProps.id,
+        title: nextTaskProps.title,
+        state: mapStatus(nextTaskProps.status),
+        status: nextTaskProps.status,
+        files: nextTaskProps.files || [],
+        priority: nextTaskProps.priority || 'medium',
+        relatedADRs: nextTaskProps.relatedADRs || [],
+      };
+    }
+
+    // Recent completions (last 3)
+    const recentCompletions = tasks
+      .filter((t: any) => t.state === 'complete')
+      .slice(-3);
+
+    return {
+      name: sprintProps.name,
+      file: sprintProps.id,
+      progress: {
+        complete: graphSprint.stats?.completedTasks || 0,
+        inProgress: graphSprint.stats?.inProgressTasks || 0,
+        paused: 0, // Graph API doesn't track paused separately
+        todo: graphSprint.stats?.notStartedTasks || tasks.filter((t: any) => t.state === 'todo').length,
+        total: graphSprint.stats?.totalTasks || tasks.length,
+      },
+      tasks,
+      currentTask,
+      recentCompletions,
+      source: 'graph', // Mark source for debugging
     };
   }
 
@@ -98,7 +183,35 @@ export class StartReflectionCommand extends ReflectionCommand {
       const projectRoot = await getProjectRoot();
 
       // Load sprint checklist for session context
-      const sprintChecklist = await loadSprintChecklist(projectRoot);
+      // EPIC-005: Graph is primary source of truth for collaborative environments
+      // Falls back to local files when offline or unauthenticated
+      let sprintChecklist: any = null;
+      let sprintSource: 'graph' | 'local' = 'local';
+
+      if (await isAuthenticated() && await isGraphInitialized()) {
+        try {
+          spinner.text = 'Loading sprint from graph (source of truth)...';
+          const graphId = await getGraphId();
+          if (graphId) {
+            const client = new GraphApiClient();
+            const graphSprint = await client.getActiveSprint(graphId);
+
+            // Convert graph response to sprintChecklist format
+            sprintChecklist = this.convertGraphSprintToChecklist(graphSprint);
+            sprintSource = 'graph';
+            spinner.text = `Sprint loaded from graph (${graphSprint.meta?.executionTime || 0}ms)`;
+          }
+        } catch (error) {
+          // Graph unavailable - fall back to local files
+          spinner.text = 'Graph unavailable, loading sprint from local files...';
+        }
+      }
+
+      // Fallback to local files if graph didn't provide sprint data
+      if (!sprintChecklist) {
+        sprintChecklist = await loadSprintChecklist(projectRoot);
+        sprintSource = 'local';
+      }
 
       // Load session log content before archiving
       const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);

@@ -524,6 +524,20 @@ export class GraphApiClient {
       `/api/v1/agent/${agentId}/heartbeat`
     );
   }
+
+  /**
+   * Get active sprint from graph (EPIC-005)
+   * Graph is primary source of truth for collaborative environments
+   *
+   * @param graphId - Graph namespace identifier
+   * @returns Active sprint with tasks and statistics
+   */
+  async getActiveSprint(graphId: string): Promise<ActiveSprintResponse> {
+    return this.request<ActiveSprintResponse>(
+      'GET',
+      `/api/v1/sprint/active?graphId=${encodeURIComponent(graphId)}`
+    );
+  }
 }
 
 /**
@@ -704,6 +718,52 @@ export interface SprintSyncResponse {
   nodes: number;
   relationships: number;
   nextTask?: string;
+}
+
+/**
+ * Active sprint response from graph API
+ * Returns current sprint with tasks and statistics
+ */
+export interface ActiveSprintResponse {
+  sprint: {
+    id: string;
+    name: string;
+    goal: string;
+    startDate?: string;
+    endDate?: string;
+    progress: number;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+  tasks: Array<{
+    id: string;
+    title: string;
+    status: string;
+    effort?: string;
+    priority?: string;
+    files?: string[];
+    relatedADRs?: string[];
+    owner?: string;
+  }>;
+  nextTask: {
+    id: string;
+    title: string;
+    status: string;
+    priority?: string;
+    files?: string[];
+    relatedADRs?: string[];
+  } | null;
+  stats: {
+    totalTasks: number;
+    completedTasks: number;
+    inProgressTasks: number;
+    notStartedTasks: number;
+    progressPercentage: number;
+  };
+  meta?: {
+    executionTime: number;
+    timestamp: string;
+  };
 }
 
 /**

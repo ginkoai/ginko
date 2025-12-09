@@ -202,6 +202,16 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       if (currentContent.match(/\*\*Last Completed\*\*:/)) {
         return null;
       }
+
+      // NEW: Check if CURRENT-SPRINT.md contains actual sprint content
+      // (not just a reference to another file)
+      // This supports the pattern where CURRENT-SPRINT.md IS the sprint file
+      const hasSprintContent = currentContent.includes('## Sprint Tasks') ||
+                               currentContent.includes('### TASK-') ||
+                               currentContent.match(/\*\*Sprint Goal\*\*:/);
+      if (hasSprintContent) {
+        return currentSprintPath;
+      }
     }
 
     // Fall back: Get all sprint files sorted by date (newest first)
