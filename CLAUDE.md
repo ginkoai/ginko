@@ -270,6 +270,14 @@ Activate these reflexes naturally during work (not mechanical checklists):
 - Use `ginko log` with context-rich descriptions
 - **Quality standard:** Write for fresh AI with zero context (WHAT + WHY + HOW)
 
+**9. "Track This Work" 📊 (ADR-052)**
+- **Triggers:** Work begins outside current sprint scope, bug fixes emerge, system maintenance needed
+- **Detection:** Editing files not referenced in current task, scope expanding beyond sprint
+- **Action:** Prompt user to create ad-hoc task for observability
+- **Script:** "This work is outside our current sprint. Shall I create an ad-hoc task to track it?"
+- **Flow preservation:** Single lightweight question, proceed if declined (note in session log)
+- **Anti-pattern:** Untracked work breaks traceability for future collaborators
+
 #### Reflex Sensitivity by Work Mode
 - **Hack & Ship:** Less frequent, focus on speed
 - **Think & Build:** Balanced, pattern-aware (default)
@@ -380,6 +388,48 @@ find . -name "*.ts" | xargs grep -l "@complexity: high"
 - 🎯 Smart search: Find files by function, not filename
 - 🧠 AI optimization: Better context for development decisions
 - 🚀 Team velocity: 70% faster file discovery
+
+---
+
+## Entity Naming Convention (ADR-052)
+
+All graph entities use a hierarchical, sortable naming convention:
+
+### Standard Format
+
+| Entity | Format | Example |
+|--------|--------|---------|
+| Epic | `e{NNN}` | `e005` |
+| Sprint | `e{NNN}_s{NN}` | `e005_s01` |
+| Task | `e{NNN}_s{NN}_t{NN}` | `e005_s01_t01` |
+
+### Ad-hoc Work (unplanned sprints/tasks)
+
+```
+adhoc_{YYMMDD}_s{NN}_t{NN}
+```
+
+**Examples:**
+- `adhoc_251209_s01` - Ad-hoc sprint created Dec 9, 2025
+- `adhoc_251209_s01_t01` - First task in that sprint
+
+### When to Create Ad-hoc Tasks
+
+Create ad-hoc tasks for:
+- Bug fixes discovered mid-session
+- System maintenance work
+- Scope creep that needs tracking
+- Exploratory work that produces artifacts
+
+**Prompt user:** "This work is outside our current sprint. Shall I create an ad-hoc task to track it?"
+
+### Padding Rules
+
+- Epics: 3 digits (max 999)
+- Sprints: 2 digits (max 99 per epic)
+- Tasks: 2 digits (max 99 per sprint)
+
+**Soft limits:** Warn if sprint > 20 tasks or epic > 10 sprints.
 
 ---
 
