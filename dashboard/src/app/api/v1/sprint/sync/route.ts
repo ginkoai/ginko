@@ -113,6 +113,117 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * Extract epic and sprint number from sprint content (ADR-052)
+ *
+ * Looks for patterns like:
+ * - "EPIC-005 Sprint 1" or "Epic 005 Sprint 1"
+ * - Epic line: "**Epic:** EPIC-005" or "**Epic:** e005"
+ * - Sprint title: "# SPRINT: Market Readiness Sprint 1"
+ *
+ * @returns { epicNum, sprintNum } or null if not found
+ */
+function extractEpicSprintNumbers(content: string): { epicNum: number; sprintNum: number } | null {
+  // Pattern 1: "EPIC-NNN Sprint N" in content
+  const epicSprintMatch = content.match(/EPIC[- ]?(\d{1,3})\s+Sprint\s+(\d{1,2})/i);
+  if (epicSprintMatch) {
+    return {
+      epicNum: parseInt(epicSprintMatch[1], 10),
+      sprintNum: parseInt(epicSprintMatch[2], 10),
+    };
+  }
+
+  // Pattern 2: Separate epic and sprint lines
+  const epicLineMatch = content.match(/\*\*Epic:\*\*\s*(?:EPIC[- ]?)?[eE]?(\d{1,3})/i);
+  const sprintLineMatch = content.match(/Sprint\s+(\d{1,2})\b/i);
+  if (epicLineMatch && sprintLineMatch) {
+    return {
+      epicNum: parseInt(epicLineMatch[1], 10),
+      sprintNum: parseInt(sprintLineMatch[1], 10),
+    };
+  }
+
+  // Pattern 3: e{NNN}_s{NN} format already in content
+  const shortIdMatch = content.match(/\be(\d{3})_s(\d{2})\b/);
+  if (shortIdMatch) {
+    return {
+      epicNum: parseInt(shortIdMatch[1], 10),
+      sprintNum: parseInt(shortIdMatch[2], 10),
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract ad-hoc sprint date from sprint content (ADR-052)
+ *
+ * Looks for patterns like:
+ * - "adhoc_251209_s01" in content
+ * - "Ad-hoc Sprint" with date reference
+ *
+ * @returns { dateStr, sprintNum } or null if not an ad-hoc sprint
+ */
+function extractAdhocInfo(content: string): { dateStr: string; sprintNum: number } | null {
+  // Pattern 1: Explicit adhoc ID in content
+  const adhocIdMatch = content.match(/adhoc_(\d{6})_s(\d{2})/i);
+  if (adhocIdMatch) {
+    return {
+      dateStr: adhocIdMatch[1],
+      sprintNum: parseInt(adhocIdMatch[2], 10),
+    };
+  }
+
+  // Pattern 2: Ad-hoc sprint with date in title
+  const adhocTitleMatch = content.match(/Ad[- ]?hoc\s+Sprint.*?(\d{4})[- ](\d{2})[- ](\d{2})/i);
+  if (adhocTitleMatch) {
+    const year = adhocTitleMatch[1].slice(2); // YY from YYYY
+    const month = adhocTitleMatch[2];
+    const day = adhocTitleMatch[3];
+    return {
+      dateStr: `${year}${month}${day}`,
+      sprintNum: 1, // Default to first ad-hoc sprint of the day
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Generate ADR-052 compliant sprint ID
+ *
+ * Format: e{NNN}_s{NN} for epic sprints, adhoc_{YYMMDD}_s{NN} for ad-hoc
+ */
+function generateSprintId(content: string): string {
+  // Try ad-hoc format first
+  const adhocInfo = extractAdhocInfo(content);
+  if (adhocInfo) {
+    return `adhoc_${adhocInfo.dateStr}_s${String(adhocInfo.sprintNum).padStart(2, '0')}`;
+  }
+
+  // Try epic/sprint format
+  const epicSprintInfo = extractEpicSprintNumbers(content);
+  if (epicSprintInfo) {
+    return `e${String(epicSprintInfo.epicNum).padStart(3, '0')}_s${String(epicSprintInfo.sprintNum).padStart(2, '0')}`;
+  }
+
+  // Fallback: generate ad-hoc ID with today's date
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(2);
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `adhoc_${year}${month}${day}_s01`;
+}
+
+/**
+ * Generate ADR-052 compliant task ID
+ *
+ * Format: {sprintId}_t{NN}
+ */
+function generateTaskId(sprintId: string, taskNumber: number): string {
+  return `${sprintId}_t${String(taskNumber).padStart(2, '0')}`;
+}
+
+/**
  * Parse sprint markdown into graph structure
  * Extracts Sprint and Task nodes with relationships
  *
@@ -120,18 +231,16 @@ export async function POST(request: NextRequest) {
  * - Sprint name from filename: SPRINT-YYYY-MM-name.md
  * - Goal from top section
  * - Tasks from sections starting with "### TASK-XXX:"
+ *
+ * ADR-052: Uses hierarchical IDs (e{NNN}_s{NN}_t{NN})
  */
 function parseSprintToGraph(content: string): SprintGraph {
   // Extract sprint metadata from header
   const sprintNameMatch = content.match(/^#\s+(.+?)(?:\n|$)/m);
   const sprintName = sprintNameMatch ? sprintNameMatch[1].trim() : 'Unknown Sprint';
 
-  // Extract sprint ID and dates from title
-  // Format: "SPRINT-2025-12-graph-infrastructure"
-  const sprintIdMatch = sprintName.match(/SPRINT[- ](\d{4})[- ](\d{2})[- ](.+)/i);
-  const sprintId = sprintIdMatch
-    ? `sprint_${sprintIdMatch[1]}_${sprintIdMatch[2]}_${sprintIdMatch[3].toLowerCase().replace(/[^a-z0-9]+/g, '_')}`
-    : `sprint_${Date.now()}`;
+  // Generate ADR-052 compliant sprint ID
+  const sprintId = generateSprintId(content);
 
   // Extract start and end dates
   const dateRangeMatch = content.match(/\*\*(?:Duration|Timeline|Dates?):\*\*\s*([^\n]+)/i);
@@ -181,9 +290,10 @@ function parseSprintToGraph(content: string): SprintGraph {
 
     if (!taskMatch) continue;
 
-    const taskNumber = taskMatch[1];
+    const taskNumber = parseInt(taskMatch[1], 10);
     const taskTitle = taskMatch[2].trim();
-    const taskId = `task_${taskNumber}_${Date.now()}`;
+    // ADR-052: Generate hierarchical task ID (e.g., e005_s01_t01)
+    const taskId = generateTaskId(sprintId, taskNumber);
 
     // Extract status
     let status: 'not_started' | 'in_progress' | 'complete' = 'not_started';

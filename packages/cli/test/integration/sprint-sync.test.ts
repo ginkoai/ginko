@@ -29,6 +29,7 @@ import os from 'os';
 global.fetch = jest.fn();
 
 // Sample sprint markdown for testing
+// ADR-052: Updated to include explicit epic reference for ID generation
 const SAMPLE_SPRINT_CONTENT = `# SPRINT-2025-11-epic002-phase1
 
 **Duration:** 2025-11-20 to 2025-12-04
@@ -36,7 +37,7 @@ const SAMPLE_SPRINT_CONTENT = `# SPRINT-2025-11-epic002-phase1
 **Progress:** 25%
 
 ## Overview
-Phase 1 of EPIC-002: AI-Native Sprint Graphs
+EPIC-002 Sprint 1: AI-Native Sprint Graphs
 
 ## Tasks
 
@@ -98,6 +99,64 @@ interface ParsedSprintGraph {
     relatedADRs: string[];
     owner?: string;
   }>;
+}
+
+/**
+ * ADR-052: Extract epic and sprint numbers from sprint content
+ */
+function extractEpicSprintNumbers(content: string): { epicNum: number; sprintNum: number } | null {
+  // Pattern 1: "EPIC-NNN Sprint N" in content (matches sample content)
+  const epicSprintMatch = content.match(/EPIC[- ]?(\d{1,3})\s+Sprint\s+(\d{1,2})/i);
+  if (epicSprintMatch) {
+    return {
+      epicNum: parseInt(epicSprintMatch[1], 10),
+      sprintNum: parseInt(epicSprintMatch[2], 10),
+    };
+  }
+
+  // Pattern 2: e{NNN}_s{NN} format already in content
+  const shortIdMatch = content.match(/\be(\d{3})_s(\d{2})\b/);
+  if (shortIdMatch) {
+    return {
+      epicNum: parseInt(shortIdMatch[1], 10),
+      sprintNum: parseInt(shortIdMatch[2], 10),
+    };
+  }
+
+  // Pattern 3: Extract from sprint name like "SPRINT-2025-11-epic002-phase1"
+  const sprintNameMatch = content.match(/SPRINT[- ](\d{4})[- ](\d{2})[- ]epic(\d+)/i);
+  if (sprintNameMatch) {
+    return {
+      epicNum: parseInt(sprintNameMatch[3], 10),
+      sprintNum: 1, // Default to sprint 1
+    };
+  }
+
+  return null;
+}
+
+/**
+ * ADR-052: Generate sprint ID in new format
+ */
+function generateSprintId(content: string): string {
+  const epicSprintInfo = extractEpicSprintNumbers(content);
+  if (epicSprintInfo) {
+    return `e${String(epicSprintInfo.epicNum).padStart(3, '0')}_s${String(epicSprintInfo.sprintNum).padStart(2, '0')}`;
+  }
+
+  // Fallback for test content without epic reference
+  const now = new Date();
+  const year = String(now.getFullYear()).slice(2);
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `adhoc_${year}${month}${day}_s01`;
+}
+
+/**
+ * ADR-052: Generate task ID in new format
+ */
+function generateTaskId(sprintId: string, taskNumber: number): string {
+  return `${sprintId}_t${String(taskNumber).padStart(2, '0')}`;
 }
 
 // Mock CloudGraphClient behavior
@@ -232,17 +291,15 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
 
   /**
    * Parse sprint content to graph structure (mirrors route.ts logic)
+   * ADR-052: Updated to use hierarchical IDs
    */
   function parseSprintToGraph(content: string): ParsedSprintGraph {
     // Extract sprint metadata from header
     const sprintNameMatch = content.match(/^#\s+(.+?)(?:\n|$)/m);
     const sprintName = sprintNameMatch ? sprintNameMatch[1].trim() : 'Unknown Sprint';
 
-    // Extract sprint ID from title
-    const sprintIdMatch = sprintName.match(/SPRINT[- ](\d{4})[- ](\d{2})[- ](.+)/i);
-    const sprintId = sprintIdMatch
-      ? `sprint_${sprintIdMatch[1]}_${sprintIdMatch[2]}_${sprintIdMatch[3].toLowerCase().replace(/[^a-z0-9]+/g, '_')}`
-      : `sprint_${Date.now()}`;
+    // ADR-052: Generate hierarchical sprint ID
+    const sprintId = generateSprintId(content);
 
     // Extract dates
     const dateRangeMatch = content.match(/\*\*(?:Duration|Timeline|Dates?):\*\*\s*([^\n]+)/i);
@@ -276,9 +333,10 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
       const taskMatch = firstLine.match(/^(\d+):\s*(.+)$/);
       if (!taskMatch) continue;
 
-      const taskNumber = taskMatch[1];
+      const taskNumber = parseInt(taskMatch[1], 10);
       const taskTitle = taskMatch[2].trim();
-      const taskId = `task_${taskNumber}`;
+      // ADR-052: Generate hierarchical task ID
+      const taskId = generateTaskId(sprintId, taskNumber);
 
       // Status
       let status: 'not_started' | 'in_progress' | 'complete' = 'not_started';
@@ -424,7 +482,8 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
       const graph = parseSprintToGraph(SAMPLE_SPRINT_CONTENT);
 
       expect(graph.sprint.name).toBe('SPRINT-2025-11-epic002-phase1');
-      expect(graph.sprint.id).toMatch(/^sprint_2025_11_epic002_phase1$/);
+      // ADR-052: Now uses hierarchical ID format
+      expect(graph.sprint.id).toBe('e002_s01');
       expect(graph.sprint.goal).toContain('Prove value of AI-native sprint graphs');
       expect(graph.sprint.startDate).toBe('2025-11-20');
       expect(graph.sprint.endDate).toBe('2025-12-04');
@@ -435,15 +494,22 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
       const graph = parseSprintToGraph(SAMPLE_SPRINT_CONTENT);
 
       expect(graph.tasks).toHaveLength(4);
-      expect(graph.tasks.map(t => t.id)).toEqual(['task_1', 'task_2', 'task_3', 'task_4']);
+      // ADR-052: Now uses hierarchical task IDs
+      expect(graph.tasks.map(t => t.id)).toEqual([
+        'e002_s01_t01',
+        'e002_s01_t02',
+        'e002_s01_t03',
+        'e002_s01_t04',
+      ]);
     });
 
     it('should parse task status correctly', () => {
       const graph = parseSprintToGraph(SAMPLE_SPRINT_CONTENT);
 
-      const task1 = graph.tasks.find(t => t.id === 'task_1');
-      const task2 = graph.tasks.find(t => t.id === 'task_2');
-      const task3 = graph.tasks.find(t => t.id === 'task_3');
+      // ADR-052: Use new task ID format
+      const task1 = graph.tasks.find(t => t.id === 'e002_s01_t01');
+      const task2 = graph.tasks.find(t => t.id === 'e002_s01_t02');
+      const task3 = graph.tasks.find(t => t.id === 'e002_s01_t03');
 
       expect(task1?.status).toBe('complete');
       expect(task2?.status).toBe('in_progress');
@@ -453,8 +519,9 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
     it('should extract ADR references from tasks', () => {
       const graph = parseSprintToGraph(SAMPLE_SPRINT_CONTENT);
 
-      const task1 = graph.tasks.find(t => t.id === 'task_1');
-      const task2 = graph.tasks.find(t => t.id === 'task_2');
+      // ADR-052: Use new task ID format
+      const task1 = graph.tasks.find(t => t.id === 'e002_s01_t01');
+      const task2 = graph.tasks.find(t => t.id === 'e002_s01_t02');
 
       expect(task1?.relatedADRs).toContain('adr_002');
       expect(task1?.relatedADRs).toContain('adr_043');
@@ -464,8 +531,9 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
     it('should extract file references from tasks', () => {
       const graph = parseSprintToGraph(SAMPLE_SPRINT_CONTENT);
 
-      const task1 = graph.tasks.find(t => t.id === 'task_1');
-      const task2 = graph.tasks.find(t => t.id === 'task_2');
+      // ADR-052: Use new task ID format
+      const task1 = graph.tasks.find(t => t.id === 'e002_s01_t01');
+      const task2 = graph.tasks.find(t => t.id === 'e002_s01_t02');
 
       expect(task1?.files).toContain('dashboard/src/app/api/v1/sprint/sync/route.ts');
       expect(task1?.files).toContain('packages/cli/src/lib/sprint-loader.ts');
@@ -488,12 +556,12 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
         expect(rel.fromId).toBe(graph.sprint.id);
       });
 
-      // Should point to each task
+      // Should point to each task (ADR-052: hierarchical IDs)
       const targetIds = containsRels.map(r => r.toId);
-      expect(targetIds).toContain('task_1');
-      expect(targetIds).toContain('task_2');
-      expect(targetIds).toContain('task_3');
-      expect(targetIds).toContain('task_4');
+      expect(targetIds).toContain('e002_s01_t01');
+      expect(targetIds).toContain('e002_s01_t02');
+      expect(targetIds).toContain('e002_s01_t03');
+      expect(targetIds).toContain('e002_s01_t04');
     });
 
     it('should create Sprint and Task nodes', async () => {
@@ -517,8 +585,8 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
 
       expect(nextTaskRels).toHaveLength(1);
       expect(nextTaskRels[0].fromId).toBe(graph.sprint.id);
-      // task_2 is "In Progress", which is the first incomplete task
-      expect(nextTaskRels[0].toId).toBe('task_2');
+      // e002_s01_t02 is "In Progress", which is the first incomplete task
+      expect(nextTaskRels[0].toId).toBe('e002_s01_t02');
     });
 
     it('should point to first not_started task when no in_progress exists', async () => {
@@ -534,8 +602,8 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
       const nextTaskRels = mockStore.getRelationshipsByType('NEXT_TASK');
 
       expect(nextTaskRels).toHaveLength(1);
-      // task_3 is now the first not_started task
-      expect(nextTaskRels[0].toId).toBe('task_3');
+      // e002_s01_t03 is now the first not_started task
+      expect(nextTaskRels[0].toId).toBe('e002_s01_t03');
     });
 
     it('should not create NEXT_TASK when all tasks are complete', async () => {
@@ -625,7 +693,8 @@ describe('Sprint Sync Integration Tests - TASK-2', () => {
       // Relationships: 4 CONTAINS + 1 NEXT_TASK + 3 MODIFIES + 6 MUST_FOLLOW
       expect(result.relationships).toBeGreaterThanOrEqual(14);
 
-      expect(result.nextTaskId).toBe('task_2');
+      // ADR-052: Hierarchical task ID
+      expect(result.nextTaskId).toBe('e002_s01_t02');
     });
 
     it('should handle empty sprint content gracefully', async () => {
