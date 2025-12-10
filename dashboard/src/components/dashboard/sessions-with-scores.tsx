@@ -95,9 +95,9 @@ export function SessionsWithScores({ userId }: SessionsWithScoresProps) {
     return (
       <Card className="p-6 text-center">
         <div className="text-center py-8">
-          <ClockIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Sessions Yet</h3>
-          <p className="text-gray-500">
+          <ClockIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-2">No Sessions Yet</h3>
+          <p className="text-muted-foreground">
             Complete sessions with handoffs to see your collaboration history and coaching insights.
           </p>
         </div>
@@ -108,7 +108,7 @@ export function SessionsWithScores({ userId }: SessionsWithScoresProps) {
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Recent Sessions</h2>
+        <h2 className="text-xl font-semibold text-foreground">Recent Sessions</h2>
         <Badge variant="secondary">{sessions.length} sessions</Badge>
       </div>
       

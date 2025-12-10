@@ -27,10 +27,10 @@ export default async function DashboardPage() {
     <div className="space-y-8 animate-fade-in">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-foreground">
           Collaboration Dashboard
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-muted-foreground mt-2">
           AI-powered insights to help you collaborate more effectively with Claude.
         </p>
       </div>

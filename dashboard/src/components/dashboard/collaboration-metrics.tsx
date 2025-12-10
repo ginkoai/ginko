@@ -36,8 +36,8 @@ export function CollaborationMetrics({ userId }: CollaborationMetricsProps) {
   if (!data || !data.scorecards || data.scorecards.length === 0) {
     return (
       <Card className="p-6 text-center">
-        <p className="text-gray-500">No collaboration data available yet</p>
-        <p className="text-sm text-gray-400 mt-2">
+        <p className="text-muted-foreground">No collaboration data available yet</p>
+        <p className="text-sm text-muted-foreground/70 mt-2">
           Complete sessions with handoffs to see your collaboration metrics
         </p>
       </Card>

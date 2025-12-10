@@ -38,14 +38,14 @@ const navigation = [
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  
+
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+    <aside className="w-64 bg-card border-r border-border overflow-y-auto">
       <nav className="p-6 space-y-2">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           const Icon = isActive ? item.iconActive : item.icon
-          
+
           return (
             <Link
               key={item.name}
@@ -53,8 +53,8 @@ export function DashboardSidebar() {
               className={clsx(
                 'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                 isActive
-                  ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-primary/10 text-primary border-r-2 border-primary'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
               )}
             >
               <Icon className="mr-3 h-6 w-6 flex-shrink-0" />
@@ -63,19 +63,19 @@ export function DashboardSidebar() {
           )
         })}
       </nav>
-      
+
       {/* Mission Statement */}
-      <div className="p-6 border-t border-gray-200">
-        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+      <div className="p-6 border-t border-border">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
           Mission
         </h3>
-        <p className="text-sm text-gray-600 leading-relaxed">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           Improve Human-AI collaboration through actionable coaching insights and clear performance metrics.
         </p>
         <div className="mt-4">
           <Link
             href="/dashboard/docs"
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-primary hover:text-primary/80 font-medium"
           >
             Learn collaboration best practices →
           </Link>

@@ -17,11 +17,11 @@ export default async function DashboardLayout({
   }
   
   return (
-    <div className="h-screen bg-gray-50">
+    <div className="h-screen bg-background">
       <DashboardNav user={user} />
       <div className="flex h-[calc(100vh-4rem)]">
         <DashboardSidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto bg-background">
           <div className="container mx-auto px-6 py-8">
             {children}
           </div>

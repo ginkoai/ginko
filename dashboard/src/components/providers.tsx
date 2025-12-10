@@ -27,18 +27,33 @@ type SupabaseContext = {
 
 const Context = createContext<SupabaseContext | undefined>(undefined)
 
-// Create a theme for Material-UI
+// Create a dark theme for Material-UI aligned with Ginko brand
 const theme = createTheme({
   palette: {
+    mode: 'dark',
     primary: {
-      main: '#2563eb',
+      main: '#C1F500', // Ginko green
     },
     secondary: {
-      main: '#7c3aed',
+      main: '#addc00', // Ginko green hover
+    },
+    background: {
+      default: '#31332B', // Ginko bg
+      paper: '#101010',   // Ginko surface
+    },
+    text: {
+      primary: '#FAFAFA',
+      secondary: '#C5C5B8',
     },
   },
   typography: {
     fontFamily: 'Inter, system-ui, sans-serif',
+    h1: { fontFamily: 'JetBrains Mono, monospace' },
+    h2: { fontFamily: 'JetBrains Mono, monospace' },
+    h3: { fontFamily: 'JetBrains Mono, monospace' },
+    h4: { fontFamily: 'JetBrains Mono, monospace' },
+    h5: { fontFamily: 'JetBrains Mono, monospace' },
+    h6: { fontFamily: 'JetBrains Mono, monospace' },
   },
 })
 

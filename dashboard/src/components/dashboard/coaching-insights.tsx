@@ -70,9 +70,9 @@ export function CoachingInsights({ userId }: CoachingInsightsProps) {
     return (
       <Card className="p-6">
         <div className="text-center">
-          <LightBulbIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">No coaching insights available yet</p>
-          <p className="text-sm text-gray-400 mt-2">
+          <LightBulbIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground">No coaching insights available yet</p>
+          <p className="text-sm text-muted-foreground/70 mt-2">
             Complete more collaboration sessions to receive personalized coaching
           </p>
         </div>

@@ -7,10 +7,9 @@ import { useSupabase } from '@/components/providers'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Dropdown } from '@/components/ui/dropdown'
-import { 
-  SparklesIcon, 
-  BellIcon, 
-  Cog6ToothIcon, 
+import {
+  BellIcon,
+  Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline'
@@ -25,7 +24,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const [loading, setLoading] = useState(false)
   const { supabase } = useSupabase()
   const router = useRouter()
-  
+
   const handleSignOut = async () => {
     setLoading(true)
     try {
@@ -39,7 +38,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
       setLoading(false)
     }
   }
-  
+
   const userMenuItems = [
     {
       label: 'Profile',
@@ -58,26 +57,25 @@ export function DashboardNav({ user }: DashboardNavProps) {
       loading
     }
   ]
-  
+
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 h-16">
+    <nav className="bg-card shadow-sm border-b border-border h-16">
       <div className="px-6 h-full flex items-center justify-between">
         {/* Logo */}
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <SparklesIcon className="h-8 w-8 text-blue-600" />
-          <span className="text-xl font-bold text-gray-900">Ginko</span>
+        <Link href="/dashboard" className="font-mono text-3xl text-primary hover:text-primary/80 transition-colors">
+          ginko
         </Link>
-        
+
         {/* Right side */}
         <div className="flex items-center space-x-4">
           {/* Notifications */}
           <Button variant="ghost" size="sm" className="relative">
             <BellIcon className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
               3
             </span>
           </Button>
-          
+
           {/* User Menu */}
           <Dropdown
             trigger={
@@ -88,7 +86,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
                   fallback={(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
                   className="h-8 w-8"
                 />
-                <span className="hidden md:block text-sm font-medium text-gray-700">
+                <span className="hidden md:block text-sm font-medium text-foreground">
                   {user.user_metadata?.full_name || user.email}
                 </span>
               </Button>

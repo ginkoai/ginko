@@ -1,16 +1,17 @@
 /**
  * @fileType: config
  * @status: current
- * @updated: 2025-08-14
- * @tags: [tailwind, css, styling, ui, theme, design-system]
+ * @updated: 2025-12-09
+ * @tags: [tailwind, css, styling, ui, theme, design-system, ginko-brand]
  * @related: [globals.css, layout components, components/ui/]
- * @priority: medium
+ * @priority: high
  * @complexity: low
  * @dependencies: [tailwindcss, shadcn/ui]
  */
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -19,6 +20,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Shadcn/UI semantic colors (from CSS variables)
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -27,25 +29,10 @@ module.exports = {
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
-          50: '#eff6ff',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a8a',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
         },
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
@@ -67,10 +54,40 @@ module.exports = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+
+        // Ginko Brand Palette - Direct hex values for convenience
+        ginko: {
+          green: '#C1F500',
+          'green-hover': '#addc00',
+          'green-dark': '#99c200',
+          'green-light': 'rgba(193, 245, 0, 0.15)',
+          bg: '#31332B',
+          surface: '#101010',
+          'surface-hover': '#1a1a1a',
+          text: '#FAFAFA',
+          'text-secondary': '#C5C5B8',
+          'text-tertiary': '#9A9A8A',
+          border: '#2a2a2a',
+          'border-strong': '#3a3a3a',
+        },
+
+        // Terminal colors
+        terminal: {
+          bg: '#101010',
+          header: '#1a1a1a',
+          text: '#D4D4D4',
+          prompt: '#C1F500',
+          comment: '#737373',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+      },
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
