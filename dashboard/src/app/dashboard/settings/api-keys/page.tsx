@@ -1,7 +1,7 @@
 /**
  * @fileType: page
- * @status: new
- * @updated: 2025-08-26
+ * @status: current
+ * @updated: 2025-12-10
  * @tags: [dashboard, settings, api-keys, react, nextjs, security]
  * @related: [dashboard/settings/page.tsx, api/generate-api-key/route.ts, api/revoke-api-key/route.ts]
  * @priority: high
@@ -19,6 +19,16 @@ import type { User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import {
+  KeyIcon,
+  ClipboardDocumentIcon,
+  ShieldCheckIcon,
+  RocketLaunchIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  InformationCircleIcon
+} from '@heroicons/react/24/outline'
 
 interface UserProfile {
   api_key_hash?: string
@@ -74,18 +84,18 @@ export default function ApiKeysPage() {
     try {
       setIsGenerating(true)
       setError(null)
-      
+
       const response = await fetch('/api/generate-api-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
-      
+
       const data = await response.json()
-      
+
       if (response.ok) {
         // Store the actual key temporarily for display
         setNewApiKey(data.api_key)
-        
+
         // Reload profile data to get updated information
         if (user) {
           const { data: updatedProfile } = await supabase
@@ -114,14 +124,14 @@ export default function ApiKeysPage() {
     try {
       setIsRevoking(true)
       setError(null)
-      
+
       const response = await fetch('/api/revoke-api-key', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
-      
+
       const data = await response.json()
-      
+
       if (response.ok) {
         // Clear the new API key display and update profile
         setNewApiKey(null)
@@ -158,8 +168,8 @@ export default function ApiKeysPage() {
     return (
       <div className="space-y-6 animate-fade-in">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">API Keys</h1>
-          <p className="text-gray-600 mt-2">Loading...</p>
+          <h1 className="text-3xl font-bold text-foreground">API Keys</h1>
+          <p className="text-muted-foreground mt-2">Loading...</p>
         </div>
       </div>
     )
@@ -174,65 +184,74 @@ export default function ApiKeysPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">API Keys</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-foreground">API Keys</h1>
+        <p className="text-muted-foreground mt-2">
           Manage your Ginko API keys for development environment integration
         </p>
       </div>
 
       {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <div className="text-red-800">
-            <strong>Error:</strong> {error}
+        <Alert className="border-destructive/50 bg-destructive/10">
+          <div className="flex items-center gap-2 text-foreground">
+            <XCircleIcon className="h-5 w-5 text-destructive" />
+            <span><strong>Error:</strong> {error}</span>
           </div>
         </Alert>
       )}
 
       {showCopiedAlert && (
-        <Alert className="border-green-200 bg-green-50">
-          <div className="text-green-800">
-            <strong>Success:</strong> API key copied to clipboard!
+        <Alert className="border-primary/50 bg-primary/10">
+          <div className="flex items-center gap-2 text-foreground">
+            <CheckCircleIcon className="h-5 w-5 text-primary" />
+            <span><strong>Success:</strong> API key copied to clipboard!</span>
           </div>
         </Alert>
       )}
 
       {/* New API Key Display */}
       {newApiKey && (
-        <Card className="p-6 border-green-200 bg-green-50">
+        <Card className="p-6 border-primary/50 bg-primary/10">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-green-900">🎉 New API Key Generated!</h3>
+              <CheckCircleIcon className="h-6 w-6 text-primary" />
+              <h3 className="font-semibold text-foreground">New API Key Generated!</h3>
             </div>
-            <Alert className="border-amber-200 bg-amber-50">
-              <div className="text-amber-800">
-                <strong>⚠️ Important:</strong> Copy this key now. It won't be shown again for security reasons.
+            <Alert className="border-yellow-500/50 bg-yellow-500/10">
+              <div className="flex items-center gap-2 text-foreground">
+                <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+                <span><strong>Important:</strong> Copy this key now. It won&apos;t be shown again for security reasons.</span>
               </div>
             </Alert>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-green-900">Your New API Key</label>
+              <label className="block text-sm font-medium text-foreground">Your New API Key</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={newApiKey}
                   readOnly
-                  className="flex-1 font-mono text-sm px-3 py-2 border border-green-300 rounded-md bg-white"
+                  className="flex-1 font-mono text-sm px-3 py-2 border border-border rounded-md bg-card text-foreground"
                 />
                 <Button
                   onClick={copyApiKey}
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
+                  <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
                   Copy Key
                 </Button>
               </div>
             </div>
-            
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-              <h4 className="font-medium text-blue-900 mb-2">🚀 Using Your API Key</h4>
-              <div className="space-y-3 text-sm text-blue-800">
+
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+              <h4 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                <RocketLaunchIcon className="h-5 w-5 text-primary" />
+                Using Your API Key
+              </h4>
+              <div className="space-y-3 text-sm text-muted-foreground">
                 <div>
-                  <p className="font-medium mb-1">In your project's .mcp.json:</p>
-                  <pre className="bg-blue-100 p-3 rounded text-xs font-mono overflow-x-auto whitespace-pre-wrap">
-{`{
+                  <p className="font-medium mb-1 text-foreground">In your project&apos;s .mcp.json:</p>
+                  <div className="terminal">
+                    <div className="terminal-body py-3 text-xs">
+                      <pre className="whitespace-pre-wrap">{`{
   "mcpServers": {
     "ginko-mcp": {
       "command": "npx",
@@ -246,25 +265,28 @@ export default function ApiKeysPage() {
       }
     }
   }
-}`}
-                  </pre>
+}`}</pre>
+                    </div>
+                  </div>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">Or as environment variable:</p>
-                  <pre className="bg-blue-100 p-3 rounded text-xs font-mono overflow-x-auto">
-export GINKO_API_KEY="${newApiKey}"
-export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
-                  </pre>
+                  <p className="font-medium mb-1 text-foreground">Or as environment variable:</p>
+                  <div className="terminal">
+                    <div className="terminal-body py-3 text-xs">
+                      <pre>{`export GINKO_API_KEY="${newApiKey}"
+export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"`}</pre>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex justify-end">
               <Button
                 onClick={dismissNewKey}
                 variant="outline"
                 size="sm"
-                className="text-gray-500 hover:text-gray-700"
+                className="text-muted-foreground hover:text-foreground"
               >
                 Dismiss this message
               </Button>
@@ -274,13 +296,14 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
       )}
 
       {/* API Key Management */}
-      <Card className="p-6">
+      <Card className="p-6 bg-card border-border">
         <div className="space-y-4">
-          <div className="border-b border-gray-200 pb-4">
-            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              🔑 API Key Management
+          <div className="border-b border-border pb-4">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <KeyIcon className="h-5 w-5 text-primary" />
+              API Key Management
             </h2>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Securely generate and manage your Ginko API keys
             </p>
           </div>
@@ -288,17 +311,18 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
           {hasApiKey ? (
             <div className="space-y-4">
               {/* Current API Key Status */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="bg-secondary border border-border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-mono text-sm text-gray-600 font-medium">
-                      🔐 Active API Key
+                    <p className="font-mono text-sm text-foreground font-medium flex items-center gap-2">
+                      <ShieldCheckIcon className="h-4 w-4 text-primary" />
+                      Active API Key
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Prefix: {profile.api_key_prefix}...
                     </p>
                     {profile.api_key_created_at && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         Created: {new Date(profile.api_key_created_at).toLocaleDateString()}
                       </p>
                     )}
@@ -307,7 +331,7 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
                     <Button
                       onClick={generateApiKey}
                       disabled={isGenerating}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       {isGenerating ? 'Generating...' : 'Regenerate'}
                     </Button>
@@ -315,7 +339,7 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
                       onClick={revokeApiKey}
                       disabled={isRevoking}
                       variant="outline"
-                      className="border-red-200 text-red-600 hover:bg-red-50"
+                      className="border-destructive/50 text-destructive hover:bg-destructive/10"
                     >
                       {isRevoking ? 'Revoking...' : 'Revoke'}
                     </Button>
@@ -324,19 +348,21 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
               </div>
 
               {/* Security Notice */}
-              <Alert className="border-blue-200 bg-blue-50">
-                <div className="text-blue-800">
-                  <strong>🔒 Security Note:</strong> Your API key is stored as a secure hash. 
-                  If you lose your key, you'll need to regenerate a new one.
+              <Alert className="border-primary/20 bg-primary/5">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <ShieldCheckIcon className="h-5 w-5 text-primary" />
+                  <span><strong className="text-foreground">Security Note:</strong> Your API key is stored as a secure hash.
+                  If you lose your key, you&apos;ll need to regenerate a new one.</span>
                 </div>
               </Alert>
 
               {/* Legacy Key Warning */}
               {profile.api_key_prefix?.startsWith('cmcp_') && (
-                <Alert className="border-amber-200 bg-amber-50">
-                  <div className="text-amber-800">
-                    <strong>⚠️ Legacy API Key Detected:</strong> Your key uses the old format. 
-                    Click "Regenerate" to get an updated key with the new gk_ format and better security.
+                <Alert className="border-yellow-500/50 bg-yellow-500/10">
+                  <div className="flex items-center gap-2 text-foreground">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+                    <span><strong>Legacy API Key Detected:</strong> Your key uses the old format.
+                    Click &quot;Regenerate&quot; to get an updated key with the new gk_ format and better security.</span>
                   </div>
                 </Alert>
               )}
@@ -344,18 +370,23 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
           ) : (
             /* No API Key State */
             <div className="text-center py-8">
-              <div className="text-4xl mb-4">🔑</div>
-              <h3 className="font-medium text-gray-900 mb-2">No API Key Found</h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                Generate a secure API key to connect your development environment to Ginko. 
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <KeyIcon className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <h3 className="font-medium text-foreground mb-2">No API Key Found</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Generate a secure API key to connect your development environment to Ginko.
                 The key will be generated using crypto.randomBytes for maximum security.
               </p>
-              <Button 
+              <Button
                 onClick={generateApiKey}
                 disabled={isGenerating}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
-                {isGenerating ? 'Generating...' : '🔑 Generate API Key'}
+                <KeyIcon className="h-4 w-4 mr-2" />
+                {isGenerating ? 'Generating...' : 'Generate API Key'}
               </Button>
             </div>
           )}
@@ -363,34 +394,42 @@ export GINKO_USER_ID="${user?.id || 'YOUR_USER_ID'}"
       </Card>
 
       {/* API Key Format Information */}
-      <Card className="p-6">
+      <Card className="p-6 bg-card border-border">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">📋 API Key Format</h3>
-          <div className="space-y-2 text-sm text-gray-600">
-            <p>• <strong>Format:</strong> <code className="bg-gray-100 px-2 py-1 rounded">gk_[64-character-hex-string]</code></p>
-            <p>• <strong>Security:</strong> Generated using crypto.randomBytes(32)</p>
-            <p>• <strong>Storage:</strong> Only SHA256 hash stored in database (never plain text)</p>
-            <p>• <strong>Prefix Display:</strong> Only first 12 characters shown for identification</p>
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <InformationCircleIcon className="h-5 w-5 text-primary" />
+            API Key Format
+          </h3>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>• <strong className="text-foreground">Format:</strong> <code className="bg-secondary px-2 py-1 rounded text-foreground">gk_[64-character-hex-string]</code></p>
+            <p>• <strong className="text-foreground">Security:</strong> Generated using crypto.randomBytes(32)</p>
+            <p>• <strong className="text-foreground">Storage:</strong> Only SHA256 hash stored in database (never plain text)</p>
+            <p>• <strong className="text-foreground">Prefix Display:</strong> Only first 12 characters shown for identification</p>
           </div>
         </div>
       </Card>
 
       {/* Quick Setup Guide */}
-      <Card className="p-6">
+      <Card className="p-6 bg-card border-border">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">🚀 Quick Setup Guide</h3>
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <RocketLaunchIcon className="h-5 w-5 text-primary" />
+            Quick Setup Guide
+          </h3>
           <div className="space-y-3 text-sm">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-2">1. Generate API Key</h4>
-              <p className="text-gray-600">Click "Generate API Key" above to create your secure key.</p>
+            <div className="bg-secondary rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">1. Generate API Key</h4>
+              <p className="text-muted-foreground">Click &quot;Generate API Key&quot; above to create your secure key.</p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-2">2. Install MCP Client</h4>
-              <pre className="bg-gray-200 p-2 rounded text-xs font-mono">npm install ginko-mcp-client</pre>
+            <div className="bg-secondary rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">2. Install MCP Client</h4>
+              <div className="terminal">
+                <div className="terminal-body py-2 text-xs">npm install ginko-mcp-client</div>
+              </div>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-medium text-gray-900 mb-2">3. Configure Environment</h4>
-              <p className="text-gray-600">Add your API key to .mcp.json or environment variables as shown above.</p>
+            <div className="bg-secondary rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">3. Configure Environment</h4>
+              <p className="text-muted-foreground">Add your API key to .mcp.json or environment variables as shown above.</p>
             </div>
           </div>
         </div>

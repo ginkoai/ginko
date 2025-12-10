@@ -47,14 +47,14 @@ export default function DocsLayout({
   return (
     <div className="flex h-full -mx-6 -my-8">
       {/* Docs Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+      <div className="w-64 bg-card border-r border-border overflow-y-auto">
         <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Documentation</h2>
+          <h2 className="text-lg font-semibold text-foreground mb-4">Documentation</h2>
           <nav className="space-y-2">
             {docNavigation.map((item) => {
               const isActive = pathname === item.href
               const Icon = isActive ? item.iconActive : item.icon
-              
+
               return (
                 <Link
                   key={item.name}
@@ -62,8 +62,8 @@ export default function DocsLayout({
                   className={clsx(
                     'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-primary/10 text-primary border-r-2 border-primary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
                   )}
                 >
                   <Icon className="mr-3 h-5 w-5 flex-shrink-0" />
@@ -73,10 +73,10 @@ export default function DocsLayout({
             })}
           </nav>
         </div>
-        
+
         {/* Quick Links */}
-        <div className="px-6 py-4 border-t border-gray-200">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+        <div className="px-6 py-4 border-t border-border">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
             Quick Links
           </h3>
           <div className="space-y-2">
@@ -84,7 +84,7 @@ export default function DocsLayout({
               href="https://docs.anthropic.com/claude-code"
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-sm text-blue-600 hover:text-blue-800 underline"
+              className="block text-sm text-primary hover:text-primary/80"
             >
               Claude Code Docs
             </a>
@@ -92,7 +92,7 @@ export default function DocsLayout({
               href="https://github.com/ginko-ai/ginko"
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-sm text-blue-600 hover:text-blue-800 underline"
+              className="block text-sm text-primary hover:text-primary/80"
             >
               GitHub Repository
             </a>
@@ -100,13 +100,13 @@ export default function DocsLayout({
               href="https://github.com/ginko-ai/ginko/issues"
               target="_blank"
               rel="noopener noreferrer"
-              className="block text-sm text-blue-600 hover:text-blue-800 underline"
+              className="block text-sm text-primary hover:text-primary/80"
             >
               Report Issues
             </a>
             <Link
               href="/dashboard/settings"
-              className="block text-sm text-blue-600 hover:text-blue-800 underline"
+              className="block text-sm text-primary hover:text-primary/80"
             >
               API Key Settings
             </Link>
@@ -114,18 +114,18 @@ export default function DocsLayout({
         </div>
 
         {/* Support Box */}
-        <div className="px-6 py-4 border-t border-gray-200">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="px-6 py-4 border-t border-border">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
             <div className="flex items-start">
-              <QuestionMarkCircleIcon className="h-5 w-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+              <QuestionMarkCircleIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-medium text-blue-900 mb-1">Need Help?</h4>
-                <p className="text-xs text-blue-800 mb-2">
-                  Can't find what you're looking for?
+                <h4 className="text-sm font-medium text-foreground mb-1">Need Help?</h4>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Can&apos;t find what you&apos;re looking for?
                 </p>
                 <a
                   href="mailto:support@ginko.ai"
-                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  className="text-xs text-primary hover:text-primary/80"
                 >
                   Contact Support →
                 </a>

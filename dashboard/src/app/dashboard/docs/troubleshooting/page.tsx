@@ -1,6 +1,6 @@
 'use client'
 
-import { 
+import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   InformationCircleIcon,
@@ -122,35 +122,40 @@ export default function TroubleshootingPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            🔧 Troubleshooting Guide
+          <h1 className="text-3xl font-bold text-foreground mb-4">
+            Troubleshooting Guide
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-muted-foreground">
             Having issues with Ginko AI? Find solutions to common problems below.
           </p>
         </div>
 
         {/* Quick Diagnostic */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <div className="bg-primary/10 border border-primary/20 rounded-lg p-6 mb-8">
           <div className="flex items-start">
-            <InformationCircleIcon className="h-6 w-6 text-blue-600 mt-1 mr-3 flex-shrink-0" />
+            <InformationCircleIcon className="h-6 w-6 text-primary mt-1 mr-3 flex-shrink-0" />
             <div>
-              <h3 className="text-lg font-medium text-blue-900 mb-2">Quick Diagnostic</h3>
-              <p className="text-blue-800 mb-4">
+              <h3 className="text-lg font-medium text-foreground mb-2">Quick Diagnostic</h3>
+              <p className="text-muted-foreground mb-4">
                 Run these commands to quickly diagnose common issues:
               </p>
-              <div className="bg-blue-900 text-blue-100 rounded p-3 font-mono text-sm">
-                <div className="space-y-1">
-                  <div># Test MCP client installation</div>
-                  <div className="text-yellow-300">npx ginko-mcp-client --help</div>
-                  <div className="mt-2"># Test server connectivity</div>
-                  <div className="text-yellow-300">curl https://mcp.ginko.ai/api/mcp/health</div>
-                  <div className="mt-2"># Check .mcp.json configuration</div>
-                  <div className="text-yellow-300">cat .mcp.json</div>
+              <div className="terminal">
+                <div className="terminal-header">
+                  <div className="terminal-dot bg-red-500"></div>
+                  <div className="terminal-dot bg-yellow-500"></div>
+                  <div className="terminal-dot bg-green-500"></div>
+                </div>
+                <div className="terminal-body">
+                  <div className="text-muted-foreground"># Test MCP client installation</div>
+                  <div className="terminal-prompt">npx ginko-mcp-client --help</div>
+                  <div className="text-muted-foreground mt-2"># Test server connectivity</div>
+                  <div className="terminal-prompt">curl https://mcp.ginko.ai/api/mcp/health</div>
+                  <div className="text-muted-foreground mt-2"># Check .mcp.json configuration</div>
+                  <div className="terminal-prompt">cat .mcp.json</div>
                 </div>
               </div>
             </div>
@@ -160,20 +165,20 @@ export default function TroubleshootingPage() {
         {/* Common Issues */}
         <div className="space-y-8">
           {commonIssues.map((issue) => (
-            <div key={issue.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div key={issue.id} className="bg-card rounded-lg shadow-sm border border-border">
               <div className="p-6">
                 <div className="flex items-start mb-4">
-                  <ExclamationTriangleIcon className="h-6 w-6 text-red-500 mt-1 mr-3 flex-shrink-0" />
+                  <ExclamationTriangleIcon className="h-6 w-6 text-destructive mt-1 mr-3 flex-shrink-0" />
                   <div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h2 className="text-xl font-semibold text-foreground mb-2">
                       {issue.title}
                     </h2>
                     <div className="mb-4">
-                      <h4 className="font-medium text-gray-900 mb-2">Common Symptoms:</h4>
-                      <ul className="text-sm text-gray-600 space-y-1">
+                      <h4 className="font-medium text-foreground mb-2">Common Symptoms:</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
                         {issue.symptoms.map((symptom, index) => (
                           <li key={index} className="flex items-start">
-                            <span className="text-red-400 mr-2">•</span>
+                            <span className="text-destructive mr-2">•</span>
                             {symptom}
                           </li>
                         ))}
@@ -183,19 +188,21 @@ export default function TroubleshootingPage() {
                 </div>
 
                 <div className="ml-9">
-                  <h4 className="font-medium text-gray-900 mb-4">Solutions:</h4>
+                  <h4 className="font-medium text-foreground mb-4">Solutions:</h4>
                   <div className="space-y-6">
                     {issue.solutions.map((solution, index) => (
-                      <div key={index} className="border-l-4 border-green-400 pl-4">
+                      <div key={index} className="border-l-4 border-primary pl-4">
                         <div className="flex items-start mb-2">
-                          <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
-                          <h5 className="font-medium text-gray-900">{solution.title}</h5>
+                          <CheckCircleIcon className="h-5 w-5 text-primary mt-0.5 mr-2 flex-shrink-0" />
+                          <h5 className="font-medium text-foreground">{solution.title}</h5>
                         </div>
-                        <p className="text-gray-700 mb-3 ml-7">{solution.description}</p>
+                        <p className="text-muted-foreground mb-3 ml-7">{solution.description}</p>
                         {solution.code && (
                           <div className="ml-7">
-                            <div className="bg-gray-900 text-gray-100 rounded p-3 font-mono text-sm overflow-x-auto">
-                              <pre className="whitespace-pre-wrap">{solution.code}</pre>
+                            <div className="terminal">
+                              <div className="terminal-body py-3">
+                                <pre className="whitespace-pre-wrap text-muted-foreground">{solution.code}</pre>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -209,50 +216,50 @@ export default function TroubleshootingPage() {
         </div>
 
         {/* System Requirements */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+        <div className="mt-12 bg-card rounded-lg shadow-sm border border-border p-6">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center">
             <WrenchScrewdriverIcon className="h-6 w-6 mr-2" />
             System Requirements
           </h3>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Minimum Requirements</h4>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <h4 className="font-medium text-foreground mb-3">Minimum Requirements</h4>
+              <ul className="text-sm text-muted-foreground space-y-2">
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   Node.js 18.0.0 or higher
                 </li>
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   Claude Code (latest version)
                 </li>
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   Internet connection for MCP server
                 </li>
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   Valid Ginko API key
                 </li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Supported Platforms</h4>
-              <ul className="text-sm text-gray-600 space-y-2">
+              <h4 className="font-medium text-foreground mb-3">Supported Platforms</h4>
+              <ul className="text-sm text-muted-foreground space-y-2">
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   macOS (Intel & Apple Silicon)
                 </li>
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   Windows 10/11
                 </li>
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   Linux (Ubuntu, Debian, CentOS)
                 </li>
                 <li className="flex items-center">
-                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                  <CheckCircleIcon className="h-4 w-4 text-primary mr-2" />
                   WSL2 (Windows Subsystem for Linux)
                 </li>
               </ul>
@@ -261,46 +268,51 @@ export default function TroubleshootingPage() {
         </div>
 
         {/* Debug Information */}
-        <div className="mt-8 bg-gray-50 border border-gray-200 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <div className="mt-8 bg-secondary border border-border rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center">
             <CommandLineIcon className="h-5 w-5 mr-2" />
             Collecting Debug Information
           </h3>
-          <p className="text-gray-700 mb-4">
+          <p className="text-muted-foreground mb-4">
             When reporting issues, please include the following information:
           </p>
-          <div className="bg-gray-900 text-gray-100 rounded p-4 font-mono text-sm">
-            <div className="space-y-2">
-              <div className="text-green-400"># System Information</div>
+          <div className="terminal">
+            <div className="terminal-header">
+              <div className="terminal-dot bg-red-500"></div>
+              <div className="terminal-dot bg-yellow-500"></div>
+              <div className="terminal-dot bg-green-500"></div>
+            </div>
+            <div className="terminal-body">
+              <div className="terminal-prompt"># System Information</div>
               <div>node --version</div>
               <div>npm --version</div>
               <div>npx --version</div>
-              <div className="mt-3 text-green-400"># Ginko Information</div>
+              <div className="mt-3 terminal-prompt"># Ginko Information</div>
               <div>cat .mcp.json</div>
               <div>npx ginko-mcp-client --version</div>
-              <div className="mt-3 text-green-400"># Server Status</div>
+              <div className="mt-3 terminal-prompt"># Server Status</div>
               <div>curl -v https://mcp.ginko.ai/api/mcp/health</div>
             </div>
           </div>
         </div>
 
         {/* Contact Support */}
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-          <h3 className="text-lg font-semibold text-blue-900 mb-2">Still Need Help?</h3>
-          <p className="text-blue-800 mb-4">
-            If you're still experiencing issues after trying these solutions, we're here to help.
+        <div className="mt-8 bg-primary/10 border border-primary/20 rounded-lg p-6 text-center">
+          <h3 className="text-lg font-semibold text-foreground mb-2">Still Need Help?</h3>
+          <p className="text-muted-foreground mb-4">
+            If you&apos;re still experiencing issues after trying these solutions, we&apos;re here to help.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
               href="https://github.com/ginko-ai/ginko/issues"
-              className="inline-flex items-center px-4 py-2 border border-blue-300 text-sm font-medium rounded-md text-blue-700 bg-white hover:bg-blue-50 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-foreground bg-card hover:bg-secondary transition-colors"
             >
               <ClipboardDocumentIcon className="h-4 w-4 mr-2" />
               Report Issue on GitHub
             </a>
             <a
               href="mailto:support@ginko.ai"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
             >
               Contact Support
             </a>
