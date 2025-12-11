@@ -1,126 +1,205 @@
 ---
-version: 1.0.0
+version: 2.0.0
 status: active
 work_mode: think-build
 created: 2025-11-19
-updated: 2025-11-19
+updated: 2025-12-11
 ---
 
-# Project Charter: Ginko
+# Project Charter: ginko
 
 ## Purpose
 
-**Vision:** Build foundational infrastructure for human-AI collaboration that preserves rapport, continuity, and flow state across all domains.
+**Category:** ginko is **The AI Collaboration Platform**.
 
-**Problem:** AI-assisted development is emerging as the dominant mode of software development, but critical collaboration challenges remain:
+**Tagline:** "Where humans and AI ship together."
 
-- **Context Management**: Context windows have limits. Even large windows (1M+ tokens) experience degradation and hallucination. Loading the right amount of strategic and tactical context remains unsolved.
+**Vision:** Create the category of AI-native project management—tools built from the ground up for teams that work with AI partners, not around them.
 
-- **Loss of Rapport**: AI models are stateless by design. Each new session is a cold introduction, erasing the rapport and shared understanding built in previous sessions. For humans accustomed to durable working relationships, this is jarring and alienating.
+**Problem:** AI is changing software development faster than most teams can adapt:
 
-- **Continuity of Flow State**: Human-AI collaboration leverages comparative advantages - human judgment/taste/intuition and AI stamina/speed/synthesis. When done well, this achieves deep flow states where focus and productivity are optimized. At session end, this rapport evaporates and must be rebuilt manually, causing frustration and fatigue.
+- **The Adoption Gap**: Most developers are stuck in "dabbling" mode—ChatGPT for writing, Copilot for autocomplete. The gap between AI potential and actual adoption is widening.
 
-- **Team Collaboration**: Legacy project management systems are built for humans only. Documents and plans in proprietary formats are locked in disparate cloud platforms, inaccessible to AI partners. Moreover, AI-assisted development occurs at a pace much faster than traditional human-only development. Legacy PM platforms cannot keep up.
+- **Context Loss**: Context windows have limits. Even large windows experience degradation. Every new session starts cold, erasing the shared understanding built in previous sessions. Developers waste 10+ minutes per session re-explaining their projects.
 
-- **Human-centered UX**: Legacy development tooling is human-centered, not human-AND-AI-centered. An AI-native platform must be equally accessible to both partners in formats optimized for each. By applying principles from User Experience and Human-Centered Design, we can adapt effective patterns to optimize tools for AI partners on an equal basis.
+- **Invisible AI Work**: Engineering leaders have no visibility into how their teams collaborate with AI. What's working? What's failing? Where are we wasting tokens? Legacy PM tools assume humans do everything.
 
-**Solution:** Ginko is a graph-based context management system that treats AI partners as equal collaborators. Through continuous event streaming, strategic context surfacing, and rapport-preserving architecture, Ginko enables anxiety-free AI collaboration that puts developers in flow state within seconds of every session.
+- **Team Coordination**: Legacy project management systems (Jira, ADO) aren't built for AI-assisted development velocity. Documents and plans are locked in proprietary formats, inaccessible to AI partners.
+
+- **Fear of Obsolescence**: The ground is shifting. AI capabilities are accelerating faster than teams can adapt. Fear is real and rational—and current tools aren't helping.
+
+**Solution:** ginko makes AI collaboration **safe, observable, and learnable**:
+
+- **Safe**: Git-native architecture. Your code and context stay in your repos. Enterprise-ready from day one.
+- **Observable**: Full visibility into what your team and AI partners are building. Live dashboards, event streams, collaboration graphs.
+- **Learnable**: Coaching insights that help developers adapt. Knowledge compounds in the graph over time.
 
 ## Users
 
-**Primary (v1):**
-- **Solo developers** using AI assistants (Claude, Cursor, Copilot) for software development
-- **Small teams** (2-5 developers) coordinating AI-assisted work on shared codebases
+### Primary Audiences
 
-**Secondary (Roadmap):**
-- **SMB development teams** (5-50 developers) with established processes
-- **Enterprise engineering organizations** with compliance and governance requirements
+**1. Indie Developers**
+- Solo or small team (1-3)
+- Already using AI assistants (Claude, Cursor, Copilot)
+- Frustrated by context loss, cold starts
+- Values speed, simplicity, git-native
 
-**Long-term Vision:**
-- Human-AI collaboration across all domains: education, healthcare, entertainment, manufacturing, retail, finance, law, government, public safety
-- Universal adoption wherever humans and AI work together
+**Primary Message:** "Flow state in 30 seconds. Every session."
 
-**User Needs:**
-- Rapid return to flow state (< 30 seconds per session)
-- Zero context loss across sessions
-- Collaborative rapport with AI partners
-- Team coordination without friction
-- Privacy and control over data
+**2. SWE Leaders**
+- Engineering manager, tech lead, or architect
+- Team of 5-50 developers
+- Concerned about AI adoption at scale
+- Needs to justify tools to leadership
+- Values observability, governance, ROI
+
+**Primary Message:** "Your team is using AI. Do you know how?"
+
+**3. Decision Makers** (via SWE Leaders)
+- VP Engineering, CTO, Director
+- Cares about: cost, risk, competitive advantage
+- Doesn't use tools directly
+- Needs to be convinced by their team
+
+**Primary Message:** "Teams using AI-native tools ship faster. Teams that don't fall behind."
+
+### User Needs
+
+| Audience | Primary Need | Secondary Needs |
+|----------|-------------|-----------------|
+| Indie Devs | Rapid flow state (< 30s) | Zero context loss, git-native, no lock-in |
+| SWE Leaders | Visibility into AI work | Coaching structure, ROI metrics, governance |
+| Decision Makers | Competitive advantage | Risk mitigation, cost control, talent retention |
 
 ## Success Criteria
 
 ### Qualitative (Primary)
 
-The MVP succeeds when the experience is **bullet-proof magical**:
+The platform succeeds when:
 
-- [ ] **Magical onboarding**: New user productive in < 5 minutes, zero required configuration
-- [ ] **Excellent rapport continuity**: AI partner resumes with full context, no "cold start" feeling
-- [ ] **Rapid flow state recovery**: Developer back in flow within 30 seconds of `ginko start`
-- [ ] **Reliability**: Zero context loss, zero crashes, works offline-capable
+- [x] **Magical onboarding**: New user productive in < 5 minutes, zero required configuration
+- [x] **Rapid flow state**: Developer back in flow within 30 seconds of `ginko start`
 - [ ] **"Can't imagine working without it"**: Sticky, essential tool that feels broken to remove
+- [ ] **Observability delivers confidence**: Teams trust AI work because they can see it
+- [ ] **Knowledge compounds**: Graph becomes more valuable over time, not stale
 
 ### Quantitative (Secondary)
 
-- [ ] Session startup < 2s (achieved)
-- [ ] AI partner readiness: 7-8/10 (vs 6.5/10 baseline)
+- [x] Session startup < 2s (achieved: ADR-043)
+- [x] Context token reduction > 65% (achieved: 93K → 500 tokens, 99%+ reduction)
 - [ ] Onboarding time: < 5 minutes from install to first productive session
-- [ ] Context relevance: AI asks 1-3 clarifying questions (vs 5-7 baseline)
+- [ ] Dashboard adoption: Teams check dashboard weekly for insights
+- [ ] Retention: Users return daily after first week
 
 ### Validation
 
-- **Primary**: Founder's judgment as architect and developer ("does it feel right?")
-- **Secondary**: Early adopter feedback when shared publicly
-- **Timeline**: Weeks, not months
+- **Primary**: User feedback on experience ("does it feel right?")
+- **Secondary**: Usage metrics (session frequency, graph growth, dashboard engagement)
+- **Timeline**: Iterative, experience-driven development
 
 ## Scope
 
-### In Scope (v1)
+### In Scope (Current)
 
-- **Graph-based session management**: Neo4j knowledge graph as source of truth
+**Core Platform:**
+- **ginko CLI**: The developer's daily driver (`start`, `log`, `handoff`, `insights`)
+- **Collaboration Graph**: Knowledge backbone with typed relationships (Neo4j)
+- **Dashboard**: Observability layer with graph visualization and coaching insights
 - **Event-based context loading**: Continuous streaming of significant events (ADR-043)
-- **Strategic context surfacing**: Charter, team activity, patterns/gotchas (EPIC-001)
-- **Session synthesis**: Continuous synthesis under optimal pressure
-- **Cloud-first architecture**: Graph hosted in cloud, documents in git synced for traversability
-- **CLI for all operations**: Primary interface (`ginko start`, `ginko log`, `ginko handoff`)
-- **Web dashboard**: Context visualization and exploration (already built)
-- **Knowledge graph integration**: Typed relationships, WHY→WHAT→HOW chains (already built)
-- **Handoff as housekeeping trigger**: Collaborative session closure with task verification
 
-### Out of Scope (v1)
+**Architecture:**
+- Cloud-first: Graph hosted in cloud, documents in git synced for traversability
+- Git-native: All context stored in `.ginko/` directory, portable and version-controlled
+- OAuth/REST API: Simple, proven patterns
 
-- **Native IDE plugins**: Use CLI integration via PATH/config (proven for VS Code)
-- **Enterprise features**: SSO, audit logs, compliance reporting
-- **Non-dev domains**: Healthcare, finance, education, etc. (roadmap)
-- **Multi-project insights**: Cross-project pattern discovery
-- **Handoff as synthesis mechanism**: Deprecated due to context pressure unreliability
+**Key Components:**
+| Component | Tagline | Role |
+|-----------|---------|------|
+| ginko CLI | "Your AI collaboration command center" | Primary interface for developers |
+| Collaboration Graph | "Knowledge that compounds" | Living knowledge graph of decisions, patterns, relationships |
+| Dashboard | "Full observability. Zero guesswork" | Visibility into team + AI collaboration |
+| Agent Orchestration | "AI partners that work together" | Multi-agent coordination (roadmap) |
+
+### Out of Scope (Current)
+
+- Native IDE plugins (CLI integration via PATH/config is sufficient)
+- Enterprise features (SSO, audit logs, compliance reporting)
+- Non-dev domains (healthcare, finance, education—roadmap)
+- Multi-project insights (cross-project pattern discovery—roadmap)
 
 ### To Be Determined
 
-- **Handoff evolution**: Role as session marker vs housekeeping checklist
-- **Team collaboration depth**: How much coordination tooling for small teams?
-- **Privacy controls**: What granularity of data sharing for team contexts?
-- **AI model integrations**: Which models to support explicitly?
+- Team collaboration depth (how much coordination tooling?)
+- Privacy controls granularity (data sharing for team contexts?)
+- Coaching insights engine (what patterns to surface?)
+- Agent orchestration scope (how autonomous?)
+
+## Competitive Positioning
+
+### Primary: Jira (Atlassian)
+
+**Stance:** Direct replacement for AI-native teams
+
+**The Contrast:**
+
+| Jira | ginko |
+|------|-------|
+| Built for humans only | Built for humans + AI partners |
+| Manual status updates | Automatic event streaming |
+| Knowledge trapped in tickets | Knowledge compounds in graph |
+| Sprint planning is ceremony | Sprints adapt in real-time |
+| No observability | Live dashboards |
+| No coaching | AI-powered insights |
+| Context cold every time | Flow state in 30 seconds |
+
+**Attack Line:** "Jira was built for a world where humans did everything. That world is gone."
+
+### Secondary: Linear
+
+**Stance:** Respectful hold
+
+**Rationale:** Linear's design quality is exceptional. We earn the right to compete by matching their craft. Do not attack directly until we have feature parity on UX polish.
+
+### Tertiary: GitHub Issues, ADO, Notion
+
+**Stance:** "Works alongside" for now. Future replacement path.
+
+## Differentiators
+
+### What Makes ginko Different
+
+**1. AI-First Collaboration**
+Tooling designed for both partners equally—not bolted onto human-only tools.
+
+**2. Observability, Not Just Memory**
+Most "context management" tools focus on storing information. ginko provides visibility into the collaboration itself—what's working, what's not, where to improve.
+
+**3. Knowledge That Compounds**
+Unlike flat ticket systems, the collaboration graph shows how everything connects—and grows smarter over time. Your AI partner can traverse it, not just read it.
+
+**4. Experience Over Features**
+Goal: "Anxiety-free AI collaboration that puts you in flow state in seconds every time." Quality over completeness.
 
 ## Constraints
 
 ### Technical
 
-- **Current stack**: Node.js, TypeScript, React, Neo4j, GraphQL
-- **Hosting**: Vercel (frontend/API) + Supabase (auth/data) for MVP simplicity
-- **At scale**: Likely migrate to AWS or similar cloud provider
-- **Flexibility**: Can adapt and adopt as needed; stack is working well
+- **Current stack**: Node.js, TypeScript, React, Neo4j, Voyage AI (embeddings)
+- **Hosting**: Vercel (frontend/API) + Neo4j Aura (graph)
+- **At scale**: Architecture supports enterprise scale
+- **Flexibility**: Can adapt as needed; stack is working well
 
 ### Resource
 
-- **Funding**: Bootstrapped, self-funded (~$100s not $1,000s per month)
-- **Team**: Solo developer (Chris Norton)
+- **Funding**: Bootstrapped, self-funded
+- **Team**: Solo developer (Chris Norton) + AI partners
 - **Philosophy**: Constraints force better thinking
 
 ### Timeline
 
-- **Target**: Weeks, not months
-- **Current state**: Close to MVP now
 - **Approach**: Iterative, experience-driven development
+- **Current state**: Market readiness phase (EPIC-005)
+- **Validation**: User feedback, not arbitrary deadlines
 
 ## Risks & Mitigation
 
@@ -128,91 +207,101 @@ The MVP succeeds when the experience is **bullet-proof magical**:
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| **Magic doesn't translate to others** | Medium | High | Founder already can't work without it (strong signal). Early adopter validation. Accept that not everyone will feel it. |
-| **Competition beats us to market** | Medium | Medium | Claude Code has "skills" overlap, many "context management" tools exist. **Differentiator: Rapport through AI-first collaboration.** Experience > features. If we nail the feel, people will notice. |
-| **Adoption friction** | Medium | High | Magical onboarding (< 5min), works immediately, no configuration hell. Focus on "holy shit" first impression. |
+| **Magic doesn't translate to others** | Medium | High | Founder validated. Early adopter feedback. Accept that not everyone will feel it. |
+| **Competition beats us to market** | Medium | Medium | Many "context tools" exist. **Differentiator: Observability + Experience.** If we nail the feel, people will notice. |
+| **Adoption friction** | Medium | High | Magical onboarding (< 5min), works immediately, "holy shit" first impression. |
+| **Jira entrenchment** | High | Medium | Position as complement first, replacement over time. SWE leaders as internal advocates. |
 
 ### Low Priority
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| **Technical complexity** | Low | Medium | Architecture is intentionally simple: CLI + graph + OAuth/REST. Nothing groundbreaking. Challenge is feel, not technology. |
-| **Scaling costs** | Low | Medium | Bootstrap budget forces efficiency. Graph queries optimized. Can optimize or migrate if/when needed. |
-
-## Differentiators
-
-### What Makes Ginko Different
-
-**Rapport over memory.** Most "context management" tools focus on storing information. Ginko focuses on preserving the *relationship* between human and AI partners.
-
-**AI-first collaboration.** Tooling designed for both partners equally, not bolted onto human-only tools.
-
-**Experience over features.** Goal: "Anxiety-free AI collaboration that puts you in flow state in seconds every time."
-
-**Validated approach.** Claude Code's success shows that rapport and experience differentiate AI tools. People *feel* the difference.
+| **Technical complexity** | Low | Medium | Architecture intentionally simple. Challenge is feel, not technology. |
+| **Scaling costs** | Low | Medium | Bootstrap budget forces efficiency. Can optimize if/when needed. |
 
 ## Team
 
 - **Chris Norton** (chris@watchhill.ai) - Founder, Developer, Architect
 - **Claude** (Anthropic) - AI Development Partner
 
-## Timeline
+## Timeline & Phases
 
-### Current Phase: MVP Polish (November 2025)
+### Completed: Foundation (Nov 2025)
 
-**Status:** Close to completion
+- ✅ Core CLI functionality (`start`, `log`, `handoff`)
+- ✅ Event-based context loading (ADR-043: 99% token reduction)
+- ✅ Session logging under optimal pressure (ADR-033)
+- ✅ Knowledge graph integration
+- ✅ Basic dashboard
 
-**Focus:** Experiential refinement
-- Strategic context surfacing (EPIC-001 Sprint 1)
-- Charter integration and display
-- Magical onboarding experience
-- Reliability and polish
+### Current: Market Readiness (Dec 2025 - EPIC-005)
 
-**Target:** Production-ready MVP within weeks
+**Sprint 1 (Complete):**
+- ✅ Product positioning crystallized
+- ✅ Dual audience strategy (indie devs + SWE leaders)
+- ✅ Dashboard visual refresh (dark theme, brand alignment)
+- ✅ Infographic concepts for internal advocacy
 
-### Next Phase: Early Adopters (December 2025)
+**Sprint 2-4 (Planned):**
+- Graph visualization in dashboard
+- Coaching insights engine
+- Marketing site updates
+- Early adopter outreach
+
+### Next: Early Adopters (Q1 2026)
 
 - Share with trusted developers
 - Validate "can't work without it" hypothesis
-- Gather feedback on rapport continuity
-- Iterate on feel and experience
+- Iterate on observability and coaching features
+- Gather feedback on team collaboration
 
 ### Roadmap: Scale & Expand (2026+)
 
 - Small team features (team coordination, shared context)
 - SMB features (multi-project, analytics)
 - Enterprise features (SSO, audit, compliance)
+- Agent orchestration (multi-agent coordination)
 - Cross-domain expansion (beyond software development)
 
 ## Alternatives Considered
 
+### "Context Management" vs "AI Collaboration Platform"
+
+**Decision:** AI Collaboration Platform
+**Rationale:** "Context management" is narrow and technical. "AI Collaboration Platform" captures the full vision: observability, coaching, team coordination—not just memory.
+
 ### Cloud-first vs Privacy-first
 
 **Decision:** Cloud-first
-**Rationale:** Developers already use cloud AI models, cloud git hosts, cloud IDEs. Privacy-as-selling-point rejected - everything is online including AI models. Documents remain in git but sync to graph for traversability.
+**Rationale:** Developers already use cloud AI models, cloud git hosts, cloud IDEs. Privacy-as-selling-point rejected. Documents remain in git but sync to graph for traversability and team coordination.
 
-### Handoff synthesis vs Continuous logging
+### Aggressive vs Respectful Competition
 
-**Decision:** Continuous logging (ADR-033)
-**Rationale:** Session synthesis under high context pressure (85%+) is unreliable. Continuous streaming of significant events provides better signal. Handoff preserved as collaborative closure ritual and housekeeping trigger.
+**Decision:** Aggressive on Jira, respectful hold on Linear
+**Rationale:** Jira represents the old world—human-only tooling. Clear contrast helps positioning. Linear's design quality demands respect—earn the right to compete.
 
-### Git-native vs Graph-native
-
-**Decision:** Graph-native with git as document store
-**Rationale:** Graph provides relationship traversal, team coordination, cross-session continuity. Git remains authoritative for documents but synced to graph for traversability.
-
-### Feature parity vs Experience focus
+### Feature Parity vs Experience Focus
 
 **Decision:** Experience focus
-**Rationale:** Many tools have similar features. Differentiator is how it *feels*. Rapport, flow state, anxiety-free collaboration. Quality over completeness.
+**Rationale:** Many tools have similar features. Differentiator is how it *feels*. Rapport, flow state, observable collaboration. Quality over completeness.
 
 ---
 
 ## Changelog
 
+### v2.0.0 - 2025-12-11
+- **Major update** reflecting EPIC-005 product positioning work
+- Reframed as "The AI Collaboration Platform" (not just context management)
+- Added tagline: "Where humans and AI ship together"
+- Expanded value proposition: safe, observable, learnable
+- Added audience segmentation (indie devs, SWE leaders, decision makers)
+- Added competitive positioning (Jira aggressive, Linear hold)
+- Updated component branding (CLI, Graph, Dashboard, Agent Orchestration)
+- Refreshed timeline to reflect current phase (Market Readiness)
+- Added key decisions from Sprint 1 positioning work
+- Participants: Chris Norton (chris@watchhill.ai), Claude
+
 ### v1.0.0 - 2025-11-19
 - Initial charter creation
 - Participants: Chris Norton (chris@watchhill.ai), Claude
-- Conversation: ~30 minutes
 - Format: AI-mediated natural conversation following charter template
-- Work mode: Think & Build (standard depth)
