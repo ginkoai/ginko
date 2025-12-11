@@ -16,12 +16,14 @@ import { clsx } from 'clsx'
 import {
   Cog6ToothIcon,
   DocumentTextIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  CircleStackIcon
 } from '@heroicons/react/24/outline'
 import {
   Cog6ToothIcon as Cog6ToothIconSolid,
   DocumentTextIcon as DocumentTextIconSolid,
-  ChartBarIcon as ChartBarIconSolid
+  ChartBarIcon as ChartBarIconSolid,
+  CircleStackIcon as CircleStackIconSolid
 } from '@heroicons/react/24/solid'
 
 const navigation = [
@@ -31,6 +33,13 @@ const navigation = [
     icon: ChartBarIcon,
     iconActive: ChartBarIconSolid,
     description: 'Collaboration insights'
+  },
+  {
+    name: 'Graph',
+    href: '/dashboard/graph',
+    icon: CircleStackIcon,
+    iconActive: CircleStackIconSolid,
+    description: 'Knowledge graph explorer'
   },
   {
     name: 'Docs',

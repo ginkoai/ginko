@@ -1,12 +1,12 @@
 /**
  * @fileType: provider
  * @status: current
- * @updated: 2025-08-14
- * @tags: [providers, context, supabase, theme, mui, auth-state]
+ * @updated: 2025-12-11
+ * @tags: [providers, context, supabase, theme, mui, auth-state, react-query]
  * @related: [client.ts, auth-form.tsx, layout.tsx]
  * @priority: critical
  * @complexity: medium
- * @dependencies: [react, supabase, mui/material]
+ * @dependencies: [react, supabase, mui/material, @tanstack/react-query]
  */
 'use client'
 
@@ -14,6 +14,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
@@ -26,6 +27,18 @@ type SupabaseContext = {
 }
 
 const Context = createContext<SupabaseContext | undefined>(undefined)
+
+// Create a React Query client with sensible defaults
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000, // 30 seconds
+      gcTime: 5 * 60_000, // 5 minutes (formerly cacheTime)
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
 
 // Create a dark theme for Material-UI aligned with Ginko brand
 const theme = createTheme({
@@ -82,12 +95,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [supabase.auth])
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Context.Provider value={{ supabase, user, loading }}>
-        {children}
-      </Context.Provider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Context.Provider value={{ supabase, user, loading }}>
+          {children}
+        </Context.Provider>
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 

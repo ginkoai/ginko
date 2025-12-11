@@ -39,9 +39,9 @@ interface CornerBracketsProps extends React.HTMLAttributes<HTMLDivElement> {
 export const CornerBrackets = forwardRef<HTMLDivElement, CornerBracketsProps>(
   ({ className, size = 'default', variant = 'primary', corners = 'diagonal', children, ...props }, ref) => {
     const sizes = {
-      sm: { bracket: '8px', thickness: '1px', padding: 'p-3' },
-      default: { bracket: '12px', thickness: '2px', padding: 'p-4' },
-      lg: { bracket: '16px', thickness: '2px', padding: 'p-6' }
+      sm: { bracket: '8px', thickness: '1px', padding: 'p-1' },
+      default: { bracket: '12px', thickness: '2px', padding: 'p-2' },
+      lg: { bracket: '16px', thickness: '2px', padding: 'p-4' }
     }
 
     const colors = {

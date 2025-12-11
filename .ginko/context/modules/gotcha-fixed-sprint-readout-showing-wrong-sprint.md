@@ -2,11 +2,11 @@
 type: gotcha
 tags: [fix, high, api]
 relevance: critical
-created: 2025-12-11T17:23:24.302Z
-updated: 2025-12-11T17:23:24.302Z
+created: 2025-12-11T21:51:25.643Z
+updated: 2025-12-11T21:51:25.643Z
 dependencies: []
-sessionId: session-chris-at-watchhill-ai-1765473804274
-insightId: 2717164e-fbd1-4667-b969-9dd97cf974cb
+sessionId: session-chris-at-watchhill-ai-1765489885492
+insightId: e265c25f-8c46-4d58-8495-0f1da8190214
 ---
 
 # Fixed sprint readout showing wrong sprint
@@ -14,15 +14,15 @@ insightId: 2717164e-fbd1-4667-b969-9dd97cf974cb
 **Type**: gotcha  
 **Tags**: fix, high, api  
 **Created**: 2025-12-11  
-**Session**: session-chris-at-watchhill-ai-1765473804274  
+**Session**: session-chris-at-watchhill-ai-1765489885492  
 
 ## The Gotcha
 
-sprint readout showing wrong sprint
+comparison logic between local file and graph API was choosing stale graph data (Sprint 1 with 90% progress) over current local file (Sprint 2 with 87%). Fix: Added check for different sprint names - when sprints differ, local file always wins as source of truth. This handles graph sync lag when moving between sprints.
 
 ## The Solution
 
-Fixed sprint readout showing wrong sprint. Two fixes: (1) API property extraction - Neo4j returns nodes wrapped in properties object, now properly extracted. (2) Smart source selection - local sprint file now preferred over stale graph data when it has more tasks or higher completion. Before: Test Sprint 0%, After: EPIC-005 Sprint 1 70%. Committed 44e3d8d, deployed dashboard to production.
+check for different sprint names - when sprints differ, local file always wins as source of truth
 
 ## Code Example
 
@@ -36,15 +36,11 @@ N/A
 
 - **Time Saved**: 60 minutes
 - **Reusability**: 85%
-- Fixed sprint readout showing wrong sprint. Two fixes: (1) API property extraction - Neo4j returns nodes wrapped in properties object, now properly extracted. (2) Smart source selection - local sprint file now preferred over stale graph data when it has more tasks or higher completion. Before: Test Sprint 0%, After: EPIC-005 Sprint 1 70%. Committed 44e3d8d, deployed dashboard to production.
+- Fixed sprint readout showing wrong sprint. Root cause: comparison logic between local file and graph API was choosing stale graph data (Sprint 1 with 90% progress) over current local file (Sprint 2 with 87%). Fix: Added check for different sprint names - when sprints differ, local file always wins as source of truth. This handles graph sync lag when moving between sprints.
 
 ## Related Files
 
-- `.ginko/context/index.json`
-- `.ginko/sessions/chris-at-watchhill-ai/current-context.jsonl`
-- `.ginko/sessions/chris-at-watchhill-ai/current-events.jsonl`
-- `.ginko/sessions/chris-at-watchhill-ai/current-session-log.md`
-- `package-lock.json`
+- `packages/cli/src/commands/start/start-reflection.ts:211-242`
 
 ---
 *This context module was automatically generated from session insights.*

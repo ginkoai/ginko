@@ -8,6 +8,8 @@ This document maintains the official registry of all Epics to ensure unique numb
 |--------|-------|--------|----------|----------|----------|
 | [EPIC-001](EPIC-001-strategic-context-and-dynamic-adaptivity.md) | Strategic Context & Dynamic Adaptivity | Ready to Execute | 4 sprints (~4 weeks) | High | 0% (Planning complete) |
 | [EPIC-002](EPIC-002-ai-native-sprint-graphs.md) | AI-Native Sprint Graphs | Proposed | 4 sprints (8-12 weeks) | Critical | 0% (Vision defined) |
+| [EPIC-005](EPIC-005-market-readiness.md) | Market Readiness | Complete | 2 sprints (~3 weeks) | High | 100% |
+| [EPIC-006](EPIC-006-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish | Proposed | 2-3 sprints (~4-6 weeks) | Medium | 0% (Backlog defined) |
 
 ## Epic Descriptions
 
@@ -45,6 +47,36 @@ This document maintains the official registry of all Epics to ensure unique numb
 **Status:** Proposed, vision crystallized 2025-11-21
 
 **Strategic Positioning:** Core differentiator - fundamentally rethinks collaboration management for AI era
+
+---
+
+### EPIC-005: Market Readiness
+**Goal:** Prepare ginko for market launch with professional marketing presence and graph visualization capabilities.
+
+**Sprints:**
+1. Marketing & Landing Page (complete)
+2. Graph Visualization (complete)
+
+**Status:** Complete (2025-12-11)
+
+---
+
+### EPIC-006: Graph Explorer v2 - UX Polish & Advanced Features
+**Goal:** Transform the Graph Explorer from a technical data browser into an intuitive knowledge navigation tool that non-technical users can use effectively.
+
+**Sprints:**
+1. Relationship Visualization & Navigation
+2. Edit Capability & Node Management
+3. UX Refinement & Accessibility
+
+**Key Features:**
+- Visible relationship lines between nodes
+- In-place editing for project docs (ADR, Charter, Pattern, Gotcha)
+- Proper Epic → Sprint → Task hierarchy in tree view
+- Natural language search
+- Mobile-responsive design
+
+**Status:** Proposed, backlog defined 2025-12-11
 
 ---
 
