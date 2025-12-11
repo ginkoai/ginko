@@ -209,22 +209,36 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
 
       // Compare and choose the more complete/current sprint
-      // Priority: Local file wins if it has more tasks or higher progress
-      // This ensures git-native workflow isn't overwritten by stale graph data
+      // Priority: Local file is source of truth - it represents what the user is actively working on
+      // Graph data may be stale (e.g., still showing Sprint 1 when user moved to Sprint 2)
       if (localSprint && graphSprint) {
-        const localTotal = localSprint.progress?.total || 0;
-        const graphTotal = graphSprint.progress?.total || 0;
-        const localProgress = localSprint.progress?.complete || 0;
-        const graphProgress = graphSprint.progress?.complete || 0;
+        // If the sprints are different (different names), always use local
+        // This handles the case where graph hasn't been synced with new sprint
+        const localName = localSprint.name?.toLowerCase() || '';
+        const graphName = graphSprint.name?.toLowerCase() || '';
+        const sprintsAreDifferent = localName !== graphName &&
+          !localName.includes(graphName) &&
+          !graphName.includes(localName);
 
-        // Prefer local if it has more tasks OR higher completion count
-        // This handles case where graph has stale/test data
-        if (localTotal > graphTotal || localProgress > graphProgress) {
+        if (sprintsAreDifferent) {
+          // Local file is the source of truth for which sprint we're on
           sprintChecklist = localSprint;
           sprintSource = 'local';
         } else {
-          sprintChecklist = graphSprint;
-          sprintSource = 'graph';
+          // Same sprint - prefer local if it has more tasks OR higher completion count
+          // This handles case where graph has stale/test data
+          const localTotal = localSprint.progress?.total || 0;
+          const graphTotal = graphSprint.progress?.total || 0;
+          const localProgress = localSprint.progress?.complete || 0;
+          const graphProgress = graphSprint.progress?.complete || 0;
+
+          if (localTotal > graphTotal || localProgress > graphProgress) {
+            sprintChecklist = localSprint;
+            sprintSource = 'local';
+          } else {
+            sprintChecklist = graphSprint;
+            sprintSource = 'graph';
+          }
         }
       } else if (localSprint) {
         sprintChecklist = localSprint;
