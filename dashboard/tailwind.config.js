@@ -89,6 +89,29 @@ module.exports = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      // Spacing scale aligned with marketing site (extends Tailwind defaults)
+      spacing: {
+        '4.5': '1.125rem', // 18px - between 4 and 5
+        '13': '3.25rem',   // 52px
+        '15': '3.75rem',   // 60px
+        '18': '4.5rem',    // 72px
+      },
+      // Shadows using CSS variables for dark mode optimization
+      boxShadow: {
+        'ginko-sm': 'var(--shadow-sm)',
+        'ginko-md': 'var(--shadow-md)',
+        'ginko-lg': 'var(--shadow-lg)',
+        'ginko-xl': 'var(--shadow-xl)',
+      },
+      // Transition durations aligned with marketing site
+      transitionDuration: {
+        'fast': '150ms',
+        'base': '250ms',
+        'slow': '350ms',
+      },
+      transitionTimingFunction: {
+        'ginko': 'cubic-bezier(0.4, 0, 0.2, 1)',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
