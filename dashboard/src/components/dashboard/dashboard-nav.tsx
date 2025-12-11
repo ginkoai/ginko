@@ -1,3 +1,13 @@
+/**
+ * @fileType: component
+ * @status: current
+ * @updated: 2025-12-11
+ * @tags: [dashboard, navigation, header, ginko-branding]
+ * @related: [dashboard-sidebar.tsx, layout.tsx]
+ * @priority: high
+ * @complexity: medium
+ * @dependencies: [react, next, supabase, heroicons]
+ */
 'use client'
 
 import { useState } from 'react'
@@ -59,19 +69,22 @@ export function DashboardNav({ user }: DashboardNavProps) {
   ]
 
   return (
-    <nav className="bg-card shadow-sm border-b border-border h-16">
+    <nav className="bg-card/80 backdrop-blur-md border-b border-border h-16 sticky top-0 z-50">
       <div className="px-6 h-full flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/dashboard" className="font-mono text-3xl text-primary hover:text-primary/80 transition-colors">
-          ginko
+        {/* Logo - Ginko branding with green accent */}
+        <Link
+          href="/dashboard"
+          className="font-mono text-2xl font-bold text-foreground hover:text-primary transition-colors"
+        >
+          <span className="text-primary">g</span>inko
         </Link>
 
         {/* Right side */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative">
+          <Button variant="ghost" size="sm" className="relative text-muted-foreground hover:text-foreground">
             <BellIcon className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-mono">
               3
             </span>
           </Button>
@@ -79,14 +92,14 @@ export function DashboardNav({ user }: DashboardNavProps) {
           {/* User Menu */}
           <Dropdown
             trigger={
-              <Button variant="ghost" className="flex items-center space-x-2">
+              <Button variant="ghost" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground">
                 <Avatar
                   src={user.user_metadata?.avatar_url}
                   alt={user.user_metadata?.full_name || user.email || ''}
                   fallback={(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
-                  className="h-8 w-8"
+                  className="h-8 w-8 border border-border"
                 />
-                <span className="hidden md:block text-sm font-medium text-foreground">
+                <span className="hidden md:block text-sm font-medium">
                   {user.user_metadata?.full_name || user.email}
                 </span>
               </Button>

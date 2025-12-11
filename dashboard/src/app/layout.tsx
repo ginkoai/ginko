@@ -1,3 +1,13 @@
+/**
+ * @fileType: layout
+ * @status: current
+ * @updated: 2025-12-11
+ * @tags: [layout, root, fonts, providers, ginko-branding]
+ * @related: [globals.css, providers.tsx]
+ * @priority: critical
+ * @complexity: low
+ * @dependencies: [next, react-hot-toast]
+ */
 import type { Metadata } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
@@ -16,9 +26,9 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Ginko Dashboard',
-  description: 'Intelligent context management for Claude Code sessions',
-  keywords: ['ginko', 'claude', 'ai', 'development', 'context'],
+  title: 'ginko - The AI Collaboration Platform',
+  description: 'Where humans and AI ship together. Back in flow in 30 seconds.',
+  keywords: ['ginko', 'claude', 'ai', 'development', 'context', 'collaboration'],
   authors: [{ name: 'Chris Norton' }],
 }
 
@@ -33,13 +43,27 @@ export default function RootLayout({
         <Providers>
           <OAuthHandler />
           {children}
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#363636',
-                color: '#fff',
+                background: 'hsl(0 0% 6%)',  // --card
+                color: 'hsl(0 0% 98%)',      // --foreground
+                border: '1px solid hsl(0 0% 16%)',  // --border
+                fontFamily: 'var(--font-mono)',
+              },
+              success: {
+                iconTheme: {
+                  primary: 'hsl(74 100% 48%)',  // --primary (ginko green)
+                  secondary: 'hsl(0 0% 4%)',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: 'hsl(0 62% 30%)',  // --destructive
+                  secondary: 'hsl(0 0% 98%)',
+                },
               },
             }}
           />

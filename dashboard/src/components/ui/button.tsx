@@ -1,8 +1,8 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-08-14
- * @tags: [ui, button, design-system, interactive, shadcn]
+ * @updated: 2025-12-11
+ * @tags: [ui, button, design-system, interactive, ginko-branding]
  * @related: [card.tsx, loading-spinner.tsx, tailwind.config.js]
  * @priority: high
  * @complexity: low
@@ -21,21 +21,26 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'default', loading, children, disabled, ...props }, ref) => {
-    const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
-    
+    // Ginko brand: pill shape, JetBrains Mono, green accent
+    const baseClasses = 'inline-flex items-center justify-center rounded-full font-mono font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50'
+
     const variants = {
-      default: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
-      outline: 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus-visible:ring-blue-500',
-      ghost: 'text-gray-700 hover:bg-gray-100 focus-visible:ring-blue-500',
-      destructive: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500'
+      // Primary: Ginko green with black text
+      default: 'bg-primary text-primary-foreground hover:opacity-90',
+      // Outline: Dark surface with green border
+      outline: 'border border-primary bg-transparent text-primary hover:bg-primary/10',
+      // Ghost: Subtle hover state
+      ghost: 'text-foreground hover:bg-secondary hover:text-foreground',
+      // Destructive: Keep red for danger actions
+      destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
     }
-    
+
     const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      default: 'h-10 px-4 text-sm',
+      sm: 'h-8 px-4 text-sm',
+      default: 'h-10 px-6 text-sm',
       lg: 'h-12 px-8 text-base'
     }
-    
+
     return (
       <button
         ref={ref}

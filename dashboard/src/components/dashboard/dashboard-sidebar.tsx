@@ -1,3 +1,13 @@
+/**
+ * @fileType: component
+ * @status: current
+ * @updated: 2025-12-11
+ * @tags: [dashboard, sidebar, navigation, ginko-branding]
+ * @related: [dashboard-nav.tsx, layout.tsx]
+ * @priority: high
+ * @complexity: medium
+ * @dependencies: [react, next, heroicons]
+ */
 'use client'
 
 import { usePathname } from 'next/navigation'
@@ -6,33 +16,35 @@ import { clsx } from 'clsx'
 import {
   Cog6ToothIcon,
   DocumentTextIcon,
-  UserGroupIcon
+  ChartBarIcon
 } from '@heroicons/react/24/outline'
 import {
   Cog6ToothIcon as Cog6ToothIconSolid,
   DocumentTextIcon as DocumentTextIconSolid,
-  UserGroupIcon as UserGroupIconSolid
+  ChartBarIcon as ChartBarIconSolid
 } from '@heroicons/react/24/solid'
 
 const navigation = [
   {
     name: 'Dashboard',
     href: '/dashboard',
-    icon: UserGroupIcon,
-    iconActive: UserGroupIconSolid,
-    description: 'Collaboration insights and session analytics'
+    icon: ChartBarIcon,
+    iconActive: ChartBarIconSolid,
+    description: 'Collaboration insights'
   },
   {
     name: 'Docs',
     href: '/dashboard/docs',
     icon: DocumentTextIcon,
     iconActive: DocumentTextIconSolid,
+    description: 'Best practices'
   },
   {
     name: 'Settings',
     href: '/dashboard/settings',
     icon: Cog6ToothIcon,
     iconActive: Cog6ToothIconSolid,
+    description: 'Configuration'
   },
 ]
 
@@ -40,8 +52,9 @@ export function DashboardSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 bg-card border-r border-border overflow-y-auto">
-      <nav className="p-6 space-y-2">
+    <aside className="w-64 bg-card border-r border-border overflow-y-auto flex flex-col">
+      {/* Navigation */}
+      <nav className="p-4 space-y-1 flex-1">
         {navigation.map((item) => {
           const isActive = pathname === item.href
           const Icon = isActive ? item.iconActive : item.icon
@@ -51,33 +64,40 @@ export function DashboardSidebar() {
               key={item.name}
               href={item.href}
               className={clsx(
-                'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all',
                 isActive
-                  ? 'bg-primary/10 text-primary border-r-2 border-primary'
+                  ? 'bg-primary/10 text-primary'
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
               )}
             >
-              <Icon className="mr-3 h-6 w-6 flex-shrink-0" />
-              {item.name}
+              <Icon className={clsx(
+                'mr-3 h-5 w-5 flex-shrink-0',
+                isActive ? 'text-primary' : ''
+              )} />
+              <span className="font-mono">{item.name}</span>
+              {isActive && (
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />
+              )}
             </Link>
           )
         })}
       </nav>
 
-      {/* Mission Statement */}
-      <div className="p-6 border-t border-border">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Mission
-        </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Improve Human-AI collaboration through actionable coaching insights and clear performance metrics.
-        </p>
-        <div className="mt-4">
+      {/* Mission Statement - Bottom */}
+      <div className="p-4 border-t border-border">
+        <div className="p-3 rounded-lg bg-secondary/50">
+          <h3 className="text-xs font-mono font-semibold text-primary uppercase tracking-wider mb-2">
+            Mission
+          </h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Improve Human-AI collaboration through actionable coaching insights.
+          </p>
           <Link
             href="/dashboard/docs"
-            className="text-sm text-primary hover:text-primary/80 font-medium"
+            className="inline-flex items-center mt-3 text-xs text-primary hover:text-primary/80 font-mono font-medium"
           >
-            Learn collaboration best practices →
+            Learn best practices
+            <span className="ml-1">→</span>
           </Link>
         </div>
       </div>

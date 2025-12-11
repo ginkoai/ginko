@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-09T22-50-07-836Z
-started: 2025-12-09T22:50:07.836Z
+session_id: session-2025-12-11T17-24-18-711Z
+started: 2025-12-11T17:24:18.711Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-09T22-50-07-836Z
+# Session Log: session-2025-12-11T17-24-18-711Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -35,3 +35,21 @@ branch: main
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 13:04 - [achievement]
+# [ACHIEVEMENT] 13:04
+
+Completed TASK-8: Dashboard Layout Refresh. Updated all core UI components to match marketing site aesthetic - Button (pill shape, ginko green, JetBrains Mono), Card (dark styling with variants), DashboardNav (sticky with backdrop blur), DashboardSidebar (dark theme with green accents). Created CornerBrackets component for Brass Hands signature element. Fully redesigned LandingPage with dark theme matching marketing site hero. Build verified successful.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/dashboard/page.tsx
+
+**Impact:** high
+**Timestamp:** 2025-12-11T18:04:04.395Z
+
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/dashboard/page.tsx
+Impact: high

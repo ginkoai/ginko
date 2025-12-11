@@ -578,10 +578,33 @@
       "relevance": "critical",
       "created": "2025-12-05T22:23:59.430Z",
       "sessionId": "session-chris-at-watchhill-ai-1764973439412"
+    },
+    {
+      "filename": "pattern-task7-progress-updated-dashboard-design-tokens-to-.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-10T02:58:53.155Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765335533118"
+    },
+    {
+      "filename": "gotcha-fixed-sprint-readout-showing-wrong-sprint.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-11T17:23:24.302Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765473804274"
     }
   ],
-  "lastUpdated": "2025-12-05T22:23:59.431Z",
-  "totalModules": 40,
+  "lastUpdated": "2025-12-11T17:23:24.303Z",
+  "totalModules": 42,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

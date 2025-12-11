@@ -1,31 +1,31 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-08-14
- * @tags: [landing-page, marketing, hero, features, ui]
- * @related: [page.tsx, button.tsx, auth/login/page.tsx]
+ * @updated: 2025-12-11
+ * @tags: [landing-page, marketing, hero, features, ui, ginko-branding]
+ * @related: [page.tsx, button.tsx, auth/login/page.tsx, corner-brackets.tsx]
  * @priority: high
  * @complexity: medium
- * @dependencies: [react, next/link, heroicons, ui/button]
+ * @dependencies: [react, next/link, heroicons, ui/button, ui/corner-brackets]
  */
 'use client'
 
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRightIcon, ChartBarIcon, CodeBracketIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import { CornerBrackets } from '@/components/ui/corner-brackets'
+import { ArrowRightIcon, ChartBarIcon, CodeBracketIcon, BoltIcon } from '@heroicons/react/24/outline'
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="relative">
-        <div className="container mx-auto px-6 py-6">
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+        <div className="container mx-auto px-6 py-4">
           <nav className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <SparklesIcon className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">Ginko</span>
-            </div>
-            <div className="space-x-4">
+            <Link href="/" className="font-mono text-2xl font-bold text-foreground hover:text-primary transition-colors">
+              <span className="text-primary">g</span>inko
+            </Link>
+            <div className="flex items-center space-x-3">
               <Link href="/auth/login">
                 <Button variant="ghost">Sign In</Button>
               </Link>
@@ -38,105 +38,154 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main className="container mx-auto px-6 py-16">
+      <main className="container mx-auto px-6 py-20">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Intelligent Context Management for{' '}
-            <span className="text-blue-600">Claude Code</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-            Transform your development workflow with AI-powered context awareness. 
-            Ginko learns from your coding patterns and provides intelligent 
-            suggestions to accelerate your development process.
+          <CornerBrackets size="lg" corners="all" className="inline-block mb-8">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-mono font-bold text-foreground leading-tight">
+              The AI Collaboration Platform.
+            </h1>
+          </CornerBrackets>
+          <p className="text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">
+            Where humans and AI ship together. Back in flow in 30 seconds.
           </p>
+
+          {/* Terminal Install Command */}
+          <div className="inline-flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-3 mb-10 font-mono text-sm">
+            <span className="text-primary">$</span>
+            <code className="text-foreground">npm install -g @ginkoai/cli</code>
+            <button
+              className="text-muted-foreground hover:text-primary transition-colors"
+              onClick={() => navigator.clipboard.writeText('npm install -g @ginkoai/cli')}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/signup">
               <Button size="lg" className="w-full sm:w-auto">
-                Start Free Trial
+                Get Started
                 <ArrowRightIcon className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              View Demo
-            </Button>
+            <Link href="https://docs.ginko.ai" target="_blank">
+              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                View Docs
+              </Button>
+            </Link>
           </div>
         </div>
 
+        {/* Problem Cards */}
+        <div className="mt-24 grid md:grid-cols-3 gap-6">
+          <CornerBrackets corners="all" variant="muted" className="bg-card rounded-lg">
+            <div className="text-center p-6">
+              <div className="font-mono text-sm text-primary mb-3 uppercase tracking-wider">CONTEXT_ROT</div>
+              <p className="text-muted-foreground text-sm">
+                AI assistants lose effectiveness as conversations grow. By message 50, they're guessing.
+              </p>
+            </div>
+          </CornerBrackets>
+
+          <CornerBrackets corners="all" variant="muted" className="bg-card rounded-lg">
+            <div className="text-center p-6">
+              <div className="font-mono text-sm text-primary mb-3 uppercase tracking-wider">SESSION_RESET</div>
+              <p className="text-muted-foreground text-sm">
+                Every new session = 10+ minutes re-explaining your project, decisions, and goals.
+              </p>
+            </div>
+          </CornerBrackets>
+
+          <CornerBrackets corners="all" variant="muted" className="bg-card rounded-lg">
+            <div className="text-center p-6">
+              <div className="font-mono text-sm text-primary mb-3 uppercase tracking-wider">KNOWLEDGE_SILOS</div>
+              <p className="text-muted-foreground text-sm">
+                Context lives in your head. When you switch tools or take a break, it's gone.
+              </p>
+            </div>
+          </CornerBrackets>
+        </div>
+
         {/* Features */}
-        <div className="mt-24 grid md:grid-cols-3 gap-12">
-          <div className="text-center">
-            <div className="bg-white rounded-xl p-6 shadow-lg">
-              <CodeBracketIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Smart Code Analysis
-              </h3>
-              <p className="text-gray-600">
-                Automatically analyze your codebase patterns and provide 
-                contextual suggestions for better development practices.
-              </p>
+        <div className="mt-24 grid md:grid-cols-3 gap-8">
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+              <BoltIcon className="h-6 w-6 text-primary" />
             </div>
+            <h3 className="font-mono font-semibold text-foreground mb-2">
+              30-Second Recovery
+            </h3>
+            <p className="text-muted-foreground text-sm">
+              Resume exactly where you left off. Your context, decisions, and progress—instantly restored.
+            </p>
           </div>
-          
-          <div className="text-center">
-            <div className="bg-white rounded-xl p-6 shadow-lg">
-              <SparklesIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                AI-Powered Insights
-              </h3>
-              <p className="text-gray-600">
-                Leverage advanced AI to understand your development workflow 
-                and provide intelligent context management.
-              </p>
+
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+              <CodeBracketIcon className="h-6 w-6 text-primary" />
             </div>
+            <h3 className="font-mono font-semibold text-foreground mb-2">
+              Git-Native Context
+            </h3>
+            <p className="text-muted-foreground text-sm">
+              Context lives in your repo. No vendor lock-in. Works with Claude Code, Cursor, and more.
+            </p>
           </div>
-          
-          <div className="text-center">
-            <div className="bg-white rounded-xl p-6 shadow-lg">
-              <ChartBarIcon className="h-12 w-12 text-blue-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Advanced Analytics
-              </h3>
-              <p className="text-gray-600">
-                Track your development patterns, session analytics, and 
-                productivity metrics with detailed insights.
-              </p>
+
+          <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-colors">
+            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+              <ChartBarIcon className="h-6 w-6 text-primary" />
             </div>
+            <h3 className="font-mono font-semibold text-foreground mb-2">
+              Collaboration Insights
+            </h3>
+            <p className="text-muted-foreground text-sm">
+              Track patterns, measure productivity, and get coaching to improve your AI collaboration.
+            </p>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="mt-24 bg-white rounded-2xl shadow-xl p-12">
-          <div className="grid md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-3xl font-bold text-blue-600">10K+</div>
-              <div className="text-gray-600 mt-1">Sessions Analyzed</div>
+        <div className="mt-24">
+          <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-12">
+            <div className="grid md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-mono font-bold text-primary">30s</div>
+                <div className="text-muted-foreground text-sm mt-1">Flow Recovery</div>
+              </div>
+              <div>
+                <div className="text-3xl font-mono font-bold text-primary">10x</div>
+                <div className="text-muted-foreground text-sm mt-1">Faster Context</div>
+              </div>
+              <div>
+                <div className="text-3xl font-mono font-bold text-primary">100%</div>
+                <div className="text-muted-foreground text-sm mt-1">Git-Native</div>
+              </div>
+              <div>
+                <div className="text-3xl font-mono font-bold text-primary">0</div>
+                <div className="text-muted-foreground text-sm mt-1">Vendor Lock-in</div>
+              </div>
             </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600">500+</div>
-              <div className="text-gray-600 mt-1">Developers</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600">95%</div>
-              <div className="text-gray-600 mt-1">Productivity Gain</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-blue-600">24/7</div>
-              <div className="text-gray-600 mt-1">AI Support</div>
-            </div>
-          </div>
+          </CornerBrackets>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="mt-24 bg-gray-900 text-white py-12">
+      <footer className="mt-24 border-t border-border py-12">
         <div className="container mx-auto px-6 text-center">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <SparklesIcon className="h-6 w-6" />
-            <span className="text-xl font-bold">Ginko</span>
-          </div>
-          <p className="text-gray-400">
-            Intelligent context management for modern development
+          <Link href="/" className="font-mono text-xl font-bold text-foreground hover:text-primary transition-colors">
+            <span className="text-primary">g</span>inko
+          </Link>
+          <p className="text-muted-foreground text-sm mt-2">
+            The AI Collaboration Platform
           </p>
+          <div className="flex items-center justify-center gap-6 mt-6 text-sm text-muted-foreground">
+            <Link href="https://docs.ginko.ai" className="hover:text-primary transition-colors">Docs</Link>
+            <Link href="https://github.com/ginkoai" className="hover:text-primary transition-colors">GitHub</Link>
+            <Link href="/auth/login" className="hover:text-primary transition-colors">Sign In</Link>
+          </div>
         </div>
       </footer>
     </div>

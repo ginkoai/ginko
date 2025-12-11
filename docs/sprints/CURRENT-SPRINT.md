@@ -8,7 +8,7 @@
 
 **Duration**: 2 weeks
 **Type**: Foundation sprint
-**Progress:** 70% (7/10 tasks complete)
+**Progress:** 80% (8/10 tasks complete)
 
 **Success Criteria:**
 - [ ] Tagline and product description finalized
@@ -182,7 +182,7 @@ Follow: Marketing site design system
 ---
 
 ### TASK-8: Dashboard Layout Refresh (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Update dashboard layout to match marketing site aesthetic.
@@ -281,15 +281,37 @@ Avoid: Fixing dynamic data issues (deferred to Sprint 2-4)
 - Dark mode is now default (`className="dark"` on html element)
 - Files: `dashboard/tailwind.config.js`, `dashboard/src/app/globals.css`
 
+### 2025-12-11: Dashboard Layout Refresh Complete (TASK-8)
+- Updated all core UI components to match marketing site aesthetic:
+  - **Button**: Pill shape (rounded-full), ginko green background, JetBrains Mono font
+  - **Card**: Dark styling with variants (default/surface/elevated), optional corner brackets
+  - **DashboardNav**: Sticky header with backdrop blur, green "g" accent in logo
+  - **DashboardSidebar**: Dark theme, green active state indicators, compact mission section
+- Created **CornerBrackets** component (reusable Brass Hands signature element)
+- Fully redesigned **LandingPage** with dark theme:
+  - Matching marketing site hero with corner brackets
+  - Terminal install command with copy button
+  - Problem cards (CONTEXT_ROT, SESSION_RESET, KNOWLEDGE_SILOS)
+  - Feature cards with green accent icons
+  - Stats section with corner brackets
+- Updated root layout with ginko-branded toast notifications
+- Updated metadata: "ginko - The AI Collaboration Platform"
+- Build verified successful
+- Files modified:
+  - `dashboard/src/components/ui/button.tsx`
+  - `dashboard/src/components/ui/card.tsx`
+  - `dashboard/src/components/ui/corner-brackets.tsx` (new)
+  - `dashboard/src/components/dashboard/dashboard-nav.tsx`
+  - `dashboard/src/components/dashboard/dashboard-sidebar.tsx`
+  - `dashboard/src/components/landing-page.tsx`
+  - `dashboard/src/app/layout.tsx`
+  - `dashboard/src/app/dashboard/page.tsx`
+
 ## Next Steps
 
-1. **TASK-8**: Dashboard Layout Refresh (HIGH priority)
-   - Update layout to match marketing site aesthetic
-   - Apply corner brackets, typography, spacing
-   - Focus on navigation alignment, card/panel styles
-2. **TASK-9**: SWE Leader Infographic Concepts
+1. **TASK-9**: SWE Leader Infographic Concepts
    - Design wireframes for 2-3 infographics
-3. **TASK-10**: Sprint Documentation and Sync
+2. **TASK-10**: Sprint Documentation and Sync
 
 ## Blockers
 
