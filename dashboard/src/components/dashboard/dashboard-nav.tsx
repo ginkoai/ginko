@@ -53,7 +53,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
     {
       label: 'Profile',
       icon: UserCircleIcon,
-      href: '/dashboard/profile'
+      href: '/dashboard/settings#account'
     },
     {
       label: 'Settings',
@@ -74,9 +74,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
         {/* Logo - Ginko branding with green accent */}
         <Link
           href="/dashboard"
-          className="font-mono text-2xl font-bold text-foreground hover:text-primary transition-colors"
+          className="font-mono text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
         >
-          <span className="text-primary">g</span>inko
+          ginko
         </Link>
 
         {/* Right side */}

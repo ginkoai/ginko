@@ -1,13 +1,13 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-02-03
- * @tags: [auth, oauth, github, react, client-component, supabase]
+ * @updated: 2025-12-11
+ * @tags: [auth, oauth, github, react, client-component, supabase, ginko-branding]
  * @related: [providers.tsx, login/page.tsx, signup/page.tsx, ui/button.tsx]
  * @priority: critical
  * @complexity: low
  * @dependencies: [react, next, supabase, react-hot-toast]
- * @description: GitHub OAuth-only authentication component
+ * @description: GitHub OAuth-only authentication component with ginko dark theme
  */
 
 'use client'
@@ -27,20 +27,16 @@ interface AuthFormProps {
 export function AuthForm({ mode }: AuthFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  
+
   const { supabase } = useSupabase()
   const router = useRouter()
-  
+
   const isSignUp = mode === 'signup'
-  
-  // Debug: OAuth-only version deployed at ${new Date().toISOString()}
-  console.log('AuthForm: OAuth-only version active')
-  
-  
+
   const handleGitHubSignIn = async () => {
     setLoading(true)
     setError('')
-    
+
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'github',
@@ -49,9 +45,9 @@ export function AuthForm({ mode }: AuthFormProps) {
           skipBrowserRedirect: false
         },
       })
-      
+
       if (error) throw error
-      
+
       // Show loading state while redirecting
       toast.loading('Redirecting to GitHub...')
     } catch (error: any) {
@@ -60,14 +56,14 @@ export function AuthForm({ mode }: AuthFormProps) {
       setLoading(false)
     }
   }
-  
+
   return (
-    <div className="bg-white shadow-xl rounded-lg p-8">
+    <div className="bg-card border border-border rounded-lg p-8 shadow-lg">
       <div className="space-y-6">
         {/* Welcome message */}
         <div className="text-center space-y-2">
-          <p className="text-gray-600">
-            {isSignUp 
+          <p className="text-muted-foreground">
+            {isSignUp
               ? 'Join thousands of developers using Ginko to enhance their AI-assisted development workflow'
               : 'Welcome back! Sign in to continue'
             }
@@ -80,12 +76,12 @@ export function AuthForm({ mode }: AuthFormProps) {
             {error}
           </Alert>
         )}
-        
+
         {/* GitHub OAuth button */}
         <Button
           type="button"
           variant="default"
-          className="w-full h-12 text-base font-medium"
+          className="w-full h-12 text-base font-mono font-medium"
           onClick={handleGitHubSignIn}
           disabled={loading}
         >
@@ -106,39 +102,39 @@ export function AuthForm({ mode }: AuthFormProps) {
             </>
           )}
         </Button>
-        
+
         {/* Why GitHub section */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-          <p className="text-sm font-medium text-gray-700">Why GitHub?</p>
-          <ul className="text-sm text-gray-600 space-y-2">
+        <div className="bg-secondary rounded-lg p-4 space-y-3">
+          <p className="text-sm font-mono font-medium text-foreground">Why GitHub?</p>
+          <ul className="text-sm text-muted-foreground space-y-2">
             <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-primary mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <span>No passwords to remember</span>
             </li>
             <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-primary mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <span>Secure OAuth authentication</span>
             </li>
             <li className="flex items-start">
-              <svg className="w-5 h-5 text-green-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-primary mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
               </svg>
               <span>Instant access with existing GitHub account</span>
             </li>
           </ul>
         </div>
-        
+
         {/* Alternative action */}
         <div className="text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
             <Link
               href={isSignUp ? '/auth/login' : '/auth/signup'}
-              className="font-medium text-blue-600 hover:text-blue-500"
+              className="font-medium text-primary hover:text-primary/80"
             >
               {isSignUp ? 'Sign in' : 'Sign up'}
             </Link>
@@ -146,13 +142,13 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
 
         {/* Privacy note */}
-        <p className="text-xs text-center text-gray-500">
+        <p className="text-xs text-center text-muted-foreground">
           By signing {isSignUp ? 'up' : 'in'}, you agree to our{' '}
-          <Link href="/terms" className="underline hover:text-gray-700">
+          <Link href="/terms" className="underline hover:text-foreground">
             Terms of Service
           </Link>{' '}
           and{' '}
-          <Link href="/privacy" className="underline hover:text-gray-700">
+          <Link href="/privacy" className="underline hover:text-foreground">
             Privacy Policy
           </Link>
         </p>

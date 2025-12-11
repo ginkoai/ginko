@@ -120,7 +120,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Account Information */}
-      <div className="bg-card rounded-lg border border-border shadow-sm">
+      <div id="account" className="bg-card rounded-lg border border-border shadow-sm scroll-mt-20">
         <div className="p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
             <UserIcon className="h-5 w-5 text-primary" />

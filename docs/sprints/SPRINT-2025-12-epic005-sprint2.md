@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 0% (0/8 tasks complete)
+**Progress:** 0% (0/10 tasks complete)
 
 **Success Criteria:**
 - [ ] Tree explorer displays Project → Charter/Epics/Sprints/Tasks/Commits hierarchy
@@ -235,7 +235,60 @@ Follow: Marketing site card aesthetic (corner brackets)
 
 ---
 
-### TASK-8: Performance Optimization and Testing (4h)
+### TASK-8: Dashboard Data Display Fix (3h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+
+**Goal:** Fix dashboard to display live collaboration data correctly.
+
+**Issue:**
+- API returns mock data when no scorecards exist
+- Mock data schema doesn't match what components expect
+- Component expects `scores.overallCollaboration`, mock has `scores.overall`
+- All scores show as 0% due to property name mismatch
+
+**Fix Options:**
+1. Update mock data to match expected schema
+2. Update component to be flexible with property names
+3. Remove mock data and show proper empty states
+
+**Files:**
+- `dashboard/src/app/api/sessions/scorecards/route.ts` (lines 217-328)
+- `dashboard/src/components/dashboard/sessions-with-scores.tsx`
+
+---
+
+### TASK-9: Notification Center Design & Implementation (6h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Design and implement the notification center in the dashboard header.
+
+**Current State:**
+- Bell icon exists with hardcoded "3" badge
+- No dropdown/panel functionality
+- No backend for notifications
+
+**Deliverables:**
+- Notification dropdown component
+- Notification types (session updates, coaching tips, system alerts)
+- Read/unread state management
+- API endpoint for notifications
+- Mark all as read functionality
+
+**Design Requirements:**
+- Match ginko dark theme
+- Use corner brackets aesthetic
+- Smooth animations
+
+**Files:**
+- `dashboard/src/components/dashboard/notification-center.tsx` (new)
+- `dashboard/src/components/dashboard/dashboard-nav.tsx` (update)
+- `dashboard/src/app/api/notifications/route.ts` (new)
+
+---
+
+### TASK-10: Performance Optimization and Testing (4h)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { clsx } from 'clsx'
+import Link from 'next/link'
 
 interface DropdownItem {
   label: string
@@ -20,65 +21,65 @@ interface DropdownProps {
 export function Dropdown({ trigger, items, align = 'right' }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
-    
+
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-  
+
   const handleItemClick = (item: DropdownItem) => {
     if (item.onClick) {
       item.onClick()
     }
     setIsOpen(false)
   }
-  
+
   return (
     <div className="relative" ref={dropdownRef}>
       <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
         {trigger}
       </div>
-      
+
       {isOpen && (
         <div className={clsx(
-          'absolute top-full mt-2 w-56 rounded-md border border-gray-200 bg-white shadow-lg z-50',
+          'absolute top-full mt-2 w-56 rounded-lg border border-border bg-card shadow-lg z-50',
           align === 'right' ? 'right-0' : 'left-0'
         )}>
           <div className="py-1">
             {items.map((item, index) => {
               const Icon = item.icon
-              
+
               if (item.href) {
                 return (
-                  <a
+                  <Link
                     key={index}
                     href={item.href}
-                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="flex items-center px-4 py-2.5 text-sm font-mono text-foreground hover:bg-secondary hover:text-primary transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
-                    {Icon && <Icon className="mr-2 h-4 w-4" />}
+                    {Icon && <Icon className="mr-3 h-4 w-4" />}
                     {item.label}
-                  </a>
+                  </Link>
                 )
               }
-              
+
               return (
                 <button
                   key={index}
-                  className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  className="flex w-full items-center px-4 py-2.5 text-sm font-mono text-foreground hover:bg-secondary hover:text-primary transition-colors disabled:opacity-50"
                   onClick={() => handleItemClick(item)}
                   disabled={item.loading}
                 >
-                  {Icon && <Icon className="mr-2 h-4 w-4" />}
+                  {Icon && <Icon className="mr-3 h-4 w-4" />}
                   {item.label}
                   {item.loading && (
-                    <svg className="animate-spin ml-auto h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin ml-auto h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
