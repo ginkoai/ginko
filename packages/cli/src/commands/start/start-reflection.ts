@@ -183,34 +183,55 @@ export class StartReflectionCommand extends ReflectionCommand {
       const projectRoot = await getProjectRoot();
 
       // Load sprint checklist for session context
-      // EPIC-005: Graph is primary source of truth for collaborative environments
-      // Falls back to local files when offline or unauthenticated
+      // Strategy: Load both local and graph, use the more complete/current one
+      // Local file is authoritative for solo work; graph is authoritative for team collaboration
       let sprintChecklist: any = null;
       let sprintSource: 'graph' | 'local' = 'local';
 
+      // Always load local sprint first (fast, authoritative for file-based workflows)
+      const localSprint = await loadSprintChecklist(projectRoot);
+
+      // Try to load from graph if authenticated
+      let graphSprint: any = null;
       if (await isAuthenticated() && await isGraphInitialized()) {
         try {
-          spinner.text = 'Loading sprint from graph (source of truth)...';
+          spinner.text = 'Checking graph for sprint updates...';
           const graphId = await getGraphId();
           if (graphId) {
             const client = new GraphApiClient();
-            const graphSprint = await client.getActiveSprint(graphId);
-
-            // Convert graph response to sprintChecklist format
-            sprintChecklist = this.convertGraphSprintToChecklist(graphSprint);
-            sprintSource = 'graph';
-            spinner.text = `Sprint loaded from graph (${graphSprint.meta?.executionTime || 0}ms)`;
+            const graphResponse = await client.getActiveSprint(graphId);
+            graphSprint = this.convertGraphSprintToChecklist(graphResponse);
           }
         } catch (error) {
-          // Graph unavailable - fall back to local files
-          spinner.text = 'Graph unavailable, loading sprint from local files...';
+          // Graph unavailable - use local only
+          spinner.text = 'Graph unavailable, using local sprint file';
         }
       }
 
-      // Fallback to local files if graph didn't provide sprint data
-      if (!sprintChecklist) {
-        sprintChecklist = await loadSprintChecklist(projectRoot);
+      // Compare and choose the more complete/current sprint
+      // Priority: Local file wins if it has more tasks or higher progress
+      // This ensures git-native workflow isn't overwritten by stale graph data
+      if (localSprint && graphSprint) {
+        const localTotal = localSprint.progress?.total || 0;
+        const graphTotal = graphSprint.progress?.total || 0;
+        const localProgress = localSprint.progress?.complete || 0;
+        const graphProgress = graphSprint.progress?.complete || 0;
+
+        // Prefer local if it has more tasks OR higher completion count
+        // This handles case where graph has stale/test data
+        if (localTotal > graphTotal || localProgress > graphProgress) {
+          sprintChecklist = localSprint;
+          sprintSource = 'local';
+        } else {
+          sprintChecklist = graphSprint;
+          sprintSource = 'graph';
+        }
+      } else if (localSprint) {
+        sprintChecklist = localSprint;
         sprintSource = 'local';
+      } else if (graphSprint) {
+        sprintChecklist = graphSprint;
+        sprintSource = 'graph';
       }
 
       // Load session log content before archiving

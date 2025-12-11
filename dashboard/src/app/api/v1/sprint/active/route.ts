@@ -119,9 +119,20 @@ export async function GET(request: NextRequest) {
     }
 
     const record = result[0];
-    const sprint: SprintData = record.sprint;
-    const tasks: TaskData[] = record.tasks.filter((t: any) => t !== null);
-    const nextTask: TaskData | null = record.nextTask || null;
+
+    // Extract properties from Neo4j node objects
+    // Neo4j driver returns nodes wrapped: { properties: { ... } }
+    const extractProps = <T>(node: any): T | null => {
+      if (!node) return null;
+      // Handle both raw Neo4j format (with properties) and clean format
+      return (node.properties || node) as T;
+    };
+
+    const sprint: SprintData = extractProps<SprintData>(record.sprint)!;
+    const tasks: TaskData[] = record.tasks
+      .filter((t: any) => t !== null)
+      .map((t: any) => extractProps<TaskData>(t)!);
+    const nextTask: TaskData | null = extractProps<TaskData>(record.nextTask);
 
     // Calculate stats
     const stats: SprintStats = {
