@@ -1,8 +1,8 @@
 /**
  * @fileType: guide
  * @status: current
- * @updated: 2025-11-07
- * @tags: [documentation, quick-start, tutorial, onboarding]
+ * @updated: 2025-12-15
+ * @tags: [documentation, quick-start, tutorial, onboarding, beta]
  * @related: [USER-GUIDE.md, CLI-REFERENCE.md]
  * @priority: critical
  * @complexity: low
@@ -10,18 +10,20 @@
 
 # Quick Start Guide
 
-Get started with Ginko in 5 minutes. This guide walks you through installation, authentication, and creating your first knowledge graph.
+Get started with Ginko in 5 minutes. This guide walks you through installation, authentication, and your first AI collaboration session.
 
 ---
 
 ## What is Ginko?
 
-Ginko is a **git-native CLI for intelligent context management** in AI-assisted development. It helps teams:
+**The AI Collaboration Platform - Where humans and AI ship together**
 
-- **Capture knowledge** - Store ADRs, PRDs, patterns, and insights in a cloud knowledge graph
-- **Search semantically** - Find relevant context using natural language queries
-- **Collaborate better** - Share knowledge across your team automatically
-- **Preserve context** - Never lose important decisions or patterns
+Ginko is a git-native CLI that helps you and AI collaborate more effectively:
+
+- **Capture context** - Log insights, decisions, and learnings as you work
+- **Preserve knowledge** - Build a searchable memory of your project
+- **Ship faster** - AI stays in sync with your goals and progress
+- **Collaborate better** - Seamless handoffs between sessions and team members
 
 ---
 
@@ -30,13 +32,13 @@ Ginko is a **git-native CLI for intelligent context management** in AI-assisted 
 ### Prerequisites
 
 - Node.js 18+ installed
+- Git repository (recommended)
 - GitHub account (for authentication)
-- Git repository (optional, but recommended)
 
 ### Install the CLI
 
 ```bash
-npm install -g @ginko/cli
+npm install -g @ginko/cli@beta
 ```
 
 Verify installation:
@@ -47,7 +49,7 @@ ginko --version
 
 ---
 
-## Step 1: Authenticate with GitHub
+## Step 1: Authenticate
 
 ```bash
 ginko login
@@ -56,7 +58,7 @@ ginko login
 This will:
 1. Open your browser to GitHub OAuth
 2. Authenticate your account
-3. Generate a long-lived API key (like git credentials)
+3. Generate a long-lived API key
 4. Store credentials locally at `~/.ginko/auth.json`
 
 **Verify authentication:**
@@ -69,159 +71,188 @@ You should see your GitHub username and API key prefix.
 
 ---
 
-## Step 2: Create Your First Project
+## Step 2: Initialize Your Project
 
-Projects organize knowledge by repository or team. Create one for your current repo:
+Navigate to your project directory and initialize Ginko:
 
 ```bash
-# In your git repository
-ginko project create my-app --repo=github.com/yourname/my-app
+cd /path/to/your/project
+ginko init
 ```
 
 **What this does:**
-- Creates a project in the cloud knowledge graph
-- Links it to your GitHub repository
-- Sets up multi-tenant access control
-- Makes this your active project
+- Creates `.ginko/` directory for local session data
+- Sets up git-native session management
+- Configures event-based context loading
+- Creates a cloud knowledge graph for your project
 
-**Verify project creation:**
+**Verify initialization:**
 
 ```bash
-ginko project list
+ls -la .ginko/
 ```
+
+You should see session directories and configuration files.
 
 ---
 
-## Step 3: Add Your First ADR
+## Step 3: Create Your Project Charter (Optional)
 
-Architecture Decision Records (ADRs) capture important technical decisions. Let's create one:
+Define your project's vision and goals with an AI-mediated conversation:
 
 ```bash
-ginko knowledge create \
-  --type ADR \
-  --title "Use PostgreSQL for primary database" \
-  --content "We chose PostgreSQL because it provides excellent JSON support, strong ACID guarantees, and proven scalability for our use case." \
-  --tags database,architecture \
-  --status accepted
+ginko charter
 ```
 
 **What this does:**
-- Creates a knowledge node in your project's graph
-- Generates vector embeddings for semantic search
-- Indexes the content by tags and type
-- Makes it searchable immediately
+- Guides you through a natural conversation about your project
+- Captures purpose, goals, success criteria, and constraints
+- Creates `docs/PROJECT-CHARTER.md` as your north star
+- Helps AI understand your project context
+
+**Skip this step if:**
+- You're exploring or prototyping
+- Your project already has clear documentation
+- You want to jump straight into development
 
 ---
 
-## Step 4: Search Your Knowledge
-
-Now search for what you just created:
+## Step 4: Start Your First Session
 
 ```bash
-ginko knowledge search "database decision"
+ginko start
 ```
 
-You should see your ADR with a similarity score. The search uses **semantic similarity**, so it works even if you don't use exact keywords.
+**What this does:**
+- Loads your project context (< 2 seconds!)
+- Initializes session logging
+- Syncs events to your knowledge graph
+- Gets you ready to work with AI
 
-**Try different searches:**
+**You'll see:**
+```
+Ready | Hot (10/10) | Think & Build mode
+Session: chris-at-watchhill-ai
+Project: ginko
 
-```bash
-# Search with filters
-ginko knowledge search "architecture" --type ADR --limit 5
-
-# Search across all types
-ginko knowledge search "postgres" --threshold 0.7
-
-# Display as table
-ginko knowledge search "database" --table
+What would you like to work on?
 ```
 
 ---
 
-## Step 5: Visualize Relationships
+## Step 5: Log Your Progress
 
-Knowledge nodes can reference each other. Let's create a PRD that references the ADR:
-
-```bash
-ginko knowledge create \
-  --type PRD \
-  --title "User Authentication System" \
-  --content "Implement user authentication using PostgreSQL for session storage." \
-  --tags auth,users
-```
-
-Now visualize the relationship graph:
+As you work, capture important insights:
 
 ```bash
-# Get the ADR ID from the previous search
-ginko knowledge graph <adr-id>
+# After fixing a bug
+ginko log "Fixed authentication timeout by increasing JWT expiry from 1h to 24h. Root cause: mobile users kept getting logged out mid-session." \
+  --category=fix --impact=high
+
+# After making a decision
+ginko log "Decided to use Tailwind instead of styled-components for better build performance and smaller bundle size." \
+  --category=decision
+
+# After discovering a pattern
+ginko log "Pattern: Always validate user input on both client and server. Client validation improves UX, server validation ensures security." \
+  --category=insight
+
+# After completing a feature
+ginko log "Completed user profile page with avatar upload, bio editing, and privacy controls. Tests passing." \
+  --category=achievement --impact=medium
 ```
 
-This shows:
-- The center node (your ADR)
-- Connected nodes (PRDs, other ADRs)
-- Relationship types (IMPLEMENTS, REFERENCES, TAGGED_WITH)
+**Why log?**
+- Builds searchable project memory
+- Enables better AI collaboration
+- Helps future you (and your team)
+- Captures context at low pressure (before you forget!)
 
 ---
 
-## Step 6: Explore the Public Catalog
+## Step 6: End Your Session
 
-Browse public knowledge from open-source projects:
+When you're done working:
 
 ```bash
-# Visit the public catalog
-open https://app.ginkoai.com/explore
+ginko handoff "Completed user authentication flow. All tests passing. Next: Implement password reset via email."
 ```
 
-You can:
-- Search across all public knowledge graphs
-- Filter by tags, types, and projects
-- Discover patterns and decisions from other teams
-- Fork interesting knowledge into your projects
+**What this does:**
+- Summarizes your session
+- Archives session logs
+- Syncs final events to knowledge graph
+- Provides clean handoff for next session (you or teammate)
+
+---
+
+## Step 7: Visualize in the Dashboard
+
+Open your browser to see your project's knowledge graph:
+
+```
+https://app.ginkoai.com
+```
+
+**You can:**
+- Browse your logged insights and decisions
+- Search semantically across your project knowledge
+- View relationships between concepts
+- Track project progress over time
+- Share knowledge with your team
+
+---
+
+## Core Workflow (Repeat Daily)
+
+```bash
+# Morning: Start session
+ginko start
+
+# During work: Log insights (5-10 times per session)
+ginko log "Discovered that caching API responses reduces load time by 60%" \
+  --category=insight --impact=high
+
+# Evening: Handoff
+ginko handoff "Added API caching layer. Performance improved. Next: Add cache invalidation logic."
+```
+
+**That's it!** This simple workflow keeps AI in sync and builds valuable project memory.
 
 ---
 
 ## What's Next?
 
-### Common Workflows
+### Advanced Features
 
-**Daily Development:**
+**Create Epics and Sprints:**
 ```bash
-# Start a session (loads team context)
-ginko start
+# Plan larger initiatives with AI guidance
+ginko epic
 
-# Log important insights
-ginko log "Discovered that async validation reduces form lag by 40%"
+# This creates structured sprints with tasks
+# See: docs/epics/ and docs/sprints/
+```
 
-# Search for related knowledge
-ginko knowledge search "form validation patterns"
+**Search Your Knowledge:**
+```bash
+# Semantic search across your logs
+ginko knowledge search "authentication patterns"
+
+# Find specific decisions
+ginko knowledge search "why did we choose postgres" --type ADR
 ```
 
 **Team Collaboration:**
-```bash
-# Invite team members
-ginko project add-member alice@example.com --role editor
-
-# Create a team
-ginko team create backend-team
-
-# Add team to project
-ginko team add-to-project backend-team my-app
-```
-
-**Migration from Local Files:**
-```bash
-# Sync existing ADRs to cloud
-ginko knowledge sync docs/adr/ --type ADR --dry-run
-ginko knowledge sync docs/adr/ --type ADR
-```
+- Multiple team members can run `ginko start` in the same repo
+- Sessions are isolated but knowledge is shared
+- Dashboard shows team-wide activity
 
 ### Learn More
 
 - **[User Guide](./USER-GUIDE.md)** - Complete feature documentation
 - **[CLI Reference](./CLI-REFERENCE.md)** - All commands and options
-- **[API Reference](../api/API-REFERENCE.md)** - REST and GraphQL APIs
-- **[Migration Guide](./MIGRATION-GUIDE.md)** - Move from local files to cloud
+- **[Dashboard Guide](./DASHBOARD-GUIDE.md)** - Web UI features
 
 ---
 
@@ -234,20 +265,19 @@ ginko knowledge sync docs/adr/ --type ADR
 ginko login --force
 ```
 
-### "No active project"
+### "ginko start hangs or takes too long"
 
-**Solution:** Set an active project:
+**Expected:** First start may take 5-10 seconds (graph initialization)
+**After that:** Should be < 2 seconds
+
+**If still slow:**
 ```bash
-ginko project list
-ginko project use <project-id>
+# Check for issues
+ginko status --verbose
+
+# Clear session cache
+rm -rf .ginko/sessions/*/cache/
 ```
-
-### "Search returns no results"
-
-**Possible causes:**
-1. Similarity threshold too high (try `--threshold 0.6`)
-2. Content not indexed yet (wait 30 seconds after creation)
-3. No matching content (try broader search terms)
 
 ### "Command not found: ginko"
 
@@ -255,6 +285,29 @@ ginko project use <project-id>
 ```bash
 npm config get prefix  # Shows npm global directory
 export PATH="$(npm config get prefix)/bin:$PATH"
+
+# Add to your shell profile (.bashrc, .zshrc, etc.)
+echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.zshrc
+```
+
+### "No active project" or graph errors
+
+**Solution:** Reinitialize the graph:
+```bash
+ginko graph init --force
+```
+
+### Session logs not appearing in dashboard
+
+**Expected delay:** Up to 30 seconds for event sync
+
+**If still missing:**
+```bash
+# Check sync status
+ginko status
+
+# Manually trigger sync
+ginko sync --force
 ```
 
 ---
@@ -268,6 +321,6 @@ export PATH="$(npm config get prefix)/bin:$PATH"
 
 ---
 
-**Congratulations!** You've created your first knowledge graph, added knowledge, and performed semantic search. You're ready to use Ginko in your daily development workflow.
+**Congratulations!** You're ready to ship with AI. Start your next session with `ginko start` and experience collaborative development at full speed.
 
-Next: Check out the [User Guide](./USER-GUIDE.md) for advanced features like team collaboration, relationship management, and context-aware queries.
+Next: Check out the [User Guide](./USER-GUIDE.md) for advanced features like epic planning, semantic search, and team collaboration workflows.
