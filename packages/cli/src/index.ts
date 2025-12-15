@@ -67,6 +67,7 @@ import { dlqCommand } from './commands/dlq.js';
 import { escalationCommand } from './commands/escalation/index.js';
 import { notificationsCommand } from './commands/notifications/index.js';
 import { insightsCommand } from './commands/insights/index.js';
+import { createSyncCommand } from './commands/sync/index.js';
 
 const program = new Command();
 
@@ -527,6 +528,9 @@ program.addCommand(escalationCommand());
 
 // Notification management commands (EPIC-004 Sprint 5 TASK-15)
 program.addCommand(notificationsCommand());
+
+// Sync command: Pull dashboard edits to git (ADR-054, EPIC-005 Sprint 4)
+program.addCommand(createSyncCommand());
 
 // Universal Reflection Pattern command
 program
