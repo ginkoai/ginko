@@ -64,6 +64,45 @@ export class StartReflectionCommand extends ReflectionCommand {
   }
 
   /**
+   * Check for unsynced knowledge nodes (TASK-5)
+   * Returns count of nodes edited in dashboard but not synced to git
+   */
+  private async checkUnsyncedNodes(): Promise<number> {
+    try {
+      // Only check if authenticated and graph initialized
+      if (!await isAuthenticated() || !await isGraphInitialized()) {
+        return 0;
+      }
+
+      const graphId = await getGraphId();
+      if (!graphId) {
+        return 0;
+      }
+
+      const client = new GraphApiClient();
+
+      // Use a timeout to avoid blocking startup
+      const response = await Promise.race([
+        client.request<{ nodes: any[]; count: number }>(
+          'GET',
+          `/api/v1/graph/nodes/unsynced?graphId=${encodeURIComponent(graphId)}`
+        ),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
+      ]);
+
+      if (!response) {
+        // Timeout - return 0 (don't block startup)
+        return 0;
+      }
+
+      return response.count || 0;
+    } catch {
+      // Non-blocking - if API fails, just return 0
+      return 0;
+    }
+  }
+
+  /**
    * Convert graph API sprint response to local SprintChecklist format
    * Enables graph-first loading with seamless fallback to local files
    * Handles both clean API responses and raw Neo4j node format
@@ -1408,6 +1447,12 @@ Example output structure:
     }
     if (synthesis?.warnings) {
       warnings.push(...synthesis.warnings);
+    }
+
+    // TASK-5: Check for unsynced knowledge nodes from dashboard
+    const unsyncedCount = await this.checkUnsyncedNodes();
+    if (unsyncedCount > 0) {
+      warnings.push(`${unsyncedCount} knowledge ${unsyncedCount === 1 ? 'node' : 'nodes'} edited in dashboard. Run \`ginko sync\` to pull changes.`);
     }
 
     return {

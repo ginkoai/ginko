@@ -22,3 +22,4 @@ export { AdjacencyList, type AdjacencyListProps } from './adjacency-list';
 export { NodeEditor } from './NodeEditor';
 export { NodeEditorForm } from './NodeEditorForm';
 export { MarkdownEditor } from './MarkdownEditor';
+export { UnsyncedBanner } from './UnsyncedBanner';
