@@ -1,389 +1,265 @@
-# SPRINT: EPIC-005 Sprint 2 - Graph Visualization
-
-**Epic**: EPIC-005 Market Readiness
+# SPRINT: Market Readiness Sprint 3 - Coaching Insights Engine
 
 ## Sprint Overview
 
-**Sprint Goal**: Build the graph visualization layer that demonstrates ginko's unique value - showing how knowledge compounds and connections emerge across AI collaboration sessions.
+**Sprint Goal**: Build AI-driven coaching insights engine that analyzes collaboration patterns and surfaces actionable feedback for developers.
 
 **Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 100% (8/8 tasks complete)
+**Progress:** 78% (7/9 tasks complete)
 
 **Success Criteria:**
-- [x] Collapsible tree explorer for hierarchical elements
-- [x] Card-based exploration for multi-relation nodes
-- [x] C4-style zoom: summary cards → focused view with adjacencies
-- [x] Graph data fetching and caching layer
+- [ ] CLI command `ginko insights` generates analysis
+- [ ] Insights stored in Supabase
+- [ ] Dashboard displays coaching insights
+- [ ] At least 4 insight categories implemented
 
 ---
 
 ## Sprint Tasks
 
-### TASK-1: Graph Data Architecture (3h)
+### TASK-1: Insights Engine Architecture Design (3h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**ID:** e005_s02_t01
+**ID:** e005_s03_t01
 
-**Goal:** Design the data fetching and caching layer for graph visualization.
+**Goal:** Design the coaching insights engine architecture.
 
-**Context:**
-- Dashboard currently fetches from `/api/v1/graph/` endpoints
-- Need efficient caching for graph traversal
-- Support both tree hierarchy and card-based views
+**Key Decisions:**
+- AI model for analysis (Claude API direct, or local summarization)
+- Data sources (events, task completions, commit logs)
+- Storage schema in Supabase
+- Insight refresh strategy (on-demand vs scheduled)
+
+**Insight Categories (MVP):**
+1. **Session Efficiency** - Time-to-flow, context load times, session duration
+2. **Pattern Adoption** - Are ADRs being followed? Pattern usage frequency
+3. **Collaboration Quality** - Commit frequency, task completion rates, handoff quality
+4. **Anti-Patterns** - Repeated mistakes, abandoned tasks, context loss events
 
 **Deliverables:**
-- Data fetching hooks (`useGraphNodes`, `useNodeAdjacencies`)
-- Caching strategy (React Query or SWR)
-- Type definitions for graph entities
-- API client consolidation
+- Architecture document
+- Supabase schema design
+- AI prompt templates for each category
 
 **Files:**
-- `dashboard/src/lib/graph/` (new directory)
-- `dashboard/src/hooks/useGraph.ts` (new)
+- `docs/adr/ADR-053-coaching-insights-engine.md` (created)
 
 ---
 
-### TASK-2: Tree Explorer Component (4h)
+### TASK-2: Supabase Schema for Insights (2h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**ID:** e005_s02_t02
+**ID:** e005_s03_t02
 
-**Goal:** Build collapsible tree explorer for hierarchical navigation.
+**Goal:** Create Supabase tables for storing coaching insights.
 
-**Hierarchy Structure:**
-```
-Project (root)
-├── Charter
-├── Epics
-│   └── Epic
-│       └── Sprints
-│           └── Sprint
-│               └── Tasks
-│                   └── Task
-├── ADRs
-├── Patterns
-└── Gotchas
-```
-
-**Deliverables:**
-- TreeExplorer component with expand/collapse
-- TreeNode component with type-specific icons
-- Selection state management
-- Keyboard navigation (up/down/left/right/enter)
+**Schema:** See migration file for full schema including:
+- `insight_runs` - Analysis run tracking with overall scores
+- `insights` - Individual insights with evidence/recommendations
+- `insight_trends` - Historical metric tracking for sparklines
+- Row Level Security (RLS) policies
+- Views for dashboard queries
 
 **Files:**
-- `dashboard/src/components/graph/tree-explorer.tsx` (new)
-- `dashboard/src/components/graph/tree-node.tsx` (new)
-
-Follow: Marketing site aesthetic (dark theme, ginko green highlights)
+- `dashboard/supabase/migrations/20251215_coaching_insights.sql` (created)
+- `dashboard/src/lib/insights/types.ts` (created)
 
 ---
 
-### TASK-3: Node Card Component (3h)
+### TASK-3: Data Collection Module (4h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**ID:** e005_s02_t03
+**ID:** e005_s03_t03
 
-**Goal:** Create card component for displaying node summaries.
+**Goal:** Build module to collect and prepare data for insight analysis.
 
-**Card Variants:**
-- ADR card (title, status, summary)
-- Pattern card (name, confidence, description)
-- Gotcha card (title, severity, description)
-- Task card (title, status, assignee)
-- Sprint card (name, progress, dates)
-
-**Deliverables:**
-- NodeCard base component
-- Type-specific card variants
-- Hover/selected states
-- Connection indicators
+**Data Sources:**
+- Events from local JSONL (with ADR/task/pattern extraction)
+- Task completions from sprint markdown
+- Commit logs from git (with stats)
+- Session metadata from archive files
+- Patterns and gotchas from local docs
 
 **Files:**
-- `dashboard/src/components/graph/node-card.tsx` (new)
-- `dashboard/src/components/graph/card-variants/` (new directory)
-
-Follow: Corner brackets aesthetic for cards
+- `packages/cli/src/lib/insights/types.ts` (created)
+- `packages/cli/src/lib/insights/data-collector.ts` (created)
+- `packages/cli/src/lib/insights/index.ts` (created)
 
 ---
 
-### TASK-4: Card Grid View (3h)
+### TASK-4: Session Efficiency Analyzer (4h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**ID:** e005_s02_t04
+**ID:** e005_s03_t04
 
-**Goal:** Build card grid for exploring non-hierarchical nodes.
+**Goal:** Implement analysis for session efficiency insights.
 
-**Features:**
-- Filterable by node type (ADR, Pattern, Gotcha, etc.)
-- Searchable by name/content
-- Sortable by date, name, relevance
-- Responsive grid layout
-
-**Deliverables:**
-- CardGrid component
-- Filter bar component
-- Search input with debounce
-- Sort controls
+**Implemented Metrics:**
+- Time-to-flow analysis (excellent/good/warning thresholds)
+- Context load time tracking
+- Session duration analysis (optimal range detection)
+- Cold start ratio calculation
 
 **Files:**
-- `dashboard/src/components/graph/card-grid.tsx` (new)
-- `dashboard/src/components/graph/filter-bar.tsx` (new)
+- `packages/cli/src/lib/insights/analyzers/efficiency.ts` (created)
 
 ---
 
-### TASK-5: Node Detail Panel (4h)
+### TASK-5: Pattern Adoption Analyzer (4h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**ID:** e005_s02_t05
+**ID:** e005_s03_t05
 
-**Goal:** Build the focused view panel for selected nodes.
+**Goal:** Implement analysis for pattern adoption insights.
 
-**Panel Features:**
-- Full node content display
-- 1-hop adjacencies (related nodes)
-- Breadcrumb navigation
-- Action buttons (edit, sync status)
-
-**C4-Style Zoom Pattern:**
-1. User clicks card in grid → Panel slides in
-2. Panel shows full content + immediate connections
-3. Clicking connection zooms to that node
-
-**Deliverables:**
-- NodeDetailPanel component
-- AdjacencyList component
-- Breadcrumb navigation
-- Panel animations
+**Implemented Metrics:**
+- ADR adoption analysis (reference rate in events/commits)
+- Pattern usage tracking (library size, confidence levels)
+- Gotcha avoidance rate (encounters vs resolutions)
+- New pattern discovery detection
 
 **Files:**
-- `dashboard/src/components/graph/node-detail-panel.tsx` (new)
-- `dashboard/src/components/graph/adjacency-list.tsx` (new)
+- `packages/cli/src/lib/insights/analyzers/patterns.ts` (created)
 
 ---
 
-### TASK-6: Graph Page Layout (3h)
+### TASK-6: Collaboration Quality Analyzer (4h)
+**Status:** [x] Complete
+**Priority:** HIGH
+**ID:** e005_s03_t06
+
+**Goal:** Implement analysis for collaboration quality insights.
+
+**Implemented Metrics:**
+- Task completion rate (with completion/abandonment tracking)
+- Commit frequency per session
+- Commit size analysis (optimal range detection)
+- Handoff quality (rate of sessions with handoffs)
+- Sprint velocity via events per day
+
+**Files:**
+- `packages/cli/src/lib/insights/analyzers/quality.ts` (created)
+
+---
+
+### TASK-7: Anti-Pattern Detector (4h)
 **Status:** [x] Complete
 **Priority:** MEDIUM
-**ID:** e005_s02_t06
+**ID:** e005_s03_t07
 
-**Goal:** Create the main graph exploration page layout.
+**Goal:** Implement detection of anti-patterns and improvement opportunities.
 
-**Layout Structure:**
+**Implemented Detections:**
+- Abandoned/stuck tasks (5+ days in progress, 10+ critical)
+- Context loss (sessions without handoff)
+- Long silent sessions (hours without logging)
+- Repeated gotcha encounters (same gotcha hit multiple times)
+- Scope creep (ad-hoc tasks ratio)
+
+**Files:**
+- `packages/cli/src/lib/insights/analyzers/anti-patterns.ts` (created)
+
+---
+
+### TASK-8: CLI `ginko insights` Command (4h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+
+**Goal:** Implement CLI command to run insights analysis.
+
+**Usage:**
+```bash
+ginko insights              # Run full analysis, display summary
+ginko insights --detailed   # Show all insights with evidence
+ginko insights --category efficiency  # Filter by category
+ginko insights --json       # Output as JSON
+ginko insights --sync       # Sync results to Supabase
+```
+
+**Output Format:**
+```
+Coaching Insights | chris@watchhill.ai | ginko
+
+Session Efficiency
+  ★ Time-to-flow: 32s average (excellent)
+  ◐ Context loads increased 15% - consider archiving
+
+Pattern Adoption
+  ★ ADR-002 referenced 15 times
+  ○ 2 new patterns detected - consider documenting
+
+Collaboration Quality
+  ★ Task completion: 85% (up from 75%)
+  ◐ Handoff completeness: 70% - add more context
+
+Anti-Patterns
+  ⚠️ 2 abandoned tasks detected
+  💡 3 sessions without handoff
+
+Overall Score: 78/100 (Good)
+Run `ginko insights --detailed` for full analysis
+```
+
+**Files:**
+- `packages/cli/src/commands/insights/index.ts` (new)
+- `packages/cli/src/commands/insights/insights-command.ts` (new)
+
+---
+
+### TASK-9: Dashboard Insights Display (6h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+
+**Goal:** Display coaching insights in the dashboard.
+
+**Features:**
+- Insights overview card on main dashboard
+- Dedicated insights page with full details
+- Category tabs/filters
+- Trend visualization (sparklines or small charts)
+- "Last analyzed" timestamp
+- "Run Analysis" button (triggers CLI via API or shows instructions)
+
+**Layout:**
 ```
 ┌─────────────────────────────────────────────────────┐
-│ Header (existing nav)                               │
-├──────────────┬──────────────────────────────────────┤
-│ Tree Explorer│ Card Grid / Detail Panel             │
-│ (collapsible)│                                      │
-│              │                                      │
-│              │                                      │
-└──────────────┴──────────────────────────────────────┘
+│  Coaching Insights                    Last: 2h ago  │
+├─────────────────────────────────────────────────────┤
+│  Overall Score: 78/100                              │
+│  ████████████████████░░░░░ Good                     │
+├─────────────────────────────────────────────────────┤
+│  [Efficiency] [Patterns] [Quality] [Anti-Patterns]  │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  ★ Time-to-flow: 32s average                       │
+│    Your sessions start 50% faster than baseline    │
+│                                                     │
+│  ◐ Context load times +15%                         │
+│    Consider archiving events older than 7 days     │
+│    [View Details]                                   │
+│                                                     │
+└─────────────────────────────────────────────────────┘
 ```
 
-**Features:**
-- Resizable sidebar (tree explorer)
-- Toggle between grid/detail views
-- Maintain selection state across views
-
-**Deliverables:**
-- Graph page layout component
-- Resizable panel implementation
-- View state management
-
 **Files:**
-- `dashboard/src/app/dashboard/graph/page.tsx` (new)
-- `dashboard/src/app/dashboard/graph/layout.tsx` (new)
+- `dashboard/src/app/insights/page.tsx` (new)
+- `dashboard/src/components/insights/InsightsOverview.tsx` (new)
+- `dashboard/src/components/insights/InsightCard.tsx` (new)
+- `dashboard/src/components/insights/InsightCategoryTabs.tsx` (new)
 
----
-
-### TASK-7: Graph Navigation Integration (2h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**ID:** e005_s02_t07
-
-**Goal:** Integrate graph explorer into dashboard navigation.
-
-**Navigation Updates:**
-- Add "Graph" to sidebar navigation
-- Update dashboard home to link to graph
-- Add breadcrumbs for deep navigation
-- URL-based node selection (shareable links)
-
-**Deliverables:**
-- Sidebar nav update
-- Route configuration
-- URL state management
-- Deep linking support
-
-**Files:**
-- `dashboard/src/components/dashboard/dashboard-sidebar.tsx`
-- `dashboard/src/app/dashboard/graph/[nodeId]/page.tsx` (new)
-
----
-
-### TASK-8: Sprint 2 Polish and Documentation (2h)
-**Status:** [x] Complete
-**Priority:** LOW
-**ID:** e005_s02_t08
-
-**Goal:** Polish, test, and document the graph visualization features.
-
-**Deliverables:**
-- Component documentation
-- Visual QA against marketing site
-- Performance testing with sample data
-- Sprint retrospective
-
-**Files:**
-- Sprint file updates
-- Component READMEs if needed
-
----
-
-## Technical Notes
-
-### Graph API Endpoints (existing)
-- `GET /api/v1/graph/nodes` - List nodes by type
-- `GET /api/v1/graph/query` - Semantic search
-- `GET /api/v1/graph/adjacencies/:nodeId` - Get related nodes
-
-### State Management
-- Use React Query for server state (caching, refetching)
-- Zustand or context for UI state (selection, view mode)
-- URL params for shareable state (selected node, filters)
-
-### Performance Considerations
-- Lazy load adjacencies on node selection
-- Virtualize long lists (tree nodes, card grids)
-- Debounce search input
-- Cache traversed paths
+Follow: Marketing site visual style
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2025-12-11: Complete Graph Visualization Infrastructure (TASK-1 through TASK-7)
-
-**Graph Data Architecture (TASK-1):**
-- Created comprehensive type definitions for graph nodes (`NodeLabel`, `GraphNode`, relationships, etc.)
-- Built API client with functions: `listNodes`, `searchNodes`, `getAdjacencies`, `buildTreeHierarchy`
-- Implemented React Query hooks: `useGraphNodes`, `useGraphSearch`, `useNodeAdjacencies`, `useGraphTree`
-- Added React Query provider to app with sensible caching defaults
-- Files: `dashboard/src/lib/graph/types.ts`, `api-client.ts`, `hooks.ts`, `index.ts`
-
-**Tree Explorer Component (TASK-2):**
-- Collapsible tree with expand/collapse animations
-- Type-specific icons and colors for each node type (Epic, Sprint, Task, ADR, Pattern, Gotcha)
-- Keyboard navigation support (arrows, enter, space)
-- Search filter with debouncing
-- Task status badges inline
-- Files: `dashboard/src/components/graph/tree-explorer.tsx`, `tree-node.tsx`
-
-**Node Card Component (TASK-3):**
-- Cards with type-specific styling and icons
-- Status badges for tasks, ADRs, sprints
-- Type-specific footers (sprint progress, pattern confidence, gotcha severity)
-- Optional corner brackets aesthetic
-- Files: `dashboard/src/components/graph/node-card.tsx`
-
-**Card Grid View (TASK-4):**
-- Filterable by node type (Epic, Sprint, Task, ADR, Pattern, Gotcha, Event)
-- Search with debounced input
-- Sort by name, created_at, updated_at (asc/desc)
-- Grid/list view toggle
-- Pagination for large result sets
-- Files: `dashboard/src/components/graph/card-grid.tsx`, `filter-bar.tsx`
-
-**Node Detail Panel (TASK-5):**
-- Slide-in panel with full node content
-- Breadcrumb navigation for graph traversal
-- 1-hop adjacencies list with relationship types
-- Type-specific property display
-- Files: `dashboard/src/components/graph/node-detail-panel.tsx`, `adjacency-list.tsx`
-
-**Graph Page Layout (TASK-6):**
-- Three-column layout: tree sidebar, card grid, detail panel
-- Collapsible tree sidebar
-- URL-based node selection (shareable links)
-- Responsive design
-- Files: `dashboard/src/app/dashboard/graph/page.tsx`
-
-**Navigation Integration (TASK-7):**
-- Added "Graph" to dashboard sidebar navigation
-- Uses CircleStackIcon for graph visualization
-- Active state highlighting with ginko green
-- Files: `dashboard/src/components/dashboard/dashboard-sidebar.tsx`
-
-**Supporting Infrastructure:**
-- Created `dashboard/src/lib/utils.ts` with `cn` utility
-- Build verified successful
-
-### 2025-12-15: Sprint 2 Polish and Documentation (TASK-8)
-
-**Visual QA Results:**
-- ✅ ADR-002 compliant frontmatter on all 7 graph components
-- ✅ Dark theme consistency (bg-card, border-border, text-foreground, text-muted-foreground)
-- ✅ Ginko green highlights for selection states and accents
-- ✅ Corner brackets aesthetic available via CornerBrackets component
-- ✅ Consistent font-mono typography for labels, IDs, and status badges
-- ✅ Type-specific color system (purple/Epic, cyan/Sprint, amber/ADR, emerald/Pattern, red/Gotcha)
-- ✅ Framer-motion animations for smooth panel and tree transitions
-- ✅ Accessibility: ARIA labels, keyboard navigation (arrows, enter, space), role="tree/treeitem"
-
-**Build Verification:**
-- Dashboard builds successfully with no TypeScript errors
-- Graph page bundle: 53.6 kB (222 kB total with shared chunks)
-
-**Files:**
-- `dashboard/src/components/graph/` - 7 components (tree-explorer, tree-node, node-card, card-grid, filter-bar, node-detail-panel, adjacency-list)
-- `dashboard/src/lib/graph/` - types.ts, api-client.ts, hooks.ts, index.ts
-- `dashboard/src/app/dashboard/graph/page.tsx`
-
----
-
-## Sprint 2 Retrospective
-
-### What Went Well
-1. **Component architecture** - Clean separation between tree, card, and detail views
-2. **Type system** - Comprehensive TypeScript types for all graph entities
-3. **React Query integration** - Efficient caching and data fetching patterns
-4. **Accessibility** - Keyboard navigation and ARIA support throughout
-5. **Design consistency** - Successfully matched marketing site aesthetic
-
-### What Could Be Improved
-1. **Virtualization** - Large node lists may benefit from virtualization in future
-2. **Deep linking** - URL state for filters/search not yet implemented
-3. **Real-time updates** - Currently requires manual refresh for new data
-
-### Key Learnings
-- C4-style zoom pattern (summary → detail → adjacencies) provides intuitive navigation
-- Event-based loading (ADR-043) pairs well with graph visualization
-- Corner brackets aesthetic adds distinctive branding without complexity
-
-### Metrics
-- **Development time**: ~4 sessions across Sprint 2
-- **Components created**: 7 new graph components + 4 lib modules
-- **Bundle size**: 53.6 kB for graph page (acceptable)
-- **Build status**: ✅ Passing
-
----
-
-## Blockers
-
-None.
-
----
+[To be filled as work progresses]
 
 ## Next Steps
 
-After Sprint 2:
-- Sprint 3: Coaching Insights Engine
-- Sprint 4: Knowledge Editing + Beta Polish
+[To be updated during sprint]
 
----
+## Blockers
 
-**Sprint Status: COMPLETE**
-**Sprint Start: 2025-12-11**
-**Sprint End: 2025-12-15**
+[To be updated if blockers arise]
