@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-15T18-45-18-504Z
-started: 2025-12-15T18:45:18.504Z
+session_id: session-2025-12-15T19-38-47-104Z
+started: 2025-12-15T19:38:47.104Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-15T18-45-18-504Z
+# Session Log: session-2025-12-15T19-38-47-104Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -35,19 +35,3 @@ branch: main
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
-
-### 13:53 - [achievement]
-# [ACHIEVEMENT] 13:53
-
-TASK-9 Complete: Dashboard Insights Display. Created full insights page at /dashboard/insights with InsightCard, InsightCategoryTabs, and InsightsOverview components. Features include overall score circle visualization, category score cards with click-to-filter, severity-filtered insights list, expandable insight details with evidence and recommendations, and demo mode toggle. Added Insights navigation item to sidebar. Build verified successful. Sprint 3 now 100% complete (9/9 tasks).
-
-**Files:**
-- dashboard/src/app/dashboard/insights/page.tsx
-- dashboard/src/components/insights/InsightCard.tsx
-- dashboard/src/components/insights/InsightsOverview.tsx
-
-**Impact:** high
-**Timestamp:** 2025-12-15T18:53:16.798Z
-
-Files: dashboard/src/app/dashboard/insights/page.tsx, dashboard/src/components/insights/InsightCard.tsx, dashboard/src/components/insights/InsightsOverview.tsx
-Impact: high

@@ -625,10 +625,24 @@
       "relevance": "critical",
       "created": "2025-12-15T18:07:07.438Z",
       "sessionId": "session-chris-at-watchhill-ai-1765822027417"
+    },
+    {
+      "filename": "decision-beginning-sprint-4-knowledge-editing-beta-polish.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "cli",
+        "git",
+        "testing"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-15T19:25:58.059Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765826758040"
     }
   ],
-  "lastUpdated": "2025-12-15T18:07:07.439Z",
-  "totalModules": 44,
+  "lastUpdated": "2025-12-15T19:25:58.060Z",
+  "totalModules": 45,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
