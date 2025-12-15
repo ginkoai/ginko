@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { Badge } from '@/components/ui/badge';
-import { listNodes, getDefaultGraphId } from '@/lib/graph/api-client';
+import { listNodes } from '@/lib/graph/api-client';
 import { useSessionsData } from '@/hooks/use-sessions-data';
 import type { GraphNode, TaskNode, EventNode } from '@/lib/graph/types';
 import { formatDistanceToNow } from 'date-fns';
@@ -28,6 +28,9 @@ import {
   FireIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
+
+// Default graph ID fallback
+const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
 
 interface RecentCompletionsProps {
   userId?: string;
@@ -70,10 +73,7 @@ export function RecentCompletions({ userId, graphId }: RecentCompletionsProps) {
         setLoading(true);
         setError(null);
 
-        const effectiveGraphId = graphId || getDefaultGraphId();
-        if (!effectiveGraphId) {
-          throw new Error('No graph ID available');
-        }
+        const effectiveGraphId = graphId || DEFAULT_GRAPH_ID;
 
         // Fetch completed tasks from last 7 days
         const sevenDaysAgo = new Date();

@@ -11,7 +11,9 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { SprintProgressCard, MyTasksList, LastSessionSummary, RecentCompletions, ActionItems } from '@/components/focus'
-import { getDefaultGraphId } from '@/lib/graph/api-client'
+
+// Default graph ID for beta - all users share this graph
+const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
 
 export default async function FocusPage() {
   const supabase = await createServerClient()
@@ -22,7 +24,7 @@ export default async function FocusPage() {
     return null
   }
 
-  const graphId = getDefaultGraphId() ?? undefined
+  const graphId = DEFAULT_GRAPH_ID
   const userId = user.email || user.id
 
   return (
@@ -43,7 +45,7 @@ export default async function FocusPage() {
       {/* Top Row: Sprint Progress + My Tasks */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SprintProgressCard graphId={graphId} />
-        <MyTasksList userId={userId} />
+        <MyTasksList userId={userId} graphId={graphId} />
       </div>
 
       {/* Last Session Summary */}

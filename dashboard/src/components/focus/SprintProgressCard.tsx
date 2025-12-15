@@ -54,6 +54,65 @@ interface ActiveSprintResponse {
 // Default graph ID fallback
 const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
 
+/**
+ * Safely parse a date value that may come from Neo4j or as an ISO string.
+ * Neo4j datetime objects have a different structure than plain strings.
+ */
+function safeParseDate(dateValue: any): Date {
+  if (!dateValue) {
+    return new Date(); // Fallback to now if no date
+  }
+
+  // Handle Neo4j DateTime objects (have year, month, day properties)
+  if (typeof dateValue === 'object' && dateValue !== null) {
+    // Neo4j DateTime format
+    if (dateValue.year !== undefined && dateValue.month !== undefined && dateValue.day !== undefined) {
+      return new Date(
+        Number(dateValue.year),
+        Number(dateValue.month) - 1, // JS months are 0-indexed
+        Number(dateValue.day),
+        Number(dateValue.hour || 0),
+        Number(dateValue.minute || 0),
+        Number(dateValue.second || 0)
+      );
+    }
+    // Already a Date object
+    if (dateValue instanceof Date) {
+      return dateValue;
+    }
+    // Object with toString (Neo4j sometimes returns these)
+    if (typeof dateValue.toString === 'function') {
+      const str = dateValue.toString();
+      const parsed = new Date(str);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+  }
+
+  // Handle string dates
+  if (typeof dateValue === 'string') {
+    // Try parsing as ISO string first
+    try {
+      const parsed = parseISO(dateValue);
+      if (!isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    } catch {
+      // Fall through to Date constructor
+    }
+    // Try standard Date parsing
+    const parsed = new Date(dateValue);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  // Fallback to current date if all parsing fails
+  console.warn('[SprintProgressCard] Could not parse date:', dateValue);
+  return new Date();
+}
+
 export function SprintProgressCard({ graphId }: SprintProgressCardProps) {
   const [data, setData] = useState<ActiveSprintResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -248,7 +307,7 @@ export function SprintProgressCard({ graphId }: SprintProgressCardProps) {
             <span>Sprint ends</span>
           </div>
           <div className="text-sm font-medium text-foreground">
-            {format(parseISO(sprint.endDate), 'MMM d, yyyy')}
+            {format(safeParseDate(sprint.endDate), 'MMM d, yyyy')}
           </div>
         </div>
       </CardContent>
@@ -266,8 +325,8 @@ interface ScheduleStatus {
 }
 
 function calculateScheduleStatus(sprint: SprintData, actualProgress: number): ScheduleStatus {
-  const startDate = parseISO(sprint.startDate);
-  const endDate = parseISO(sprint.endDate);
+  const startDate = safeParseDate(sprint.startDate);
+  const endDate = safeParseDate(sprint.endDate);
   const now = new Date();
 
   // Calculate total duration and elapsed days

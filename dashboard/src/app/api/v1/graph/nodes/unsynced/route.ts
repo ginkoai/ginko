@@ -102,11 +102,11 @@ export async function GET(request: NextRequest) {
     const session = getSession();
     try {
       // Query nodes where synced = false or synced is null (not yet tracked)
+      // Nodes are linked via (g:Graph)-[:CONTAINS]->(n) relationship
       const result = await session.executeRead(async (tx) => {
         return tx.run(
-          `MATCH (n)
-           WHERE (n.graph_id = $graphId OR n.graphId = $graphId)
-             AND (n.synced = false OR n.synced IS NULL)
+          `MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(n)
+           WHERE (n.synced = false OR n.synced IS NULL)
              AND n.id IS NOT NULL
            WITH n, labels(n) as nodeLabels
            WHERE ANY(label IN nodeLabels WHERE label IN ['ADR', 'PRD', 'Pattern', 'Gotcha', 'Charter'])

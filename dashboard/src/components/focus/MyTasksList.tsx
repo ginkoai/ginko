@@ -28,6 +28,7 @@ import { cn } from '@/lib/utils';
 
 interface MyTasksListProps {
   userId: string;
+  graphId?: string;
   className?: string;
 }
 
@@ -84,7 +85,10 @@ function groupTasksByStatus(tasks: TaskNode[]): TaskGroup[] {
 // Component
 // =============================================================================
 
-export function MyTasksList({ userId, className }: MyTasksListProps) {
+// Default graph ID fallback
+const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
+
+export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
   const [tasks, setTasks] = useState<TaskNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,10 +99,14 @@ export function MyTasksList({ userId, className }: MyTasksListProps) {
         setLoading(true);
         setError(null);
 
+        // Get effective graphId
+        const effectiveGraphId = graphId || DEFAULT_GRAPH_ID;
+
         // Fetch all Task nodes
         const response = await listNodes({
           labels: ['Task'],
           limit: 100, // Adjust as needed
+          graphId: effectiveGraphId,
         });
 
         // Filter tasks by assignee matching userId

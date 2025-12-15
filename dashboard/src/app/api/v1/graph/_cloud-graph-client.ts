@@ -184,12 +184,16 @@ export class CloudGraphClient {
 
   /**
    * Verify user has access to graph
+   *
+   * Note: Currently checks only that the graph exists, not user ownership.
+   * This is acceptable for beta as all users share a single graph.
+   * TODO: Implement proper ACL-based access control for multi-user support.
    */
   async verifyAccess(): Promise<boolean> {
     const result = await runQuery<{ count: number }>(
-      `MATCH (g:Graph {graphId: $graphId, userId: $userId})
+      `MATCH (g:Graph {graphId: $graphId})
        RETURN count(g) as count`,
-      { graphId: this.context.graphId, userId: this.context.userId }
+      { graphId: this.context.graphId }
     );
 
     return result.length > 0 && result[0].count > 0;

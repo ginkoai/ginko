@@ -650,10 +650,34 @@
       "relevance": "critical",
       "created": "2025-12-15T20:46:32.840Z",
       "sessionId": "session-chris-at-watchhill-ai-1765831592818"
+    },
+    {
+      "filename": "gotcha-fixed-focus-section-graph-errors-task7b.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-15T21:04:39.204Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765832679186"
+    },
+    {
+      "filename": "gotcha-fixed-two-additional-focus-section-errors-1-unsync.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-15T21:14:57.486Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765833297465"
     }
   ],
-  "lastUpdated": "2025-12-15T20:46:32.841Z",
-  "totalModules": 46,
+  "lastUpdated": "2025-12-15T21:14:57.489Z",
+  "totalModules": 48,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

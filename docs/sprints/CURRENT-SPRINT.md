@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 70% (7/10 tasks complete)
+**Progress:** 80% (8/10 tasks complete)
 
 **Success Criteria:**
 - [x] Knowledge nodes can be created and edited in dashboard
@@ -397,17 +397,33 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 
 **Decision:** CollaborationMetrics (old scorecard system) not moved to Insights - superseded by new coaching report system on Insights page
 
+### 2025-12-15: TASK-7b Complete - Focus Screen Fixes
+
+**Fixed Focus Section Graph Authorization and Data Loading:**
+- CloudGraphClient.verifyAccess() was checking userId which didn't match derived token ID - fixed by checking only graphId exists (acceptable for beta with single shared graph)
+- MyTasksList missing graphId prop - added prop with DEFAULT_GRAPH_ID fallback
+- RecentCompletions using getDefaultGraphId() which returns null - added DEFAULT_GRAPH_ID constant
+- Focus page now uses server-side DEFAULT_GRAPH_ID constant instead of getDefaultGraphId()
+- All Focus components now have consistent fallback pattern
+
+**Files:**
+- `dashboard/src/app/api/v1/graph/_cloud-graph-client.ts:192` - verifyAccess() now checks graphId only
+- `dashboard/src/components/focus/MyTasksList.tsx:88` - Added graphId prop + DEFAULT_GRAPH_ID fallback
+- `dashboard/src/components/focus/RecentCompletions.tsx:32` - Added DEFAULT_GRAPH_ID constant
+- `dashboard/src/app/dashboard/page.tsx:15` - Server-side DEFAULT_GRAPH_ID
+
+**Note:** ACL-based access control deferred to post-beta (TODO in code). Current approach acceptable for single-tenant beta.
+
 ## Next Steps
 
-1. **TASK-7b: Focus Screen Fixes** (blocking)
-2. TASK-8: Beta Documentation
-3. TASK-9: Beta Testing Checklist
-4. TASK-10: Beta Launch Preparation
+1. TASK-8: Beta Documentation
+2. TASK-9: Beta Testing Checklist
+3. TASK-10: Beta Launch Preparation
 
 ---
 
 ### TASK-7b: Focus Screen Fixes (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH (blocking)
 **ID:** e005_s04_t07b
 
