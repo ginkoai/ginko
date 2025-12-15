@@ -66,6 +66,7 @@ import { orchestrateCommand } from './commands/orchestrate.js';
 import { dlqCommand } from './commands/dlq.js';
 import { escalationCommand } from './commands/escalation/index.js';
 import { notificationsCommand } from './commands/notifications/index.js';
+import { insightsCommand } from './commands/insights/index.js';
 
 const program = new Command();
 
@@ -115,6 +116,36 @@ program
   .description('Show current session status')
   .option('--all', 'Show all session cursors')
   .action(statusCommand);
+
+program
+  .command('insights')
+  .description('Run coaching insights analysis on your development workflow (EPIC-005 Sprint 3)')
+  .option('--detailed', 'Show all insights with evidence and recommendations')
+  .option('--category <category>', 'Filter by category: efficiency, patterns, quality, anti-patterns')
+  .option('--json', 'Output results as JSON')
+  .option('--sync', 'Sync results to Supabase')
+  .option('--days <days>', 'Analysis period in days (default: 30)', '30')
+  .addHelpText('after', `
+${chalk.gray('Categories:')}
+  ${chalk.dim('efficiency     - Session metrics: time-to-flow, context loading, duration')}
+  ${chalk.dim('patterns       - ADR adoption, pattern usage, gotcha avoidance')}
+  ${chalk.dim('quality        - Task completion, commit frequency, handoff quality')}
+  ${chalk.dim('anti-patterns  - Abandoned tasks, context loss, scope creep')}
+
+${chalk.gray('Examples:')}
+  ${chalk.green('ginko insights')} ${chalk.dim('# Run full analysis, display summary')}
+  ${chalk.green('ginko insights --detailed')} ${chalk.dim('# Show all insights with evidence')}
+  ${chalk.green('ginko insights --category efficiency')} ${chalk.dim('# Focus on session efficiency')}
+  ${chalk.green('ginko insights --json')} ${chalk.dim('# Output as JSON for processing')}
+  ${chalk.green('ginko insights --days 7')} ${chalk.dim('# Analyze last 7 days only')}
+`)
+  .action((options) => insightsCommand({
+    detailed: options.detailed,
+    category: options.category,
+    json: options.json,
+    sync: options.sync,
+    days: options.days ? parseInt(options.days, 10) : undefined,
+  }));
 
 program
   .command('handoff [message]')

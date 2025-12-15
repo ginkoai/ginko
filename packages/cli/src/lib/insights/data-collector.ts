@@ -21,7 +21,8 @@ import {
   SessionData,
   PatternData,
   GotchaData,
-} from './types';
+} from './types.js';
+import { findGinkoRoot } from '../../utils/ginko-root.js';
 
 // ============================================================================
 // Configuration
@@ -45,12 +46,17 @@ export interface CollectorOptions {
 
 /**
  * Collects and aggregates data from all sources for insight analysis.
+ * Uses findGinkoRoot to locate .ginko at monorepo root (like git finds .git).
  */
 export async function collectInsightData(
   options: CollectorOptions = {}
 ): Promise<InsightData> {
   const days = options.days ?? DEFAULT_DAYS;
-  const projectRoot = options.projectRoot ?? process.cwd();
+
+  // Find ginko root (traverses up to monorepo root like git)
+  const ginkoRoot = await findGinkoRoot(options.projectRoot);
+  const projectRoot = ginkoRoot ?? options.projectRoot ?? process.cwd();
+
   const now = new Date();
   const start = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 

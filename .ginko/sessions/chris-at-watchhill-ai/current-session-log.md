@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-11T21-55-53-330Z
-started: 2025-12-11T21:55:53.330Z
+session_id: session-2025-12-15T17-51-29-014Z
+started: 2025-12-15T17:51:29.014Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-11T21-55-53-330Z
+# Session Log: session-2025-12-15T17-51-29-014Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,20 +36,49 @@ branch: main
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 17:45 - [achievement]
-# [ACHIEVEMENT] 17:45
+### 13:02 - [achievement]
+# [ACHIEVEMENT] 13:02
 
-Completed EPIC-005 Sprint 2 TASK-8 polish and documentation. Fixed 5 bugs: (1) corner brackets showing only 2 of 4 corners - changed to corners='all' with smaller size, (2) excessive bracket padding - reduced from p-3/p-4 to p-1/p-2, (3) 404 on adjacencies API - created missing /api/v1/graph/adjacencies/[nodeId] route, (4) tree-view selection not scrolling to card - added ref-based scrollIntoView, (5) node descriptions missing - added content/context/purpose fallbacks. Created EPIC-006 backlog documenting future enhancements: relationship visualization, edit capability, UX refinement for non-technical users.
+Completed TASK-8: CLI ginko insights command. Implemented full coaching insights analysis with summary/detailed/JSON output modes, category filtering, configurable date range. Four analyzers (efficiency, patterns, quality, anti-patterns) now accessible via CLI. Sprint 3 now at 89% complete (8/9 tasks).
 
 **Files:**
-- dashboard/src/components/graph/node-card.tsx
-- dashboard/src/components/ui/corner-brackets.tsx
-- dashboard/src/app/api/v1/graph/adjacencies/[nodeId]/route.ts
-- dashboard/src/components/graph/card-grid.tsx
-- docs/epics/EPIC-006-graph-explorer-v2.md
+- packages/cli/src/commands/insights/index.ts
+- packages/cli/src/commands/insights/insights-command.ts
 
 **Impact:** high
-**Timestamp:** 2025-12-11T22:45:01.747Z
+**Timestamp:** 2025-12-15T18:02:14.575Z
 
-Files: dashboard/src/components/graph/node-card.tsx, dashboard/src/components/ui/corner-brackets.tsx, dashboard/src/app/api/v1/graph/adjacencies/[nodeId]/route.ts, dashboard/src/components/graph/card-grid.tsx, docs/epics/EPIC-006-graph-explorer-v2.md
+Files: packages/cli/src/commands/insights/index.ts, packages/cli/src/commands/insights/insights-command.ts
 Impact: high
+
+### 13:07 - [fix]
+# [FIX] 13:07
+
+Fixed insights data collector to use findGinkoRoot instead of process.cwd(). Now properly traverses up to monorepo root to find .ginko folder. Removed spurious empty .ginko folder from packages/cli that was masking the issue.
+
+**Files:**
+- packages/cli/src/lib/insights/data-collector.ts
+
+**Impact:** high
+**Timestamp:** 2025-12-15T18:07:05.110Z
+
+Files: packages/cli/src/lib/insights/data-collector.ts
+Impact: high
+
+### 13:15 - [decision]
+# [DECISION] 13:15
+
+Added TASK-10 to Sprint 3: Review Handoff Pattern in Architecture. Will examine whether insights handoff metric (70% target) is appropriate given the evolution from required->optional (ADR-033 defensive logging)->housekeeping shorthand.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- docs/sprints/CURRENT-SPRINT.md
+
+**Impact:** medium
+**Timestamp:** 2025-12-15T18:15:45.864Z
+
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/CURRENT-SPRINT.md
+Impact: medium

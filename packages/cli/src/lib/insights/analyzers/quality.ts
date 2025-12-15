@@ -14,7 +14,7 @@ import {
   InsightData,
   RawInsight,
   InsightEvidence,
-} from '../types';
+} from '../types.js';
 
 // ============================================================================
 // Configuration

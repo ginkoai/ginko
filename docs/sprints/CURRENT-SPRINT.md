@@ -6,13 +6,13 @@
 
 **Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 78% (7/9 tasks complete)
+**Progress:** 89% (8/9 tasks complete)
 
 **Success Criteria:**
-- [ ] CLI command `ginko insights` generates analysis
+- [x] CLI command `ginko insights` generates analysis
 - [ ] Insights stored in Supabase
 - [ ] Dashboard displays coaching insights
-- [ ] At least 4 insight categories implemented
+- [x] At least 4 insight categories implemented
 
 ---
 
@@ -163,8 +163,9 @@
 ---
 
 ### TASK-8: CLI `ginko insights` Command (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
+**ID:** e005_s03_t08
 
 **Goal:** Implement CLI command to run insights analysis.
 
@@ -202,8 +203,17 @@ Run `ginko insights --detailed` for full analysis
 ```
 
 **Files:**
-- `packages/cli/src/commands/insights/index.ts` (new)
-- `packages/cli/src/commands/insights/insights-command.ts` (new)
+- `packages/cli/src/commands/insights/index.ts` (created)
+- `packages/cli/src/commands/insights/insights-command.ts` (created)
+
+**Implementation:**
+- Summary view with category scores and top insights
+- Detailed view with evidence, metrics, and recommendations
+- JSON output for processing/integration
+- Category filtering (`--category efficiency|patterns|quality|anti-patterns`)
+- Configurable analysis period (`--days`)
+- Visual score bars and severity icons
+- Stub for Supabase sync (`--sync`)
 
 ---
 
@@ -254,11 +264,54 @@ Follow: Marketing site visual style
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2025-12-15: TASK-8 Complete - CLI `ginko insights` Command
+- Implemented `ginko insights` command with full analysis pipeline
+- Four output modes: summary (default), detailed, JSON, category-filtered
+- Analyzers: efficiency, patterns, quality, anti-patterns (all 4 working)
+- Visual score display with bars and severity icons
+- Category breakdown with weighted scoring
+- Files: `packages/cli/src/commands/insights/`
+
+---
+
+### TASK-10: Review Handoff Pattern in Architecture (2h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+**ID:** e005_s03_t10
+
+**Goal:** Examine the current handoff pattern to determine if the insights "missing handoffs" metric is accurate or needs adjustment.
+
+**Context:**
+Handoff went through three phases:
+1. **Originally required** - Full session synthesis on handoff
+2. **Made optional** - After adopting continuous defensive logging (ADR-033), because synthesis under maximum context pressure is non-optimal
+3. **Brought back** - As shorthand for housekeeping (archiving, cursor updates)
+
+**Questions to Answer:**
+- What does `ginko handoff` currently do? (cursor update, archiving, synthesis?)
+- Is the 70% handoff target in insights appropriate given defensive logging?
+- Should the metric measure "sessions with handoff" or "sessions with archived context"?
+- Does the cold start detection align with actual context continuity?
+
+**Files to Review:**
+- `packages/cli/src/commands/handoff.ts`
+- `packages/cli/src/lib/insights/analyzers/quality.ts` (handoff metric)
+- `packages/cli/src/lib/insights/analyzers/anti-patterns.ts` (context loss detection)
+- `docs/adr/ADR-033-context-pressure-mitigation-strategy.md`
+
+**Deliverables:**
+- [ ] Document current handoff behavior
+- [ ] Recommend whether to adjust insights thresholds
+- [ ] Update analyzers if handoff metric needs refinement
+
+---
 
 ## Next Steps
 
-[To be updated during sprint]
+1. TASK-9: Dashboard Insights Display - Build React components to visualize insights
+2. TASK-10: Review handoff pattern in architecture (next session)
+3. Add Supabase sync endpoint for `ginko insights --sync`
+4. Sprint retrospective and EPIC-005 completion
 
 ## Blockers
 

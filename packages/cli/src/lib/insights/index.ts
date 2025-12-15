@@ -10,7 +10,7 @@
  */
 
 // Types
-export * from './types';
+export * from './types.js';
 
 // Data Collection
 export {
@@ -24,7 +24,7 @@ export {
   detectUserId,
   detectProjectId,
   type CollectorOptions,
-} from './data-collector';
+} from './data-collector.js';
 
 // Analyzers
 export {
@@ -34,4 +34,4 @@ export {
   AntiPatternDetector,
   getAllAnalyzers,
   getAnalyzer,
-} from './analyzers';
+} from './analyzers/index.js';

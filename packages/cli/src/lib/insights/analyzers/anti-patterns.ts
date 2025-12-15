@@ -16,7 +16,7 @@ import {
   InsightEvidence,
   TaskInfo,
   SessionData,
-} from '../types';
+} from '../types.js';
 
 // ============================================================================
 // Configuration

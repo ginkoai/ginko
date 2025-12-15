@@ -15,7 +15,7 @@ import {
   RawInsight,
   InsightEvidence,
   SessionData,
-} from '../types';
+} from '../types.js';
 
 // ============================================================================
 // Configuration

@@ -9,16 +9,16 @@
  * @dependencies: []
  */
 
-export { EfficiencyAnalyzer } from './efficiency';
-export { PatternAnalyzer } from './patterns';
-export { QualityAnalyzer } from './quality';
-export { AntiPatternDetector } from './anti-patterns';
+export { EfficiencyAnalyzer } from './efficiency.js';
+export { PatternAnalyzer } from './patterns.js';
+export { QualityAnalyzer } from './quality.js';
+export { AntiPatternDetector } from './anti-patterns.js';
 
-import { EfficiencyAnalyzer } from './efficiency';
-import { PatternAnalyzer } from './patterns';
-import { QualityAnalyzer } from './quality';
-import { AntiPatternDetector } from './anti-patterns';
-import type { InsightAnalyzer } from '../types';
+import { EfficiencyAnalyzer } from './efficiency.js';
+import { PatternAnalyzer } from './patterns.js';
+import { QualityAnalyzer } from './quality.js';
+import { AntiPatternDetector } from './anti-patterns.js';
+import type { InsightAnalyzer } from '../types.js';
 
 /**
  * Get all analyzer instances.

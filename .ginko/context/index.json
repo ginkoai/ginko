@@ -613,10 +613,22 @@
       "relevance": "critical",
       "created": "2025-12-11T21:51:25.643Z",
       "sessionId": "session-chris-at-watchhill-ai-1765489885492"
+    },
+    {
+      "filename": "gotcha-fixed-insights-data-collector-to-use-findginkoroot.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-15T18:07:07.438Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765822027417"
     }
   ],
-  "lastUpdated": "2025-12-11T21:51:25.653Z",
-  "totalModules": 43,
+  "lastUpdated": "2025-12-15T18:07:07.439Z",
+  "totalModules": 44,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
