@@ -674,10 +674,22 @@
       "relevance": "critical",
       "created": "2025-12-15T21:14:57.486Z",
       "sessionId": "session-chris-at-watchhill-ai-1765833297465"
+    },
+    {
+      "filename": "gotcha-fixed-my-tasks-showing-completed-tasks.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-15T22:40:46.798Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765838446777"
     }
   ],
-  "lastUpdated": "2025-12-15T21:14:57.489Z",
-  "totalModules": 48,
+  "lastUpdated": "2025-12-15T22:40:46.800Z",
+  "totalModules": 49,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

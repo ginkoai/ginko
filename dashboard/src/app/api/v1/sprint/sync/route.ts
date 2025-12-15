@@ -464,19 +464,25 @@ async function syncSprintToGraph(
     nodeCount++;
   }
 
-  // Create Task nodes
+  // Merge Task nodes (upsert - creates new or updates existing)
+  // Fix: Use mergeNode instead of createNode to properly update status
+  // when tasks are re-synced after completion
   for (const task of graph.tasks) {
-    await client.createNode('Task', {
+    // Map status to graph-compatible values (not_started -> todo)
+    const graphStatus = task.status === 'not_started' ? 'todo' : task.status;
+
+    const { isNew } = await client.mergeNode('Task', task.id, {
       id: task.id,
       title: task.title,
-      status: task.status,
+      status: graphStatus,
       effort: task.effort,
       priority: task.priority,
       files: task.files,
       relatedADRs: task.relatedADRs,
       owner: task.owner || '',
+      sprintId: graph.sprint.id,
     });
-    nodeCount++;
+    if (isNew) nodeCount++;
   }
 
   // Find first incomplete task (for NEXT_TASK relationship)
