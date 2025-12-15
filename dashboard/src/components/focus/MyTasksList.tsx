@@ -41,12 +41,18 @@ interface TaskGroup {
 // Helper Functions
 // =============================================================================
 
-const priorityConfig = {
-  critical: { variant: 'destructive' as const, color: 'text-red-600' },
-  high: { variant: 'warning' as const, color: 'text-orange-600' },
-  medium: { variant: 'default' as const, color: 'text-yellow-600' },
-  low: { variant: 'secondary' as const, color: 'text-gray-600' },
+const priorityConfig: Record<string, { variant: 'destructive' | 'warning' | 'default' | 'secondary', color: string }> = {
+  critical: { variant: 'destructive', color: 'text-red-600' },
+  high: { variant: 'warning', color: 'text-orange-600' },
+  medium: { variant: 'default', color: 'text-yellow-600' },
+  low: { variant: 'secondary', color: 'text-gray-600' },
 };
+
+function getPriorityConfig(priority: string | undefined) {
+  if (!priority) return null;
+  const normalizedPriority = priority.toLowerCase();
+  return priorityConfig[normalizedPriority] || null;
+}
 
 const statusIcons = {
   in_progress: CheckSquare,
@@ -242,9 +248,9 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
                             <span className="font-mono text-xs text-muted-foreground">
                               {task.task_id}
                             </span>
-                            {task.priority && (
+                            {task.priority && getPriorityConfig(task.priority) && (
                               <Badge
-                                variant={priorityConfig[task.priority].variant}
+                                variant={getPriorityConfig(task.priority)!.variant}
                                 className="text-xs"
                               >
                                 {task.priority}
