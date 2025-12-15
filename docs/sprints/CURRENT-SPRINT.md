@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 50% (5/10 tasks complete)
+**Progress:** 60% (6/10 tasks complete)
 
 **Success Criteria:**
 - [x] Knowledge nodes can be created and edited in dashboard
@@ -170,7 +170,7 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 ---
 
 ### TASK-6: Dashboard Polish - Sessions Display Fix (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e005_s04_t06
 
@@ -185,9 +185,10 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 - Link to session log viewer
 
 **Files:**
-- `dashboard/src/components/sessions/SessionList.tsx` (update)
-- `dashboard/src/components/sessions/SessionTimeline.tsx` (new)
-- `dashboard/src/app/api/v1/sessions/route.ts` (update)
+- `dashboard/src/app/api/v1/sessions/route.ts` (new) - API endpoint for event-based sessions
+- `dashboard/src/hooks/use-sessions-data.ts` (new) - React hook for fetching session data
+- `dashboard/src/components/dashboard/sessions-with-scores.tsx` (updated)
+- `dashboard/src/components/dashboard/session-timeline.tsx` (new)
 
 ---
 
@@ -340,11 +341,33 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 
 **Method:** Used 2 parallel agents for dashboard component and CLI integration
 
+### 2025-12-15: TASK-6 Complete - Sessions Display Fix
+
+**Implemented Event-Based Sessions Display:**
+- Created new sessions API endpoint (`/api/v1/sessions/route.ts`) that queries events from Neo4j
+- Groups events into sessions based on 4-hour gaps between events
+- Calculates session metadata: event count, categories, impact levels, duration
+- Generates meaningful session titles based on dominant activity
+
+**New Components:**
+- `use-sessions-data.ts` - React hook for fetching session data with proper auth integration
+- `session-timeline.tsx` - Visual timeline component showing events with category icons, impact indicators, and file badges
+- Updated `sessions-with-scores.tsx` to use event-based data instead of outdated scorecard approach
+
+**Features:**
+- Collapsible session cards with event timeline and session statistics
+- Impact distribution bar chart (high/medium/low)
+- Activity breakdown by category
+- Time range and duration display
+- Responsive design with proper dark mode support
+
+**Method:** Used 2 parallel agents to explore graphId and auth patterns before implementation
+
 ## Next Steps
 
-1. TASK-6: Dashboard Polish - Sessions Display Fix
-2. TASK-7: Dashboard Polish - Navigation & Layout
-3. TASK-8: Beta Documentation
+1. TASK-7: Dashboard Polish - Navigation & Layout
+2. TASK-8: Beta Documentation
+3. TASK-9: Beta Testing Checklist
 
 ## Blockers
 
