@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-15T19-38-47-104Z
-started: 2025-12-15T19:38:47.104Z
+session_id: session-2025-12-15T20-12-23-210Z
+started: 2025-12-15T20:12:23.212Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-15T19-38-47-104Z
+# Session Log: session-2025-12-15T20-12-23-210Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -35,3 +35,19 @@ branch: main
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 15:46 - [feature]
+# [FEATURE] 15:46
+
+TASK-7 Dashboard Polish: Renamed Dashboard to Focus section with project-centric metrics. Created 5 new components (SprintProgressCard, MyTasksList, LastSessionSummary, RecentCompletions, ActionItems). Focus page shows sprint progress with days ahead/behind calculation, assigned tasks with graph links, last session summary, recent completions feed, and action items. Removed coaching insights from landing page (moved to dedicated Insights section). Used 4 parallel agents to accelerate component creation.
+
+**Files:**
+- dashboard/src/app/dashboard/page.tsx
+- dashboard/src/components/focus/*
+- dashboard/src/components/dashboard/dashboard-sidebar.tsx
+
+**Impact:** high
+**Timestamp:** 2025-12-15T20:46:29.077Z
+
+Files: dashboard/src/app/dashboard/page.tsx, dashboard/src/components/focus/*, dashboard/src/components/dashboard/dashboard-sidebar.tsx
+Impact: high

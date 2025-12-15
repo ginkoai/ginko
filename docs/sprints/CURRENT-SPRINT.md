@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 60% (6/10 tasks complete)
+**Progress:** 70% (7/10 tasks complete)
 
 **Success Criteria:**
 - [x] Knowledge nodes can be created and edited in dashboard
@@ -193,23 +193,32 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 ---
 
 ### TASK-7: Dashboard Polish - Navigation & Layout (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e005_s04_t07
 
 **Goal:** Final polish on dashboard navigation and layout consistency.
 
-**Tasks:**
-- Ensure all pages use consistent layout
-- Add navigation for new pages (Graph, Insights)
-- Mobile responsiveness check
-- Loading states for all async content
-- Error boundaries with friendly messages
+**Accomplished:**
+- Renamed "Dashboard" to "Focus" section with project-centric metrics
+- Created 5 new Focus components using parallel agents:
+  - SprintProgressCard: Active sprint with progress bar and days ahead/behind
+  - MyTasksList: Assigned tasks with graph page links
+  - LastSessionSummary: Motivational continuity from last session
+  - RecentCompletions: Team activity feed with completions
+  - ActionItems: Actionable warnings with quick actions
+- Removed coaching insights from landing page (dedicated Insights page covers this)
+- Updated sidebar navigation to reflect "Focus" naming
 
 **Files:**
-- `dashboard/src/app/layout.tsx` (update)
-- `dashboard/src/components/nav/Navigation.tsx` (update)
-- Various page components
+- `dashboard/src/app/dashboard/page.tsx` (rewritten)
+- `dashboard/src/components/focus/SprintProgressCard.tsx` (new)
+- `dashboard/src/components/focus/MyTasksList.tsx` (new)
+- `dashboard/src/components/focus/LastSessionSummary.tsx` (new)
+- `dashboard/src/components/focus/RecentCompletions.tsx` (new)
+- `dashboard/src/components/focus/ActionItems.tsx` (new)
+- `dashboard/src/components/focus/index.ts` (new)
+- `dashboard/src/components/dashboard/dashboard-sidebar.tsx` (updated)
 
 ---
 
@@ -363,11 +372,36 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 
 **Method:** Used 2 parallel agents to explore graphId and auth patterns before implementation
 
+### 2025-12-15: TASK-7 Complete - Focus Section Redesign
+
+**Renamed Dashboard to Focus with Project-Centric Metrics:**
+- Pivoted from coaching-focused landing page to project-focused "Focus" section
+- User's immediate work context at a glance
+
+**Created 5 New Components (parallel agent acceleration):**
+1. **SprintProgressCard** - Active sprint with progress bar, days ahead/behind calculation
+2. **MyTasksList** - Tasks assigned to user with links to Graph page
+3. **LastSessionSummary** - Brief summary of last session (motivational continuity)
+4. **RecentCompletions** - Team activity feed showing recent achievements
+5. **ActionItems** - Actionable warnings (unsynced nodes, etc.) with quick actions
+
+**Architecture:**
+- Components in `dashboard/src/components/focus/`
+- Clean barrel export via index.ts
+- All components follow ADR-002 frontmatter standard
+- Proper TypeScript typing with graph API integration
+
+**Navigation Update:**
+- Sidebar renamed "Dashboard" → "Focus"
+- Description updated: "Your current work"
+
+**Decision:** CollaborationMetrics (old scorecard system) not moved to Insights - superseded by new coaching report system on Insights page
+
 ## Next Steps
 
-1. TASK-7: Dashboard Polish - Navigation & Layout
-2. TASK-8: Beta Documentation
-3. TASK-9: Beta Testing Checklist
+1. TASK-8: Beta Documentation
+2. TASK-9: Beta Testing Checklist
+3. TASK-10: Beta Launch Preparation
 
 ## Blockers
 

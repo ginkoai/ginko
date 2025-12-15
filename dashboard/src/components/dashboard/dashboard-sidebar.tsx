@@ -30,11 +30,11 @@ import {
 
 const navigation = [
   {
-    name: 'Dashboard',
+    name: 'Focus',
     href: '/dashboard',
     icon: ChartBarIcon,
     iconActive: ChartBarIconSolid,
-    description: 'Collaboration insights'
+    description: 'Your current work'
   },
   {
     name: 'Insights',
