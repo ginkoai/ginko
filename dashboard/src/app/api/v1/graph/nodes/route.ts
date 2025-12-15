@@ -298,14 +298,24 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        // Create the node with all properties
+        // Create the node with all properties + sync tracking
+        const now = new Date().toISOString();
         const properties = {
           ...body.data,
           graph_id: body.graphId,
-          created_at: new Date().toISOString()
+          created_at: now,
+          // Sync tracking fields (ADR-054)
+          synced: false,
+          syncedAt: null,
+          editedAt: now,
+          editedBy: 'dashboard', // TODO: Extract from Bearer token
+          contentHash: body.data.content ?
+            require('crypto').createHash('sha256').update(body.data.content).digest('hex') : '',
+          gitHash: null
         };
 
         const propsList = Object.keys(properties)
+          .filter(key => properties[key] !== null) // Exclude null values
           .map(key => `${key}: $${key}`)
           .join(', ');
 

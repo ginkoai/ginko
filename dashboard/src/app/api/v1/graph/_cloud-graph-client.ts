@@ -332,6 +332,154 @@ export class CloudGraphClient {
   }
 
   /**
+   * Patch a node by ID (partial update with sync tracking)
+   * Sets synced=false, editedAt=now(), editedBy=userId
+   * Computes contentHash if content is provided
+   *
+   * @param id - Node ID to update
+   * @param data - Partial node data to update
+   * @param editedBy - User email who made the edit
+   * @returns Updated node with sync status
+   */
+  async patchNode(
+    id: string,
+    data: Partial<NodeData>,
+    editedBy: string
+  ): Promise<{ node: NodeData; syncStatus: any }> {
+    const updateProps: Record<string, any> = { ...data };
+    const now = new Date().toISOString();
+
+    // Compute content hash if content is being updated
+    let contentHash: string | undefined;
+    if (data.content) {
+      const crypto = await import('crypto');
+      contentHash = crypto.createHash('sha256').update(data.content as string).digest('hex');
+    }
+
+    // Build SET clause dynamically
+    const setStatements: string[] = [];
+    const setParams: Record<string, any> = {
+      graphId: this.context.graphId,
+      userId: this.context.userId,
+      id,
+      editedBy,
+      editedAt: now,
+      synced: false,
+    };
+
+    Object.entries(updateProps).forEach(([key, value]) => {
+      setStatements.push(`n.${key} = $${key}`);
+      setParams[key] = value;
+    });
+
+    // Add sync tracking fields
+    setStatements.push('n.synced = $synced');
+    setStatements.push('n.editedAt = datetime($editedAt)');
+    setStatements.push('n.editedBy = $editedBy');
+    setStatements.push('n.updatedAt = datetime()');
+
+    if (contentHash) {
+      setStatements.push('n.contentHash = $contentHash');
+      setParams.contentHash = contentHash;
+    }
+
+    const setClauses = setStatements.join(', ');
+
+    const result = await runQuery<any>(
+      `MATCH (g:Graph {graphId: $graphId, userId: $userId})-[:CONTAINS]->(n {id: $id})
+       SET ${setClauses}
+       RETURN n`,
+      setParams
+    );
+
+    if (result.length === 0) {
+      throw new Error(`Node ${id} not found in graph ${this.context.graphId}`);
+    }
+
+    const updatedNode = result[0].n;
+
+    return {
+      node: updatedNode,
+      syncStatus: {
+        synced: updatedNode.synced || false,
+        syncedAt: updatedNode.syncedAt || null,
+        editedAt: updatedNode.editedAt,
+        editedBy: updatedNode.editedBy,
+        contentHash: updatedNode.contentHash || '',
+        gitHash: updatedNode.gitHash || null,
+      },
+    };
+  }
+
+  /**
+   * Get nodes pending sync (where synced = false or null)
+   *
+   * @param limit - Maximum number of nodes to return
+   * @returns Array of nodes with sync status
+   */
+  async getUnsyncedNodes(limit: number = 100): Promise<Array<{ node: NodeData; syncStatus: any; label: string }>> {
+    const result = await runQuery<any>(
+      `MATCH (g:Graph {graphId: $graphId, userId: $userId})-[:CONTAINS]->(n)
+       WHERE (n.synced = false OR n.synced IS NULL)
+         AND n.id IS NOT NULL
+       WITH n, labels(n) as nodeLabels
+       WHERE ANY(label IN nodeLabels WHERE label IN ['ADR', 'PRD', 'Pattern', 'Gotcha', 'Charter'])
+       RETURN n, nodeLabels
+       ORDER BY n.editedAt DESC
+       LIMIT $limit`,
+      {
+        graphId: this.context.graphId,
+        userId: this.context.userId,
+        limit: neo4j.int(limit),
+      }
+    );
+
+    return result.map((record: any) => {
+      const node = record.n;
+      const nodeLabels = record.nodeLabels;
+
+      return {
+        node,
+        syncStatus: {
+          synced: node.synced || false,
+          syncedAt: node.syncedAt || null,
+          editedAt: node.editedAt || node.updatedAt || new Date().toISOString(),
+          editedBy: node.editedBy || 'unknown',
+          contentHash: node.contentHash || '',
+          gitHash: node.gitHash || null,
+        },
+        label: nodeLabels[0] || 'Unknown',
+      };
+    });
+  }
+
+  /**
+   * Mark a node as synced (called by CLI after git commit)
+   *
+   * @param id - Node ID to mark as synced
+   * @param gitHash - Git commit hash
+   * @param syncedAt - Optional sync timestamp (defaults to now)
+   */
+  async markNodeSynced(id: string, gitHash: string, syncedAt?: Date): Promise<void> {
+    const syncTime = syncedAt || new Date();
+
+    await runQuery(
+      `MATCH (g:Graph {graphId: $graphId, userId: $userId})-[:CONTAINS]->(n {id: $id})
+       SET n.synced = true,
+           n.syncedAt = datetime($syncedAt),
+           n.gitHash = $gitHash,
+           n.updatedAt = datetime()`,
+      {
+        graphId: this.context.graphId,
+        userId: this.context.userId,
+        id,
+        syncedAt: syncTime.toISOString(),
+        gitHash,
+      }
+    );
+  }
+
+  /**
    * Delete a node by ID
    * Also deletes all relationships
    */
