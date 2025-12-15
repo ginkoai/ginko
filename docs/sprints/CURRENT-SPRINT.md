@@ -399,9 +399,38 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 
 ## Next Steps
 
-1. TASK-8: Beta Documentation
-2. TASK-9: Beta Testing Checklist
-3. TASK-10: Beta Launch Preparation
+1. **TASK-7b: Focus Screen Fixes** (blocking)
+2. TASK-8: Beta Documentation
+3. TASK-9: Beta Testing Checklist
+4. TASK-10: Beta Launch Preparation
+
+---
+
+### TASK-7b: Focus Screen Fixes (2h)
+**Status:** [ ] Not Started
+**Priority:** HIGH (blocking)
+**ID:** e005_s04_t07b
+
+**Goal:** Fix authorization and data loading issues on Focus page.
+
+**Issues Found (from production):**
+1. **Active Sprint**: "User does not have access to graph" - Graph authorization failing
+2. **My Tasks**: "Graph ID required" - graphId not propagating to component
+3. **Recent Completions**: "Unable to load completions" - API or auth failure
+
+**Root Causes to Investigate:**
+- SprintProgressCard: Check `/api/v1/sprint/active` auth flow
+- MyTasksList: Verify graphId is passed correctly from page to component
+- RecentCompletions: Check sessions API and graph nodes API integration
+
+**Files to Check:**
+- `dashboard/src/components/focus/SprintProgressCard.tsx`
+- `dashboard/src/components/focus/MyTasksList.tsx`
+- `dashboard/src/components/focus/RecentCompletions.tsx`
+- `dashboard/src/app/api/v1/sprint/active/route.ts`
+- `dashboard/src/lib/graph/api-client.ts` (getDefaultGraphId)
+
+**Note:** LastSessionSummary is working correctly - use it as reference pattern.
 
 ## Blockers
 
