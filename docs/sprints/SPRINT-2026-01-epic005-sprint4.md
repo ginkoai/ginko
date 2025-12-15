@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 0% (0/10 tasks complete)
+**Progress:** 20% (2/10 tasks complete)
 
 **Success Criteria:**
 - [ ] Knowledge nodes can be created and edited in dashboard
@@ -20,7 +20,7 @@
 ## Sprint Tasks
 
 ### TASK-1: Knowledge Node Editor Architecture (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Design the knowledge editing flow between dashboard, graph, and git.
@@ -49,7 +49,7 @@
 ---
 
 ### TASK-2: Dashboard Node Editor Component (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Build the node editing interface in the dashboard.
@@ -77,33 +77,45 @@
 ---
 
 ### TASK-3: Graph API for Node Mutations (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (2025-12-15)
 **Priority:** HIGH
 
 **Goal:** Add API endpoints for creating, updating, and tracking sync status.
 
-**Endpoints:**
-- POST `/api/v1/graph/nodes` - Create new node
-- PUT `/api/v1/graph/nodes/:id` - Update existing node
+**Implemented Endpoints:**
+- PATCH `/api/v1/graph/nodes/:id` - Update existing node (partial update)
 - GET `/api/v1/graph/nodes/unsynced` - List nodes pending sync
-- PATCH `/api/v1/graph/nodes/:id/sync` - Mark node as synced
+- POST `/api/v1/graph/nodes/:id/sync` - Mark node as synced
+- Enhanced POST `/api/v1/graph/nodes` - Create new node with sync tracking
 
-**Sync Tracking:**
+**Sync Tracking Schema:**
 ```typescript
 interface NodeSyncStatus {
-  nodeId: string;
-  synced: boolean;
-  lastEditedAt: Date;
-  lastSyncedAt: Date | null;
-  editedBy: string;
+  synced: boolean;           // False until synced to git
+  syncedAt: Date | null;     // Timestamp of last sync
+  editedAt: Date;            // Timestamp of last edit
+  editedBy: string;          // User email who edited
+  contentHash: string;       // SHA-256 hash of content
+  gitHash: string | null;    // Git commit hash when synced
 }
 ```
 
-**Files:**
-- `dashboard/src/app/api/v1/graph/nodes/route.ts` (update)
-- `dashboard/src/app/api/v1/graph/nodes/[id]/route.ts` (update)
-- `dashboard/src/app/api/v1/graph/nodes/unsynced/route.ts` (new)
-- `dashboard/src/app/api/v1/graph/nodes/[id]/sync/route.ts` (new)
+**CloudGraphClient Extensions:**
+- `patchNode(id, data, editedBy)` - Update with sync tracking
+- `getUnsyncedNodes(limit)` - Query unsynced nodes
+- `markNodeSynced(id, gitHash, syncedAt?)` - Mark as synced
+
+**Files Created/Modified:**
+- `dashboard/src/app/api/v1/graph/nodes/route.ts` (updated - sync tracking on create)
+- `dashboard/src/app/api/v1/graph/nodes/[id]/route.ts` (new - PATCH + GET)
+- `dashboard/src/app/api/v1/graph/nodes/unsynced/route.ts` (new - GET unsynced)
+- `dashboard/src/app/api/v1/graph/nodes/[id]/sync/route.ts` (new - POST sync)
+- `dashboard/src/app/api/v1/graph/_cloud-graph-client.ts` (updated - 3 methods)
+- `docs/adr/ADR-054-knowledge-editing-architecture.md` (new)
+- `docs/implementation/TASK-3-graph-api-mutations.md` (new)
+- `dashboard/src/app/api/v1/graph/nodes/TEST-ENDPOINTS.md` (new)
+
+**Commit:** 40c49b6e6713552999196ae60eb81da898ab2b6b
 
 ---
 
@@ -277,7 +289,69 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2025-12-15: TASK-2 Complete - Dashboard Node Editor Component
+
+**Components Implemented:**
+- **NodeEditor.tsx** - Main editor component with create/update logic, API integration, loading states, and sync status tracking
+- **NodeEditorForm.tsx** - Type-specific form rendering for ADR, PRD, Pattern, Gotcha, and Charter nodes
+- **MarkdownEditor.tsx** - Dual-pane markdown editor with live preview, syntax highlighting, and expand mode
+- **node-schemas.ts** - Comprehensive validation schemas for all editable node types with field configs
+
+**Features:**
+- Complete CRUD operations for knowledge nodes
+- Type-safe form validation with detailed error messages
+- Markdown editing with real-time preview and code syntax highlighting
+- "Pending Sync" indicators for unsynced nodes
+- Proper TypeScript types throughout
+- Error handling and loading states
+- Integration with existing graph API client
+
+**Impact:**
+- Users can now create and edit knowledge nodes directly in dashboard
+- Foundation for TASK-4 CLI sync implementation
+- Reusable components for future editing features
+- Strong data integrity through validation
+
+**Files:**
+- `dashboard/src/components/graph/NodeEditor.tsx`
+- `dashboard/src/components/graph/NodeEditorForm.tsx`
+- `dashboard/src/components/graph/MarkdownEditor.tsx`
+- `dashboard/src/lib/node-schemas.ts`
+- `dashboard/src/components/graph/index.ts` (updated exports)
+
+---
+
+## Previous Accomplishments
+
+### 2025-12-15: TASK-3 - Graph API for Node Mutations
+**Status:** Complete
+**Impact:** Foundation for dashboard knowledge editing and CLI sync
+
+**What was built:**
+- Implemented 3 new REST API endpoints for node mutations with git sync tracking
+- PATCH `/api/v1/graph/nodes/:id` - Update existing nodes with partial data
+- GET `/api/v1/graph/nodes/unsynced` - Query nodes pending git sync
+- POST `/api/v1/graph/nodes/:id/sync` - Mark nodes as synced after git commit
+- Enhanced POST `/api/v1/graph/nodes` to create nodes with sync tracking metadata
+
+**Technical Details:**
+- Full sync tracking schema per ADR-054: synced, syncedAt, editedAt, editedBy, contentHash, gitHash
+- Extended CloudGraphClient with 3 methods: patchNode(), getUnsyncedNodes(), markNodeSynced()
+- Content hashing (SHA-256) for conflict detection during sync
+- Proper error handling: 400/401/404/503 responses with clear messages
+- Build passes, test guide created, ready for production deployment
+
+**Why this matters:**
+- Unblocks TASK-2 (Dashboard Node Editor) - can now save edits with sync tracking
+- Enables TASK-4 (CLI Sync Command) - can query unsynced nodes and mark as synced
+- Foundation for bidirectional sync: dashboard → graph → git → CLI
+
+**Files:**
+- 5 new API route files
+- ADR-054 (Knowledge Editing Architecture) documented
+- Implementation summary with test guide
+
+**Commit:** 40c49b6e6713552999196ae60eb81da898ab2b6b
 
 ## Next Steps
 
