@@ -156,7 +156,7 @@ export function RecentCompletions({ userId, graphId }: RecentCompletionsProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-32">
-            <LoadingSpinner size="md" />
+            <LoadingSpinner size="default" />
           </div>
         </CardContent>
       </Card>
