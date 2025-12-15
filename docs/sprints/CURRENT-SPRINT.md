@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 100% (11/11 tasks complete) ✅ SPRINT COMPLETE
+**Progress:** 91% (11/12 tasks complete)
 
 **Success Criteria:**
 - [x] Knowledge nodes can be created and edited in dashboard
@@ -292,6 +292,43 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 - `CHANGELOG.md` (update)
 - `website/index.html` (beta messaging)
 - GitHub release notes
+
+---
+
+### TASK-11: Insights Supabase Sync API (4h)
+**Status:** [ ] Todo
+**Priority:** HIGH
+**ID:** e005_s04_t11
+
+**Goal:** Complete the Insights → Supabase pipeline so dashboard displays real coaching data.
+
+**Current State:**
+- Supabase tables exist (migration 20251215_coaching_insights.sql applied)
+- CLI `ginko insights` generates analysis
+- CLI `--sync` flag exists but shows "not yet implemented"
+- Dashboard reads from Supabase but finds no data
+
+**Implementation:**
+1. **CLI → API endpoint** to POST insights to Supabase
+   - POST `/api/v1/insights/sync` - Receive and store insight run
+   - Auth: Bearer token (same as graph API)
+   - Body: Full DashboardCoachingReport JSON
+
+2. **CLI sync implementation**
+   - Update `packages/cli/src/commands/insights/index.ts`
+   - Call API endpoint when `--sync` flag provided
+   - Store run_id for correlation
+
+3. **Dashboard fetch from Supabase**
+   - Update `dashboard/src/app/dashboard/insights/page-client.tsx`
+   - Replace localStorage check with Supabase query
+   - Use React Query or SWR for caching
+
+**Files:**
+- `dashboard/src/app/api/v1/insights/sync/route.ts` (new)
+- `packages/cli/src/commands/insights/index.ts` (update)
+- `dashboard/src/app/dashboard/insights/page-client.tsx` (update)
+- `dashboard/src/lib/insights/supabase-client.ts` (new)
 
 ---
 
