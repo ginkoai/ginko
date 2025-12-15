@@ -275,7 +275,7 @@ Follow: Marketing site visual style
 ---
 
 ### TASK-10: Review Handoff Pattern in Architecture (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e005_s03_t10
 
@@ -287,22 +287,28 @@ Handoff went through three phases:
 2. **Made optional** - After adopting continuous defensive logging (ADR-033), because synthesis under maximum context pressure is non-optimal
 3. **Brought back** - As shorthand for housekeeping (archiving, cursor updates)
 
-**Questions to Answer:**
-- What does `ginko handoff` currently do? (cursor update, archiving, synthesis?)
-- Is the 70% handoff target in insights appropriate given defensive logging?
-- Should the metric measure "sessions with handoff" or "sessions with archived context"?
-- Does the cold start detection align with actual context continuity?
+**Key Finding (2025-12-15):**
+Sessions are ephemeral with a **2-3 day temporal validity window**. Beyond that, session data becomes "mis-context" - stale assumptions that harm rather than help. This is why:
+- Cursors were deprecated (over-engineered for "last N events" use case)
+- Handoffs are optional (events logged continuously, no synthesis needed)
+- Context loads via chronological query, not cursor position
 
-**Files to Review:**
-- `packages/cli/src/commands/handoff.ts`
-- `packages/cli/src/lib/insights/analyzers/quality.ts` (handoff metric)
-- `packages/cli/src/lib/insights/analyzers/anti-patterns.ts` (context loss detection)
-- `docs/adr/ADR-033-context-pressure-mitigation-strategy.md`
+**Questions Answered:**
+- `ginko handoff` does: event flush, cursor update (deprecated), archiving. **No synthesis.**
+- 70% handoff target: **Needs adjustment** - handoffs are optional with defensive logging
+- Should measure: **"sessions with archived context"** not "sessions with handoff"
+- Cold start detection: **Needs review** against temporal validity window
+
+**Files Reviewed:**
+- `packages/cli/src/commands/handoff.ts` - lightweight, no synthesis
+- `packages/cli/src/lib/session-cursor.ts` - deprecated
+- `packages/cli/src/lib/context-loader-events.ts` - current approach
+- `docs/adr/ADR-043-event-stream-session-model.md`
 
 **Deliverables:**
-- [ ] Document current handoff behavior
-- [ ] Recommend whether to adjust insights thresholds
-- [ ] Update analyzers if handoff metric needs refinement
+- [x] Document current handoff behavior → **PATTERN-001: Ephemeral Sessions**
+- [x] Recommend whether to adjust insights thresholds → Replace handoff with event logging
+- [x] Update analyzers if handoff metric needs refinement → Updated both quality.ts and anti-patterns.ts
 
 ---
 

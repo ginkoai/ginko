@@ -38,11 +38,13 @@ const THRESHOLDS = {
     optimal: { min: 20, max: 150 },  // 20-150 lines is optimal
     warning: { max: 500 },            // > 500 lines is warning
   },
-  // Handoff completeness (word count proxy)
-  handoffCompleteness: {
-    excellent: 300,   // > 300 words is excellent
-    good: 150,        // > 150 words is good
-    warning: 50,      // < 50 words is warning
+  // Event logging rate (events per session)
+  // Replaces handoff metric per PATTERN-001: Ephemeral Sessions
+  // Context is preserved via defensive logging, not handoffs
+  eventLoggingRate: {
+    excellent: 5,     // > 5 events per session is excellent
+    good: 2,          // > 2 is good
+    warning: 1,       // < 1 is warning (silent sessions)
   },
 };
 
@@ -278,59 +280,84 @@ export class QualityAnalyzer implements InsightAnalyzer {
   }
 
   // ===========================================================================
-  // Handoff Quality Analysis
+  // Event Logging Quality Analysis (PATTERN-001: Ephemeral Sessions)
   // ===========================================================================
 
+  /**
+   * Analyzes event logging rate instead of handoff rate.
+   *
+   * Per PATTERN-001: Sessions are ephemeral with 2-3 day validity.
+   * Context is preserved via defensive logging (events), not handoffs.
+   * Handoffs are optional - what matters is continuous event capture.
+   */
   private analyzeHandoffQuality(data: InsightData): RawInsight[] {
     const insights: RawInsight[] = [];
 
-    const sessionsWithHandoff = data.sessions.filter(s => s.hasHandoff);
-    const handoffRate = Math.round(
-      (sessionsWithHandoff.length / data.sessions.length) * 100
+    if (data.sessions.length === 0) return insights;
+
+    // Calculate events per session (defensive logging metric)
+    const eventsPerSession = data.events.length / data.sessions.length;
+
+    // Find sessions with good logging
+    const wellLoggedSessions = data.sessions.filter(s => s.eventCount >= 2);
+    const loggingRate = Math.round(
+      (wellLoggedSessions.length / data.sessions.length) * 100
     );
 
-    const evidence: InsightEvidence[] = sessionsWithHandoff.slice(0, 3).map(s => ({
+    const evidence: InsightEvidence[] = wellLoggedSessions.slice(0, 3).map(s => ({
       type: 'session' as const,
       id: s.id,
-      description: 'Session with handoff',
+      description: `${s.eventCount} events logged`,
       timestamp: s.startedAt,
     }));
 
-    if (handoffRate >= 80) {
+    if (eventsPerSession >= THRESHOLDS.eventLoggingRate.excellent) {
       insights.push({
         category: this.category,
         severity: 'info',
-        title: 'Consistent handoffs',
-        description: `${handoffRate}% of sessions include handoffs. Context is being preserved.`,
-        metricName: 'handoff_rate',
-        metricValue: handoffRate,
-        metricTarget: 80,
-        metricUnit: '%',
+        title: 'Strong defensive logging',
+        description: `${eventsPerSession.toFixed(1)} events per session. Context is well-captured.`,
+        metricName: 'events_per_session',
+        metricValue: eventsPerSession,
+        metricTarget: THRESHOLDS.eventLoggingRate.excellent,
         scoreImpact: 10,
         evidence,
         recommendations: [],
       });
-    } else if (handoffRate < 50) {
+    } else if (eventsPerSession >= THRESHOLDS.eventLoggingRate.good) {
       insights.push({
         category: this.category,
-        severity: 'warning',
-        title: 'Missing handoffs',
-        description: `Only ${handoffRate}% of sessions have handoffs. Context is being lost.`,
-        metricName: 'handoff_rate',
-        metricValue: handoffRate,
-        metricTarget: 70,
-        metricUnit: '%',
-        scoreImpact: -15,
-        evidence: data.sessions.filter(s => !s.hasHandoff).slice(0, 3).map(s => ({
+        severity: 'info',
+        title: 'Good event logging',
+        description: `${eventsPerSession.toFixed(1)} events per session. Consider logging more insights.`,
+        metricName: 'events_per_session',
+        metricValue: eventsPerSession,
+        metricTarget: THRESHOLDS.eventLoggingRate.good,
+        scoreImpact: 5,
+        evidence,
+        recommendations: ['Log decisions and gotchas, not just completions'],
+      });
+    } else if (eventsPerSession < THRESHOLDS.eventLoggingRate.warning) {
+      const silentSessions = data.sessions.filter(s => s.eventCount === 0);
+      insights.push({
+        category: this.category,
+        severity: 'suggestion',
+        title: 'Low event logging',
+        description: `${eventsPerSession.toFixed(1)} events per session. Context may be lost between sessions.`,
+        metricName: 'events_per_session',
+        metricValue: eventsPerSession,
+        metricTarget: THRESHOLDS.eventLoggingRate.good,
+        scoreImpact: -10,
+        evidence: silentSessions.slice(0, 3).map(s => ({
           type: 'session' as const,
           id: s.id,
-          description: 'Session ended without handoff',
+          description: 'Silent session (no events)',
           timestamp: s.startedAt,
         })),
         recommendations: [
-          'Always run `ginko handoff` before ending a session',
-          'Set a reminder or hook to prompt for handoff',
-          'Make handoff part of your end-of-session routine',
+          'Use `ginko log` after fixes, features, and decisions',
+          'Log insights while context is fresh (low pressure)',
+          'Aim for 3-5 events per session for good continuity',
         ],
       });
     }

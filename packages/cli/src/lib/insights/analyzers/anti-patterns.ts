@@ -28,10 +28,11 @@ const THRESHOLDS = {
     warning: 5,       // > 5 days without completion
     critical: 10,     // > 10 days
   },
-  // Context loss detection (sessions without handoff)
-  contextLoss: {
-    warning: 2,       // > 2 sessions without handoff
-    critical: 5,      // > 5 sessions
+  // Silent session detection (sessions without events)
+  // Per PATTERN-001: Context is preserved via events, not handoffs
+  silentSessions: {
+    warning: 2,       // > 2 sessions without events
+    critical: 4,      // > 4 sessions
   },
   // Long silent session (hours without events)
   silentSession: {
@@ -143,53 +144,64 @@ export class AntiPatternDetector implements InsightAnalyzer {
   }
 
   // ===========================================================================
-  // Context Loss Detection
+  // Silent Session Detection (PATTERN-001: Ephemeral Sessions)
   // ===========================================================================
 
+  /**
+   * Detects sessions without event logging (silent sessions).
+   *
+   * Per PATTERN-001: Context is preserved via defensive logging (events),
+   * not handoffs. Handoffs are optional. What matters is whether events
+   * were captured during the session.
+   *
+   * A "silent session" with no events means context was lost.
+   * A session with events but no handoff is fine - context is in the events.
+   */
   private detectContextLoss(data: InsightData): RawInsight[] {
     const insights: RawInsight[] = [];
 
-    const sessionsWithoutHandoff = data.sessions.filter(s => !s.hasHandoff);
-    const count = sessionsWithoutHandoff.length;
+    // Silent sessions = no events logged (context truly lost)
+    const silentSessions = data.sessions.filter(s => s.eventCount === 0);
+    const count = silentSessions.length;
 
     if (count === 0) return insights;
 
-    const evidence: InsightEvidence[] = sessionsWithoutHandoff.slice(0, 5).map(s => ({
+    const evidence: InsightEvidence[] = silentSessions.slice(0, 5).map(s => ({
       type: 'session' as const,
       id: s.id,
-      description: `Session ended without handoff (${s.eventCount} events)`,
+      description: `Silent session (${Math.round(s.durationMinutes)}min, no events)`,
       timestamp: s.startedAt,
     }));
 
-    if (count >= THRESHOLDS.contextLoss.critical) {
+    if (count >= THRESHOLDS.silentSessions.critical) {
       insights.push({
         category: this.category,
         severity: 'warning',
-        title: 'Frequent context loss',
-        description: `${count} sessions ended without handoff. Significant context may be lost.`,
-        metricName: 'sessions_without_handoff',
+        title: 'Silent sessions detected',
+        description: `${count} sessions had no events logged. Context from these sessions is lost.`,
+        metricName: 'silent_session_count',
         metricValue: count,
-        scoreImpact: -20,
+        scoreImpact: -15,
         evidence,
         recommendations: [
-          'Make `ginko handoff` a habit before ending sessions',
-          'Review your end-of-session routine',
-          'Consider shorter sessions with regular handoffs',
+          'Use `ginko log` after completing fixes or features',
+          'Log decisions and insights during the session',
+          'Defensive logging captures context at low pressure',
         ],
       });
-    } else if (count >= THRESHOLDS.contextLoss.warning) {
+    } else if (count >= THRESHOLDS.silentSessions.warning) {
       insights.push({
         category: this.category,
         severity: 'suggestion',
-        title: 'Missing handoffs',
-        description: `${count} sessions ended without handoff. Some context may be lost.`,
-        metricName: 'sessions_without_handoff',
+        title: 'Some silent sessions',
+        description: `${count} sessions had no events logged. Consider logging more.`,
+        metricName: 'silent_session_count',
         metricValue: count,
-        scoreImpact: -10,
+        scoreImpact: -5,
         evidence,
         recommendations: [
-          'Run `ginko handoff` before ending sessions',
-          'Set a reminder for end-of-day handoffs',
+          'Use `ginko log` to capture insights as you work',
+          'Aim for 3-5 events per session',
         ],
       });
     }
