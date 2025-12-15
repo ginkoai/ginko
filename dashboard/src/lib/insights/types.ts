@@ -288,3 +288,97 @@ export interface InsightsApiResponse {
   categoryScores: CategoryScore[];
   trends: InsightTrend[];
 }
+
+// ============================================================================
+// Dashboard Types (JSON-serialized versions for API responses)
+// ============================================================================
+
+/**
+ * Dashboard-friendly coaching report with string dates (from JSON).
+ */
+export interface DashboardCoachingReport {
+  userId: string;
+  projectId: string;
+  runAt: string;
+  period: {
+    start: string;
+    end: string;
+    days: number;
+  };
+  overallScore: number;
+  previousScore?: number;
+  scoreTrend?: 'up' | 'down' | 'stable';
+  categoryScores: CategoryScore[];
+  insights: RawInsight[];
+  summary: string;
+}
+
+// ============================================================================
+// Display Constants (for dashboard components)
+// ============================================================================
+
+export const CATEGORY_DISPLAY_NAMES: Record<InsightCategory, string> = {
+  'efficiency': 'Session Efficiency',
+  'patterns': 'Pattern Adoption',
+  'quality': 'Collaboration Quality',
+  'anti-patterns': 'Anti-Patterns'
+};
+
+export const SEVERITY_ICONS: Record<InsightSeverity, string> = {
+  'info': '○',
+  'suggestion': '◐',
+  'warning': '⚠️',
+  'critical': '🚨'
+};
+
+export const SEVERITY_COLORS: Record<InsightSeverity, { bg: string; text: string; border: string }> = {
+  'info': { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' },
+  'suggestion': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/30' },
+  'warning': { bg: 'bg-yellow-500/10', text: 'text-yellow-400', border: 'border-yellow-500/30' },
+  'critical': { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/30' }
+};
+
+export const CATEGORY_COLORS: Record<InsightCategory, { bg: string; text: string; border: string }> = {
+  'efficiency': { bg: 'bg-cyan-500/10', text: 'text-cyan-400', border: 'border-cyan-500/30' },
+  'patterns': { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/30' },
+  'quality': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/30' },
+  'anti-patterns': { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/30' }
+};
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+export function getScoreRating(score: number): { label: string; color: string } {
+  if (score >= 90) return { label: 'Excellent', color: 'text-green-400' };
+  if (score >= 75) return { label: 'Good', color: 'text-cyan-400' };
+  if (score >= 60) return { label: 'Fair', color: 'text-yellow-400' };
+  if (score >= 40) return { label: 'Needs Improvement', color: 'text-orange-400' };
+  return { label: 'Critical', color: 'text-red-400' };
+}
+
+export function getScoreBarColor(score: number): string {
+  if (score >= 90) return 'bg-green-500';
+  if (score >= 75) return 'bg-cyan-500';
+  if (score >= 60) return 'bg-yellow-500';
+  if (score >= 40) return 'bg-orange-500';
+  return 'bg-red-500';
+}
+
+export function getTrendIcon(trend?: 'up' | 'down' | 'stable'): string {
+  switch (trend) {
+    case 'up': return '↑';
+    case 'down': return '↓';
+    case 'stable': return '→';
+    default: return '';
+  }
+}
+
+export function getTrendColor(trend?: 'up' | 'down' | 'stable'): string {
+  switch (trend) {
+    case 'up': return 'text-green-400';
+    case 'down': return 'text-red-400';
+    case 'stable': return 'text-slate-400';
+    default: return 'text-slate-400';
+  }
+}

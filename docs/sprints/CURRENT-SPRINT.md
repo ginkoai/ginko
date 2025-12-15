@@ -6,12 +6,12 @@
 
 **Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 89% (8/9 tasks complete)
+**Progress:** 100% (9/9 tasks complete)
 
 **Success Criteria:**
 - [x] CLI command `ginko insights` generates analysis
-- [ ] Insights stored in Supabase
-- [ ] Dashboard displays coaching insights
+- [ ] Insights stored in Supabase (deferred to future sprint)
+- [x] Dashboard displays coaching insights
 - [x] At least 4 insight categories implemented
 
 ---
@@ -218,8 +218,9 @@ Run `ginko insights --detailed` for full analysis
 ---
 
 ### TASK-9: Dashboard Insights Display (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
+**ID:** e005_s03_t09
 
 **Goal:** Display coaching insights in the dashboard.
 
@@ -263,6 +264,21 @@ Follow: Marketing site visual style
 ---
 
 ## Accomplishments This Sprint
+
+### 2025-12-15: TASK-9 Complete - Dashboard Insights Display
+- Created full insights page at `/dashboard/insights`
+- Components: InsightCard, InsightCategoryTabs, InsightsOverview
+- Features: Overall score circle, category score cards, severity-filtered insights
+- Demo mode with sample data for development/testing
+- Added to sidebar navigation with LightBulbIcon
+- Files created:
+  - `dashboard/src/app/dashboard/insights/page.tsx`
+  - `dashboard/src/app/dashboard/insights/page-client.tsx`
+  - `dashboard/src/components/insights/InsightCard.tsx`
+  - `dashboard/src/components/insights/InsightCategoryTabs.tsx`
+  - `dashboard/src/components/insights/InsightsOverview.tsx`
+  - Updated `dashboard/src/lib/insights/types.ts` (display constants, utilities)
+  - Updated `dashboard/src/components/dashboard/dashboard-sidebar.tsx` (navigation)
 
 ### 2025-12-15: TASK-8 Complete - CLI `ginko insights` Command
 - Implemented `ginko insights` command with full analysis pipeline

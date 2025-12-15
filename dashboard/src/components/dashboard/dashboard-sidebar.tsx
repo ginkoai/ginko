@@ -17,13 +17,15 @@ import {
   Cog6ToothIcon,
   DocumentTextIcon,
   ChartBarIcon,
-  CircleStackIcon
+  CircleStackIcon,
+  LightBulbIcon
 } from '@heroicons/react/24/outline'
 import {
   Cog6ToothIcon as Cog6ToothIconSolid,
   DocumentTextIcon as DocumentTextIconSolid,
   ChartBarIcon as ChartBarIconSolid,
-  CircleStackIcon as CircleStackIconSolid
+  CircleStackIcon as CircleStackIconSolid,
+  LightBulbIcon as LightBulbIconSolid
 } from '@heroicons/react/24/solid'
 
 const navigation = [
@@ -33,6 +35,13 @@ const navigation = [
     icon: ChartBarIcon,
     iconActive: ChartBarIconSolid,
     description: 'Collaboration insights'
+  },
+  {
+    name: 'Insights',
+    href: '/dashboard/insights',
+    icon: LightBulbIcon,
+    iconActive: LightBulbIconSolid,
+    description: 'Coaching insights'
   },
   {
     name: 'Graph',

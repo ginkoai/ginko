@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-15T17-51-29-014Z
-started: 2025-12-15T17:51:29.014Z
+session_id: session-2025-12-15T18-45-18-504Z
+started: 2025-12-15T18:45:18.504Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-15T17-51-29-014Z
+# Session Log: session-2025-12-15T18-45-18-504Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,49 +36,18 @@ branch: main
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 13:02 - [achievement]
-# [ACHIEVEMENT] 13:02
+### 13:53 - [achievement]
+# [ACHIEVEMENT] 13:53
 
-Completed TASK-8: CLI ginko insights command. Implemented full coaching insights analysis with summary/detailed/JSON output modes, category filtering, configurable date range. Four analyzers (efficiency, patterns, quality, anti-patterns) now accessible via CLI. Sprint 3 now at 89% complete (8/9 tasks).
+TASK-9 Complete: Dashboard Insights Display. Created full insights page at /dashboard/insights with InsightCard, InsightCategoryTabs, and InsightsOverview components. Features include overall score circle visualization, category score cards with click-to-filter, severity-filtered insights list, expandable insight details with evidence and recommendations, and demo mode toggle. Added Insights navigation item to sidebar. Build verified successful. Sprint 3 now 100% complete (9/9 tasks).
 
 **Files:**
-- packages/cli/src/commands/insights/index.ts
-- packages/cli/src/commands/insights/insights-command.ts
+- dashboard/src/app/dashboard/insights/page.tsx
+- dashboard/src/components/insights/InsightCard.tsx
+- dashboard/src/components/insights/InsightsOverview.tsx
 
 **Impact:** high
-**Timestamp:** 2025-12-15T18:02:14.575Z
+**Timestamp:** 2025-12-15T18:53:16.798Z
 
-Files: packages/cli/src/commands/insights/index.ts, packages/cli/src/commands/insights/insights-command.ts
+Files: dashboard/src/app/dashboard/insights/page.tsx, dashboard/src/components/insights/InsightCard.tsx, dashboard/src/components/insights/InsightsOverview.tsx
 Impact: high
-
-### 13:07 - [fix]
-# [FIX] 13:07
-
-Fixed insights data collector to use findGinkoRoot instead of process.cwd(). Now properly traverses up to monorepo root to find .ginko folder. Removed spurious empty .ginko folder from packages/cli that was masking the issue.
-
-**Files:**
-- packages/cli/src/lib/insights/data-collector.ts
-
-**Impact:** high
-**Timestamp:** 2025-12-15T18:07:05.110Z
-
-Files: packages/cli/src/lib/insights/data-collector.ts
-Impact: high
-
-### 13:15 - [decision]
-# [DECISION] 13:15
-
-Added TASK-10 to Sprint 3: Review Handoff Pattern in Architecture. Will examine whether insights handoff metric (70% target) is appropriate given the evolution from required->optional (ADR-033 defensive logging)->housekeeping shorthand.
-
-**Files:**
-- .ginko/context/index.json
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- docs/sprints/CURRENT-SPRINT.md
-
-**Impact:** medium
-**Timestamp:** 2025-12-15T18:15:45.864Z
-
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/CURRENT-SPRINT.md
-Impact: medium
