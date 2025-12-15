@@ -6,12 +6,12 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 40% (4/10 tasks complete)
+**Progress:** 50% (5/10 tasks complete)
 
 **Success Criteria:**
-- [ ] Knowledge nodes can be created and edited in dashboard
-- [ ] CLI sync-on-demand pulls dashboard changes to git
-- [ ] Notification system for unsynced nodes
+- [x] Knowledge nodes can be created and edited in dashboard
+- [x] CLI sync-on-demand pulls dashboard changes to git
+- [x] Notification system for unsynced nodes
 - [ ] All features polished and ready for beta
 - [ ] Documentation complete for beta users
 
@@ -147,7 +147,7 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 ---
 
 ### TASK-5: Unsynced Node Notifications (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e005_s04_t05
 
@@ -322,11 +322,29 @@ ginko sync --force        # Overwrite git with graph versions (use carefully)
 
 **Method:** Used 3 parallel agents for context exploration and implementation, achieving 4 tasks in single session
 
+### 2025-12-15: TASK-5 Complete - Unsynced Node Notifications
+
+**Dashboard Component:**
+- UnsyncedBanner.tsx - Warning banner when knowledge nodes edited in dashboard
+- Auto-fetch count from /api/v1/graph/nodes/unsynced endpoint
+- Dismissible with 24hr localStorage expiry
+- Follows ADR-002 frontmatter pattern
+- File: `dashboard/src/components/graph/UnsyncedBanner.tsx`
+
+**CLI Integration:**
+- Added checkUnsyncedNodes() method to start-reflection.ts
+- Non-blocking API check with 2s timeout
+- Warning appears in startup warnings section
+- Format: "X knowledge nodes edited in dashboard. Run `ginko sync` to pull changes."
+- File: `packages/cli/src/commands/start/start-reflection.ts`
+
+**Method:** Used 2 parallel agents for dashboard component and CLI integration
+
 ## Next Steps
 
-1. TASK-5: Unsynced node notifications (banner in dashboard, warning in CLI start)
-2. TASK-6: Dashboard Polish - Sessions Display Fix
-3. TASK-7: Dashboard Polish - Navigation & Layout
+1. TASK-6: Dashboard Polish - Sessions Display Fix
+2. TASK-7: Dashboard Polish - Navigation & Layout
+3. TASK-8: Beta Documentation
 
 ## Blockers
 
