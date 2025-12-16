@@ -24,6 +24,7 @@ export type NodeLabel =
   | 'PRD'
   | 'Pattern'
   | 'Gotcha'
+  | 'Principle'
   | 'Event'
   | 'Session'
   | 'Commit';
@@ -115,6 +116,19 @@ export interface GotchaNode extends BaseNodeProperties {
   mitigation?: string;
 }
 
+/** Principle node - guiding development principle */
+export interface PrincipleNode extends BaseNodeProperties {
+  principle_id: string;
+  name: string;
+  theory: string;
+  type: 'standard' | 'custom';
+  status: 'active' | 'deprecated';
+  source?: string;
+  related_patterns?: string[];
+  related_adrs?: string[];
+  version?: string;
+}
+
 /** Event node - session activity */
 export interface EventNode extends BaseNodeProperties {
   event_id: string;
@@ -136,6 +150,7 @@ export type NodeProperties =
   | PRDNode
   | PatternNode
   | GotchaNode
+  | PrincipleNode
   | EventNode;
 
 /** Generic graph node with label and properties */

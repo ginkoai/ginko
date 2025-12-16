@@ -7,23 +7,24 @@
 
 **Duration**: 5-6 days
 **Type**: Foundation + Polish sprint
-**Progress:** 0% (0/5 tasks complete)
+**Progress:** 100% (5/5 tasks complete)
 
 **Success Criteria:**
-- [ ] Dialog component created (Radix-based)
-- [ ] Recommendations link to Principle modals
-- [ ] Evidence shows datetime with source modal option
-- [ ] Insights sidebar collapsible to icons
-- [ ] Principle node type added to schema
+- [x] Dialog component created (Radix-based)
+- [x] Recommendations link to Principle modals
+- [x] Evidence shows datetime with source modal option
+- [x] Insights sidebar collapsible to icons
+- [x] Principle node type added to schema
 
 ---
 
 ## Sprint Tasks
 
 ### TASK-1: Dialog Component + Recommendation Modals (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s01_t01
+**Assignee:** Chris Norton (chris@watchhill.ai)
 
 **Goal:** Create reusable Dialog component and implement recommendation modals on insights.
 
@@ -41,9 +42,10 @@
 ---
 
 ### TASK-2: Evidence Timestamps + Detail Modal (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s01_t02
+**Assignee:** Chris Norton (chris@watchhill.ai)
 
 **Goal:** Enhance evidence display with full datetime and optional modal for viewing source records.
 
@@ -61,9 +63,10 @@
 ---
 
 ### TASK-3: Collapsible Insights Sidebar (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s01_t03
+**Assignee:** Chris Norton (chris@watchhill.ai)
 
 **Goal:** Make the Insights page category nav collapsible to icon-only state.
 
@@ -80,9 +83,10 @@
 ---
 
 ### TASK-4: Principle Node Type - Schema + API (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s01_t04
+**Assignee:** Chris Norton (chris@watchhill.ai)
 
 **Goal:** Add Principle node type to the graph schema and API.
 
@@ -111,9 +115,10 @@ interface PrincipleNode {
 ---
 
 ### TASK-5: Standard Principles Seeding (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s01_t05
+**Assignee:** Chris Norton (chris@watchhill.ai)
 
 **Goal:** Create standard principles from CLAUDE.md, ADRs, and vendor best practices.
 
@@ -141,13 +146,63 @@ interface PrincipleNode {
 
 ## Accomplishments This Sprint
 
-[To be updated as tasks complete]
+### 2025-12-16: Sprint 1 Complete - All Tasks Finished
+
+**TASK-1: Dialog Component + Recommendation Modals**
+- Created reusable `dialog.tsx` component using @radix-ui/react-dialog
+- Built `PrinciplePreviewModal.tsx` for showing principle details
+- Updated `InsightCard.tsx` with clickable recommendations
+- Recommendations with mapped principles show lightbulb icon and "View principle →" hint
+- Files: dialog.tsx, PrinciplePreviewModal.tsx, InsightCard.tsx
+
+**TASK-2: Evidence Timestamps + Detail Modal**
+- Added `formatTimestamp()` helper with relative time display (e.g., "2d ago")
+- Created `EvidenceDetailModal.tsx` for viewing full evidence details
+- Evidence items with URLs are now clickable with external link icon
+- Timestamps show relative time with absolute time on hover
+- Files: EvidenceDetailModal.tsx, InsightCard.tsx
+
+**TASK-3: Collapsible Insights Sidebar**
+- Created `InsightsSidebar.tsx` with collapsible state
+- Icon-only collapsed view (w-12) with category icons
+- Expanded view (w-64) with category and severity filters
+- State persisted to localStorage
+- Framer Motion animations for smooth transitions
+- Files: InsightsSidebar.tsx
+
+**TASK-4: Principle Node Type - Schema + API**
+- Added `PrincipleNode` interface to graph/types.ts
+- Added 'Principle' to `NodeLabel` union type
+- Created `PRINCIPLE_SCHEMA` in node-schemas.ts with validation
+- Added Lightbulb icon and indigo color to node-card.tsx and node-detail-panel.tsx
+- Added principle_id to title extraction functions
+- Files: types.ts, node-schemas.ts, node-card.tsx, node-detail-panel.tsx
+
+**TASK-5: Standard Principles Seeding**
+- Created `standard-principles.ts` with 10 core principles:
+  - PRINCIPLE-001: AI-Optimized File Discovery (ADR-002)
+  - PRINCIPLE-002: Defensive Logging at Low Pressure (ADR-033)
+  - PRINCIPLE-003: Event-Based Context Loading (ADR-043)
+  - PRINCIPLE-004: Git as Source of Truth
+  - PRINCIPLE-005: Sprint Progress Tracking
+  - PRINCIPLE-006: Session Continuity
+  - PRINCIPLE-007: Explicit Context Over Implicit (Anthropic)
+  - PRINCIPLE-008: Incremental Verification (Anthropic)
+  - PRINCIPLE-009: Minimal Viable Changes (Anthropic)
+  - PRINCIPLE-010: Read Before Write (Anthropic)
+- Created `seed.ts` command with --dry-run and --force options
+- Files: standard-principles.ts, seed.ts
 
 ---
 
 ## Next Steps
 
-After Sprint 1 complete → Proceed to Sprint 2 (C4-Style Graph Navigation)
+✅ Sprint 1 complete → Ready to proceed to Sprint 2 (C4-Style Graph Navigation)
+
+**Optional Integration Work:**
+- Wire InsightsSidebar into insights page-client.tsx
+- Add principles seed command to CLI index
+- Create Neo4j migration for Principle nodes (011-principle-nodes.cypher)
 
 ---
 

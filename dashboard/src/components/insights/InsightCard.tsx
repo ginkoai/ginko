@@ -1,9 +1,9 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
- * @tags: [insights, coaching, card, dashboard]
- * @related: [InsightsOverview.tsx, InsightCategoryTabs.tsx, types.ts]
+ * @updated: 2025-12-16
+ * @tags: [insights, coaching, card, dashboard, interactive]
+ * @related: [InsightsOverview.tsx, InsightCategoryTabs.tsx, types.ts, PrinciplePreviewModal.tsx]
  * @priority: high
  * @complexity: medium
  * @dependencies: [react, heroicons, clsx]
@@ -19,7 +19,8 @@ import {
   CodeBracketIcon,
   FolderIcon,
   LightBulbIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
@@ -29,6 +30,11 @@ import {
   SEVERITY_ICONS,
   SEVERITY_COLORS
 } from '@/lib/insights/types'
+import {
+  PrinciplePreviewModal,
+  mapRecommendationToPrinciple,
+  type Principle
+} from './PrinciplePreviewModal'
 
 interface InsightCardProps {
   insight: RawInsight
@@ -55,12 +61,50 @@ function EvidenceIcon({ type }: { type: InsightEvidence['type'] }) {
   }
 }
 
+/**
+ * Format timestamp for display with relative time.
+ */
+function formatTimestamp(timestamp: string): { relative: string; absolute: string } {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffMinutes = Math.floor(diffMs / (1000 * 60))
+
+  let relative: string
+  if (diffMinutes < 60) {
+    relative = diffMinutes <= 1 ? 'just now' : `${diffMinutes}m ago`
+  } else if (diffHours < 24) {
+    relative = diffHours === 1 ? '1h ago' : `${diffHours}h ago`
+  } else if (diffDays < 7) {
+    relative = diffDays === 1 ? 'yesterday' : `${diffDays}d ago`
+  } else {
+    relative = date.toLocaleDateString()
+  }
+
+  const absolute = date.toLocaleString()
+  return { relative, absolute }
+}
+
 export function InsightCard({ insight, expanded: initialExpanded = false }: InsightCardProps) {
   const [expanded, setExpanded] = useState(initialExpanded)
+  const [principleModalOpen, setPrincipleModalOpen] = useState(false)
+  const [selectedPrinciple, setSelectedPrinciple] = useState<Principle | null>(null)
+
   const severityColors = SEVERITY_COLORS[insight.severity]
   const severityIcon = SEVERITY_ICONS[insight.severity]
 
   const hasDetails = insight.evidence.length > 0 || insight.recommendations.length > 0 || insight.metricName
+
+  // Handle recommendation click - check if it maps to a principle
+  const handleRecommendationClick = (recommendation: string) => {
+    const principle = mapRecommendationToPrinciple(recommendation)
+    if (principle) {
+      setSelectedPrinciple(principle)
+      setPrincipleModalOpen(true)
+    }
+  }
 
   return (
     <div
@@ -141,19 +185,42 @@ export function InsightCard({ insight, expanded: initialExpanded = false }: Insi
                 Evidence
               </h5>
               <div className="space-y-2">
-                {insight.evidence.map((ev, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm">
-                    <EvidenceIcon type={ev.type} />
-                    <div className="flex-1 min-w-0">
-                      <span className="text-foreground">{ev.description}</span>
-                      {ev.timestamp && (
-                        <span className="text-muted-foreground text-xs ml-2">
-                          {new Date(ev.timestamp).toLocaleDateString()}
+                {insight.evidence.map((ev, idx) => {
+                  const time = ev.timestamp ? formatTimestamp(ev.timestamp) : null
+                  const isClickable = Boolean(ev.url)
+
+                  return (
+                    <div
+                      key={idx}
+                      className={clsx(
+                        'flex items-start gap-2 text-sm p-2 rounded-md -mx-2',
+                        isClickable && 'hover:bg-white/5 cursor-pointer group transition-colors'
+                      )}
+                      onClick={() => ev.url && window.open(ev.url, '_blank')}
+                    >
+                      <EvidenceIcon type={ev.type} />
+                      <div className="flex-1 min-w-0">
+                        <span className={clsx(
+                          'text-foreground',
+                          isClickable && 'group-hover:text-primary'
+                        )}>
+                          {ev.description}
+                        </span>
+                        {isClickable && (
+                          <ArrowTopRightOnSquareIcon className="inline h-3 w-3 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        )}
+                      </div>
+                      {time && (
+                        <span
+                          className="text-muted-foreground text-xs whitespace-nowrap"
+                          title={time.absolute}
+                        >
+                          {time.relative}
                         </span>
                       )}
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
@@ -165,17 +232,54 @@ export function InsightCard({ insight, expanded: initialExpanded = false }: Insi
                 Recommendations
               </h5>
               <ul className="space-y-1">
-                {insight.recommendations.map((rec, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-primary mt-0.5">-</span>
-                    <span className="text-muted-foreground">{rec}</span>
-                  </li>
-                ))}
+                {insight.recommendations.map((rec, idx) => {
+                  const hasPrinciple = Boolean(mapRecommendationToPrinciple(rec))
+                  return (
+                    <li
+                      key={idx}
+                      className={clsx(
+                        'flex items-start gap-2 text-sm p-2 rounded-md -mx-2',
+                        hasPrinciple && 'hover:bg-white/5 cursor-pointer group transition-colors'
+                      )}
+                      onClick={() => hasPrinciple && handleRecommendationClick(rec)}
+                    >
+                      <span className={clsx(
+                        'mt-0.5',
+                        hasPrinciple ? 'text-primary' : 'text-muted-foreground'
+                      )}>
+                        {hasPrinciple ? (
+                          <LightBulbIcon className="h-4 w-4" />
+                        ) : (
+                          '-'
+                        )}
+                      </span>
+                      <span className={clsx(
+                        hasPrinciple
+                          ? 'text-foreground group-hover:text-primary'
+                          : 'text-muted-foreground'
+                      )}>
+                        {rec}
+                      </span>
+                      {hasPrinciple && (
+                        <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                          View principle →
+                        </span>
+                      )}
+                    </li>
+                  )
+                })}
               </ul>
             </div>
           )}
         </div>
       )}
+
+      {/* Principle Modal */}
+      <PrinciplePreviewModal
+        principle={selectedPrinciple}
+        open={principleModalOpen}
+        onOpenChange={setPrincipleModalOpen}
+      />
     </div>
   )
 }

@@ -466,6 +466,98 @@ export const CHARTER_SCHEMA: NodeSchema = {
   getFilePath: () => 'docs/PROJECT-CHARTER.md',
 };
 
+// Principle Schema
+export const PRINCIPLE_SCHEMA: NodeSchema = {
+  type: 'Principle',
+  displayName: 'Development Principle',
+  fields: [
+    {
+      name: 'principle_id',
+      label: 'Principle ID',
+      type: 'text',
+      required: true,
+      placeholder: 'PRINCIPLE-001',
+      helperText: 'Format: PRINCIPLE-XXX (e.g., PRINCIPLE-001)',
+    },
+    {
+      name: 'name',
+      label: 'Name',
+      type: 'text',
+      required: true,
+      placeholder: 'Principle name',
+    },
+    {
+      name: 'type',
+      label: 'Type',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'standard', label: 'Standard (Read-only)' },
+        { value: 'custom', label: 'Custom (Editable)' },
+      ],
+      helperText: 'Standard principles are read-only best practices',
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'active', label: 'Active' },
+        { value: 'deprecated', label: 'Deprecated' },
+      ],
+    },
+    {
+      name: 'theory',
+      label: 'Theory (Why It Matters)',
+      type: 'markdown',
+      required: true,
+      placeholder: 'Explain why this principle is important...',
+      helperText: 'Markdown explanation of the principle and its value',
+    },
+    {
+      name: 'source',
+      label: 'Source',
+      type: 'text',
+      required: false,
+      placeholder: 'ADR-043, Anthropic Docs, etc.',
+      helperText: 'Where this principle originated from',
+    },
+  ],
+  validate: (data) => {
+    const errors: string[] = [];
+
+    if (!data.principle_id || !data.principle_id.match(/^PRINCIPLE-\d{3}$/)) {
+      errors.push('Principle ID must follow format: PRINCIPLE-XXX (e.g., PRINCIPLE-001)');
+    }
+
+    if (!data.name || data.name.trim().length < 5) {
+      errors.push('Name must be at least 5 characters');
+    }
+
+    if (!data.type) {
+      errors.push('Type is required');
+    }
+
+    if (!data.status) {
+      errors.push('Status is required');
+    }
+
+    if (!data.theory || data.theory.trim().length < 20) {
+      errors.push('Theory must be at least 20 characters');
+    }
+
+    return { valid: errors.length === 0, errors };
+  },
+  getFilePath: (data) => {
+    const slug = data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return `docs/principles/${data.principle_id}-${slug}.md`;
+  },
+};
+
 // =============================================================================
 // Schema Registry
 // =============================================================================
@@ -476,6 +568,7 @@ export const NODE_SCHEMAS: Record<string, NodeSchema> = {
   Pattern: PATTERN_SCHEMA,
   Gotcha: GOTCHA_SCHEMA,
   Charter: CHARTER_SCHEMA,
+  Principle: PRINCIPLE_SCHEMA,
 };
 
 export function getNodeSchema(type: NodeLabel): NodeSchema | null {

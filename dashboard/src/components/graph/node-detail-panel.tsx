@@ -25,6 +25,7 @@ import {
   GitBranch,
   ExternalLink,
   ArrowUpRight,
+  Lightbulb,
   type LucideIcon,
 } from 'lucide-react';
 import { useNodeAdjacencies, useGraphNodes } from '@/lib/graph/hooks';
@@ -60,6 +61,7 @@ const nodeIcons: Record<NodeLabel, LucideIcon> = {
   PRD: FileText,
   Pattern: Zap,
   Gotcha: AlertTriangle,
+  Principle: Lightbulb,
   Event: GitBranch,
   Session: GitBranch,
   Commit: GitBranch,
@@ -75,6 +77,7 @@ const nodeColors: Record<NodeLabel, string> = {
   PRD: 'text-orange-400',
   Pattern: 'text-emerald-400',
   Gotcha: 'text-red-400',
+  Principle: 'text-indigo-400',
   Event: 'text-slate-400',
   Session: 'text-slate-400',
   Commit: 'text-slate-400',
@@ -98,6 +101,7 @@ function getNodeTitle(node: GraphNode): string {
     getNodeProp(props, 'epic_id') ||
     getNodeProp(props, 'sprint_id') ||
     getNodeProp(props, 'task_id') ||
+    getNodeProp(props, 'principle_id') ||
     getNodeProp(props, 'pattern_id') ||
     getNodeProp(props, 'gotcha_id') ||
     node.id

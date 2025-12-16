@@ -22,6 +22,7 @@ import {
   Calendar,
   GitBranch,
   ExternalLink,
+  Lightbulb,
   type LucideIcon,
 } from 'lucide-react';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
@@ -55,6 +56,7 @@ const nodeIcons: Record<NodeLabel, LucideIcon> = {
   PRD: FileText,
   Pattern: Zap,
   Gotcha: AlertTriangle,
+  Principle: Lightbulb,
   Event: GitBranch,
   Session: GitBranch,
   Commit: GitBranch,
@@ -70,6 +72,7 @@ const nodeColors: Record<NodeLabel, { bg: string; text: string; border: string }
   PRD: { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-500/30' },
   Pattern: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/30' },
   Gotcha: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/30' },
+  Principle: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/30' },
   Event: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' },
   Session: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' },
   Commit: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' },
@@ -95,6 +98,7 @@ function getNodeTitle(node: GraphNode): string {
     getNodeProp(props, 'task_id') ||
     getNodeProp(props, 'pattern_id') ||
     getNodeProp(props, 'gotcha_id') ||
+    getNodeProp(props, 'principle_id') ||
     node.id
   );
 }
