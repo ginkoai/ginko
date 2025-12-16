@@ -352,21 +352,64 @@ function outputJson(report: CoachingReport): void {
 // ============================================================================
 
 async function syncToSupabase(report: CoachingReport): Promise<void> {
-  console.log(chalk.dim('\nSyncing to Supabase...'));
+  console.log(chalk.dim('\nSyncing to dashboard...'));
 
-  // TODO: Implement Supabase sync when API is ready
-  // This would POST to the dashboard API endpoint:
-  // POST /api/v1/insights/sync
-  // {
-  //   userId: report.userId,
-  //   projectId: report.projectId,
-  //   overallScore: report.overallScore,
-  //   categoryScores: report.categoryScores,
-  //   insights: report.insights,
-  // }
+  // Load auth token
+  const { loadAuthSession } = await import('../../utils/auth-storage.js');
+  const { loadGraphConfig } = await import('../graph/config.js');
 
-  console.log(chalk.yellow('Supabase sync not yet implemented (requires API endpoint)'));
-  console.log(chalk.dim('Results saved locally only'));
+  const session = await loadAuthSession();
+  const token = session?.api_key || null;
+
+  if (!token) {
+    console.log(chalk.yellow('⚠ Not authenticated. Run `ginko login` to sync insights.'));
+    console.log(chalk.dim('Results saved locally only'));
+    return;
+  }
+
+  // Get API URL from graph config or environment
+  const graphConfig = await loadGraphConfig();
+  const apiUrl = graphConfig?.apiEndpoint || process.env.GINKO_API_URL || 'https://app.ginkoai.com';
+
+  // Prepare request payload
+  const payload = {
+    userId: report.userId,
+    projectId: report.projectId,
+    graphId: graphConfig?.graphId,
+    overallScore: report.overallScore,
+    categoryScores: report.categoryScores,
+    insights: report.insights,
+    summary: report.summary,
+    period: {
+      start: report.period.start.toISOString(),
+      end: report.period.end.toISOString(),
+      days: report.period.days,
+    },
+  };
+
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/insights/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({})) as { error?: string };
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json() as { runId: string; insightCount: number; trendCount: number };
+    console.log(chalk.green('✓ Insights synced to dashboard'));
+    console.log(chalk.dim(`  Run ID: ${result.runId}`));
+    console.log(chalk.dim(`  Insights: ${result.insightCount} | Trends: ${result.trendCount}`));
+  } catch (error) {
+    console.log(chalk.yellow(`⚠ Sync failed: ${error instanceof Error ? error.message : String(error)}`));
+    console.log(chalk.dim('Results saved locally only'));
+  }
 }
 
 // ============================================================================

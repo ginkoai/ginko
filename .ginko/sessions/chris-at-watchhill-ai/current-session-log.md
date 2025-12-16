@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-15T20-12-23-210Z
-started: 2025-12-15T20:12:23.212Z
+session_id: session-2025-12-15T23-01-16-637Z
+started: 2025-12-15T23:01:16.637Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-15T20-12-23-210Z
+# Session Log: session-2025-12-15T23-01-16-637Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,18 +36,56 @@ branch: main
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 15:46 - [feature]
-# [FEATURE] 15:46
+### 18:20 - [achievement]
+# [ACHIEVEMENT] 18:20
 
-TASK-7 Dashboard Polish: Renamed Dashboard to Focus section with project-centric metrics. Created 5 new components (SprintProgressCard, MyTasksList, LastSessionSummary, RecentCompletions, ActionItems). Focus page shows sprint progress with days ahead/behind calculation, assigned tasks with graph links, last session summary, recent completions feed, and action items. Removed coaching insights from landing page (moved to dedicated Insights section). Used 4 parallel agents to accelerate component creation.
+TASK-11 Complete: Insights Supabase Sync API. Created POST /api/v1/insights/sync endpoint that receives CoachingReport from CLI, stores in insight_runs/insights/insight_trends tables using service role client. Updated CLI syncToSupabase() to call endpoint with auth. Sprint 4 now 100% complete.
 
 **Files:**
-- dashboard/src/app/dashboard/page.tsx
-- dashboard/src/components/focus/*
-- dashboard/src/components/dashboard/dashboard-sidebar.tsx
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- docs/sprints/CURRENT-SPRINT.md
+- packages/cli/src/commands/insights/insights-command.ts
 
 **Impact:** high
-**Timestamp:** 2025-12-15T20:46:29.077Z
+**Timestamp:** 2025-12-15T23:20:20.750Z
 
-Files: dashboard/src/app/dashboard/page.tsx, dashboard/src/components/focus/*, dashboard/src/components/dashboard/dashboard-sidebar.tsx
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/CURRENT-SPRINT.md, packages/cli/src/commands/insights/insights-command.ts
+Impact: high
+
+### 10:32 - [achievement]
+# [ACHIEVEMENT] 10:32
+
+TASK-11 fully verified: ginko insights --sync now works end-to-end. Fixed API key auth (service role client for RLS bypass), fixed CLI token loading (use session.api_key directly), regenerated user API key via dashboard. Sync confirmed working with run IDs stored in Supabase.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/lib/auth/middleware.ts
+- dashboard/src/lib/supabase/server.ts
+
+**Impact:** high
+**Timestamp:** 2025-12-16T15:32:28.998Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/lib/auth/middleware.ts, dashboard/src/lib/supabase/server.ts
+Impact: high
+
+### 10:49 - [achievement]
+# [ACHIEVEMENT] 10:49
+
+TASK-11 Complete: Insights Supabase Sync API. Created POST /api/v1/insights/sync endpoint to receive CLI coaching reports. Fixed API key auth to use service role client for bypassing RLS. Updated GET endpoint to return stored insights. Dashboard now fetches real data from Supabase instead of sample data. End-to-end flow: ginko insights --sync -> Supabase -> Dashboard display.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/dashboard/insights/page-client.tsx
+- dashboard/src/lib/auth/middleware.ts
+
+**Impact:** high
+**Timestamp:** 2025-12-16T15:49:34.330Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/dashboard/insights/page-client.tsx, dashboard/src/lib/auth/middleware.ts
 Impact: high

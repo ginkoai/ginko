@@ -19,7 +19,7 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', withBrackets = false, ...props }, ref) => {
+  ({ className, variant = 'default', withBrackets = false, children, ...props }, ref) => {
     const variants = {
       // Default: Standard card with subtle border
       default: 'bg-card border border-border',
@@ -29,17 +29,39 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       elevated: 'bg-card border border-border shadow-lg'
     }
 
+    if (withBrackets) {
+      return (
+        <div
+          ref={ref}
+          className={clsx(
+            'rounded-lg text-card-foreground transition-colors relative',
+            variants[variant],
+            className
+          )}
+          {...props}
+        >
+          {/* Corner brackets - all 4 corners */}
+          <span className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-primary pointer-events-none" />
+          <span className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-primary pointer-events-none" />
+          <span className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-primary pointer-events-none" />
+          <span className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-primary pointer-events-none" />
+          {children}
+        </div>
+      )
+    }
+
     return (
       <div
         ref={ref}
         className={clsx(
           'rounded-lg text-card-foreground transition-colors',
           variants[variant],
-          withBrackets && 'corner-brackets',
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </div>
     )
   }
 )

@@ -43,16 +43,18 @@ export const createServerClient = async () => {
 /**
  * Create a Supabase client with service role key (bypasses RLS)
  * Use for admin operations like creating user profiles, generating API keys
+ * Uses standard supabase-js client (not SSR) for reliable service role access
  */
 export const createServiceRoleClient = () => {
-  return createSupabaseServerClient<Database>(
+  const { createClient } = require('@supabase/supabase-js')
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      cookies: {
-        getAll() { return [] },
-        setAll() {},
-      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     }
   )
 }

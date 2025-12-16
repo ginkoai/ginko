@@ -15,8 +15,7 @@ import {
   InsightCategory,
   CategoryScore,
   CATEGORY_DISPLAY_NAMES,
-  CATEGORY_COLORS,
-  getScoreBarColor
+  CATEGORY_COLORS
 } from '@/lib/insights/types'
 
 interface InsightCategoryTabsProps {
@@ -95,9 +94,27 @@ interface CategoryScoreCardProps {
   isActive?: boolean
 }
 
+// Category-specific bar colors for consistent branding
+const CATEGORY_BAR_COLORS: Record<InsightCategory, string> = {
+  'efficiency': 'bg-cyan-500',
+  'patterns': 'bg-green-500',  // Use green for high-scoring patterns
+  'quality': 'bg-slate-400',   // Neutral gray for quality (will be replaced based on score)
+  'anti-patterns': 'bg-yellow-500'
+}
+
+// Get bar color based on score AND category
+function getCategoryBarColor(category: InsightCategory, score: number): string {
+  // For quality and efficiency, use score-based coloring
+  if (score >= 90) return 'bg-green-500';
+  if (score >= 75) return 'bg-emerald-500'; // More visible than cyan
+  if (score >= 60) return 'bg-yellow-500';
+  if (score >= 40) return 'bg-orange-500';
+  return 'bg-red-500';
+}
+
 export function CategoryScoreCard({ categoryScore, onClick, isActive }: CategoryScoreCardProps) {
   const colors = CATEGORY_COLORS[categoryScore.category]
-  const barColor = getScoreBarColor(categoryScore.score)
+  const barColor = getCategoryBarColor(categoryScore.category, categoryScore.score)
 
   return (
     <button

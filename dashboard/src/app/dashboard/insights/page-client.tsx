@@ -214,22 +214,47 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
     setError(null)
 
     try {
-      // TODO: Fetch from Supabase once sync is implemented
-      // For now, check if we have data in localStorage from CLI sync
-      const cached = localStorage.getItem('ginko-insights-report')
-      if (cached) {
-        const parsed = JSON.parse(cached)
-        // Check if data is recent (less than 24 hours old)
-        const runAt = new Date(parsed.runAt)
-        const age = Date.now() - runAt.getTime()
-        if (age < 24 * 60 * 60 * 1000) {
-          setReport(parsed)
+      // Fetch from Supabase via API
+      const response = await fetch('/api/v1/insights/sync?limit=1')
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.runs && data.runs.length > 0) {
+          const run = data.runs[0]
+          // Transform from DB format to DashboardCoachingReport format
+          const report: DashboardCoachingReport = {
+            userId: run.user_id,
+            projectId: run.project_id,
+            runAt: run.run_at,
+            period: {
+              start: run.data_window_start,
+              end: run.data_window_end,
+              days: run.metadata?.periodDays || 30
+            },
+            overallScore: run.overall_score,
+            categoryScores: run.metadata?.categoryScores || [],
+            insights: run.insights?.map((i: any) => ({
+              category: i.category,
+              severity: i.severity,
+              title: i.title,
+              description: i.description,
+              metricName: i.metric_name,
+              metricValue: i.metric_value,
+              metricTarget: i.metric_target,
+              metricUnit: i.metric_unit,
+              scoreImpact: i.score_impact,
+              evidence: i.evidence || [],
+              recommendations: i.recommendations || []
+            })) || [],
+            summary: run.summary
+          }
+          setReport(report)
           setLoading(false)
           return
         }
       }
 
-      // No cached data, show empty state or demo
+      // No data from API, show empty state or demo
       if (useDemo) {
         setReport({ ...SAMPLE_REPORT, userId, projectId: 'ginko' })
       } else {

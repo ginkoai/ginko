@@ -9,7 +9,7 @@
  * @dependencies: [@supabase/ssr, next/server, bcryptjs]
  */
 
-import { createServerClient } from '@/lib/supabase/server';
+import { createServerClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import * as bcrypt from 'bcryptjs';
 
@@ -43,8 +43,12 @@ export async function verifyAuth(
 
       // Check if this is an API key (gk_ prefix)
       if (token.startsWith('gk_')) {
+        // Use service role client to bypass RLS for API key validation
+        // (We're not authenticated yet, so anon client can't query other users' hashes)
+        const serviceClient = createServiceRoleClient();
+
         // Query all users with API keys
-        const { data: profiles, error: queryError } = await supabase
+        const { data: profiles, error: queryError } = await serviceClient
           .from('user_profiles')
           .select('id, api_key_hash, email, github_username, github_id, full_name')
           .not('api_key_hash', 'is', null);
