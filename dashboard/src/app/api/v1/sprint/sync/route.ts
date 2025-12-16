@@ -53,6 +53,7 @@ interface SprintGraph {
     relatedPatterns: string[]; // EPIC-002 Sprint 2: Pattern references
     relatedGotchas: string[]; // EPIC-002 Sprint 2: Gotcha warnings
     owner?: string;
+    assignee?: string; // Email extracted from owner for dashboard matching
   }>;
 }
 
@@ -94,7 +95,7 @@ export async function POST(request: NextRequest) {
     const sprintGraph = parseSprintToGraph(sprintContent);
 
     // Sync to graph
-    const result = await syncSprintToGraph(client, sprintGraph);
+    const result = await syncSprintToGraph(client, sprintGraph, graphId);
 
     return NextResponse.json({
       success: true,
@@ -315,9 +316,16 @@ function parseSprintToGraph(content: string): SprintGraph {
     const priorityMatch = section.match(/\*\*Priority:\*\*\s*([^\n]+)/i);
     const priority = priorityMatch ? priorityMatch[1].trim().toUpperCase() : 'MEDIUM';
 
-    // Extract owner
-    const ownerMatch = section.match(/\*\*Owner:\*\*\s*([^\n]+)/i);
+    // Extract owner/assignee (support both field names)
+    const ownerMatch = section.match(/\*\*(?:Owner|Assignee):\*\*\s*([^\n]+)/i);
     const owner = ownerMatch ? ownerMatch[1].trim() : undefined;
+
+    // Extract assignee email from owner (format: "Name (email)" or just "email")
+    let assignee: string | undefined;
+    if (owner) {
+      const emailMatch = owner.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+      assignee = emailMatch ? emailMatch[1].toLowerCase() : undefined;
+    }
 
     // Extract files
     const filesMatch = section.match(/\*\*Files:\*\*\s*([\s\S]*?)(?=\n\*\*|$)/i);
@@ -407,6 +415,7 @@ function parseSprintToGraph(content: string): SprintGraph {
       relatedPatterns,
       relatedGotchas,
       owner,
+      assignee,
     });
   }
 
@@ -428,7 +437,8 @@ function parseSprintToGraph(content: string): SprintGraph {
  */
 async function syncSprintToGraph(
   client: CloudGraphClient,
-  graph: SprintGraph
+  graph: SprintGraph,
+  graphId: string
 ): Promise<{
   nodes: number;
   relationships: number;
@@ -480,7 +490,9 @@ async function syncSprintToGraph(
       files: task.files,
       relatedADRs: task.relatedADRs,
       owner: task.owner || '',
+      assignee: task.assignee || '', // Email for dashboard My Tasks matching
       sprintId: graph.sprint.id,
+      graphId, // Required for nodes API filtering
     });
     if (isNew) nodeCount++;
   }

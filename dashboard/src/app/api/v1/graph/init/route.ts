@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '../_neo4j';
 import { randomUUID } from 'crypto';
+import { extractUserIdFromToken } from '../_cloud-graph-client';
 
 interface GraphInitRequest {
   projectPath: string;
@@ -93,10 +94,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract user ID from auth token (for now, use a placeholder)
-    // TODO: Decode JWT and extract user ID
+    // Extract user ID from auth token
     const token = authHeader.substring(7); // Remove 'Bearer '
-    const userId = 'user-placeholder'; // TODO: Extract from token
+    const userId = extractUserIdFromToken(token);
 
     // Generate graph ID and namespace
     const graphId = `gin_${Date.now()}_${randomUUID().substring(0, 6)}`;

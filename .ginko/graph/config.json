@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "graphId": "gin_1762125961056_dg4bsd",
-  "namespace": "chris/ginko",
+  "namespace": "/chris/ginko",
   "projectName": "ginko",
   "visibility": "private",
   "apiEndpoint": "https://app.ginkoai.com",
@@ -24,5 +24,5 @@
     }
   },
   "hashes": {},
-  "lastSync": "2025-11-18T18:25:04.373Z"
+  "lastSync": "2025-12-16T20:36:25.992Z"
 }
