@@ -30,7 +30,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 // Default graph ID fallback
-const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
+const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
 
 interface RecentCompletionsProps {
   userId?: string;

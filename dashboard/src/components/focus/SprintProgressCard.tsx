@@ -52,7 +52,7 @@ interface ActiveSprintResponse {
 }
 
 // Default graph ID fallback
-const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
+const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
 
 /**
  * Safely parse a date value that may come from Neo4j or as an ISO string.

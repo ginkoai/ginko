@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 // =============================================================================
 
 // Default graph ID - in production this would come from user settings or env
-const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
+const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
 
 // =============================================================================
 // Component

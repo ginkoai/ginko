@@ -1,7 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-11-02
+ * @updated: 2025-12-16
+ * @version: v2-verifyaccess-fix
  * @tags: [graph, cloud, multi-tenant, neo4j, serverless, crud]
  * @related: [_neo4j.ts, init.ts, status.ts, nodes.ts]
  * @priority: critical
@@ -149,23 +150,28 @@ export class CloudGraphClient {
 
   /**
    * Create client from Bearer token
-   * Extracts userId from token and validates graph access
+   * Resolves userId via Supabase auth (gk_ API keys or OAuth JWTs)
+   * Returns consistent Supabase UUID regardless of auth method
    */
   static async fromBearerToken(
     token: string,
     graphId?: string
   ): Promise<CloudGraphClient> {
-    // MVP: Accept any non-empty token
     if (!token || token.length < 8) {
       throw new Error('Invalid bearer token');
     }
 
-    // Extract userId from token (temporary strategy)
-    // Format: 'user_' + first 8 chars of base64 encoded token
-    const userId = 'user_' + Buffer.from(token).toString('base64').substring(0, 8);
+    // Resolve token to actual Supabase user ID
+    // This ensures CLI (gk_ tokens) and Dashboard (OAuth JWTs) use same userId
+    const { resolveUserId } = await import('@/lib/auth/resolve-user');
+    const result = await resolveUserId(token);
+
+    if ('error' in result) {
+      throw new Error(`Authentication failed: ${result.error}`);
+    }
 
     const context: GraphContext = {
-      userId,
+      userId: result.userId,  // Supabase UUID
       graphId: graphId || '',
     };
 
@@ -174,8 +180,10 @@ export class CloudGraphClient {
     // Verify graph access if graphId provided
     if (graphId) {
       const hasAccess = await client.verifyAccess();
+      console.log('[fromBearerToken] verifyAccess result:', hasAccess, 'for user:', result.userId, 'graph:', graphId);
       if (!hasAccess) {
-        throw new Error(`User ${userId} does not have access to graph ${graphId}`);
+        // Include debug info in error for troubleshooting
+        throw new Error(`User ${result.userId} does not have access to graph ${graphId} (method: ${result.method}, hasAccess: ${hasAccess})`);
       }
     }
 
@@ -190,13 +198,37 @@ export class CloudGraphClient {
    * TODO: Implement proper ACL-based access control for multi-user support.
    */
   async verifyAccess(): Promise<boolean> {
-    const result = await runQuery<{ count: number }>(
-      `MATCH (g:Graph {graphId: $graphId})
-       RETURN count(g) as count`,
-      { graphId: this.context.graphId }
-    );
+    console.log('[verifyAccess] Checking graph access for:', this.context.graphId);
+    console.log('[verifyAccess] User context:', this.context.userId);
 
-    return result.length > 0 && result[0].count > 0;
+    try {
+      const result = await runQuery<{ count: number }>(
+        `MATCH (g:Graph {graphId: $graphId})
+         RETURN count(g) as count`,
+        { graphId: this.context.graphId }
+      );
+
+      console.log('[verifyAccess] Query result:', JSON.stringify(result));
+      console.log('[verifyAccess] Result length:', result.length);
+
+      if (result.length > 0) {
+        console.log('[verifyAccess] Count value:', result[0].count);
+        console.log('[verifyAccess] Count type:', typeof result[0].count);
+        // Handle Neo4j Integer type - it's an object with low/high properties
+        const countValue = result[0].count;
+        const countNumber = typeof countValue === 'object' && countValue !== null && 'toNumber' in countValue
+          ? (countValue as any).toNumber()
+          : Number(countValue);
+        console.log('[verifyAccess] Parsed count:', countNumber);
+        return countNumber > 0;
+      }
+
+      console.log('[verifyAccess] No results returned');
+      return false;
+    } catch (error) {
+      console.error('[verifyAccess] Query error:', error);
+      return false;
+    }
   }
 
   /**
@@ -1190,11 +1222,23 @@ export class CloudGraphClient {
 
 /**
  * Helper to extract userId from Bearer token
- * MVP implementation - will be replaced with Supabase verification
+ * Resolves to actual Supabase UUID for consistent user identification
+ *
+ * @param token - Bearer token (gk_ API key or OAuth JWT)
+ * @returns Promise<string> - Supabase user UUID
+ * @throws Error if token is invalid or user not found
  */
-export function extractUserIdFromToken(token: string): string {
+export async function extractUserIdFromToken(token: string): Promise<string> {
   if (!token || token.length < 8) {
     throw new Error('Invalid token');
   }
-  return 'user_' + Buffer.from(token).toString('base64').substring(0, 8);
+
+  const { resolveUserId } = await import('@/lib/auth/resolve-user');
+  const result = await resolveUserId(token);
+
+  if ('error' in result) {
+    throw new Error(`Authentication failed: ${result.error}`);
+  }
+
+  return result.userId;
 }

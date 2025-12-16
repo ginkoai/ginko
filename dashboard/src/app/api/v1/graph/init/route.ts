@@ -94,9 +94,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract user ID from auth token
+    // Extract user ID from auth token (resolves to Supabase UUID)
     const token = authHeader.substring(7); // Remove 'Bearer '
-    const userId = extractUserIdFromToken(token);
+    const userId = await extractUserIdFromToken(token);
 
     // Generate graph ID and namespace
     const graphId = `gin_${Date.now()}_${randomUUID().substring(0, 6)}`;

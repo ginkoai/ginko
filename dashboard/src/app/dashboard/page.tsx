@@ -13,7 +13,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { SprintProgressCard, MyTasksList, LastSessionSummary, RecentCompletions, ActionItems } from '@/components/focus'
 
 // Default graph ID for beta - all users share this graph
-const DEFAULT_GRAPH_ID = process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd';
+const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
 
 export default async function FocusPage() {
   const supabase = await createServerClient()
