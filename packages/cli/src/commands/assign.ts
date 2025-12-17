@@ -29,10 +29,10 @@ interface AssignOptions {
 
 interface TaskNode {
   id: string;
-  task_id: string;
   title: string;
   assignee?: string;
   status: string;
+  sprintId?: string;
 }
 
 interface ListNodesResponse {
@@ -120,22 +120,22 @@ async function fetchTasksBySprint(graphId: string, sprintId: string): Promise<Ta
     throw new Error(response.error || 'Failed to fetch tasks');
   }
 
-  // Filter tasks that belong to the sprint (task_id starts with sprint prefix)
+  // Filter tasks that belong to the sprint
+  // Check sprintId property first, then fall back to ID prefix matching
   // e.g., sprint e006_s02 includes tasks e006_s02_t01, e006_s02_t02, etc.
   return response.data.nodes
     .map(node => node.properties)
-    .filter(task => task.task_id?.startsWith(sprintId));
+    .filter(task => task.sprintId === sprintId || task.id?.startsWith(sprintId));
 }
 
 /**
  * Update task assignee in graph
  */
 async function updateTaskAssignee(graphId: string, taskId: string, email: string): Promise<boolean> {
-  const response = await api.put(
-    `/api/v1/knowledge/nodes/${taskId}`,
+  const response = await api.patch(
+    `/api/v1/graph/nodes/${taskId}?graphId=${encodeURIComponent(graphId)}`,
     {
-      graphId,
-      data: { assignee: email }
+      properties: { assignee: email }
     }
   );
 
@@ -205,14 +205,14 @@ export async function assignCommand(
       let failCount = 0;
 
       for (const task of tasks) {
-        const success = await updateTaskAssignee(graphId, task.task_id, email);
+        const success = await updateTaskAssignee(graphId, task.id, email);
 
         if (success) {
           successCount++;
-          console.log(chalk.green(`  ✓ ${task.task_id}`), chalk.dim(task.title));
+          console.log(chalk.green(`  ✓ ${task.id}`), chalk.dim(task.title));
         } else {
           failCount++;
-          console.log(chalk.red(`  ✗ ${task.task_id}`), chalk.dim(task.title));
+          console.log(chalk.red(`  ✗ ${task.id}`), chalk.dim(task.title));
         }
       }
 
@@ -222,7 +222,7 @@ export async function assignCommand(
         if (sprintFile) {
           let mdUpdated = 0;
           for (const task of tasks) {
-            if (await updateSprintMarkdown(sprintFile, task.task_id, email)) {
+            if (await updateSprintMarkdown(sprintFile, task.id, email)) {
               mdUpdated++;
             }
           }

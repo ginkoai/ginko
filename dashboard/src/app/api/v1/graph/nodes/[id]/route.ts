@@ -131,7 +131,12 @@ export async function PATCH(
     const session = getSession();
     try {
       // Update node with sync tracking
-      const updateProps: Record<string, any> = { ...body };
+      // Support both direct properties { assignee: "..." } and wrapped { properties: { assignee: "..." } }
+      const updateProps: Record<string, any> = body.properties
+        ? { ...body.properties }
+        : { ...body };
+      // Remove graphId from updateProps if present (it's a query param, not a node property)
+      delete updateProps.graphId;
       const now = new Date().toISOString();
 
       const result = await session.executeWrite(async (tx) => {
