@@ -7,7 +7,7 @@
 
 **Duration**: 7-8 days
 **Type**: Feature sprint
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 11% (1/9 tasks complete)
 
 **Success Criteria:**
 - [ ] ProjectView displays Charter as root with project metrics
@@ -176,7 +176,7 @@
 ---
 
 ### TASK-7: My Tasks Scroll Containment (1h)
-**Status:** [@] In Progress
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s02_t07
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -193,9 +193,63 @@
 
 ---
 
+### TASK-8: My Tasks Quick Look Modal (2h)
+**Status:** [ ] Pending
+**Priority:** MEDIUM
+**ID:** e006_s02_t08
+**Assignee:** Chris Norton (chris@watchhill.ai)
+
+**Goal:** Add a "quick look" modal for tasks in My Tasks list for faster context without leaving the Focus page.
+
+**Implementation:**
+1. Create TaskQuickLookModal component:
+   - Task title, ID, status, priority
+   - Description preview
+   - Related files list
+   - "View in Graph" link button
+2. Add click handler to MyTasksList task items
+3. Use existing Dialog component from ui/
+
+**Files:**
+- `dashboard/src/components/focus/TaskQuickLookModal.tsx` (new)
+- `dashboard/src/components/focus/MyTasksList.tsx` (update)
+
+---
+
+### TASK-9: CLI ginko assign Command (2h)
+**Status:** [ ] Pending
+**Priority:** MEDIUM
+**ID:** e006_s02_t09
+**Assignee:** Chris Norton (chris@watchhill.ai)
+
+**Goal:** Create CLI command to streamline task assignment without editing sprint markdown.
+
+**Implementation:**
+1. Create `ginko assign` command with options:
+   - `ginko assign <task-id> <email>` - Assign single task
+   - `ginko assign --sprint <sprint-id> --all <email>` - Assign all tasks in sprint
+2. Update Task node in graph with assignee field
+3. Optionally update sprint markdown file
+
+**Usage:**
+```bash
+ginko assign e006_s02_t01 chris@watchhill.ai
+ginko assign --sprint e006_s02 --all chris@watchhill.ai
+```
+
+**Files:**
+- `packages/cli/src/commands/assign.ts` (new)
+- `packages/cli/src/index.ts` (update - register command)
+
+---
+
 ## Accomplishments This Sprint
 
-[To be updated as tasks complete]
+### 2025-12-17: TASK-7 My Tasks Scroll Containment
+- Added max-height (400px) and overflow-y scroll to MyTasksList CardContent
+- Implemented deduplication by task_id to prevent duplicate entries from multiple Graph nodes
+- Pagination not needed - scroll approach handles 100 tasks efficiently
+- Files: `dashboard/src/components/focus/MyTasksList.tsx:211,126-131`
 
 ---
 

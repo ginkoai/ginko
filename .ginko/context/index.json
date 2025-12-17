@@ -686,10 +686,34 @@
       "relevance": "critical",
       "created": "2025-12-15T22:40:46.798Z",
       "sessionId": "session-chris-at-watchhill-ai-1765838446777"
+    },
+    {
+      "filename": "gotcha-fixed-task-assignment-sync-to-graph.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-16T20:56:27.944Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765918587916"
+    },
+    {
+      "filename": "gotcha-fixed-task-assignment-sync-to-my-tasks.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-17T00:49:03.897Z",
+      "sessionId": "session-chris-at-watchhill-ai-1765932543876"
     }
   ],
-  "lastUpdated": "2025-12-15T22:40:46.800Z",
-  "totalModules": 49,
+  "lastUpdated": "2025-12-17T00:49:03.900Z",
+  "totalModules": 51,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

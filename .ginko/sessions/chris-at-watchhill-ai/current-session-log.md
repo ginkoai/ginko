@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-15T23-01-16-637Z
-started: 2025-12-15T23:01:16.637Z
+session_id: session-2025-12-17T13-59-24-764Z
+started: 2025-12-17T13:59:24.764Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-15T23-01-16-637Z
+# Session Log: session-2025-12-17T13-59-24-764Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,56 +36,31 @@ branch: main
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 18:20 - [achievement]
-# [ACHIEVEMENT] 18:20
+### 09:06 - [achievement]
+# [ACHIEVEMENT] 09:06
 
-TASK-11 Complete: Insights Supabase Sync API. Created POST /api/v1/insights/sync endpoint that receives CoachingReport from CLI, stores in insight_runs/insights/insight_trends tables using service role client. Updated CLI syncToSupabase() to call endpoint with auth. Sprint 4 now 100% complete.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- docs/sprints/CURRENT-SPRINT.md
-- packages/cli/src/commands/insights/insights-command.ts
-
-**Impact:** high
-**Timestamp:** 2025-12-15T23:20:20.750Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/CURRENT-SPRINT.md, packages/cli/src/commands/insights/insights-command.ts
-Impact: high
-
-### 10:32 - [achievement]
-# [ACHIEVEMENT] 10:32
-
-TASK-11 fully verified: ginko insights --sync now works end-to-end. Fixed API key auth (service role client for RLS bypass), fixed CLI token loading (use session.api_key directly), regenerated user API key via dashboard. Sync confirmed working with run IDs stored in Supabase.
+Completed TASK-7 My Tasks Scroll Containment. Implementation already in codebase (commit 9cb714d): max-h-[400px] overflow-y-auto on CardContent for scroll containment, deduplication by task_id to prevent duplicates from multiple Graph nodes. Verified build passes and deployed to production.
 
 **Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/lib/auth/middleware.ts
-- dashboard/src/lib/supabase/server.ts
+- dashboard/src/components/focus/MyTasksList.tsx:211
+- 126-131
 
-**Impact:** high
-**Timestamp:** 2025-12-16T15:32:28.998Z
+**Impact:** medium
+**Timestamp:** 2025-12-17T14:06:10.912Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/lib/auth/middleware.ts, dashboard/src/lib/supabase/server.ts
-Impact: high
+Files: dashboard/src/components/focus/MyTasksList.tsx:211, 126-131
+Impact: medium
 
-### 10:49 - [achievement]
-# [ACHIEVEMENT] 10:49
+### 09:18 - [fix]
+# [FIX] 09:18
 
-TASK-11 Complete: Insights Supabase Sync API. Created POST /api/v1/insights/sync endpoint to receive CLI coaching reports. Fixed API key auth to use service role client for bypassing RLS. Updated GET endpoint to return stored insights. Dashboard now fetches real data from Supabase instead of sample data. End-to-end flow: ginko insights --sync -> Supabase -> Dashboard display.
+Fixed Sprint Progress Card showing 0 tasks. Two issues resolved: (1) Current sprint wasn't synced to graph - used scripts/sync-sprint.sh to sync CURRENT-SPRINT.md to Neo4j. (2) Stats calculation bug - notStartedTasks was checking for 'not_started' status but sync route stores as 'todo'. Fixed active route to check both statuses. Dashboard now shows correct counts: 7 total, 1 complete, 6 pending.
 
 **Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/dashboard/insights/page-client.tsx
-- dashboard/src/lib/auth/middleware.ts
+- dashboard/src/app/api/v1/sprint/active/route.ts:143
 
 **Impact:** high
-**Timestamp:** 2025-12-16T15:49:34.330Z
+**Timestamp:** 2025-12-17T14:18:54.602Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/dashboard/insights/page-client.tsx, dashboard/src/lib/auth/middleware.ts
+Files: dashboard/src/app/api/v1/sprint/active/route.ts:143
 Impact: high

@@ -135,11 +135,12 @@ export async function GET(request: NextRequest) {
     const nextTask: TaskData | null = extractProps<TaskData>(record.nextTask);
 
     // Calculate stats
+    // Note: Sprint sync maps not_started → todo, so check both
     const stats: SprintStats = {
       totalTasks: tasks.length,
       completedTasks: tasks.filter(t => t.status === 'complete').length,
       inProgressTasks: tasks.filter(t => t.status === 'in_progress').length,
-      notStartedTasks: tasks.filter(t => t.status === 'not_started').length,
+      notStartedTasks: tasks.filter(t => t.status === 'not_started' || t.status === 'todo').length,
       progressPercentage: tasks.length > 0
         ? Math.round((tasks.filter(t => t.status === 'complete').length / tasks.length) * 100)
         : 0,
