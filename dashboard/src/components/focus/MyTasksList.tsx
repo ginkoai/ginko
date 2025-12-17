@@ -1,18 +1,17 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
- * @tags: [focus, tasks, user-tasks, dashboard, list]
- * @related: [graph/node-card.tsx, dashboard/focus-page.tsx]
+ * @updated: 2025-12-17
+ * @tags: [focus, tasks, user-tasks, dashboard, list, quick-look]
+ * @related: [graph/node-card.tsx, dashboard/focus-page.tsx, TaskQuickLookModal.tsx]
  * @priority: high
  * @complexity: medium
- * @dependencies: [react, graph-api, lucide-react]
+ * @dependencies: [react, graph-api, lucide-react, TaskQuickLookModal]
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { CheckSquare, Circle, Pause, AlertCircle } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +20,7 @@ import { Alert } from '@/components/ui/alert';
 import { listNodes } from '@/lib/graph/api-client';
 import type { TaskNode } from '@/lib/graph/types';
 import { cn } from '@/lib/utils';
+import { TaskQuickLookModal } from './TaskQuickLookModal';
 
 // =============================================================================
 // Types
@@ -98,6 +98,13 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
   const [tasks, setTasks] = useState<TaskNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskNode | null>(null);
+  const [isQuickLookOpen, setIsQuickLookOpen] = useState(false);
+
+  const handleTaskClick = (task: TaskNode) => {
+    setSelectedTask(task);
+    setIsQuickLookOpen(true);
+  };
 
   useEffect(() => {
     async function fetchTasks() {
@@ -239,11 +246,11 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
                 {/* Task List */}
                 <div className="space-y-2">
                   {group.tasks.map((task) => (
-                    <Link
+                    <button
                       key={task.task_id}
-                      href={`/dashboard/graph?node=${task.task_id}`}
+                      onClick={() => handleTaskClick(task)}
                       className={cn(
-                        'block rounded-md border p-3 transition-all hover:shadow-md',
+                        'w-full text-left rounded-md border p-3 transition-all hover:shadow-md cursor-pointer',
                         isInProgress
                           ? 'border-ginko-500/30 bg-ginko-500/5 hover:border-ginko-500/50'
                           : 'border-border bg-card hover:border-border/80'
@@ -273,20 +280,25 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
                           )}
                         </div>
 
-                        {/* Link Icon */}
-                        <div className="flex-shrink-0">
-                          <div className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                            →
-                          </div>
+                        {/* Quick Look Indicator */}
+                        <div className="flex-shrink-0 text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
+                          <span className="text-xs">↗</span>
                         </div>
                       </div>
-                    </Link>
+                    </button>
                   ))}
                 </div>
               </div>
             );
           })}
         </div>
+
+        {/* Quick Look Modal */}
+        <TaskQuickLookModal
+          task={selectedTask}
+          open={isQuickLookOpen}
+          onOpenChange={setIsQuickLookOpen}
+        />
       </CardContent>
     </Card>
   );

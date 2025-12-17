@@ -68,6 +68,7 @@ import { escalationCommand } from './commands/escalation/index.js';
 import { notificationsCommand } from './commands/notifications/index.js';
 import { insightsCommand } from './commands/insights/index.js';
 import { createSyncCommand } from './commands/sync/index.js';
+import { assignCommand } from './commands/assign.js';
 
 const program = new Command();
 
@@ -495,6 +496,26 @@ program
   .option('--conflicts', 'Show files modified by multiple users')
   .option('--window <hours>', 'Time window in hours (default: 24)', '24')
   .action((user, options) => teamCommand(user, options));
+
+// Task assignment command (EPIC-006 Sprint 2 TASK-9)
+program
+  .command('assign <taskIdOrEmail> [email]')
+  .description('Assign tasks to team members (updates graph + sprint markdown)')
+  .option('-s, --sprint <sprintId>', 'Sprint ID for bulk assignment (requires --all)')
+  .option('-a, --all', 'Assign all tasks in sprint to specified email')
+  .option('--no-update-markdown', 'Skip updating sprint markdown file')
+  .option('-v, --verbose', 'Show detailed output')
+  .addHelpText('after', `
+${chalk.gray('Single task assignment:')}
+  ${chalk.green('ginko assign e006_s02_t01 chris@example.com')}
+
+${chalk.gray('Bulk assignment (all tasks in sprint):')}
+  ${chalk.green('ginko assign --sprint e006_s02 --all chris@example.com')}
+
+${chalk.gray('Skip markdown update:')}
+  ${chalk.green('ginko assign e006_s02_t01 chris@example.com --no-update-markdown')}
+`)
+  .action((taskIdOrEmail, email, options) => assignCommand(taskIdOrEmail, email, options));
 
 // Backlog management command
 program.addCommand(backlogCommand());

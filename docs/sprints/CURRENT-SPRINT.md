@@ -7,7 +7,7 @@
 
 **Duration**: 7-8 days
 **Type**: Feature sprint
-**Progress:** 78% (7/9 tasks complete)
+**Progress:** 100% (9/9 tasks complete)
 
 **Success Criteria:**
 - [ ] ProjectView displays Charter as root with project metrics
@@ -194,7 +194,7 @@
 ---
 
 ### TASK-8: My Tasks Quick Look Modal (2h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s02_t08
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -217,7 +217,7 @@
 ---
 
 ### TASK-9: CLI ginko assign Command (2h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s02_t09
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -244,6 +244,24 @@ ginko assign --sprint e006_s02 --all chris@watchhill.ai
 ---
 
 ## Accomplishments This Sprint
+
+### 2025-12-17: TASK-9 CLI ginko assign Command
+- Created `ginko assign` command for task assignment without editing sprint markdown
+- Single task mode: `ginko assign <task-id> <email>` updates Task node assignee in graph
+- Bulk mode: `ginko assign --sprint <sprint-id> --all <email>` assigns all tasks in sprint
+- Auto-updates sprint markdown file (can disable with --no-update-markdown)
+- Uses API client to PUT to /api/v1/knowledge/nodes/[id] endpoint
+- Build verified successfully
+- Files: `packages/cli/src/commands/assign.ts` (new), `packages/cli/src/index.ts` (update)
+
+### 2025-12-17: TASK-8 My Tasks Quick Look Modal
+- Created TaskQuickLookModal component with task details (ID, title, status, priority, description, assignee)
+- Updated MyTasksList to use clickable buttons instead of direct links
+- Modal shows full description, metadata (created/updated dates), and "View in Graph" button
+- Enables quick task context review without leaving the Focus page
+- Uses existing Dialog component from ui/ for consistent modal styling
+- Build verified successfully
+- Files: `dashboard/src/components/focus/TaskQuickLookModal.tsx` (new), `MyTasksList.tsx` (update)
 
 ### 2025-12-17: TASK-6 NodeEditorModal
 - Created NodeEditorModal component using Radix Dialog + NodeEditorForm
