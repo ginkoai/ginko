@@ -7,7 +7,7 @@
 
 **Duration**: 7-8 days
 **Type**: Feature sprint
-**Progress:** 56% (5/9 tasks complete)
+**Progress:** 67% (6/9 tasks complete)
 
 **Success Criteria:**
 - [ ] ProjectView displays Charter as root with project metrics
@@ -15,7 +15,7 @@
 - [ ] NodeView provides full-page detail with related nodes
 - [ ] SummaryCards show count + status preview bars
 - [ ] Breadcrumb navigation enables deep exploration
-- [ ] View transitions are smooth (Framer Motion)
+- [x] View transitions are smooth (Framer Motion)
 
 ---
 
@@ -125,7 +125,7 @@
 ---
 
 ### TASK-5: View Transitions + Integration (4h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s02_t05
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -244,6 +244,15 @@ ginko assign --sprint e006_s02 --all chris@watchhill.ai
 ---
 
 ## Accomplishments This Sprint
+
+### 2025-12-17: TASK-5 View Transitions + Integration
+- Created ViewTransition wrapper component with Framer Motion AnimatePresence
+- Implemented direction-aware slide+fade transitions (forward/back navigation)
+- Uses spring animation (stiffness: 400, damping: 35) with 30px slide offset
+- Added navigation direction tracking via navigateToView helper and previousViewRef
+- Integrated with graph page - all three views now transition smoothly
+- Build verified successfully
+- Files: `dashboard/src/components/graph/ViewTransition.tsx`, `page.tsx`
 
 ### 2025-12-17: TASK-4 NodeView + RelatedNodesSummary
 - Created RelatedNodesSummary with collapsible groups by node type

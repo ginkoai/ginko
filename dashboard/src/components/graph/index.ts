@@ -27,6 +27,7 @@ export { CondensedNodeCard, type CondensedNodeCardProps } from './CondensedNodeC
 export { Breadcrumbs, type BreadcrumbsProps, type BreadcrumbItem } from './Breadcrumbs';
 export { NodeView, type NodeViewProps } from './NodeView';
 export { RelatedNodesSummary, type RelatedNodesSummaryProps } from './RelatedNodesSummary';
+export { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from './ViewTransition';
 
 // Knowledge editing components
 export { NodeEditor } from './NodeEditor';

@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { TreeExplorer } from '@/components/graph/tree-explorer';
@@ -21,6 +21,7 @@ import { ProjectView } from '@/components/graph/ProjectView';
 import { CategoryView } from '@/components/graph/CategoryView';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
 import { NodeView } from '@/components/graph/NodeView';
+import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
 import { useGraphNodes } from '@/lib/graph/hooks';
 import { setDefaultGraphId } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
@@ -66,6 +67,18 @@ export default function GraphPage() {
     searchParams.get('type') as NodeLabel | null
   );
 
+  // Track navigation direction for transitions
+  const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('forward');
+  const previousViewRef = useRef<ViewMode>(viewMode);
+
+  // Helper to change view with direction tracking
+  const navigateToView = useCallback((newView: ViewMode) => {
+    const direction = getTransitionDirection(previousViewRef.current as ViewKey, newView as ViewKey);
+    setTransitionDirection(direction);
+    previousViewRef.current = newView;
+    setViewMode(newView);
+  }, []);
+
   // UI state
   const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -105,6 +118,9 @@ export default function GraphPage() {
   const handleViewDetails = useCallback((nodeId: string) => {
     setSelectedNodeId(nodeId);
     setIsPanelOpen(true);
+    // Track direction for transition (forward into detail)
+    setTransitionDirection('forward');
+    previousViewRef.current = 'detail';
     // Update URL
     const params = new URLSearchParams(searchParams.toString());
     params.set('node', nodeId);
@@ -138,11 +154,11 @@ export default function GraphPage() {
     setBreadcrumbs([]);
     // Return to previous view
     if (selectedCategory) {
-      setViewMode('category');
+      navigateToView('category');
     } else {
-      setViewMode('project');
+      navigateToView('project');
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, navigateToView]);
 
   // Toggle tree collapse
   const handleToggleTree = useCallback(() => {
@@ -152,18 +168,18 @@ export default function GraphPage() {
   // Handle category selection from ProjectView
   const handleSelectCategory = useCallback((label: NodeLabel) => {
     setSelectedCategory(label);
-    setViewMode('category');
+    navigateToView('category');
     // Update URL
     const params = new URLSearchParams(searchParams.toString());
     params.set('view', 'category');
     params.set('type', label);
     params.delete('node');
     router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+  }, [router, searchParams, navigateToView]);
 
   // Handle going back to project view
   const handleGoToProject = useCallback(() => {
-    setViewMode('project');
+    navigateToView('project');
     setSelectedCategory(null);
     setSelectedNodeId(null);
     setSelectedNode(null);
@@ -171,11 +187,11 @@ export default function GraphPage() {
     setBreadcrumbs([]);
     // Update URL
     router.push('/dashboard/graph', { scroll: false });
-  }, [router]);
+  }, [router, navigateToView]);
 
   // Handle going to category view
   const handleGoToCategory = useCallback((label: NodeLabel) => {
-    setViewMode('category');
+    navigateToView('category');
     setSelectedCategory(label);
     setSelectedNodeId(null);
     setSelectedNode(null);
@@ -185,7 +201,7 @@ export default function GraphPage() {
     params.set('view', 'category');
     params.set('type', label);
     router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
-  }, [router]);
+  }, [router, navigateToView]);
 
   // Build breadcrumb items based on current navigation state
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
@@ -274,33 +290,39 @@ export default function GraphPage() {
           />
         )}
 
-        {/* View Content */}
-        <div className="flex-1 overflow-auto">
-          {viewMode === 'project' && (
-            <ProjectView
-              graphId={DEFAULT_GRAPH_ID}
-              onSelectCategory={handleSelectCategory}
-            />
-          )}
+        {/* View Content with Transitions */}
+        <div className="flex-1 overflow-hidden">
+          <ViewTransition
+            viewKey={isPanelOpen ? 'detail' : viewMode as ViewKey}
+            direction={transitionDirection}
+            className="h-full overflow-auto"
+          >
+            {viewMode === 'project' && !isPanelOpen && (
+              <ProjectView
+                graphId={DEFAULT_GRAPH_ID}
+                onSelectCategory={handleSelectCategory}
+              />
+            )}
 
-          {viewMode === 'category' && selectedCategory && (
-            <CategoryView
-              graphId={DEFAULT_GRAPH_ID}
-              label={selectedCategory}
-              selectedNodeId={selectedNodeId}
-              onSelectNode={handleSelectNode}
-              onViewDetails={handleViewDetails}
-            />
-          )}
+            {viewMode === 'category' && selectedCategory && !isPanelOpen && (
+              <CategoryView
+                graphId={DEFAULT_GRAPH_ID}
+                label={selectedCategory}
+                selectedNodeId={selectedNodeId}
+                onSelectNode={handleSelectNode}
+                onViewDetails={handleViewDetails}
+              />
+            )}
 
-          {/* Full-page NodeView when panel is open */}
-          {isPanelOpen && selectedNode && (
-            <NodeView
-              graphId={DEFAULT_GRAPH_ID}
-              node={selectedNode}
-              onNavigate={handleNavigate}
-            />
-          )}
+            {/* Full-page NodeView when panel is open */}
+            {isPanelOpen && selectedNode && (
+              <NodeView
+                graphId={DEFAULT_GRAPH_ID}
+                node={selectedNode}
+                onNavigate={handleNavigate}
+              />
+            )}
+          </ViewTransition>
         </div>
 
         {/* Detail Panel (overlay) - hidden when NodeView is shown in main area */}
