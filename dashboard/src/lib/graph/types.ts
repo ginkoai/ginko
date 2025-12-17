@@ -209,14 +209,26 @@ export interface QueryResponse {
 
 /** Response from graph status endpoint */
 export interface GraphStatusResponse {
-  connected: boolean;
-  nodeCount: number;
-  nodeCounts: Record<string, number>;
-  relationshipCounts: Record<string, number>;
-  embeddingStats?: {
+  namespace: string;
+  graphId: string;
+  visibility: 'private' | 'organization' | 'public';
+  nodes: {
     total: number;
-    embedded: number;
-    pending: number;
+    byType: Record<string, number>;
+    withEmbeddings: number;
+  };
+  relationships: {
+    total: number;
+    byType: Record<string, number>;
+  };
+  lastSync: string;
+  health: string;
+  stats?: {
+    averageConnections: number;
+    mostConnected: {
+      id: string;
+      connections: number;
+    };
   };
 }
 

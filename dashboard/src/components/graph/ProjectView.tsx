@@ -84,6 +84,21 @@ function CharterHeroCard({
   const goals = props.goals || [];
   const successCriteria = props.success_criteria || [];
 
+  // Extract project name from title (e.g., "Project Charter: ginko" -> "ginko")
+  const projectName = props.title?.replace('Project Charter:', '').trim() || 'Project';
+
+  // Fallback purpose for ginko project (until graph is synced with full charter data)
+  const defaultPurpose = charter.id === 'charter-ginko' || props.title?.includes('ginko')
+    ? 'Where humans and AI ship together. Create the category of AI-native project management—tools built from the ground up for teams that work with AI partners, not around them.'
+    : undefined;
+
+  const displayPurpose = props.purpose || defaultPurpose;
+
+  // Category tagline for title bar
+  const categoryTagline = charter.id === 'charter-ginko' || props.title?.includes('ginko')
+    ? 'ginko is The AI Collaboration Platform'
+    : props.title || 'Untitled Charter';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -100,11 +115,11 @@ function CharterHeroCard({
             Project Charter
           </span>
           <h2 className="text-xl font-semibold text-foreground mt-1">
-            {props.title || 'Untitled Charter'}
+            {categoryTagline}
           </h2>
-          {props.purpose && (
+          {displayPurpose && (
             <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-              {props.purpose}
+              {displayPurpose}
             </p>
           )}
         </div>
@@ -175,11 +190,11 @@ export function ProjectView({
     error: statusError,
   } = useGraphStatus(graphId);
 
-  // Fetch charter
+  // Fetch all charters so we can filter for the actual project charter
   const {
     data: charters,
     isLoading: charterLoading,
-  } = useNodesByLabel('Charter', { graphId, limit: 1 });
+  } = useNodesByLabel('Charter', { graphId, limit: 10 });
 
   // Fetch tasks for status breakdown
   const { data: tasks } = useNodesByLabel('Task', { graphId, limit: 100 });
@@ -247,18 +262,46 @@ export function ProjectView({
     }
 
     // Total node count
-    if (status?.nodeCount) {
+    if (status?.nodes?.total) {
       result.push({
         label: 'Total Nodes',
-        value: status.nodeCount,
+        value: status.nodes.total,
       });
     }
 
     return result;
   }, [activeSprint, taskStatusBreakdown, tasks, status]);
 
-  // Get the first charter
-  const charter = charters?.[0] as GraphNode<CharterNode> | undefined;
+  // Find the main project charter (filter out documentation charters)
+  // Priority: 1. ID contains 'ginko', 2. Title starts with 'Project Charter:', 3. First non-documentation charter
+  const charter = useMemo(() => {
+    if (!charters || charters.length === 0) return null;
+
+    // Look for the ginko project charter specifically
+    const ginkoCharter = charters.find((c) => {
+      const id = c.id.toLowerCase();
+      return id === 'charter-ginko' || id.includes('project-charter-ginko');
+    });
+    if (ginkoCharter) return ginkoCharter as GraphNode<CharterNode>;
+
+    // Look for any charter with title starting with "Project Charter:"
+    const projectCharter = charters.find((c) => {
+      const props = c.properties as CharterNode;
+      return props.title?.startsWith('Project Charter:');
+    });
+    if (projectCharter) return projectCharter as GraphNode<CharterNode>;
+
+    // Filter out documentation charters (design guides, etc.)
+    const nonDocCharters = charters.filter((c) => {
+      const props = c.properties as CharterNode;
+      const title = props.title?.toLowerCase() || '';
+      return !title.includes('design') && !title.includes('guide') && !title.includes('reference');
+    });
+    if (nonDocCharters.length > 0) return nonDocCharters[0] as GraphNode<CharterNode>;
+
+    // Fallback to first charter
+    return charters[0] as GraphNode<CharterNode>;
+  }, [charters]);
 
   if (statusError) {
     return (
@@ -297,7 +340,7 @@ export function ProjectView({
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {SUMMARY_NODE_TYPES.map((label) => {
-              const count = status?.nodeCounts?.[label] || 0;
+              const count = status?.nodes?.byType?.[label] || 0;
 
               // Get status breakdown for specific types
               let statusBreakdown: Record<string, number> | undefined;

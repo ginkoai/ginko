@@ -145,8 +145,8 @@ export function TreeExplorer({
           <button
             onClick={async () => {
               // Invalidate all graph queries to force fresh data
-              invalidateGraph();
-              // Then trigger refetch
+              // Then trigger explicit refetch to ensure UI updates
+              await invalidateGraph();
               await refetch();
             }}
             className="p-1 hover:bg-white/5 rounded transition-colors"

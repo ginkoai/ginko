@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, RefObject } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { TreeExplorer } from '@/components/graph/tree-explorer';
@@ -72,6 +72,9 @@ export default function GraphPage() {
   const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('forward');
   const previousViewRef = useRef<ViewMode>(viewMode);
 
+  // Ref for scrolling content to top on navigation
+  const contentRef = useRef<HTMLDivElement>(null);
+
   // Helper to change view with direction tracking
   const navigateToView = useCallback((newView: ViewMode) => {
     const direction = getTransitionDirection(previousViewRef.current as ViewKey, newView as ViewKey);
@@ -109,6 +112,13 @@ export default function GraphPage() {
       }
     }
   }, [selectedNodeId, nodesData]);
+
+  // Scroll content to top when selected node changes
+  useEffect(() => {
+    if (selectedNodeId && contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [selectedNodeId]);
 
   // Handle node selection from tree or grid
   const handleSelectNode = useCallback((nodeId: string, treeNode?: TreeNodeType) => {
@@ -344,10 +354,13 @@ export default function GraphPage() {
 
         {/* View Content with Transitions */}
         <div className="flex-1 overflow-hidden">
+          <div
+            ref={contentRef}
+            className="h-full overflow-auto"
+          >
           <ViewTransition
             viewKey={isPanelOpen ? 'detail' : viewMode as ViewKey}
             direction={transitionDirection}
-            className="h-full overflow-auto"
           >
             {viewMode === 'project' && !isPanelOpen && (
               <ProjectView
@@ -377,6 +390,7 @@ export default function GraphPage() {
               />
             )}
           </ViewTransition>
+          </div>
         </div>
 
         {/* Detail Panel (overlay) - hidden when NodeView is shown in main area */}

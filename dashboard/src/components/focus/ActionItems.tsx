@@ -156,8 +156,8 @@ export function ActionItems({ userId, graphId }: ActionItemsProps) {
   // Show "all caught up" if no items
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-        <div className="flex items-center gap-2 text-green-700">
+      <div className="rounded-lg border border-green-800/30 bg-green-900/20 p-4">
+        <div className="flex items-center gap-2 text-green-400">
           <CheckIcon className="h-5 w-5" />
           <p className="text-sm font-medium">All caught up!</p>
         </div>

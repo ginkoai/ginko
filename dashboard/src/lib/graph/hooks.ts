@@ -206,8 +206,8 @@ export function usePrefetchNodesByLabel() {
 export function useInvalidateGraph() {
   const queryClient = useQueryClient();
 
-  return () => {
-    queryClient.invalidateQueries({ queryKey: graphQueryKeys.all });
+  return async () => {
+    await queryClient.invalidateQueries({ queryKey: graphQueryKeys.all });
   };
 }
 
