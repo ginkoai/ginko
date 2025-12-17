@@ -318,6 +318,25 @@ ginko assign --sprint e006_s02 --all chris@watchhill.ai
 - Pagination not needed - scroll approach handles 100 tasks efficiently
 - Files: `dashboard/src/components/focus/MyTasksList.tsx:211,126-131`
 
+### 2025-12-17: Graph Navigation Cleanup Fixes
+Post-sprint cleanup addressing 5 navigation issues:
+
+1. **Breadcrumb trail accumulation** - Fixed to include navigation history from `breadcrumbs` state
+2. **PRDs in Navigation Tree** - Added PRD fetch to buildTreeHierarchy, created PRDs folder
+3. **Markdown rendering in NodeView** - Created MarkdownRenderer.tsx with syntax highlighting
+4. **Tree node selection for all types** - Pass full tree node data so nodes not in 100-node limit still display
+5. **Epics/Sprints display** - Case-insensitive ID matching, ungrouped sprints folder, Principle label added
+
+Files:
+- `dashboard/src/components/graph/MarkdownRenderer.tsx` (new)
+- `dashboard/src/lib/graph/api-client.ts` (improved matching + ungrouped sprints)
+- `dashboard/src/components/graph/tree-node.tsx` (pass node data + Principle label)
+- `dashboard/src/components/graph/tree-explorer.tsx` (callback signature)
+- `dashboard/src/app/dashboard/graph/page.tsx` (accept tree node in selection)
+- `dashboard/src/components/graph/NodeView.tsx` (use MarkdownRenderer)
+
+Deployed to production: https://app.ginkoai.com
+
 ---
 
 ## Next Steps
