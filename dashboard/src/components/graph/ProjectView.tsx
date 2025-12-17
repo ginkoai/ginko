@@ -1,0 +1,331 @@
+/**
+ * @fileType: component
+ * @status: current
+ * @updated: 2025-12-17
+ * @tags: [graph, project-view, c4-navigation, charter]
+ * @related: [SummaryCard.tsx, MetricsRow.tsx, CategoryView.tsx]
+ * @priority: high
+ * @complexity: medium
+ * @dependencies: [lucide-react, framer-motion, @tanstack/react-query]
+ */
+
+'use client';
+
+import { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { FileText, Loader2, AlertCircle } from 'lucide-react';
+import { useGraphStatus, useNodesByLabel } from '@/lib/graph/hooks';
+import type { NodeLabel, GraphNode, CharterNode } from '@/lib/graph/types';
+import { SummaryCard } from './SummaryCard';
+import { MetricsRow, type Metric } from './MetricsRow';
+import { cn } from '@/lib/utils';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+export interface ProjectViewProps {
+  graphId: string;
+  onSelectCategory: (label: NodeLabel) => void;
+  className?: string;
+}
+
+// Node types to show in the summary grid (excluding low-value types)
+const SUMMARY_NODE_TYPES: NodeLabel[] = [
+  'Epic',
+  'Sprint',
+  'Task',
+  'ADR',
+  'Pattern',
+  'Gotcha',
+  'Principle',
+];
+
+// =============================================================================
+// Charter Hero Card
+// =============================================================================
+
+function CharterHeroCard({
+  charter,
+  isLoading,
+}: {
+  charter: GraphNode<CharterNode> | null;
+  isLoading: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <div className="p-8 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!charter) {
+    return (
+      <div className="p-8 rounded-xl bg-gradient-to-br from-slate-500/10 to-slate-600/5 border border-slate-500/20">
+        <div className="flex items-center gap-3">
+          <div className="p-3 rounded-lg bg-slate-500/10">
+            <FileText className="w-6 h-6 text-slate-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">No Charter Found</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Create a project charter to define your project's purpose and goals.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const props = charter.properties as CharterNode;
+  const goals = props.goals || [];
+  const successCriteria = props.success_criteria || [];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="p-6 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20"
+    >
+      {/* Header */}
+      <div className="flex items-start gap-4">
+        <div className="p-3 rounded-lg bg-blue-500/20">
+          <FileText className="w-6 h-6 text-blue-400" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-xs font-mono text-blue-400 uppercase tracking-wider">
+            Project Charter
+          </span>
+          <h2 className="text-xl font-semibold text-foreground mt-1">
+            {props.title || 'Untitled Charter'}
+          </h2>
+          {props.purpose && (
+            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+              {props.purpose}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Goals & Success Criteria */}
+      {(goals.length > 0 || successCriteria.length > 0) && (
+        <div className="mt-4 pt-4 border-t border-blue-500/10 grid gap-4 md:grid-cols-2">
+          {goals.length > 0 && (
+            <div>
+              <h3 className="text-xs font-mono text-muted-foreground uppercase mb-2">
+                Goals ({goals.length})
+              </h3>
+              <ul className="space-y-1">
+                {goals.slice(0, 3).map((goal, i) => (
+                  <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
+                    <span className="text-blue-400 mt-0.5">•</span>
+                    <span className="line-clamp-1">{goal}</span>
+                  </li>
+                ))}
+                {goals.length > 3 && (
+                  <li className="text-xs text-muted-foreground">
+                    +{goals.length - 3} more
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+          {successCriteria.length > 0 && (
+            <div>
+              <h3 className="text-xs font-mono text-muted-foreground uppercase mb-2">
+                Success Criteria ({successCriteria.length})
+              </h3>
+              <ul className="space-y-1">
+                {successCriteria.slice(0, 3).map((criterion, i) => (
+                  <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
+                    <span className="text-emerald-400 mt-0.5">✓</span>
+                    <span className="line-clamp-1">{criterion}</span>
+                  </li>
+                ))}
+                {successCriteria.length > 3 && (
+                  <li className="text-xs text-muted-foreground">
+                    +{successCriteria.length - 3} more
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// =============================================================================
+// Component
+// =============================================================================
+
+export function ProjectView({
+  graphId,
+  onSelectCategory,
+  className,
+}: ProjectViewProps) {
+  // Fetch graph status for node counts
+  const {
+    data: status,
+    isLoading: statusLoading,
+    error: statusError,
+  } = useGraphStatus(graphId);
+
+  // Fetch charter
+  const {
+    data: charters,
+    isLoading: charterLoading,
+  } = useNodesByLabel('Charter', { graphId, limit: 1 });
+
+  // Fetch tasks for status breakdown
+  const { data: tasks } = useNodesByLabel('Task', { graphId, limit: 100 });
+
+  // Fetch sprints for active sprint info
+  const { data: sprints } = useNodesByLabel('Sprint', { graphId, limit: 10 });
+
+  // Calculate task status breakdown
+  const taskStatusBreakdown = useMemo(() => {
+    if (!tasks) return {};
+    const breakdown: Record<string, number> = {};
+    tasks.forEach((task) => {
+      const status = (task.properties as Record<string, unknown>).status as string || 'todo';
+      breakdown[status] = (breakdown[status] || 0) + 1;
+    });
+    return breakdown;
+  }, [tasks]);
+
+  // Calculate sprint status breakdown
+  const sprintStatusBreakdown = useMemo(() => {
+    if (!sprints) return {};
+    const breakdown: Record<string, number> = {};
+    sprints.forEach((sprint) => {
+      const status = (sprint.properties as Record<string, unknown>).status as string || 'planning';
+      breakdown[status] = (breakdown[status] || 0) + 1;
+    });
+    return breakdown;
+  }, [sprints]);
+
+  // Find active sprint
+  const activeSprint = useMemo(() => {
+    if (!sprints) return null;
+    return sprints.find((s) => {
+      const status = (s.properties as Record<string, unknown>).status;
+      return status === 'active';
+    });
+  }, [sprints]);
+
+  // Calculate metrics
+  const metrics: Metric[] = useMemo(() => {
+    const result: Metric[] = [];
+
+    // Active sprint
+    if (activeSprint) {
+      const props = activeSprint.properties as Record<string, unknown>;
+      const progress = typeof props.progress === 'number' ? props.progress : 0;
+      result.push({
+        label: 'Active Sprint',
+        value: (props.title || props.sprint_id || 'Current') as string,
+      });
+      result.push({
+        label: 'Sprint Progress',
+        value: `${progress}%`,
+      });
+    }
+
+    // Tasks complete
+    const tasksComplete = taskStatusBreakdown['complete'] || 0;
+    const totalTasks = tasks?.length || 0;
+    if (totalTasks > 0) {
+      result.push({
+        label: 'Tasks Complete',
+        value: `${tasksComplete}/${totalTasks}`,
+      });
+    }
+
+    // Total node count
+    if (status?.nodeCount) {
+      result.push({
+        label: 'Total Nodes',
+        value: status.nodeCount,
+      });
+    }
+
+    return result;
+  }, [activeSprint, taskStatusBreakdown, tasks, status]);
+
+  // Get the first charter
+  const charter = charters?.[0] as GraphNode<CharterNode> | undefined;
+
+  if (statusError) {
+    return (
+      <div className={cn('p-8', className)}>
+        <div className="flex items-center gap-3 text-red-400">
+          <AlertCircle className="w-5 h-5" />
+          <p>Failed to load project data</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn('p-6 space-y-6', className)}>
+      {/* Charter Hero */}
+      <CharterHeroCard
+        charter={charter || null}
+        isLoading={charterLoading}
+      />
+
+      {/* Metrics Row */}
+      {metrics.length > 0 && (
+        <MetricsRow metrics={metrics} />
+      )}
+
+      {/* Summary Cards Grid */}
+      <div>
+        <h3 className="text-sm font-mono text-muted-foreground uppercase tracking-wider mb-4">
+          Knowledge Graph
+        </h3>
+
+        {statusLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {SUMMARY_NODE_TYPES.map((label) => {
+              const count = status?.nodeCounts?.[label] || 0;
+
+              // Get status breakdown for specific types
+              let statusBreakdown: Record<string, number> | undefined;
+              if (label === 'Task') {
+                statusBreakdown = taskStatusBreakdown;
+              } else if (label === 'Sprint') {
+                statusBreakdown = sprintStatusBreakdown;
+              }
+
+              return (
+                <SummaryCard
+                  key={label}
+                  label={label}
+                  count={count}
+                  statusBreakdown={statusBreakdown}
+                  onClick={() => onSelectCategory(label)}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Export
+// =============================================================================
+
+export default ProjectView;

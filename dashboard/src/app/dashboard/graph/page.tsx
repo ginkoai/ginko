@@ -1,9 +1,9 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2025-12-11
- * @tags: [graph, visualization, dashboard, exploration]
- * @related: [tree-explorer.tsx, card-grid.tsx, node-detail-panel.tsx]
+ * @updated: 2025-12-17
+ * @tags: [graph, visualization, dashboard, exploration, c4-navigation]
+ * @related: [tree-explorer.tsx, card-grid.tsx, node-detail-panel.tsx, ProjectView.tsx]
  * @priority: high
  * @complexity: high
  * @dependencies: [@tanstack/react-query, lucide-react]
@@ -11,17 +11,27 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { TreeExplorer } from '@/components/graph/tree-explorer';
 import { CardGrid } from '@/components/graph/card-grid';
 import { NodeDetailPanel } from '@/components/graph/node-detail-panel';
+import { ProjectView } from '@/components/graph/ProjectView';
+import { CategoryView } from '@/components/graph/CategoryView';
+import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
+import { NodeView } from '@/components/graph/NodeView';
 import { useGraphNodes } from '@/lib/graph/hooks';
 import { setDefaultGraphId } from '@/lib/graph/api-client';
-import type { GraphNode } from '@/lib/graph/types';
+import type { GraphNode, NodeLabel } from '@/lib/graph/types';
 import { useSupabase } from '@/components/providers';
 import { cn } from '@/lib/utils';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+type ViewMode = 'project' | 'category' | 'detail';
 
 // =============================================================================
 // Config
@@ -43,6 +53,18 @@ export default function GraphPage() {
   useEffect(() => {
     setDefaultGraphId(DEFAULT_GRAPH_ID);
   }, []);
+
+  // View mode state (C4-style navigation)
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    // Initialize from URL params
+    const view = searchParams.get('view');
+    if (view === 'category') return 'category';
+    if (searchParams.get('node')) return 'detail';
+    return 'project';
+  });
+  const [selectedCategory, setSelectedCategory] = useState<NodeLabel | null>(
+    searchParams.get('type') as NodeLabel | null
+  );
 
   // UI state
   const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
@@ -114,12 +136,94 @@ export default function GraphPage() {
   const handleClosePanel = useCallback(() => {
     setIsPanelOpen(false);
     setBreadcrumbs([]);
-  }, []);
+    // Return to previous view
+    if (selectedCategory) {
+      setViewMode('category');
+    } else {
+      setViewMode('project');
+    }
+  }, [selectedCategory]);
 
   // Toggle tree collapse
   const handleToggleTree = useCallback(() => {
     setIsTreeCollapsed((prev) => !prev);
   }, []);
+
+  // Handle category selection from ProjectView
+  const handleSelectCategory = useCallback((label: NodeLabel) => {
+    setSelectedCategory(label);
+    setViewMode('category');
+    // Update URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('view', 'category');
+    params.set('type', label);
+    params.delete('node');
+    router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
+  }, [router, searchParams]);
+
+  // Handle going back to project view
+  const handleGoToProject = useCallback(() => {
+    setViewMode('project');
+    setSelectedCategory(null);
+    setSelectedNodeId(null);
+    setSelectedNode(null);
+    setIsPanelOpen(false);
+    setBreadcrumbs([]);
+    // Update URL
+    router.push('/dashboard/graph', { scroll: false });
+  }, [router]);
+
+  // Handle going to category view
+  const handleGoToCategory = useCallback((label: NodeLabel) => {
+    setViewMode('category');
+    setSelectedCategory(label);
+    setSelectedNodeId(null);
+    setSelectedNode(null);
+    setIsPanelOpen(false);
+    // Update URL
+    const params = new URLSearchParams();
+    params.set('view', 'category');
+    params.set('type', label);
+    router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
+  }, [router]);
+
+  // Build breadcrumb items based on current navigation state
+  const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
+    const items: BreadcrumbItem[] = [
+      { type: 'project', label: 'Project' },
+    ];
+
+    if (selectedCategory) {
+      items.push({
+        type: 'category',
+        label: `${selectedCategory}s`,
+        nodeLabel: selectedCategory,
+      });
+    }
+
+    if (selectedNode && isPanelOpen) {
+      const props = selectedNode.properties as Record<string, unknown>;
+      const title = (props.title || props.name || props.adr_id || props.task_id || selectedNode.id) as string;
+      items.push({
+        type: 'node',
+        label: title,
+        nodeLabel: selectedNode.label,
+        nodeId: selectedNode.id,
+      });
+    }
+
+    return items;
+  }, [selectedCategory, selectedNode, isPanelOpen]);
+
+  // Handle breadcrumb navigation
+  const handleBreadcrumbNavigate = useCallback((item: BreadcrumbItem, index: number) => {
+    if (item.type === 'project') {
+      handleGoToProject();
+    } else if (item.type === 'category' && item.nodeLabel) {
+      handleGoToCategory(item.nodeLabel);
+    }
+    // Node breadcrumbs are the current item, no navigation needed
+  }, [handleGoToProject, handleGoToCategory]);
 
   // Auth check
   if (authLoading) {
@@ -160,20 +264,51 @@ export default function GraphPage() {
         onToggleCollapse={handleToggleTree}
       />
 
-      {/* Main Content - Card Grid */}
-      <div className="flex-1 flex flex-col relative">
-        <CardGrid
-          graphId={DEFAULT_GRAPH_ID}
-          selectedNodeId={selectedNodeId}
-          onSelectNode={handleSelectNode}
-          onViewDetails={handleViewDetails}
-        />
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        {/* Breadcrumb Navigation */}
+        {(viewMode !== 'project' || isPanelOpen) && (
+          <Breadcrumbs
+            items={breadcrumbItems}
+            onNavigate={handleBreadcrumbNavigate}
+          />
+        )}
 
-        {/* Detail Panel (overlay) */}
+        {/* View Content */}
+        <div className="flex-1 overflow-auto">
+          {viewMode === 'project' && (
+            <ProjectView
+              graphId={DEFAULT_GRAPH_ID}
+              onSelectCategory={handleSelectCategory}
+            />
+          )}
+
+          {viewMode === 'category' && selectedCategory && (
+            <CategoryView
+              graphId={DEFAULT_GRAPH_ID}
+              label={selectedCategory}
+              selectedNodeId={selectedNodeId}
+              onSelectNode={handleSelectNode}
+              onViewDetails={handleViewDetails}
+            />
+          )}
+
+          {/* Full-page NodeView when panel is open */}
+          {isPanelOpen && selectedNode && (
+            <NodeView
+              graphId={DEFAULT_GRAPH_ID}
+              node={selectedNode}
+              onNavigate={handleNavigate}
+            />
+          )}
+        </div>
+
+        {/* Detail Panel (overlay) - hidden when NodeView is shown in main area */}
+        {/* Can be toggled back for mobile/quick-view in future */}
         <NodeDetailPanel
           graphId={DEFAULT_GRAPH_ID}
           node={selectedNode}
-          isOpen={isPanelOpen}
+          isOpen={false} // Disabled - using NodeView instead
           onClose={handleClosePanel}
           onNavigate={handleNavigate}
           breadcrumbs={breadcrumbs}

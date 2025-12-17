@@ -7,7 +7,7 @@
 
 **Duration**: 7-8 days
 **Type**: Feature sprint
-**Progress:** 11% (1/9 tasks complete)
+**Progress:** 56% (5/9 tasks complete)
 
 **Success Criteria:**
 - [ ] ProjectView displays Charter as root with project metrics
@@ -22,7 +22,7 @@
 ## Sprint Tasks
 
 ### TASK-1: SummaryCard + ProjectView Foundation (5h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s02_t01
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -49,7 +49,7 @@
 ---
 
 ### TASK-2: CategoryView + CondensedNodeCard (5h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s02_t02
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -74,7 +74,7 @@
 ---
 
 ### TASK-3: Breadcrumbs + View Routing (4h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s02_t03
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -100,7 +100,7 @@
 ---
 
 ### TASK-4: NodeView + RelatedNodesSummary (5h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s02_t04
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -244,6 +244,37 @@ ginko assign --sprint e006_s02 --all chris@watchhill.ai
 ---
 
 ## Accomplishments This Sprint
+
+### 2025-12-17: TASK-4 NodeView + RelatedNodesSummary
+- Created RelatedNodesSummary with collapsible groups by node type
+- Created NodeView with header card (icon, status, metadata), content sections, properties grid
+- RelatedNodesSummary shows expandable groups with relationship direction indicators
+- NodeView replaces detail panel overlay as main content view
+- Content sections dynamically rendered based on node type (description, context, decision, etc.)
+- Files: `dashboard/src/components/graph/NodeView.tsx`, `RelatedNodesSummary.tsx`
+
+### 2025-12-17: TASK-3 Breadcrumbs + View Routing
+- Created Breadcrumbs component with clickable path segments (Project > Category > Node)
+- Added type-specific icons and colors for each breadcrumb item
+- Added navigation helpers: handleGoToProject, handleGoToCategory
+- Built breadcrumbItems dynamically from view state using useMemo
+- URL syncs with navigation state (?view=category&type=ADR&node=...)
+- Files: `dashboard/src/components/graph/Breadcrumbs.tsx`, `page.tsx`
+
+### 2025-12-17: TASK-2 CategoryView + CondensedNodeCard
+- Created CondensedNodeCard with compact layout (~100px), ID badge, status badge, metadata
+- Created CategoryView with header (icon, count), search filter, status filter, sort controls
+- Status filter options dynamically generated per node type (Task, ADR, Sprint, etc.)
+- Integrated CategoryView into graph page, replacing CardGrid in category mode
+- Files: `dashboard/src/components/graph/CondensedNodeCard.tsx`, `CategoryView.tsx`
+
+### 2025-12-17: TASK-1 SummaryCard + ProjectView Foundation
+- Created SummaryCard component with node type icon, count badge, and status preview bar
+- Created MetricsRow component for displaying project statistics
+- Created ProjectView component with Charter hero card and SummaryCard grid
+- Status preview bar shows color-coded breakdown (complete/in_progress/todo)
+- Charter hero displays goals and success criteria with expandable lists
+- Files: `dashboard/src/components/graph/SummaryCard.tsx`, `MetricsRow.tsx`, `ProjectView.tsx`
 
 ### 2025-12-17: TASK-7 My Tasks Scroll Containment
 - Added max-height (400px) and overflow-y scroll to MyTasksList CardContent

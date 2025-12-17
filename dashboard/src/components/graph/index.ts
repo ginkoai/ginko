@@ -18,6 +18,16 @@ export { FilterBar, type FilterBarProps } from './filter-bar';
 export { NodeDetailPanel, type NodeDetailPanelProps } from './node-detail-panel';
 export { AdjacencyList, type AdjacencyListProps } from './adjacency-list';
 
+// C4-style navigation components
+export { SummaryCard, type SummaryCardProps } from './SummaryCard';
+export { MetricsRow, type MetricsRowProps, type Metric } from './MetricsRow';
+export { ProjectView, type ProjectViewProps } from './ProjectView';
+export { CategoryView, type CategoryViewProps } from './CategoryView';
+export { CondensedNodeCard, type CondensedNodeCardProps } from './CondensedNodeCard';
+export { Breadcrumbs, type BreadcrumbsProps, type BreadcrumbItem } from './Breadcrumbs';
+export { NodeView, type NodeViewProps } from './NodeView';
+export { RelatedNodesSummary, type RelatedNodesSummaryProps } from './RelatedNodesSummary';
+
 // Knowledge editing components
 export { NodeEditor } from './NodeEditor';
 export { NodeEditorForm } from './NodeEditorForm';
