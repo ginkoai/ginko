@@ -129,9 +129,10 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
           // Exclude completed tasks
           .filter((task) => task.status !== 'complete');
 
-        // Deduplicate by task_id (multiple Graph nodes can create duplicates)
+        // Deduplicate by id or task_id (multiple Graph nodes can create duplicates)
         const uniqueTasks = userTasks.reduce((acc, task) => {
-          if (!acc.some((t) => t.task_id === task.task_id)) {
+          const taskId = (task as any).id || task.task_id;
+          if (!acc.some((t) => ((t as any).id || t.task_id) === taskId)) {
             acc.push(task);
           }
           return acc;
@@ -247,7 +248,7 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
                 <div className="space-y-2">
                   {group.tasks.map((task) => (
                     <button
-                      key={task.task_id}
+                      key={(task as any).id || task.task_id}
                       onClick={() => handleTaskClick(task)}
                       className={cn(
                         'w-full text-left rounded-md border p-3 transition-all hover:shadow-md cursor-pointer',
@@ -261,7 +262,7 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-mono text-xs text-muted-foreground">
-                              {task.task_id}
+                              {(task as any).id || task.task_id}
                             </span>
                             {task.priority && getPriorityConfig(task.priority) && (
                               <Badge
