@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 export interface TreeExplorerProps {
   graphId: string;
   selectedNodeId: string | null;
-  onSelectNode: (nodeId: string) => void;
+  onSelectNode: (nodeId: string, treeNode?: TreeNodeType) => void;
   className?: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;

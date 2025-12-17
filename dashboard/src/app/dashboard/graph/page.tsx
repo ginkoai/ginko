@@ -25,7 +25,7 @@ import { ViewTransition, getTransitionDirection, type TransitionDirection, type 
 import { NodeEditorModal } from '@/components/graph/NodeEditorModal';
 import { useGraphNodes } from '@/lib/graph/hooks';
 import { setDefaultGraphId } from '@/lib/graph/api-client';
-import type { GraphNode, NodeLabel } from '@/lib/graph/types';
+import type { GraphNode, NodeLabel, TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { useSupabase } from '@/components/providers';
 import { cn } from '@/lib/utils';
 
@@ -111,8 +111,21 @@ export default function GraphPage() {
   }, [selectedNodeId, nodesData]);
 
   // Handle node selection from tree or grid
-  const handleSelectNode = useCallback((nodeId: string) => {
+  const handleSelectNode = useCallback((nodeId: string, treeNode?: TreeNodeType) => {
     setSelectedNodeId(nodeId);
+
+    // If tree node data is provided and has properties, use it directly
+    // This handles cases where the node isn't in the limited nodesData fetch
+    if (treeNode && treeNode.properties && !nodeId.endsWith('-folder')) {
+      const graphNode: GraphNode = {
+        id: treeNode.id,
+        label: treeNode.label,
+        properties: treeNode.properties,
+      };
+      setSelectedNode(graphNode);
+      setIsPanelOpen(true);
+    }
+
     // Update URL
     const params = new URLSearchParams(searchParams.toString());
     params.set('node', nodeId);

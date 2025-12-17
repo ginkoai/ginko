@@ -39,7 +39,7 @@ export interface TreeNodeProps {
   node: TreeNodeType;
   depth: number;
   isSelected: boolean;
-  onSelect: (nodeId: string) => void;
+  onSelect: (nodeId: string, node?: TreeNodeType) => void;
   onToggle: (nodeId: string) => void;
 }
 
@@ -57,6 +57,7 @@ const nodeIcons: Record<NodeLabel, LucideIcon> = {
   PRD: FileText,
   Pattern: Zap,
   Gotcha: AlertTriangle,
+  Principle: Lightbulb,
   Event: GitBranch,
   Session: GitBranch,
   Commit: GitBranch,
@@ -72,6 +73,7 @@ const nodeColors: Record<NodeLabel, string> = {
   PRD: 'text-orange-400',
   Pattern: 'text-emerald-400',
   Gotcha: 'text-red-400',
+  Principle: 'text-indigo-400',
   Event: 'text-slate-400',
   Session: 'text-slate-400',
   Commit: 'text-slate-400',
@@ -100,7 +102,7 @@ function TreeNodeComponent({
   const FolderIcon = isExpanded ? FolderOpen : Folder;
 
   const handleClick = () => {
-    onSelect(node.id);
+    onSelect(node.id, node);
   };
 
   const handleToggle = (e: React.MouseEvent) => {

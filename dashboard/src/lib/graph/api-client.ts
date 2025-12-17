@@ -309,61 +309,90 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     };
   });
 
+  // Track ungrouped sprints
+  const ungroupedSprints: TreeNode[] = [];
+
   // Group sprints by epic (based on ID prefix: e005_s01 belongs to e005)
+  // Handles formats: e005_s01, EPIC-005, epic-005, e005
   sprints.forEach((sprint) => {
     const props = sprint.properties as Record<string, unknown>;
     const sprintId = getNodeProp(props, 'sprint_id') || sprint.id;
-    const epicPrefix = sprintId.split('_s')[0]; // e.g., "e005"
+    const epicPrefix = sprintId.split('_s')[0].toLowerCase(); // e.g., "e005"
+    // Extract numeric part for flexible matching
+    const epicNumeric = epicPrefix.replace(/[^0-9]/g, ''); // e.g., "005"
 
     const epicNode = epicNodes.find((e) => {
       const eProps = e.properties as Record<string, unknown> | undefined;
-      const epicId = (eProps ? getNodeProp(eProps, 'epic_id') : undefined) || e.id;
-      return epicId.includes(epicPrefix);
+      const epicId = ((eProps ? getNodeProp(eProps, 'epic_id') : undefined) || e.id).toLowerCase();
+      // Match by full prefix or numeric part
+      return epicId.includes(epicPrefix) || epicId.includes(epicNumeric);
     });
 
+    const sprintTreeNode: TreeNode = {
+      id: sprint.id,
+      label: 'Sprint' as const,
+      name: getNodeProp(props, 'title') || sprintId,
+      hasChildren: true,
+      isExpanded: false,
+      properties: sprint.properties,
+      children: [],
+    };
+
     if (epicNode) {
-      const sprintTreeNode: TreeNode = {
-        id: sprint.id,
-        label: 'Sprint' as const,
-        name: getNodeProp(props, 'title') || sprintId,
-        hasChildren: true,
-        isExpanded: false,
-        properties: sprint.properties,
-        children: [],
-      };
       epicNode.children = epicNode.children || [];
       epicNode.children.push(sprintTreeNode);
+    } else {
+      // Track ungrouped sprints
+      ungroupedSprints.push(sprintTreeNode);
     }
   });
 
-  // Group tasks by sprint
+  // Group tasks by sprint (check both epic sprints and ungrouped sprints)
   tasks.forEach((task) => {
     const props = task.properties as Record<string, unknown>;
     const taskId = getNodeProp(props, 'task_id') || task.id;
     // Parse task ID: e005_s01_t01 -> sprint e005_s01
     const parts = taskId.split('_t');
     if (parts.length >= 1) {
-      const sprintPrefix = parts[0];
+      const sprintPrefix = parts[0].toLowerCase();
 
-      // Find the sprint in the tree
+      // Create task tree node
+      const taskTreeNode: TreeNode = {
+        id: task.id,
+        label: 'Task' as const,
+        name: getNodeProp(props, 'title') || taskId,
+        hasChildren: false,
+        properties: task.properties,
+      };
+
+      // Find the sprint in epic children first
+      let found = false;
       for (const epic of epicNodes) {
         const sprint = epic.children?.find((s) => {
           const sProps = s.properties as Record<string, unknown> | undefined;
-          const sId = (sProps ? getNodeProp(sProps, 'sprint_id') : undefined) || s.id;
+          const sId = ((sProps ? getNodeProp(sProps, 'sprint_id') : undefined) || s.id).toLowerCase();
           return sId.includes(sprintPrefix);
         });
 
         if (sprint) {
-          const taskTreeNode: TreeNode = {
-            id: task.id,
-            label: 'Task' as const,
-            name: getNodeProp(props, 'title') || taskId,
-            hasChildren: false,
-            properties: task.properties,
-          };
           sprint.children = sprint.children || [];
           sprint.children.push(taskTreeNode);
+          found = true;
           break;
+        }
+      }
+
+      // If not found, check ungrouped sprints
+      if (!found) {
+        const ungroupedSprint = ungroupedSprints.find((s) => {
+          const sProps = s.properties as Record<string, unknown> | undefined;
+          const sId = ((sProps ? getNodeProp(sProps, 'sprint_id') : undefined) || s.id).toLowerCase();
+          return sId.includes(sprintPrefix);
+        });
+
+        if (ungroupedSprint) {
+          ungroupedSprint.children = ungroupedSprint.children || [];
+          ungroupedSprint.children.push(taskTreeNode);
         }
       }
     }
@@ -385,6 +414,15 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
         isExpanded: true,
         children: epicNodes,
       },
+      // Add ungrouped sprints if any exist
+      ...(ungroupedSprints.length > 0 ? [{
+        id: 'sprints-folder',
+        label: 'Project' as const,
+        name: 'Sprints',
+        hasChildren: true,
+        isExpanded: true,
+        children: ungroupedSprints,
+      }] : []),
       {
         id: 'adrs-folder',
         label: 'Project' as const,
