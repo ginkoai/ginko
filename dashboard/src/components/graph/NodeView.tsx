@@ -149,6 +149,85 @@ function formatDate(dateStr: string): string {
   }
 }
 
+/**
+ * Check if value is a Neo4j temporal type (date/datetime)
+ * Neo4j returns dates as: { year: { low: 2025, high: 0 }, month: { low: 12, high: 0 }, day: { low: 17, high: 0 }, ... }
+ */
+function isNeo4jTemporal(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  // Check for Neo4j Integer format in year field
+  if (obj.year && typeof obj.year === 'object') {
+    const year = obj.year as Record<string, unknown>;
+    return 'low' in year && 'high' in year;
+  }
+  return false;
+}
+
+/**
+ * Format Neo4j temporal type to readable date string
+ */
+function formatNeo4jTemporal(value: unknown): string {
+  try {
+    const obj = value as Record<string, Record<string, number>>;
+    const year = obj.year?.low || 0;
+    const month = obj.month?.low || 1;
+    const day = obj.day?.low || 1;
+    const hour = obj.hour?.low || 0;
+    const minute = obj.minute?.low || 0;
+
+    const date = new Date(year, month - 1, day, hour, minute);
+
+    // If time components exist, show datetime
+    if (obj.hour) {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    }
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return String(value);
+  }
+}
+
+/**
+ * Format a property value for display, handling special types
+ */
+function formatPropertyValue(value: unknown): string {
+  if (value === null || value === undefined) return '';
+
+  // Handle Neo4j temporal types
+  if (isNeo4jTemporal(value)) {
+    return formatNeo4jTemporal(value);
+  }
+
+  // Handle arrays
+  if (Array.isArray(value)) {
+    return value.join(', ');
+  }
+
+  // Handle other objects
+  if (typeof value === 'object') {
+    // Check if it's a Neo4j Integer (has low/high)
+    const obj = value as Record<string, unknown>;
+    if ('low' in obj && 'high' in obj) {
+      return String(obj.low);
+    }
+    return JSON.stringify(value);
+  }
+
+  return String(value);
+}
+
 // =============================================================================
 // Content Sections
 // =============================================================================
@@ -300,13 +379,19 @@ function NodeProperties({ node }: { node: GraphNode }) {
     'mitigation', 'goal', 'status', 'severity', 'confidence',
     'adr_id', 'epic_id', 'sprint_id', 'task_id', 'pattern_id',
     'gotcha_id', 'principle_id', 'prd_id', 'assignee',
+    'overview', 'requirements', 'success_criteria', // PRD fields
   ]);
 
   const displayProps = Object.entries(props).filter(
     ([key, value]) => !skipFields.has(key) && value !== null && value !== undefined
   );
 
-  if (displayProps.length === 0) {
+  // Filter out empty formatted values
+  const formattedProps = displayProps
+    .map(([key, value]) => ({ key, value, formatted: formatPropertyValue(value) }))
+    .filter(({ formatted }) => formatted && formatted !== '');
+
+  if (formattedProps.length === 0) {
     return null;
   }
 
@@ -316,13 +401,13 @@ function NodeProperties({ node }: { node: GraphNode }) {
         Properties
       </h3>
       <div className="grid grid-cols-2 gap-3">
-        {displayProps.map(([key, value]) => (
+        {formattedProps.map(({ key, formatted }) => (
           <div key={key} className="p-3 bg-card border border-border rounded-lg">
             <p className="text-xs text-muted-foreground mb-1">
               {key.replace(/_/g, ' ')}
             </p>
-            <p className="text-sm text-foreground font-mono truncate">
-              {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+            <p className="text-sm text-foreground font-mono truncate" title={formatted}>
+              {formatted}
             </p>
           </div>
         ))}

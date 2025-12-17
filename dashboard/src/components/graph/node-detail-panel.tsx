@@ -379,12 +379,68 @@ function NodePropertiesSection({
   );
 }
 
+/**
+ * Check if value is a Neo4j temporal type (date/datetime)
+ */
+function isNeo4jTemporal(value: unknown): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  if (obj.year && typeof obj.year === 'object') {
+    const year = obj.year as Record<string, unknown>;
+    return 'low' in year && 'high' in year;
+  }
+  return false;
+}
+
+/**
+ * Format Neo4j temporal type to readable date string
+ */
+function formatNeo4jTemporal(value: unknown): string {
+  try {
+    const obj = value as Record<string, Record<string, number>>;
+    const year = obj.year?.low || 0;
+    const month = obj.month?.low || 1;
+    const day = obj.day?.low || 1;
+    const hour = obj.hour?.low || 0;
+    const minute = obj.minute?.low || 0;
+
+    const date = new Date(year, month - 1, day, hour, minute);
+
+    if (obj.hour) {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    }
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return String(value);
+  }
+}
+
 function PropertyRow({ name, value }: { name: string; value: unknown }) {
   const displayValue = useMemo(() => {
     if (Array.isArray(value)) {
       return value.join(', ');
     }
+    // Handle Neo4j temporal types
+    if (isNeo4jTemporal(value)) {
+      return formatNeo4jTemporal(value);
+    }
     if (typeof value === 'object' && value !== null) {
+      // Handle Neo4j integers (low/high format)
+      const obj = value as Record<string, unknown>;
+      if ('low' in obj && 'high' in obj) {
+        return String(obj.low);
+      }
       return JSON.stringify(value, null, 2);
     }
     if (typeof value === 'string' && (name.includes('date') || name === 'created_at' || name === 'updated_at')) {
@@ -396,7 +452,7 @@ function PropertyRow({ name, value }: { name: string; value: unknown }) {
   return (
     <div className="flex items-start justify-between gap-2 py-1 text-sm">
       <span className="text-muted-foreground font-mono">{formatPropertyName(name)}</span>
-      <span className="text-foreground font-mono text-right truncate max-w-[60%]">{displayValue}</span>
+      <span className="text-foreground font-mono text-right truncate max-w-[60%]" title={displayValue}>{displayValue}</span>
     </div>
   );
 }

@@ -275,6 +275,57 @@ function getNodeProp(properties: Record<string, unknown>, key: string): string |
 }
 
 /**
+ * Deduplicate nodes by a property key, keeping the first occurrence
+ */
+function deduplicateByProperty<T extends GraphNode>(
+  nodes: T[],
+  propKey: string
+): T[] {
+  const seen = new Set<string>();
+  return nodes.filter((node) => {
+    const props = node.properties as Record<string, unknown>;
+    const key = (props[propKey] as string) || node.id;
+    if (seen.has(key.toLowerCase())) {
+      return false;
+    }
+    seen.add(key.toLowerCase());
+    return true;
+  });
+}
+
+/**
+ * Extract epic identifier from a sprint_id or task_id
+ * Handles formats: e005_s01, e005, EPIC-005, epic_005, etc.
+ */
+function extractEpicId(id: string): string | null {
+  const lower = id.toLowerCase();
+
+  // Pattern: e{NNN}_s{NN} or e{NNN}_s{NN}_t{NN}
+  const prefixMatch = lower.match(/^(e\d+)/);
+  if (prefixMatch) return prefixMatch[1];
+
+  // Pattern: epic-{NNN} or epic_{NNN}
+  const epicMatch = lower.match(/^epic[-_]?(\d+)/);
+  if (epicMatch) return `e${epicMatch[1].padStart(3, '0')}`;
+
+  return null;
+}
+
+/**
+ * Extract sprint identifier from a task_id
+ * Handles formats: e005_s01_t01 -> e005_s01
+ */
+function extractSprintId(taskId: string): string | null {
+  const lower = taskId.toLowerCase();
+
+  // Pattern: e{NNN}_s{NN}_t{NN}
+  const match = lower.match(/^(e\d+_s\d+)/);
+  if (match) return match[1];
+
+  return null;
+}
+
+/**
  * Build a tree structure from flat node list
  * Hierarchical structure: Project -> Epics -> Sprints -> Tasks
  */
@@ -285,7 +336,7 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   }
 
   // Fetch all hierarchical nodes in parallel
-  const [epics, sprints, tasks, adrs, prds, patterns, gotchas] = await Promise.all([
+  const [rawEpics, rawSprints, rawTasks, adrs, prds, patterns, gotchas] = await Promise.all([
     getNodesByLabel('Epic', options),
     getNodesByLabel('Sprint', options),
     getNodesByLabel('Task', options),
@@ -295,38 +346,49 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     getNodesByLabel('Gotcha', options),
   ]);
 
-  // Build epic tree nodes
+  // Deduplicate by semantic ID to avoid showing duplicates
+  const epics = deduplicateByProperty(rawEpics, 'epic_id');
+  const sprints = deduplicateByProperty(rawSprints, 'sprint_id');
+  const tasks = deduplicateByProperty(rawTasks, 'task_id');
+
+  // Build epic tree nodes with a map for fast lookup
+  const epicMap = new Map<string, TreeNode>();
   const epicNodes: TreeNode[] = epics.map((epic) => {
     const props = epic.properties as Record<string, unknown>;
-    return {
+    const epicId = getNodeProp(props, 'epic_id') || epic.id;
+    const node: TreeNode = {
       id: epic.id,
       label: 'Epic' as const,
-      name: getNodeProp(props, 'title') || getNodeProp(props, 'epic_id') || epic.id,
+      name: getNodeProp(props, 'title') || epicId,
       hasChildren: true,
       isExpanded: false,
       properties: epic.properties,
-      children: [], // Will be populated with sprints
+      children: [],
     };
+
+    // Add to map with multiple possible keys for matching
+    epicMap.set(epicId.toLowerCase(), node);
+    const extracted = extractEpicId(epicId);
+    if (extracted) {
+      epicMap.set(extracted, node);
+      // Also store numeric part (e.g., "005" or "5")
+      const numericMatch = extracted.match(/\d+/);
+      if (numericMatch) {
+        epicMap.set(numericMatch[0], node);
+        epicMap.set(numericMatch[0].replace(/^0+/, '') || '0', node); // Without leading zeros
+      }
+    }
+
+    return node;
   });
 
-  // Track ungrouped sprints
-  const ungroupedSprints: TreeNode[] = [];
+  // Map for sprint lookup when grouping tasks
+  const sprintMap = new Map<string, TreeNode>();
 
-  // Group sprints by epic (based on ID prefix: e005_s01 belongs to e005)
-  // Handles formats: e005_s01, EPIC-005, epic-005, e005
-  sprints.forEach((sprint) => {
+  // Build sprint tree nodes (sprints are NOT nested under epics - they consume backlog items)
+  const sprintNodes: TreeNode[] = sprints.map((sprint) => {
     const props = sprint.properties as Record<string, unknown>;
     const sprintId = getNodeProp(props, 'sprint_id') || sprint.id;
-    const epicPrefix = sprintId.split('_s')[0].toLowerCase(); // e.g., "e005"
-    // Extract numeric part for flexible matching
-    const epicNumeric = epicPrefix.replace(/[^0-9]/g, ''); // e.g., "005"
-
-    const epicNode = epicNodes.find((e) => {
-      const eProps = e.properties as Record<string, unknown> | undefined;
-      const epicId = ((eProps ? getNodeProp(eProps, 'epic_id') : undefined) || e.id).toLowerCase();
-      // Match by full prefix or numeric part
-      return epicId.includes(epicPrefix) || epicId.includes(epicNumeric);
-    });
 
     const sprintTreeNode: TreeNode = {
       id: sprint.id,
@@ -338,64 +400,43 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
       children: [],
     };
 
-    if (epicNode) {
-      epicNode.children = epicNode.children || [];
-      epicNode.children.push(sprintTreeNode);
-    } else {
-      // Track ungrouped sprints
-      ungroupedSprints.push(sprintTreeNode);
+    // Store in sprint map for task grouping
+    sprintMap.set(sprintId.toLowerCase(), sprintTreeNode);
+    const extractedSprintId = extractSprintId(sprintId + '_t00'); // Reuse extraction
+    if (extractedSprintId) {
+      sprintMap.set(extractedSprintId, sprintTreeNode);
     }
+
+    return sprintTreeNode;
   });
 
-  // Group tasks by sprint (check both epic sprints and ungrouped sprints)
+  // Group tasks by sprint
   tasks.forEach((task) => {
     const props = task.properties as Record<string, unknown>;
     const taskId = getNodeProp(props, 'task_id') || task.id;
-    // Parse task ID: e005_s01_t01 -> sprint e005_s01
-    const parts = taskId.split('_t');
-    if (parts.length >= 1) {
-      const sprintPrefix = parts[0].toLowerCase();
 
-      // Create task tree node
-      const taskTreeNode: TreeNode = {
-        id: task.id,
-        label: 'Task' as const,
-        name: getNodeProp(props, 'title') || taskId,
-        hasChildren: false,
-        properties: task.properties,
-      };
+    const taskTreeNode: TreeNode = {
+      id: task.id,
+      label: 'Task' as const,
+      name: getNodeProp(props, 'title') || taskId,
+      hasChildren: false,
+      properties: task.properties,
+    };
 
-      // Find the sprint in epic children first
-      let found = false;
-      for (const epic of epicNodes) {
-        const sprint = epic.children?.find((s) => {
-          const sProps = s.properties as Record<string, unknown> | undefined;
-          const sId = ((sProps ? getNodeProp(sProps, 'sprint_id') : undefined) || s.id).toLowerCase();
-          return sId.includes(sprintPrefix);
-        });
+    // Try to find parent sprint
+    const sprintIdFromTask = extractSprintId(taskId);
+    let sprintNode: TreeNode | undefined;
 
-        if (sprint) {
-          sprint.children = sprint.children || [];
-          sprint.children.push(taskTreeNode);
-          found = true;
-          break;
-        }
-      }
-
-      // If not found, check ungrouped sprints
-      if (!found) {
-        const ungroupedSprint = ungroupedSprints.find((s) => {
-          const sProps = s.properties as Record<string, unknown> | undefined;
-          const sId = ((sProps ? getNodeProp(sProps, 'sprint_id') : undefined) || s.id).toLowerCase();
-          return sId.includes(sprintPrefix);
-        });
-
-        if (ungroupedSprint) {
-          ungroupedSprint.children = ungroupedSprint.children || [];
-          ungroupedSprint.children.push(taskTreeNode);
-        }
-      }
+    if (sprintIdFromTask) {
+      sprintNode = sprintMap.get(sprintIdFromTask);
     }
+
+    if (sprintNode) {
+      sprintNode.children = sprintNode.children || [];
+      sprintNode.children.push(taskTreeNode);
+    }
+    // Note: Tasks without matching sprints are intentionally not shown in the tree
+    // They can still be found via search or category view
   });
 
   // Build root tree
@@ -411,18 +452,18 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
         label: 'Project' as const,
         name: 'Epics',
         hasChildren: epicNodes.length > 0,
-        isExpanded: true,
+        isExpanded: false,
         children: epicNodes,
       },
-      // Add ungrouped sprints if any exist
-      ...(ungroupedSprints.length > 0 ? [{
+      // Sprints are separate from epics (they consume backlog items, not part of backlog)
+      {
         id: 'sprints-folder',
         label: 'Project' as const,
         name: 'Sprints',
-        hasChildren: true,
+        hasChildren: sprintNodes.length > 0,
         isExpanded: true,
-        children: ungroupedSprints,
-      }] : []),
+        children: sprintNodes,
+      },
       {
         id: 'adrs-folder',
         label: 'Project' as const,

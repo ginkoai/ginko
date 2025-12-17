@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Loader2, RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useGraphTree } from '@/lib/graph/hooks';
+import { useGraphTree, useInvalidateGraph } from '@/lib/graph/hooks';
 import type { TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { TreeNode } from './tree-node';
 import { cn } from '@/lib/utils';
@@ -45,6 +45,7 @@ export function TreeExplorer({
 }: TreeExplorerProps) {
   // Fetch tree data
   const { data: tree, isLoading, error, refetch } = useGraphTree(graphId);
+  const invalidateGraph = useInvalidateGraph();
 
   // Local state for expanded nodes
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['project-root', 'epics-folder']));
@@ -142,7 +143,12 @@ export function TreeExplorer({
         <h2 className="text-sm font-mono font-medium text-foreground">Explorer</h2>
         <div className="flex items-center gap-1">
           <button
-            onClick={() => refetch()}
+            onClick={async () => {
+              // Invalidate all graph queries to force fresh data
+              invalidateGraph();
+              // Then trigger refetch
+              await refetch();
+            }}
             className="p-1 hover:bg-white/5 rounded transition-colors"
             aria-label="Refresh tree"
             disabled={isLoading}
