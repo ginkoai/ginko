@@ -7,7 +7,7 @@
 
 **Duration**: 7-8 days
 **Type**: Feature sprint
-**Progress:** 67% (6/9 tasks complete)
+**Progress:** 78% (7/9 tasks complete)
 
 **Success Criteria:**
 - [ ] ProjectView displays Charter as root with project metrics
@@ -150,7 +150,7 @@
 ---
 
 ### TASK-6: NodeEditorModal (3h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s02_t06
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -244,6 +244,15 @@ ginko assign --sprint e006_s02 --all chris@watchhill.ai
 ---
 
 ## Accomplishments This Sprint
+
+### 2025-12-17: TASK-6 NodeEditorModal
+- Created NodeEditorModal component using Radix Dialog + NodeEditorForm
+- Added edit button (Pencil icon) to CondensedNodeCard with hover visibility
+- Wired up edit callbacks in CategoryView and NodeView
+- Modal supports validation, save errors, and sync status badge
+- Integrated in graph page with editingNode state and handleEditNode callback
+- Build verified successfully
+- Files: `dashboard/src/components/graph/NodeEditorModal.tsx`, `CondensedNodeCard.tsx`, `CategoryView.tsx`, `page.tsx`
 
 ### 2025-12-17: TASK-5 View Transitions + Integration
 - Created ViewTransition wrapper component with Framer Motion AnimatePresence

@@ -22,6 +22,7 @@ import { CategoryView } from '@/components/graph/CategoryView';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
 import { NodeView } from '@/components/graph/NodeView';
 import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
+import { NodeEditorModal } from '@/components/graph/NodeEditorModal';
 import { useGraphNodes } from '@/lib/graph/hooks';
 import { setDefaultGraphId } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
@@ -88,6 +89,10 @@ export default function GraphPage() {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string; name: string }[]>([]);
 
+  // Edit modal state
+  const [editingNode, setEditingNode] = useState<GraphNode | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   // Fetch the selected node details when ID changes
   const { data: nodesData, isLoading: nodesLoading } = useGraphNodes({
     graphId: DEFAULT_GRAPH_ID,
@@ -147,6 +152,24 @@ export default function GraphPage() {
     });
     handleSelectNode(nodeId);
   }, [handleSelectNode]);
+
+  // Handle edit node (open modal)
+  const handleEditNode = useCallback((nodeId: string) => {
+    const node = nodesData?.nodes?.find((n) => n.id === nodeId);
+    if (node) {
+      setEditingNode(node);
+      setIsEditModalOpen(true);
+    }
+  }, [nodesData]);
+
+  // Handle save from edit modal
+  const handleEditSave = useCallback((updatedNode: GraphNode) => {
+    // Update local state if this is the selected node
+    if (selectedNode?.id === updatedNode.id) {
+      setSelectedNode(updatedNode);
+    }
+    // Note: React Query will refetch on next navigation
+  }, [selectedNode]);
 
   // Close detail panel
   const handleClosePanel = useCallback(() => {
@@ -311,6 +334,7 @@ export default function GraphPage() {
                 selectedNodeId={selectedNodeId}
                 onSelectNode={handleSelectNode}
                 onViewDetails={handleViewDetails}
+                onEdit={handleEditNode}
               />
             )}
 
@@ -320,6 +344,7 @@ export default function GraphPage() {
                 graphId={DEFAULT_GRAPH_ID}
                 node={selectedNode}
                 onNavigate={handleNavigate}
+                onEdit={handleEditNode}
               />
             )}
           </ViewTransition>
@@ -337,6 +362,15 @@ export default function GraphPage() {
           onBreadcrumbClick={handleBreadcrumbClick}
         />
       </div>
+
+      {/* Edit Node Modal */}
+      <NodeEditorModal
+        node={editingNode}
+        graphId={DEFAULT_GRAPH_ID}
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        onSave={handleEditSave}
+      />
     </div>
   );
 }

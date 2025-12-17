@@ -23,6 +23,7 @@ import {
   GitBranch,
   Lightbulb,
   ExternalLink,
+  Pencil,
   type LucideIcon,
 } from 'lucide-react';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
@@ -194,6 +195,11 @@ function CondensedNodeCardComponent({
     onViewDetails?.(node.id);
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit?.(node.id);
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.01 }}
@@ -247,15 +253,26 @@ function CondensedNodeCardComponent({
         </div>
 
         {/* Actions (visible on hover) */}
-        {onViewDetails && (
-          <button
-            onClick={handleViewDetails}
-            className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-white/5 rounded transition-all"
-            aria-label="View details"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-          </button>
-        )}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onEdit && (
+            <button
+              onClick={handleEdit}
+              className="p-1.5 hover:bg-white/5 rounded transition-colors"
+              aria-label="Edit node"
+            >
+              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+          {onViewDetails && (
+            <button
+              onClick={handleViewDetails}
+              className="p-1.5 hover:bg-white/5 rounded transition-colors"
+              aria-label="View details"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+            </button>
+          )}
+        </div>
       </div>
     </motion.div>
   );

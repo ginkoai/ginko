@@ -32,5 +32,6 @@ export { ViewTransition, getTransitionDirection, type TransitionDirection, type 
 // Knowledge editing components
 export { NodeEditor } from './NodeEditor';
 export { NodeEditorForm } from './NodeEditorForm';
+export { NodeEditorModal } from './NodeEditorModal';
 export { MarkdownEditor } from './MarkdownEditor';
 export { UnsyncedBanner } from './UnsyncedBanner';

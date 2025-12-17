@@ -43,6 +43,7 @@ export interface CategoryViewProps {
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string) => void;
   onViewDetails: (nodeId: string) => void;
+  onEdit?: (nodeId: string) => void;
   className?: string;
 }
 
@@ -183,6 +184,7 @@ export function CategoryView({
   selectedNodeId,
   onSelectNode,
   onViewDetails,
+  onEdit,
   className,
 }: CategoryViewProps) {
   // Filter/sort state
@@ -391,6 +393,7 @@ export function CategoryView({
                 isSelected={node.id === selectedNodeId}
                 onSelect={onSelectNode}
                 onViewDetails={onViewDetails}
+                onEdit={onEdit}
               />
             ))}
           </div>
