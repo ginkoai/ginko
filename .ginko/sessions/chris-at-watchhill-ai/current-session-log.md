@@ -35,3 +35,33 @@ branch: main
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 10:45 - [feature]
+# [FEATURE] 10:45
+
+Completed TASK-5: ViewTransition component with AnimatePresence. Implemented direction-aware slide+fade transitions for C4-style navigation (project→category→detail). Uses Framer Motion spring animations with 30px slide offset. Build verified.
+
+**Files:**
+- dashboard/src/components/graph/ViewTransition.tsx
+- dashboard/src/app/dashboard/graph/page.tsx
+
+**Impact:** medium
+**Timestamp:** 2025-12-17T15:45:57.472Z
+
+Files: dashboard/src/components/graph/ViewTransition.tsx, dashboard/src/app/dashboard/graph/page.tsx
+Impact: medium
+
+### 10:56 - [feature]
+# [FEATURE] 10:56
+
+Completed TASK-6: NodeEditorModal for inline node editing. Created modal using Radix Dialog + NodeEditorForm with validation and save error handling. Added edit button to CondensedNodeCard and wired callbacks through CategoryView to graph page.
+
+**Files:**
+- dashboard/src/components/graph/NodeEditorModal.tsx
+- dashboard/src/components/graph/CondensedNodeCard.tsx
+
+**Impact:** medium
+**Timestamp:** 2025-12-17T15:56:30.798Z
+
+Files: dashboard/src/components/graph/NodeEditorModal.tsx, dashboard/src/components/graph/CondensedNodeCard.tsx
+Impact: medium
