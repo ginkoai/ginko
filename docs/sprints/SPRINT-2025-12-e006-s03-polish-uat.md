@@ -7,7 +7,7 @@
 
 **Duration**: 4-5 days
 **Type**: Polish + Testing sprint
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 0% (0/7 tasks complete)
 
 **Success Criteria:**
 - [ ] Edit modal integrated with Node View
@@ -203,6 +203,28 @@ InsightCard → Click recommendation
 **Files:**
 - `docs/guides/GRAPH-VISUALIZATION.md` (update)
 - `docs/guides/COACHING-INSIGHTS.md` (update)
+
+---
+
+### TASK-18: Sprint Sync Deduplication (2h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+**ID:** e006_s03_t18
+**Assignee:** Chris Norton (chris@watchhill.ai)
+
+**Goal:** Prevent duplicate tasks when sprint is synced multiple times.
+
+**Problem:**
+Sprint sync endpoint creates new Task nodes each time, leading to 4x duplicates when synced repeatedly.
+
+**Implementation:**
+1. Check if task already exists by ID before creating
+2. Use MERGE instead of CREATE for Task nodes
+3. Update existing task properties if node exists
+4. Return count of created vs updated tasks in response
+
+**Files:**
+- `dashboard/src/app/api/v1/sprint/sync/route.ts` (update)
 
 ---
 
