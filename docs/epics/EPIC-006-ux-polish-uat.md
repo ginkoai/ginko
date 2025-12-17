@@ -18,12 +18,12 @@ Polish the Dashboard for User Acceptance Testing with C4-style graph navigation,
 
 ## Success Criteria
 
-### Theme 1: Insights Polish
+### Theme 1: Insights Polish (Sprint 1 - Complete)
 - [x] Recommendations link to modal dialogs showing underlying Principles
-- [ ] Evidence entries display full datetime with modal to view source records
-- [ ] Collapsible left-nav (icon-only mode)
+- [x] Evidence entries display full datetime with modal to view source records
+- [x] Collapsible left-nav (icon-only mode)
 
-### Theme 2: C4-Style Graph Navigation
+### Theme 2: C4-Style Graph Navigation (Sprint 2 - In Progress)
 - [ ] Project View: Charter as root with project metrics and Summary Cards
 - [ ] Category View: Grid of condensed cards for selected node type
 - [ ] Node View: Full-page detail with breadcrumb navigation
@@ -31,11 +31,11 @@ Polish the Dashboard for User Acceptance Testing with C4-style graph navigation,
 - [ ] Related nodes display as Summary Cards by type
 - [ ] Breadcrumb navigation for deep exploration
 
-### Theme 3: Principle Node Type
-- [ ] Principle schema: principle_id, name, theory, related_principles, type, version
-- [ ] Standard Principles seeded from CLAUDE.md, ADRs, vendor best practices
-- [ ] Standard Principles are read-only; Custom Principles are editable
-- [ ] Recommendations reference Principles via principle_id
+### Theme 3: Principle Node Type (Sprint 1 - Complete)
+- [x] Principle schema: principle_id, name, theory, related_principles, type, version
+- [x] Standard Principles seeded from CLAUDE.md, ADRs, vendor best practices
+- [x] Standard Principles are read-only; Custom Principles are editable
+- [x] Recommendations reference Principles via principle_id
 
 ## Scope
 
@@ -75,8 +75,8 @@ Polish the Dashboard for User Acceptance Testing with C4-style graph navigation,
 
 | Sprint | Goal | Duration | Status |
 |--------|------|----------|--------|
-| Sprint 1 | Foundation + Insights Polish | 5-6 days | Not Started |
-| Sprint 2 | C4-Style Graph Navigation | 7-8 days | Not Started |
+| Sprint 1 | Foundation + Insights Polish | 5-6 days | Complete |
+| Sprint 2 | C4-Style Graph Navigation | 7-8 days | In Progress |
 | Sprint 3 | Polish + UAT | 4-5 days | Not Started |
 
 ## Key Decisions

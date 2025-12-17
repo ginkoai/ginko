@@ -142,11 +142,12 @@ export async function GET(request: NextRequest) {
       const total = countResult.records[0]?.get('total')?.toNumber() || 0;
 
       // Get nodes with pagination
+      // Note: Sort by createdAt (camelCase) OR created_at (snake_case) for compatibility
       const nodesResult = await session.executeRead(async (tx) => {
         return tx.run(
           `MATCH (n${labelClause}) WHERE ${whereClause}
            RETURN n, labels(n) as nodeLabels
-           ORDER BY n.created_at DESC
+           ORDER BY COALESCE(n.createdAt, n.created_at) DESC
            SKIP $offset LIMIT $limit`,
           params
         );

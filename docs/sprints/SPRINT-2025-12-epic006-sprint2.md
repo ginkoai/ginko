@@ -175,24 +175,6 @@
 
 ---
 
-### TASK-7: My Tasks Scroll Containment (1h)
-**Status:** [@] In Progress
-**Priority:** HIGH
-**ID:** e006_s02_t07
-**Assignee:** Chris Norton (chris@watchhill.ai)
-
-**Goal:** Fix My Tasks list stretching Focus screen when many tasks assigned.
-
-**Implementation:**
-1. Add max-height and overflow-y scroll to MyTasksList content
-2. Consider pagination for 10+ tasks
-3. Fix duplicate tasks issue (4 Graph nodes creating 4x tasks)
-
-**Files:**
-- `dashboard/src/components/focus/MyTasksList.tsx` (update)
-
----
-
 ## Accomplishments This Sprint
 
 [To be updated as tasks complete]

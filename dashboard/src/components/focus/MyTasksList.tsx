@@ -122,7 +122,15 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
           // Exclude completed tasks
           .filter((task) => task.status !== 'complete');
 
-        setTasks(userTasks);
+        // Deduplicate by task_id (multiple Graph nodes can create duplicates)
+        const uniqueTasks = userTasks.reduce((acc, task) => {
+          if (!acc.some((t) => t.task_id === task.task_id)) {
+            acc.push(task);
+          }
+          return acc;
+        }, [] as TaskNode[]);
+
+        setTasks(uniqueTasks);
       } catch (err) {
         console.error('Failed to fetch tasks:', err);
         setError(err instanceof Error ? err.message : 'Failed to load tasks');
@@ -200,7 +208,7 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="max-h-[400px] overflow-y-auto">
         <div className="space-y-6">
           {taskGroups.map((group) => {
             const StatusIcon = statusIcons[group.status];
