@@ -226,7 +226,7 @@ export default function GraphPage() {
     router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
   }, [router, navigateToView]);
 
-  // Build breadcrumb items based on current navigation state
+  // Build breadcrumb items based on current navigation state + history
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
     const items: BreadcrumbItem[] = [
       { type: 'project', label: 'Project' },
@@ -240,6 +240,20 @@ export default function GraphPage() {
       });
     }
 
+    // Add accumulated node breadcrumbs from navigation history
+    breadcrumbs.forEach((crumb) => {
+      const historyNode = nodesData?.nodes?.find((n) => n.id === crumb.id);
+      if (historyNode) {
+        items.push({
+          type: 'node',
+          label: crumb.name,
+          nodeLabel: historyNode.label,
+          nodeId: crumb.id,
+        });
+      }
+    });
+
+    // Add current node
     if (selectedNode && isPanelOpen) {
       const props = selectedNode.properties as Record<string, unknown>;
       const title = (props.title || props.name || props.adr_id || props.task_id || selectedNode.id) as string;
@@ -252,7 +266,7 @@ export default function GraphPage() {
     }
 
     return items;
-  }, [selectedCategory, selectedNode, isPanelOpen]);
+  }, [selectedCategory, selectedNode, isPanelOpen, breadcrumbs, nodesData]);
 
   // Handle breadcrumb navigation
   const handleBreadcrumbNavigate = useCallback((item: BreadcrumbItem, index: number) => {
@@ -260,9 +274,11 @@ export default function GraphPage() {
       handleGoToProject();
     } else if (item.type === 'category' && item.nodeLabel) {
       handleGoToCategory(item.nodeLabel);
+    } else if (item.type === 'node' && item.nodeId) {
+      // Navigate to a node in history - trim breadcrumbs after this point
+      handleBreadcrumbClick(item.nodeId);
     }
-    // Node breadcrumbs are the current item, no navigation needed
-  }, [handleGoToProject, handleGoToCategory]);
+  }, [handleGoToProject, handleGoToCategory, handleBreadcrumbClick]);
 
   // Auth check
   if (authLoading) {

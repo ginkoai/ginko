@@ -30,6 +30,7 @@ import {
 import { useNodeAdjacencies } from '@/lib/graph/hooks';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
 import { RelatedNodesSummary } from './RelatedNodesSummary';
+import { MarkdownRenderer } from './MarkdownRenderer';
 import { cn } from '@/lib/utils';
 
 // =============================================================================
@@ -239,6 +240,7 @@ function NodeContent({ node }: { node: GraphNode }) {
   const props = node.properties as Record<string, unknown>;
 
   // Get content fields based on node type
+  const content = getNodeProp(props, 'content'); // Full document content
   const description = getNodeProp(props, 'description');
   const summary = getNodeProp(props, 'summary');
   const context = getNodeProp(props, 'context');
@@ -248,16 +250,24 @@ function NodeContent({ node }: { node: GraphNode }) {
   const theory = getNodeProp(props, 'theory');
   const mitigation = getNodeProp(props, 'mitigation');
   const goal = getNodeProp(props, 'goal');
+  const overview = getNodeProp(props, 'overview'); // PRD field
+  const requirements = getNodeProp(props, 'requirements'); // PRD field
+  const successCriteria = getNodeProp(props, 'success_criteria'); // PRD field
 
   const sections: { label: string; content: string }[] = [];
 
+  // Full content first if available (for ADRs/PRDs with complete markdown)
+  if (content) sections.push({ label: 'Content', content: content });
   if (description) sections.push({ label: 'Description', content: description });
   if (summary) sections.push({ label: 'Summary', content: summary });
+  if (overview) sections.push({ label: 'Overview', content: overview });
   if (purpose) sections.push({ label: 'Purpose', content: purpose });
   if (goal) sections.push({ label: 'Goal', content: goal });
   if (context) sections.push({ label: 'Context', content: context });
   if (decision) sections.push({ label: 'Decision', content: decision });
   if (consequences) sections.push({ label: 'Consequences', content: consequences });
+  if (requirements) sections.push({ label: 'Requirements', content: requirements });
+  if (successCriteria) sections.push({ label: 'Success Criteria', content: successCriteria });
   if (theory) sections.push({ label: 'Theory', content: theory });
   if (mitigation) sections.push({ label: 'Mitigation', content: mitigation });
 
@@ -272,9 +282,7 @@ function NodeContent({ node }: { node: GraphNode }) {
           <h3 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-2">
             {section.label}
           </h3>
-          <div className="text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
-            {section.content}
-          </div>
+          <MarkdownRenderer content={section.content} />
         </div>
       ))}
     </div>

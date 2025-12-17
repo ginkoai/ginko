@@ -285,11 +285,12 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   }
 
   // Fetch all hierarchical nodes in parallel
-  const [epics, sprints, tasks, adrs, patterns, gotchas] = await Promise.all([
+  const [epics, sprints, tasks, adrs, prds, patterns, gotchas] = await Promise.all([
     getNodesByLabel('Epic', options),
     getNodesByLabel('Sprint', options),
     getNodesByLabel('Task', options),
     getNodesByLabel('ADR', options),
+    getNodesByLabel('PRD', options),
     getNodesByLabel('Pattern', options),
     getNodesByLabel('Gotcha', options),
   ]);
@@ -398,6 +399,23 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
             name: getNodeProp(props, 'title') || getNodeProp(props, 'adr_id') || adr.id,
             hasChildren: false,
             properties: adr.properties,
+          };
+        }),
+      },
+      {
+        id: 'prds-folder',
+        label: 'Project' as const,
+        name: 'PRDs',
+        hasChildren: prds.length > 0,
+        isExpanded: false,
+        children: prds.map((prd) => {
+          const props = prd.properties as Record<string, unknown>;
+          return {
+            id: prd.id,
+            label: 'PRD' as const,
+            name: getNodeProp(props, 'title') || getNodeProp(props, 'prd_id') || prd.id,
+            hasChildren: false,
+            properties: prd.properties,
           };
         }),
       },
