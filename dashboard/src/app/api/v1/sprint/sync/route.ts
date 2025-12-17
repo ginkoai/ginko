@@ -455,6 +455,7 @@ async function syncSprintToGraph(
     startDate: graph.sprint.startDate,
     endDate: graph.sprint.endDate,
     progress: graph.sprint.progress,
+    graphId, // Required for nodes API filtering
   });
   nodeCount++;
 
@@ -470,6 +471,7 @@ async function syncSprintToGraph(
       id: `file_${filePath.replace(/[^a-zA-Z0-9]/g, '_')}`,
       path: filePath,
       status: 'current', // Default status
+      graphId, // Required for nodes API filtering
     });
     nodeCount++;
   }
