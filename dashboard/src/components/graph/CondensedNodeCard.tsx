@@ -240,7 +240,7 @@ function CondensedNodeCardComponent({
           </div>
 
           {/* Title */}
-          <h4 className="text-sm font-medium text-foreground truncate">
+          <h4 className="text-sm font-medium text-foreground line-clamp-2">
             {title}
           </h4>
 

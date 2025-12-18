@@ -558,6 +558,222 @@ export const PRINCIPLE_SCHEMA: NodeSchema = {
   },
 };
 
+// Sprint Schema
+export const SPRINT_SCHEMA: NodeSchema = {
+  type: 'Sprint',
+  displayName: 'Sprint',
+  fields: [
+    {
+      name: 'sprint_id',
+      label: 'Sprint ID',
+      type: 'text',
+      required: true,
+      placeholder: 'e005_s01',
+      helperText: 'Format: e{NNN}_s{NN} (e.g., e005_s01)',
+    },
+    {
+      name: 'title',
+      label: 'Title',
+      type: 'text',
+      required: true,
+      placeholder: 'Sprint title',
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'planning', label: 'Planning' },
+        { value: 'active', label: 'Active' },
+        { value: 'complete', label: 'Complete' },
+      ],
+    },
+    {
+      name: 'goal',
+      label: 'Goal',
+      type: 'markdown',
+      required: false,
+      placeholder: 'What is the sprint goal?',
+      helperText: 'High-level objective for this sprint',
+    },
+  ],
+  validate: (data) => {
+    const errors: string[] = [];
+
+    if (!data.sprint_id || data.sprint_id.trim().length < 3) {
+      errors.push('Sprint ID is required');
+    }
+
+    if (!data.title || data.title.trim().length < 3) {
+      errors.push('Title must be at least 3 characters');
+    }
+
+    if (!data.status) {
+      errors.push('Status is required');
+    }
+
+    return { valid: errors.length === 0, errors };
+  },
+  getFilePath: (data) => {
+    const slug = data.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return `docs/sprints/${data.sprint_id}-${slug}.md`;
+  },
+};
+
+// Task Schema
+export const TASK_SCHEMA: NodeSchema = {
+  type: 'Task',
+  displayName: 'Task',
+  fields: [
+    {
+      name: 'task_id',
+      label: 'Task ID',
+      type: 'text',
+      required: true,
+      placeholder: 'e005_s01_t01',
+      helperText: 'Format: e{NNN}_s{NN}_t{NN} (e.g., e005_s01_t01)',
+    },
+    {
+      name: 'title',
+      label: 'Title',
+      type: 'text',
+      required: true,
+      placeholder: 'Task title',
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'todo', label: 'To Do' },
+        { value: 'in_progress', label: 'In Progress' },
+        { value: 'paused', label: 'Paused' },
+        { value: 'complete', label: 'Complete' },
+      ],
+    },
+    {
+      name: 'priority',
+      label: 'Priority',
+      type: 'select',
+      required: false,
+      options: [
+        { value: 'low', label: 'Low' },
+        { value: 'medium', label: 'Medium' },
+        { value: 'high', label: 'High' },
+        { value: 'critical', label: 'Critical' },
+      ],
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'markdown',
+      required: false,
+      placeholder: 'Task description',
+      helperText: 'Detailed description of what needs to be done',
+    },
+    {
+      name: 'assignee',
+      label: 'Assignee',
+      type: 'text',
+      required: false,
+      placeholder: 'user@example.com',
+      helperText: 'Email of the person assigned to this task',
+    },
+  ],
+  validate: (data) => {
+    const errors: string[] = [];
+
+    if (!data.task_id || data.task_id.trim().length < 3) {
+      errors.push('Task ID is required');
+    }
+
+    if (!data.title || data.title.trim().length < 3) {
+      errors.push('Title must be at least 3 characters');
+    }
+
+    if (!data.status) {
+      errors.push('Status is required');
+    }
+
+    return { valid: errors.length === 0, errors };
+  },
+  getFilePath: (data) => {
+    return `docs/tasks/${data.task_id}.md`;
+  },
+};
+
+// Epic Schema
+export const EPIC_SCHEMA: NodeSchema = {
+  type: 'Epic',
+  displayName: 'Epic',
+  fields: [
+    {
+      name: 'epic_id',
+      label: 'Epic ID',
+      type: 'text',
+      required: true,
+      placeholder: 'e005',
+      helperText: 'Format: e{NNN} (e.g., e005)',
+    },
+    {
+      name: 'title',
+      label: 'Title',
+      type: 'text',
+      required: true,
+      placeholder: 'Epic title',
+    },
+    {
+      name: 'status',
+      label: 'Status',
+      type: 'select',
+      required: true,
+      options: [
+        { value: 'planning', label: 'Planning' },
+        { value: 'active', label: 'Active' },
+        { value: 'complete', label: 'Complete' },
+        { value: 'on-hold', label: 'On Hold' },
+      ],
+    },
+    {
+      name: 'description',
+      label: 'Description',
+      type: 'markdown',
+      required: false,
+      placeholder: 'Epic description',
+      helperText: 'High-level description of the epic',
+    },
+  ],
+  validate: (data) => {
+    const errors: string[] = [];
+
+    if (!data.epic_id || data.epic_id.trim().length < 2) {
+      errors.push('Epic ID is required');
+    }
+
+    if (!data.title || data.title.trim().length < 3) {
+      errors.push('Title must be at least 3 characters');
+    }
+
+    if (!data.status) {
+      errors.push('Status is required');
+    }
+
+    return { valid: errors.length === 0, errors };
+  },
+  getFilePath: (data) => {
+    const slug = data.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    return `docs/epics/${data.epic_id}-${slug}.md`;
+  },
+};
+
 // =============================================================================
 // Schema Registry
 // =============================================================================
@@ -569,6 +785,9 @@ export const NODE_SCHEMAS: Record<string, NodeSchema> = {
   Gotcha: GOTCHA_SCHEMA,
   Charter: CHARTER_SCHEMA,
   Principle: PRINCIPLE_SCHEMA,
+  Sprint: SPRINT_SCHEMA,
+  Task: TASK_SCHEMA,
+  Epic: EPIC_SCHEMA,
 };
 
 export function getNodeSchema(type: NodeLabel): NodeSchema | null {

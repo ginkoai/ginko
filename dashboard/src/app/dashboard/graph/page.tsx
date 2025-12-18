@@ -157,11 +157,17 @@ export default function GraphPage() {
 
   // Handle navigation in detail panel (clicking related node)
   const handleNavigate = useCallback((nodeId: string) => {
-    // Add current node to breadcrumbs if we have one
+    // Add current node to breadcrumbs if we have one and it's not already the last item
     if (selectedNode) {
       const props = selectedNode.properties as Record<string, unknown>;
       const name = (props.title || props.name || selectedNode.id) as string;
-      setBreadcrumbs((prev) => [...prev, { id: selectedNode.id, name }]);
+      setBreadcrumbs((prev) => {
+        // Don't add duplicate if it's already the last breadcrumb
+        if (prev.length > 0 && prev[prev.length - 1].id === selectedNode.id) {
+          return prev;
+        }
+        return [...prev, { id: selectedNode.id, name }];
+      });
     }
     handleSelectNode(nodeId);
   }, [selectedNode, handleSelectNode]);
@@ -177,13 +183,14 @@ export default function GraphPage() {
   }, [handleSelectNode]);
 
   // Handle edit node (open modal)
-  const handleEditNode = useCallback((nodeId: string) => {
-    const node = nodesData?.nodes?.find((n) => n.id === nodeId);
+  const handleEditNode = useCallback((nodeId: string, nodeData?: GraphNode) => {
+    // Use provided node data or fall back to lookup
+    const node = nodeData || nodesData?.nodes?.find((n) => n.id === nodeId) || selectedNode;
     if (node) {
       setEditingNode(node);
       setIsEditModalOpen(true);
     }
-  }, [nodesData]);
+  }, [nodesData, selectedNode]);
 
   // Handle save from edit modal
   const handleEditSave = useCallback((updatedNode: GraphNode) => {
@@ -242,6 +249,7 @@ export default function GraphPage() {
     setSelectedNodeId(null);
     setSelectedNode(null);
     setIsPanelOpen(false);
+    setBreadcrumbs([]); // Clear breadcrumbs when going back to category view
     // Update URL
     const params = new URLSearchParams();
     params.set('view', 'category');

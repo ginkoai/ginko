@@ -308,9 +308,9 @@ export function ProjectView({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-6 rounded-xl bg-gradient-to-br from-ginko-500/10 to-ginko-600/5 border border-ginko-500/20"
+          className="p-6 rounded-xl bg-card border border-border"
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
               <span className="text-xs font-mono text-ginko-400 uppercase tracking-wider">
                 Current Sprint
@@ -319,17 +319,33 @@ export function ProjectView({
                 {sprintMetrics.sprintName}
               </h3>
             </div>
-            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-ginko-500/10">
-              <div>
-                <span className="text-xs text-muted-foreground font-mono">Progress</span>
-                <p className="text-2xl font-bold text-foreground mt-1">
-                  {sprintMetrics.progress}%
-                </p>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground font-mono">Progress</span>
+                <span className="text-foreground font-mono font-medium">{sprintMetrics.progress}%</span>
               </div>
+              <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-ginko-500 rounded-full transition-all duration-500"
+                  style={{ width: `${sprintMetrics.progress}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Tasks Metrics */}
+            <div className="flex items-center justify-between pt-3 border-t border-border">
               <div>
                 <span className="text-xs text-muted-foreground font-mono">Tasks Complete</span>
                 <p className="text-2xl font-bold text-foreground mt-1">
-                  {sprintMetrics.tasksComplete}/{sprintMetrics.totalTasks}
+                  {sprintMetrics.tasksComplete}<span className="text-muted-foreground font-normal text-lg">/{sprintMetrics.totalTasks}</span>
+                </p>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground font-mono">Remaining</span>
+                <p className="text-2xl font-bold text-foreground mt-1">
+                  {sprintMetrics.totalTasks - sprintMetrics.tasksComplete}
                 </p>
               </div>
             </div>

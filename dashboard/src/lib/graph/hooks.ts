@@ -40,7 +40,9 @@ import type {
 export const graphQueryKeys = {
   all: ['graph'] as const,
   nodes: (options?: ListNodesOptions) => ['graph', 'nodes', options] as const,
-  nodesByLabel: (label: NodeLabel, graphId?: string) => ['graph', 'nodes', label, graphId] as const,
+  // Include all options in the key to prevent cache collisions between different fetches
+  nodesByLabel: (label: NodeLabel, options?: Omit<ListNodesOptions, 'labels'>) =>
+    ['graph', 'nodes', label, options?.graphId, options?.limit, options?.offset] as const,
   search: (query: string, graphId?: string) => ['graph', 'search', query, graphId] as const,
   adjacencies: (nodeId: string, graphId?: string) => ['graph', 'adjacencies', nodeId, graphId] as const,
   status: (graphId?: string) => ['graph', 'status', graphId] as const,
@@ -75,7 +77,7 @@ export function useNodesByLabel(
   queryOptions?: Omit<UseQueryOptions<GraphNode[]>, 'queryKey' | 'queryFn'>
 ) {
   return useQuery({
-    queryKey: graphQueryKeys.nodesByLabel(label, options.graphId),
+    queryKey: graphQueryKeys.nodesByLabel(label, options),
     queryFn: ({ signal }) => getNodesByLabel(label, { ...options, signal }),
     staleTime: 30_000,
     ...queryOptions,
@@ -187,10 +189,10 @@ export function usePrefetchAdjacencies() {
 export function usePrefetchNodesByLabel() {
   const queryClient = useQueryClient();
 
-  return (label: NodeLabel, graphId?: string) => {
+  return (label: NodeLabel, options?: Omit<ListNodesOptions, 'labels'>) => {
     queryClient.prefetchQuery({
-      queryKey: graphQueryKeys.nodesByLabel(label, graphId),
-      queryFn: () => getNodesByLabel(label, { graphId }),
+      queryKey: graphQueryKeys.nodesByLabel(label, options),
+      queryFn: () => getNodesByLabel(label, options || {}),
       staleTime: 30_000,
     });
   };

@@ -43,7 +43,7 @@ export interface CategoryViewProps {
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string) => void;
   onViewDetails: (nodeId: string) => void;
-  onEdit?: (nodeId: string) => void;
+  onEdit?: (nodeId: string, node?: GraphNode) => void;
   className?: string;
 }
 
@@ -211,7 +211,15 @@ export function CategoryView({
   const filteredNodes = useMemo(() => {
     if (!nodes) return [];
 
-    let result = [...nodes];
+    // Deduplicate nodes by id (database may have duplicates)
+    const seenIds = new Set<string>();
+    let result = nodes.filter((node) => {
+      if (seenIds.has(node.id)) {
+        return false;
+      }
+      seenIds.add(node.id);
+      return true;
+    });
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -231,7 +239,19 @@ export function CategoryView({
         const status = getNodeProp(props, 'status') ||
                       getNodeProp(props, 'severity') ||
                       getNodeProp(props, 'confidence');
-        return status === statusFilter;
+
+        if (!status) return false;
+
+        // Normalize status for comparison (handle 'complete' vs 'completed')
+        const normalizedStatus = status.toLowerCase();
+        const normalizedFilter = statusFilter.toLowerCase();
+
+        // Check exact match or handle complete/completed variations
+        if (normalizedStatus === normalizedFilter) return true;
+        if (normalizedFilter === 'complete' && normalizedStatus === 'completed') return true;
+        if (normalizedFilter === 'completed' && normalizedStatus === 'complete') return true;
+
+        return false;
       });
     }
 
@@ -312,7 +332,7 @@ export function CategoryView({
               placeholder={`Search ${displayNames.plural.toLowerCase()}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-ginko-500 focus:border-ginko-500"
+              className="w-full pl-9 pr-3 py-2 text-sm bg-card border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-ginko-500 focus:border-ginko-500"
             />
           </div>
 
@@ -393,7 +413,7 @@ export function CategoryView({
                 isSelected={node.id === selectedNodeId}
                 onSelect={onSelectNode}
                 onViewDetails={onViewDetails}
-                onEdit={onEdit}
+                onEdit={onEdit ? (nodeId) => onEdit(nodeId, node) : undefined}
               />
             ))}
           </div>

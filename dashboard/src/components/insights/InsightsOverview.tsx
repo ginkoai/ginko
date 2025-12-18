@@ -107,8 +107,8 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
           <div className="flex items-center gap-8">
             {/* Score Circle */}
             <div className="text-center">
-              <div className="relative w-24 h-24">
-                <svg className="w-24 h-24 transform -rotate-90">
+              <div className="relative w-24 h-24 flex items-center justify-center">
+                <svg className="absolute inset-0 w-24 h-24 transform -rotate-90">
                   <circle
                     cx="48"
                     cy="48"
@@ -135,9 +135,7 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
                     strokeLinecap="round"
                   />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-mono font-bold text-2xl">{report.overallScore}</span>
-                </div>
+                <span className="font-mono font-bold text-2xl relative z-10">{report.overallScore}</span>
               </div>
               <div className={clsx('font-mono font-medium mt-2', rating.color)}>
                 {rating.label}

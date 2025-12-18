@@ -276,6 +276,7 @@ function getNodeProp(properties: Record<string, unknown>, key: string): string |
 
 /**
  * Deduplicate nodes by a property key, keeping the first occurrence
+ * Uses exact property value matching (case-sensitive) to avoid incorrect deduplication
  */
 function deduplicateByProperty<T extends GraphNode>(
   nodes: T[],
@@ -285,10 +286,10 @@ function deduplicateByProperty<T extends GraphNode>(
   return nodes.filter((node) => {
     const props = node.properties as Record<string, unknown>;
     const key = (props[propKey] as string) || node.id;
-    if (seen.has(key.toLowerCase())) {
+    if (seen.has(key)) {
       return false;
     }
-    seen.add(key.toLowerCase());
+    seen.add(key);
     return true;
   });
 }
@@ -336,7 +337,7 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   }
 
   // Fetch all hierarchical nodes in parallel
-  const [rawEpics, rawSprints, rawTasks, adrs, prds, patterns, gotchas] = await Promise.all([
+  const [rawEpics, rawSprints, rawTasks, adrs, prds, patterns, gotchas, principles] = await Promise.all([
     getNodesByLabel('Epic', options),
     getNodesByLabel('Sprint', options),
     getNodesByLabel('Task', options),
@@ -344,6 +345,7 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     getNodesByLabel('PRD', options),
     getNodesByLabel('Pattern', options),
     getNodesByLabel('Gotcha', options),
+    getNodesByLabel('Principle', options),
   ]);
 
   // Deduplicate by semantic ID to avoid showing duplicates
@@ -529,6 +531,23 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
             name: getNodeProp(props, 'title') || getNodeProp(props, 'gotcha_id') || g.id,
             hasChildren: false,
             properties: g.properties,
+          };
+        }),
+      },
+      {
+        id: 'principles-folder',
+        label: 'Project' as const,
+        name: 'Principles',
+        hasChildren: principles.length > 0,
+        isExpanded: false,
+        children: principles.map((p) => {
+          const props = p.properties as Record<string, unknown>;
+          return {
+            id: p.id,
+            label: 'Principle' as const,
+            name: getNodeProp(props, 'title') || getNodeProp(props, 'principle_id') || p.id,
+            hasChildren: false,
+            properties: p.properties,
           };
         }),
       },

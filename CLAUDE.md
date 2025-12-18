@@ -671,6 +671,23 @@ npm test                   # Run all tests
 npm run test:cli           # Test CLI only
 ```
 
+### Deploy Dashboard to Vercel
+
+**IMPORTANT:** Always run Vercel commands from the **monorepo root** (`/Users/cnorton/Development/ginko`), NOT from the dashboard directory. The Vercel project is configured at the monorepo level.
+
+```bash
+# From monorepo root - deploy to production
+cd /Users/cnorton/Development/ginko && vercel --prod --yes
+
+# Preview deployment
+cd /Users/cnorton/Development/ginko && vercel --yes
+
+# Check deployment status
+vercel ls
+```
+
+**Production URL:** https://app.ginkoai.com
+
 ---
 
 ## Project Architecture
