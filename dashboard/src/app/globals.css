@@ -135,6 +135,11 @@
     @apply border-border;
   }
 
+  /* Base font size increased by 15% (16px -> 18.4px) */
+  html {
+    font-size: 115%;
+  }
+
   body {
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;

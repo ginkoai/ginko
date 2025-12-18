@@ -12,6 +12,7 @@
 
 import { LightBulbIcon, LinkIcon, BookOpenIcon } from '@heroicons/react/24/outline'
 import { clsx } from 'clsx'
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -53,7 +54,15 @@ export function PrinciplePreviewModal({
   open,
   onOpenChange
 }: PrinciplePreviewModalProps) {
+  const router = useRouter()
+
   if (!principle) return null
+
+  const handleRelatedClick = (nodeId: string) => {
+    // Navigate to Graph Explorer with the node selected
+    router.push(`/dashboard/graph?view=node&node=${encodeURIComponent(nodeId)}`)
+    onOpenChange(false) // Close the modal
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -70,8 +79,8 @@ export function PrinciplePreviewModal({
                   className={clsx(
                     'text-xs',
                     principle.category === 'standard'
-                      ? 'bg-blue-500/20 text-blue-400'
-                      : 'bg-purple-500/20 text-purple-400'
+                      ? 'bg-blue-500/20 text-blue-100 border border-blue-500/30'
+                      : 'bg-purple-500/20 text-purple-100 border border-purple-500/30'
                   )}
                 >
                   {principle.category === 'standard' ? 'Standard' : 'Custom'}
@@ -113,7 +122,8 @@ export function PrinciplePreviewModal({
                   {principle.relatedPatterns.map((pattern, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-purple-500/10 text-purple-400 border border-purple-500/30"
+                      onClick={() => handleRelatedClick(pattern)}
+                      className="bg-purple-500/10 text-purple-400 border border-purple-500/30 cursor-pointer hover:bg-purple-500/20 transition-colors"
                     >
                       {pattern}
                     </Badge>
@@ -133,7 +143,8 @@ export function PrinciplePreviewModal({
                   {principle.relatedADRs.map((adr, idx) => (
                     <Badge
                       key={idx}
-                      className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-mono"
+                      onClick={() => handleRelatedClick(adr)}
+                      className="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-mono cursor-pointer hover:bg-cyan-500/20 transition-colors"
                     >
                       {adr}
                     </Badge>

@@ -17,7 +17,6 @@ import { FileText, Loader2, AlertCircle } from 'lucide-react';
 import { useGraphStatus, useNodesByLabel } from '@/lib/graph/hooks';
 import type { NodeLabel, GraphNode, CharterNode } from '@/lib/graph/types';
 import { SummaryCard } from './SummaryCard';
-import { MetricsRow, type Metric } from './MetricsRow';
 import { cn } from '@/lib/utils';
 
 // =============================================================================
@@ -233,44 +232,26 @@ export function ProjectView({
     });
   }, [sprints]);
 
-  // Calculate metrics
-  const metrics: Metric[] = useMemo(() => {
-    const result: Metric[] = [];
+  // Calculate sprint progress metrics (consolidated into single box)
+  const sprintMetrics = useMemo(() => {
+    if (!activeSprint) return null;
 
-    // Active sprint
-    if (activeSprint) {
-      const props = activeSprint.properties as Record<string, unknown>;
-      const progress = typeof props.progress === 'number' ? props.progress : 0;
-      result.push({
-        label: 'Active Sprint',
-        value: (props.title || props.sprint_id || 'Current') as string,
-      });
-      result.push({
-        label: 'Sprint Progress',
-        value: `${progress}%`,
-      });
-    }
-
-    // Tasks complete
+    const props = activeSprint.properties as Record<string, unknown>;
+    const progress = typeof props.progress === 'number' ? props.progress : 0;
+    const sprintName = (props.title || props.sprint_id || 'Current Sprint') as string;
     const tasksComplete = taskStatusBreakdown['complete'] || 0;
     const totalTasks = tasks?.length || 0;
-    if (totalTasks > 0) {
-      result.push({
-        label: 'Tasks Complete',
-        value: `${tasksComplete}/${totalTasks}`,
-      });
-    }
 
-    // Total node count
-    if (status?.nodes?.total) {
-      result.push({
-        label: 'Total Nodes',
-        value: status.nodes.total,
-      });
-    }
+    return {
+      sprintName,
+      progress,
+      tasksComplete,
+      totalTasks,
+    };
+  }, [activeSprint, taskStatusBreakdown, tasks]);
 
-    return result;
-  }, [activeSprint, taskStatusBreakdown, tasks, status]);
+  // Total node count for header
+  const totalNodeCount = status?.nodes?.total || 0;
 
   // Find the main project charter (filter out documentation charters)
   // Priority: 1. ID contains 'ginko', 2. Title starts with 'Project Charter:', 3. First non-documentation charter
@@ -322,15 +303,46 @@ export function ProjectView({
         isLoading={charterLoading}
       />
 
-      {/* Metrics Row */}
-      {metrics.length > 0 && (
-        <MetricsRow metrics={metrics} />
+      {/* Consolidated Sprint Metrics Card */}
+      {sprintMetrics && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 rounded-xl bg-gradient-to-br from-ginko-500/10 to-ginko-600/5 border border-ginko-500/20"
+        >
+          <div className="space-y-3">
+            <div>
+              <span className="text-xs font-mono text-ginko-400 uppercase tracking-wider">
+                Current Sprint
+              </span>
+              <h3 className="text-lg font-semibold text-foreground mt-1">
+                {sprintMetrics.sprintName}
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-ginko-500/10">
+              <div>
+                <span className="text-xs text-muted-foreground font-mono">Progress</span>
+                <p className="text-2xl font-bold text-foreground mt-1">
+                  {sprintMetrics.progress}%
+                </p>
+              </div>
+              <div>
+                <span className="text-xs text-muted-foreground font-mono">Tasks Complete</span>
+                <p className="text-2xl font-bold text-foreground mt-1">
+                  {sprintMetrics.tasksComplete}/{sprintMetrics.totalTasks}
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Summary Cards Grid */}
       <div>
         <h3 className="text-sm font-mono text-muted-foreground uppercase tracking-wider mb-4">
-          Knowledge Graph
+          Knowledge Graph {totalNodeCount > 0 && (
+            <span className="text-xs ml-2">({totalNodeCount} nodes)</span>
+          )}
         </h3>
 
         {statusLoading ? (

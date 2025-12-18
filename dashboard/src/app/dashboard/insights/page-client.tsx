@@ -214,6 +214,13 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
     setError(null)
 
     try {
+      // If demo mode is enabled, show demo data immediately
+      if (useDemo) {
+        setReport({ ...SAMPLE_REPORT, userId, projectId: 'ginko' })
+        setLoading(false)
+        return
+      }
+
       // Fetch from Supabase via API
       const response = await fetch('/api/v1/insights/sync?limit=1')
 
@@ -254,12 +261,8 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
         }
       }
 
-      // No data from API, show empty state or demo
-      if (useDemo) {
-        setReport({ ...SAMPLE_REPORT, userId, projectId: 'ginko' })
-      } else {
-        setReport(null)
-      }
+      // No data from API, show empty state
+      setReport(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load insights')
     } finally {

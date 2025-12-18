@@ -1,9 +1,9 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-11
- * @tags: [dashboard, navigation, header, ginko-branding]
- * @related: [dashboard-sidebar.tsx, layout.tsx]
+ * @updated: 2025-12-18
+ * @tags: [dashboard, navigation, header, tabs, ginko-branding]
+ * @related: [dashboard-tabs.tsx, layout.tsx]
  * @priority: high
  * @complexity: medium
  * @dependencies: [react, next, supabase, heroicons]
@@ -17,6 +17,7 @@ import { useSupabase } from '@/components/providers'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Dropdown } from '@/components/ui/dropdown'
+import { DashboardTabs } from './dashboard-tabs'
 import {
   BellIcon,
   Cog6ToothIcon,
@@ -78,6 +79,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
         >
           ginko
         </Link>
+
+        {/* Center - Navigation Tabs */}
+        <DashboardTabs />
 
         {/* Right side */}
         <div className="flex items-center space-x-3">

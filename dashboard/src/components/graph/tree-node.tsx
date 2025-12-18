@@ -134,19 +134,19 @@ function TreeNodeComponent({
         aria-selected={isSelected}
         tabIndex={0}
         className={cn(
-          'flex items-center gap-1 py-1 px-2 rounded cursor-pointer',
+          'flex items-center gap-1 py-1 rounded cursor-pointer',
           'hover:bg-white/5 transition-colors',
           'focus:outline-none focus:ring-1 focus:ring-ginko-500/50',
           isSelected && 'bg-ginko-500/10 text-ginko-400'
         )}
-        style={{ paddingLeft: `${depth * 16 + 8}px` }}
+        style={{ paddingLeft: `${depth * 16}px` }}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
       >
         {/* Expand/Collapse Toggle */}
         <button
           className={cn(
-            'w-4 h-4 flex items-center justify-center',
+            'w-4 h-4 flex items-center justify-center flex-shrink-0',
             'text-muted-foreground hover:text-foreground transition-colors',
             !hasChildren && 'invisible'
           )}

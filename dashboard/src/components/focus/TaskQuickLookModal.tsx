@@ -65,6 +65,9 @@ export function TaskQuickLookModal({ task, open, onOpenChange }: TaskQuickLookMo
   const StatusIcon = status.icon;
   const priority = task.priority ? priorityConfig[task.priority.toLowerCase()] : null;
 
+  // Handle both 'description' and 'goal' fields (sprint parser uses 'goal', but TaskNode defines 'description')
+  const taskDescription = task.description || (task as any).goal || null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent size="default">
@@ -93,13 +96,13 @@ export function TaskQuickLookModal({ task, open, onOpenChange }: TaskQuickLookMo
           </div>
 
           {/* Description Section */}
-          {task.description ? (
+          {taskDescription ? (
             <div className="mb-4">
               <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
                 Description
               </h4>
               <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
-                {task.description}
+                {taskDescription}
               </p>
             </div>
           ) : (
@@ -143,7 +146,7 @@ export function TaskQuickLookModal({ task, open, onOpenChange }: TaskQuickLookMo
             Close
           </Button>
           <Button asChild>
-            <Link href={`/dashboard/graph?node=${task.task_id}`}>
+            <Link href={`/dashboard/graph?node=${(task as any).id || task.task_id}`}>
               <ExternalLink className="h-4 w-4 mr-2" />
               View in Graph
             </Link>

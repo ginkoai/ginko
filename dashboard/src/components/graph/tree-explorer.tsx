@@ -11,8 +11,8 @@
 
 'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Loader2, RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { Loader2, RefreshCw, Search, ChevronLeft, ChevronRight, GripVertical } from 'lucide-react';
 import { useGraphTree, useInvalidateGraph } from '@/lib/graph/hooks';
 import type { TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { TreeNode } from './tree-node';
@@ -52,6 +52,11 @@ export function TreeExplorer({
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Resizable panel state
+  const [width, setWidth] = useState(280);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
 
   // Toggle node expansion
   const handleToggle = useCallback((nodeId: string) => {
@@ -121,6 +126,41 @@ export function TreeExplorer({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Handle resize
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+
+      const newWidth = e.clientX;
+      // Constrain width between 200px and 400px
+      if (newWidth >= 200 && newWidth <= 400) {
+        setWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      // Prevent text selection while resizing
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing]);
+
   // Collapsed state
   if (isCollapsed) {
     return (
@@ -137,7 +177,11 @@ export function TreeExplorer({
   }
 
   return (
-    <div className={cn('w-64 border-r border-border bg-card flex flex-col', className)}>
+    <div
+      ref={resizeRef}
+      className={cn('border-r border-border bg-card flex flex-col relative', className)}
+      style={{ width: `${width}px` }}
+    >
       {/* Header */}
       <div className="p-3 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-mono font-medium text-foreground">Explorer</h2>
@@ -230,6 +274,24 @@ export function TreeExplorer({
           {countNodes(tree)} nodes
         </div>
       )}
+
+      {/* Resize Handle */}
+      <div
+        className={cn(
+          'absolute top-0 right-0 w-1 h-full cursor-col-resize',
+          'hover:bg-ginko-500/30 transition-colors',
+          'group',
+          isResizing && 'bg-ginko-500/50'
+        )}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          setIsResizing(true);
+        }}
+      >
+        <div className="absolute top-1/2 -translate-y-1/2 right-0 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <GripVertical className="w-4 h-4 text-muted-foreground" />
+        </div>
+      </div>
     </div>
   );
 }
