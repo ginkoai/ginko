@@ -686,6 +686,7 @@ export interface TaskGotchasResponse {
  * Sync an epic to the graph database
  */
 export interface EpicSyncData {
+  graphId: string;
   id: string;
   title: string;
   goal: string;

@@ -40,6 +40,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '@/app/api/v1/graph/_neo4j';
 
 interface EpicSyncRequest {
+  graphId: string;
   id: string;
   title: string;
   goal: string;
@@ -86,9 +87,9 @@ export async function POST(request: NextRequest) {
     const body: EpicSyncRequest = await request.json();
 
     // Validate required fields
-    if (!body.id || !body.title) {
+    if (!body.graphId || !body.id || !body.title) {
       return NextResponse.json(
-        { error: 'Missing required fields: id and title are required' },
+        { error: 'Missing required fields: graphId, id, and title are required' },
         { status: 400 }
       );
     }
@@ -127,9 +128,9 @@ async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse>
   let nodesCreated = 0;
   let relationshipsCreated = 0;
 
-  // Create or update Epic node
+  // Create or update Epic node (scoped to graphId)
   const epicQuery = `
-    MERGE (e:Epic {id: $id})
+    MERGE (e:Epic {id: $id, graphId: $graphId})
     ON CREATE SET
       e.createdAt = datetime(),
       e.nodesCreated = 1
@@ -148,6 +149,7 @@ async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse>
   `;
 
   const epicResult = await runQuery(epicQuery, {
+    graphId: epic.graphId,
     id: epic.id,
     title: epic.title,
     goal: epic.goal,

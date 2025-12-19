@@ -108,17 +108,22 @@ async function outputEpicTemplate(): Promise<void> {
  * List all existing epics
  */
 async function listEpics(projectRoot: string): Promise<void> {
-  const sprintsDir = path.join(projectRoot, 'docs', 'sprints');
+  const epicsDir = path.join(projectRoot, 'docs', 'epics');
 
-  if (!existsSync(sprintsDir)) {
+  if (!existsSync(epicsDir)) {
     console.log(chalk.yellow('\n📋 No epics found'));
     console.log(chalk.dim('   Run `ginko epic` to create one\n'));
     return;
   }
 
   try {
-    const files = await fs.readdir(sprintsDir);
-    const epicFiles = files.filter(f => f.startsWith('EPIC-') && f.endsWith('.md'));
+    const files = await fs.readdir(epicsDir);
+    // Filter for EPIC-NNN*.md files (exclude EPIC-INDEX.md and similar)
+    const epicFiles = files.filter(f =>
+      f.startsWith('EPIC-') &&
+      f.endsWith('.md') &&
+      /^EPIC-\d{3}/.test(f)
+    );
 
     if (epicFiles.length === 0) {
       console.log(chalk.yellow('\n📋 No epics found'));
@@ -129,7 +134,7 @@ async function listEpics(projectRoot: string): Promise<void> {
     console.log(chalk.green('\n📋 Epics:\n'));
 
     for (const file of epicFiles) {
-      const content = await fs.readFile(path.join(sprintsDir, file), 'utf-8');
+      const content = await fs.readFile(path.join(epicsDir, file), 'utf-8');
       const titleMatch = content.match(/^# (EPIC-\d+): (.+)$/m);
       const statusMatch = content.match(/status: (\w+)/);
       const progressMatch = content.match(/Progress.*?(\d+)%/i);
@@ -167,17 +172,23 @@ async function listEpics(projectRoot: string): Promise<void> {
  * View epic details with sprint breakdown
  */
 async function viewEpics(projectRoot: string): Promise<void> {
+  const epicsDir = path.join(projectRoot, 'docs', 'epics');
   const sprintsDir = path.join(projectRoot, 'docs', 'sprints');
 
-  if (!existsSync(sprintsDir)) {
+  if (!existsSync(epicsDir)) {
     console.log(chalk.yellow('\n📋 No epics found'));
     console.log(chalk.dim('   Run `ginko epic` to create one\n'));
     return;
   }
 
   try {
-    const files = await fs.readdir(sprintsDir);
-    const epicFiles = files.filter(f => f.startsWith('EPIC-') && f.endsWith('.md'));
+    const epicFilesList = await fs.readdir(epicsDir);
+    // Filter for EPIC-NNN*.md files (exclude EPIC-INDEX.md and similar)
+    const epicFiles = epicFilesList.filter(f =>
+      f.startsWith('EPIC-') &&
+      f.endsWith('.md') &&
+      /^EPIC-\d{3}/.test(f)
+    );
 
     if (epicFiles.length === 0) {
       console.log(chalk.yellow('\n📋 No epics found'));
@@ -185,8 +196,11 @@ async function viewEpics(projectRoot: string): Promise<void> {
       return;
     }
 
+    // Get sprint files for associating with epics
+    const sprintFilesList = existsSync(sprintsDir) ? await fs.readdir(sprintsDir) : [];
+
     for (const file of epicFiles) {
-      const content = await fs.readFile(path.join(sprintsDir, file), 'utf-8');
+      const content = await fs.readFile(path.join(epicsDir, file), 'utf-8');
 
       // Parse epic header
       const titleMatch = content.match(/^# (EPIC-\d+): (.+)$/m);
@@ -217,7 +231,7 @@ async function viewEpics(projectRoot: string): Promise<void> {
 
       // Find associated sprints
       const epicPrefix = epicId.toLowerCase().replace('epic-', 'epic');
-      const associatedSprints = files.filter(f =>
+      const associatedSprints = sprintFilesList.filter(f =>
         f.startsWith('SPRINT-') &&
         f.toLowerCase().includes(epicPrefix)
       );
@@ -237,7 +251,7 @@ async function viewEpics(projectRoot: string): Promise<void> {
         console.log('');
       }
 
-      console.log(chalk.dim(`📄 File: docs/sprints/${file}\n`));
+      console.log(chalk.dim(`📄 File: docs/epics/${file}\n`));
     }
 
   } catch (error: any) {
@@ -274,46 +288,66 @@ async function syncEpicToGraph(projectRoot: string): Promise<void> {
       return;
     }
 
-    // Find epic files
+    // Find epic files (from docs/epics/) and sprint files (from docs/sprints/)
+    const epicsDir = path.join(projectRoot, 'docs', 'epics');
     const sprintsDir = path.join(projectRoot, 'docs', 'sprints');
-    const files = await fs.readdir(sprintsDir);
-    const epicFiles = files.filter(f => f.startsWith('EPIC-') && f.endsWith('.md'));
+
+    if (!existsSync(epicsDir)) {
+      console.log(chalk.yellow('📋 No epics directory found'));
+      return;
+    }
+
+    const epicFilesList = await fs.readdir(epicsDir);
+    // Filter for EPIC-NNN*.md files (exclude EPIC-INDEX.md and similar)
+    const epicFiles = epicFilesList.filter(f =>
+      f.startsWith('EPIC-') &&
+      f.endsWith('.md') &&
+      /^EPIC-\d{3}/.test(f)
+    );
 
     if (epicFiles.length === 0) {
       console.log(chalk.yellow('📋 No epics to sync'));
       return;
     }
 
+    // Get sprint files for association
+    const sprintFilesList = existsSync(sprintsDir) ? await fs.readdir(sprintsDir) : [];
+
     // Import API client dynamically to avoid circular deps
     const { GraphApiClient } = await import('./graph/api-client.js');
     const client = new GraphApiClient();
 
     for (const file of epicFiles) {
-      const content = await fs.readFile(path.join(sprintsDir, file), 'utf-8');
+      const content = await fs.readFile(path.join(epicsDir, file), 'utf-8');
       const epicData = parseEpicContent(content);
 
       console.log(chalk.dim(`  Syncing ${epicData.id}...`));
 
-      // Sync epic node
-      await client.syncEpic(epicData);
+      // Sync epic node with graphId
+      await client.syncEpic({ ...epicData, graphId });
 
       console.log(chalk.green(`  ✓ ${epicData.id}: ${epicData.title}`));
 
       // Find and sync associated sprints
       const epicPrefix = epicData.id.toLowerCase().replace('epic-', 'epic');
-      const sprintFiles = files.filter(f =>
+      const sprintFiles = sprintFilesList.filter(f =>
         f.startsWith('SPRINT-') &&
         f.toLowerCase().includes(epicPrefix)
       );
 
       for (const sprintFile of sprintFiles) {
-        const sprintContent = await fs.readFile(path.join(sprintsDir, sprintFile), 'utf-8');
+        try {
+          const sprintContent = await fs.readFile(path.join(sprintsDir, sprintFile), 'utf-8');
 
-        // Use existing sprint sync
-        await client.syncSprint(graphId, sprintContent);
+          // Use existing sprint sync
+          await client.syncSprint(graphId, sprintContent);
 
-        const sprintName = sprintFile.replace('.md', '');
-        console.log(chalk.dim(`    ✓ ${sprintName}`));
+          const sprintName = sprintFile.replace('.md', '');
+          console.log(chalk.dim(`    ✓ ${sprintName}`));
+        } catch (sprintError: any) {
+          const sprintName = sprintFile.replace('.md', '');
+          console.log(chalk.yellow(`    ⚠️ ${sprintName} (sync failed, continuing...)`));
+        }
       }
     }
 

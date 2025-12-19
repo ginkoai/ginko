@@ -7,7 +7,7 @@
 
 **Duration**: 7-8 days
 **Type**: Feature sprint
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 0% (0/7 tasks complete)
 
 **Success Criteria:**
 - [ ] ProjectView displays Charter as root with project metrics
@@ -172,6 +172,33 @@
 - `dashboard/src/components/graph/NodeEditorModal.tsx` (new)
 - `dashboard/src/components/graph/CondensedNodeCard.tsx` (update)
 - `dashboard/src/components/graph/NodeView.tsx` (update)
+
+---
+
+### TASK-7: Fix Sprint Sync 500 Error (2h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e006_s02_t07
+**Assignee:** Unassigned
+
+**Goal:** Investigate and resolve the 500 error occurring during `ginko epic --sync` sprint synchronization.
+
+**Context:**
+- Epic sync works correctly (EPIC-001 through EPIC-006 sync successfully)
+- Sprint sync fails with HTTP 500 error on `/api/v1/sprint/sync` endpoint
+- Error occurs for all sprints, not specific ones
+- Root cause unknown - may be API payload issue, Neo4j query error, or authentication
+
+**Implementation:**
+1. Add logging to dashboard `/api/v1/sprint/sync` endpoint
+2. Check Vercel logs for error details
+3. Validate sprint content parsing in CLI
+4. Test with simplified sprint payload
+5. Fix the underlying issue
+
+**Files:**
+- `dashboard/src/app/api/v1/sprint/sync/route.ts` (investigate)
+- `packages/cli/src/commands/graph/api-client.ts` (verify payload)
 
 ---
 
