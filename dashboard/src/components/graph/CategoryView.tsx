@@ -28,9 +28,9 @@ import {
   FolderOpen,
   type LucideIcon,
 } from 'lucide-react';
-import { useNodesByLabel } from '@/lib/graph/hooks';
+import { useGraphNodes } from '@/lib/graph/hooks';
 import { SkeletonNodeCard } from '@/components/ui/skeleton';
-import type { NodeLabel, GraphNode } from '@/lib/graph/types';
+import type { NodeLabel, GraphNode, ListNodesResponse } from '@/lib/graph/types';
 import { CondensedNodeCard } from './CondensedNodeCard';
 import { cn } from '@/lib/utils';
 
@@ -194,17 +194,27 @@ export function CategoryView({
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  // Pagination state
+  // Pagination state - API-level pagination for scalability
   const [page, setPage] = useState(0);
   const pageSize = 24;
+  const offset = page * pageSize;
 
-  // Fetch nodes
+  // Fetch nodes with API-level pagination
+  // Returns ListNodesResponse with total count for accurate pagination
   const {
-    data: nodes,
+    data: response,
     isLoading,
     error,
     refetch,
-  } = useNodesByLabel(label, { graphId, limit: 100 });
+  } = useGraphNodes({
+    graphId,
+    labels: [label],
+    limit: pageSize,
+    offset,
+  });
+
+  // Extract nodes from response
+  const nodes = response?.nodes;
 
   // Get display info
   const Icon = nodeIcons[label] || FileText;
@@ -287,15 +297,16 @@ export function CategoryView({
     return result;
   }, [nodes, searchQuery, statusFilter, sortField, sortOrder]);
 
-  // Paginated nodes for display
-  const paginatedNodes = useMemo(() => {
-    const start = page * pageSize;
-    return filteredNodes.slice(start, start + pageSize);
-  }, [filteredNodes, page, pageSize]);
+  // With API-level pagination, filteredNodes are already the current page
+  // No additional slicing needed - but we still apply client-side filtering
+  const paginatedNodes = filteredNodes;
 
-  // Pagination info
-  const totalPages = Math.ceil(filteredNodes.length / pageSize);
-  const hasNextPage = page < totalPages - 1;
+  // Pagination info - use API total for accurate pagination
+  // Note: When filtering is applied, we show filtered count; otherwise API total
+  const isFiltered = searchQuery.trim() || statusFilter !== 'all';
+  const displayTotal = isFiltered ? filteredNodes.length : (response?.total || 0);
+  const totalPages = Math.ceil((response?.total || 0) / pageSize);
+  const hasNextPage = offset + pageSize < (response?.total || 0);
   const hasPrevPage = page > 0;
 
   // Reset page when filters change
@@ -338,7 +349,8 @@ export function CategoryView({
               {displayNames.plural}
             </h2>
             <p className="text-sm text-muted-foreground">
-              {isLoading ? 'Loading...' : `${filteredNodes.length} ${filteredNodes.length === 1 ? displayNames.singular.toLowerCase() : displayNames.plural.toLowerCase()}`}
+              {isLoading ? 'Loading...' : `${displayTotal} ${displayTotal === 1 ? displayNames.singular.toLowerCase() : displayNames.plural.toLowerCase()}`}
+              {isFiltered && !isLoading && displayTotal !== (response?.total || 0) && ` (of ${response?.total})`}
             </p>
           </div>
         </div>
@@ -452,10 +464,11 @@ export function CategoryView({
       </div>
 
       {/* Pagination */}
-      {filteredNodes.length > pageSize && (
+      {(response?.total || 0) > pageSize && (
         <div className="flex items-center justify-between px-6 py-3 border-t border-border">
           <p className="text-xs text-muted-foreground font-mono">
-            Showing {page * pageSize + 1}-{Math.min((page + 1) * pageSize, filteredNodes.length)} of {filteredNodes.length}
+            Showing {offset + 1}-{Math.min(offset + pageSize, response?.total || 0)} of {response?.total || 0}
+            {isFiltered && ` (${filteredNodes.length} matching filters)`}
           </p>
           <div className="flex items-center gap-2">
             <button
