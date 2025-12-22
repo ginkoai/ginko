@@ -112,88 +112,110 @@ export async function GET(request: NextRequest) {
 
     const project = projectResults[0].p.properties;
 
-    // Get node statistics
-    const nodeStatsQuery = `
+    // OPTIMIZED: Single consolidated query for all statistics
+    // Combines 5 separate queries into 1, reducing round trips by 80%
+    const consolidatedStatsQuery = `
+      // Collect all nodes once for graph
       MATCH (n)
       WHERE n.graphId = $graphId OR n.projectId = $graphId
-      RETURN labels(n)[0] as type, count(n) as count
+      WITH collect(n) as allNodes
+
+      // Node stats by type
+      UNWIND allNodes as node
+      WITH allNodes, labels(node)[0] as nodeType, count(*) as typeCount
+      WITH allNodes, collect({type: nodeType, count: typeCount}) as nodeStats
+
+      // Relationship stats
+      UNWIND allNodes as n
+      OPTIONAL MATCH (n)-[r]->()
+      WITH allNodes, nodeStats, type(r) as relType, count(r) as relCount
+      WHERE relType IS NOT NULL
+      WITH allNodes, nodeStats, collect({type: relType, count: relCount}) as relStats
+
+      // Embeddings count
+      UNWIND allNodes as n
+      WITH allNodes, nodeStats, relStats,
+           sum(CASE WHEN n.embedding IS NOT NULL THEN 1 ELSE 0 END) as embeddingsCount
+
+      // Connection stats (avg and most connected)
+      UNWIND allNodes as n
+      OPTIONAL MATCH (n)-[r]-()
+      WITH allNodes, nodeStats, relStats, embeddingsCount, n, count(r) as connections
+      WITH allNodes, nodeStats, relStats, embeddingsCount,
+           avg(connections) as avgConnections,
+           collect({id: n.id, connections: connections}) as connectionList
+
+      // Find most connected from list
+      UNWIND connectionList as conn
+      WITH allNodes, nodeStats, relStats, embeddingsCount, avgConnections, conn
+      ORDER BY conn.connections DESC
+      LIMIT 1
+
+      RETURN nodeStats, relStats, embeddingsCount, avgConnections,
+             conn.id as mostConnectedId, conn.connections as mostConnectedCount
     `;
 
-    const nodeStats = await runQuery<{ type: string; count: number }>(nodeStatsQuery, { graphId });
+    interface ConsolidatedStats {
+      nodeStats: { type: string; count: number }[];
+      relStats: { type: string; count: number }[];
+      embeddingsCount: number;
+      avgConnections: number;
+      mostConnectedId: string;
+      mostConnectedCount: number;
+    }
 
+    const statsResult = await runQuery<ConsolidatedStats>(consolidatedStatsQuery, { graphId });
+
+    // Process consolidated results
     const byType: Record<string, number> = {};
     let totalNodes = 0;
-
-    nodeStats.forEach(stat => {
-      const count = typeof stat.count === 'number' ? stat.count : Number(stat.count);
-      byType[stat.type] = count;
-      totalNodes += count;
-    });
-
-    // Get relationship statistics
-    const relStatsQuery = `
-      MATCH (n)-[r]->(m)
-      WHERE n.graphId = $graphId OR n.projectId = $graphId
-      RETURN type(r) as type, count(r) as count
-    `;
-
-    const relStats = await runQuery<{ type: string; count: number }>(relStatsQuery, { graphId });
-
     const relByType: Record<string, number> = {};
     let totalRels = 0;
+    let withEmbeddings = 0;
+    let averageConnections = 0;
+    let mostConnected = { id: 'none', connections: 0 };
 
-    relStats.forEach(stat => {
-      const count = typeof stat.count === 'number' ? stat.count : Number(stat.count);
-      relByType[stat.type] = count;
-      totalRels += count;
-    });
+    if (statsResult.length > 0) {
+      const stats = statsResult[0];
 
-    // Calculate embeddings count (nodes with embedding property)
-    const embeddingsQuery = `
-      MATCH (n)
-      WHERE (n.graphId = $graphId OR n.projectId = $graphId) AND n.embedding IS NOT NULL
-      RETURN count(n) as count
-    `;
+      // Node stats
+      if (Array.isArray(stats.nodeStats)) {
+        stats.nodeStats.forEach((stat: { type: string; count: number }) => {
+          const count = typeof stat.count === 'number' ? stat.count : Number(stat.count);
+          byType[stat.type] = count;
+          totalNodes += count;
+        });
+      }
 
-    const embeddingsResult = await runQuery<{ count: number }>(embeddingsQuery, { graphId });
-    const withEmbeddings = embeddingsResult.length > 0
-      ? (typeof embeddingsResult[0].count === 'number' ? embeddingsResult[0].count : Number(embeddingsResult[0].count))
-      : 0;
+      // Relationship stats
+      if (Array.isArray(stats.relStats)) {
+        stats.relStats.forEach((stat: { type: string; count: number }) => {
+          const count = typeof stat.count === 'number' ? stat.count : Number(stat.count);
+          relByType[stat.type] = count;
+          totalRels += count;
+        });
+      }
 
-    // Calculate average connections
-    const avgConnectionsQuery = `
-      MATCH (n)
-      WHERE n.graphId = $graphId OR n.projectId = $graphId
-      OPTIONAL MATCH (n)-[r]-()
-      WITH n, count(r) as connections
-      RETURN avg(connections) as avgConnections
-    `;
+      // Embeddings
+      withEmbeddings = typeof stats.embeddingsCount === 'number'
+        ? stats.embeddingsCount
+        : Number(stats.embeddingsCount || 0);
 
-    const avgResult = await runQuery<{ avgConnections: number }>(avgConnectionsQuery, { graphId });
-    const averageConnections = avgResult.length > 0 && avgResult[0].avgConnections
-      ? Number(avgResult[0].avgConnections)
-      : 0;
+      // Average connections
+      averageConnections = typeof stats.avgConnections === 'number'
+        ? stats.avgConnections
+        : Number(stats.avgConnections || 0);
 
-    // Find most connected node
-    const mostConnectedQuery = `
-      MATCH (n)
-      WHERE n.graphId = $graphId OR n.projectId = $graphId
-      OPTIONAL MATCH (n)-[r]-()
-      WITH n, count(r) as connections
-      ORDER BY connections DESC
-      LIMIT 1
-      RETURN n.id as id, connections
-    `;
-
-    const mostConnectedResult = await runQuery<{ id: string; connections: number }>(mostConnectedQuery, { graphId });
-    const mostConnected = mostConnectedResult.length > 0
-      ? {
-          id: mostConnectedResult[0].id || 'unknown',
-          connections: typeof mostConnectedResult[0].connections === 'number'
-            ? mostConnectedResult[0].connections
-            : Number(mostConnectedResult[0].connections || 0)
-        }
-      : { id: 'none', connections: 0 };
+      // Most connected
+      if (stats.mostConnectedId) {
+        mostConnected = {
+          id: stats.mostConnectedId,
+          connections: typeof stats.mostConnectedCount === 'number'
+            ? stats.mostConnectedCount
+            : Number(stats.mostConnectedCount || 0)
+        };
+      }
+    }
 
     // Convert Neo4j DateTime to ISO string
     const lastSyncValue = project.updatedAt || project.createdAt;

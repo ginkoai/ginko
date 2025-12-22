@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import {
   ArrowRight,
   ArrowLeft,
@@ -189,10 +189,10 @@ export function AdjacencyList({
 }
 
 // =============================================================================
-// Adjacency Item
+// Adjacency Item (memoized for performance in lists)
 // =============================================================================
 
-function AdjacencyItem({
+const AdjacencyItem = memo(function AdjacencyItem({
   adjacency,
   onNavigate,
 }: {
@@ -233,10 +233,10 @@ function AdjacencyItem({
       <ArrowRight className="w-4 h-4 text-muted-foreground" />
     </button>
   );
-}
+});
 
 // =============================================================================
-// Export
+// Export (memoized for performance)
 // =============================================================================
 
-export default AdjacencyList;
+export default memo(AdjacencyList);

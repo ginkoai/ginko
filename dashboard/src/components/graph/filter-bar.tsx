@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, memo } from 'react';
 import {
   Search,
   LayoutGrid,
@@ -273,7 +273,7 @@ export function FilterBar({
 }
 
 // =============================================================================
-// Export
+// Export (memoized for performance)
 // =============================================================================
 
-export default FilterBar;
+export default memo(FilterBar);

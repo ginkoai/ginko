@@ -13,6 +13,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef, RefObject } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { TreeExplorer } from '@/components/graph/tree-explorer';
 import { CardGrid } from '@/components/graph/card-grid';
@@ -22,8 +23,16 @@ import { CategoryView } from '@/components/graph/CategoryView';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
 import { NodeView } from '@/components/graph/NodeView';
 import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
-import { NodeEditorModal } from '@/components/graph/NodeEditorModal';
 import { useGraphNodes } from '@/lib/graph/hooks';
+
+// Lazy load the NodeEditorModal for performance (only loaded when editing)
+const NodeEditorModal = dynamic(
+  () => import('@/components/graph/NodeEditorModal').then((mod) => mod.NodeEditorModal),
+  {
+    loading: () => null, // Modal is hidden when closed, no loading indicator needed
+    ssr: false, // No need for SSR on modal
+  }
+);
 import { setDefaultGraphId } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel, TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { useSupabase } from '@/components/providers';

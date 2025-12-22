@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 import { Loader2, LayoutGrid, List } from 'lucide-react';
 import { useGraphNodes } from '@/lib/graph/hooks';
 import type { NodeLabel, GraphNode, NodeFilters } from '@/lib/graph/types';
@@ -260,7 +260,7 @@ export function CardGrid({
 }
 
 // =============================================================================
-// Export
+// Export (memoized for performance)
 // =============================================================================
 
-export default CardGrid;
+export default memo(CardGrid);

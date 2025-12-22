@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   FileText,
   Target,
@@ -194,6 +194,10 @@ export function CategoryView({
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const pageSize = 24;
+
   // Fetch nodes
   const {
     data: nodes,
@@ -282,6 +286,22 @@ export function CategoryView({
 
     return result;
   }, [nodes, searchQuery, statusFilter, sortField, sortOrder]);
+
+  // Paginated nodes for display
+  const paginatedNodes = useMemo(() => {
+    const start = page * pageSize;
+    return filteredNodes.slice(start, start + pageSize);
+  }, [filteredNodes, page, pageSize]);
+
+  // Pagination info
+  const totalPages = Math.ceil(filteredNodes.length / pageSize);
+  const hasNextPage = page < totalPages - 1;
+  const hasPrevPage = page > 0;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, statusFilter, sortField, sortOrder]);
 
   // Toggle sort order
   const handleToggleSort = useCallback(() => {
@@ -417,7 +437,7 @@ export function CategoryView({
 
         {!isLoading && filteredNodes.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredNodes.map((node) => (
+            {paginatedNodes.map((node) => (
               <CondensedNodeCard
                 key={node.id}
                 node={node}
@@ -430,6 +450,42 @@ export function CategoryView({
           </div>
         )}
       </div>
+
+      {/* Pagination */}
+      {filteredNodes.length > pageSize && (
+        <div className="flex items-center justify-between px-6 py-3 border-t border-border">
+          <p className="text-xs text-muted-foreground font-mono">
+            Showing {page * pageSize + 1}-{Math.min((page + 1) * pageSize, filteredNodes.length)} of {filteredNodes.length}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={!hasPrevPage}
+              className={cn(
+                'px-3 py-1.5 text-xs font-mono rounded border border-border',
+                'hover:bg-white/5 transition-colors',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
+              )}
+            >
+              Previous
+            </button>
+            <span className="text-xs text-muted-foreground font-mono">
+              Page {page + 1} of {totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!hasNextPage}
+              className={cn(
+                'px-3 py-1.5 text-xs font-mono rounded border border-border',
+                'hover:bg-white/5 transition-colors',
+                'disabled:opacity-50 disabled:cursor-not-allowed'
+              )}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
