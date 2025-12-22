@@ -24,7 +24,7 @@ export function createSyncCommand(): Command {
     .description('Pull dashboard knowledge edits to local git (ADR-054)')
     .option('--dry-run', 'Preview changes without applying')
     .option('--force', 'Overwrite local files with graph versions')
-    .option('--type <type>', 'Sync only specific node type (ADR, PRD, Pattern, Gotcha, Charter)')
+    .option('--type <type>', 'Sync only specific node type (ADR, PRD, Pattern, Gotcha, Charter, Sprint)')
     .option('--no-commit', 'Sync files but do not commit')
     .action(async (options) => {
       const syncOptions: SyncOptions = {
@@ -41,4 +41,5 @@ export function createSyncCommand(): Command {
 }
 
 export { syncCommand } from './sync-command.js';
-export type { SyncOptions, SyncResult, UnsyncedNode } from './types.js';
+export { findSprintFiles, syncSprintFile } from './sprint-syncer.js';
+export type { SyncOptions, SyncResult, UnsyncedNode, SprintSyncResult } from './types.js';

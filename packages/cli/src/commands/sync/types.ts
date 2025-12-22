@@ -15,7 +15,7 @@
  * Types for the cloud→local sync command that pulls dashboard edits to git.
  */
 
-export type NodeType = 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Charter';
+export type NodeType = 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Charter' | 'Sprint' | 'Task';
 
 export interface NodeSyncStatus {
   nodeId: string;
@@ -81,4 +81,26 @@ export interface SyncResult {
 export interface SyncApiResponse {
   nodes: UnsyncedNode[];
   count: number;
+}
+
+// Sprint sync types (ADR-054 extension)
+
+export interface TaskStatusUpdate {
+  taskId: string;
+  newStatus: string;
+  sprintId: string;
+}
+
+export interface SprintFile {
+  path: string;
+  sprintId: string;
+  content: string;
+}
+
+export interface SprintSyncResult {
+  sprintId: string;
+  filePath: string;
+  tasksUpdated: number;
+  changes: string[];
+  error: string | null;
 }

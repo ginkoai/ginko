@@ -31,6 +31,11 @@ import {
   readFileContent,
   applyResolution,
 } from './node-syncer.js';
+import {
+  findSprintFiles,
+  syncSprintFile,
+  updateCurrentSprintFile,
+} from './sprint-syncer.js';
 import type {
   SyncOptions,
   UnsyncedNode,
@@ -38,6 +43,7 @@ import type {
   SyncConflict,
   ConflictResolution,
   SyncApiResponse,
+  SprintSyncResult,
 } from './types.js';
 
 const API_BASE = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
@@ -141,8 +147,12 @@ async function commitSyncedFiles(
     // Stage files
     await git.add(files);
 
+    // Determine if this is sprint sync or knowledge sync
+    const isSprintSync = files.some(f => f.includes('sprints/'));
+    const syncType = isSprintSync ? 'sprint' : 'knowledge node';
+
     // Commit
-    const message = `sync: Pull ${files.length} knowledge node(s) from dashboard
+    const message = `sync: Pull ${files.length} ${syncType}(s) from dashboard
 
 Synced files:
 ${files.map((f) => `- ${f}`).join('\n')}
@@ -158,6 +168,91 @@ Co-Authored-By: Chris Norton <chris@watchhill.ai>`;
     console.error(chalk.red('Failed to commit:'), error);
     return false;
   }
+}
+
+/**
+ * Sync sprints from graph to local markdown
+ */
+async function syncSprints(
+  graphId: string,
+  token: string,
+  projectRoot: string,
+  options: SyncOptions
+): Promise<SprintSyncResult[]> {
+  console.log(chalk.dim('📋 Finding sprint files...'));
+
+  const sprintFiles = await findSprintFiles(projectRoot);
+
+  if (sprintFiles.length === 0) {
+    console.log(chalk.yellow('No sprint files found in docs/sprints/'));
+    return [];
+  }
+
+  console.log(chalk.cyan(`Found ${sprintFiles.length} sprint file(s):\n`));
+
+  for (const sf of sprintFiles) {
+    console.log(`  📋 ${sf.sprintId}: ${sf.path.split('/').pop()}`);
+  }
+  console.log('');
+
+  if (options.dryRun) {
+    console.log(chalk.yellow('📋 Dry run mode - no changes will be made.\n'));
+    return [];
+  }
+
+  // Confirm before proceeding
+  if (!options.force) {
+    const { proceed } = await prompts({
+      type: 'confirm',
+      name: 'proceed',
+      message: `Sync ${sprintFiles.length} sprint(s) from graph?`,
+      initial: true,
+    });
+
+    if (!proceed) {
+      console.log(chalk.dim('Sync cancelled.'));
+      return [];
+    }
+  }
+
+  console.log('');
+
+  const results: SprintSyncResult[] = [];
+
+  for (const sprintFile of sprintFiles) {
+    console.log(chalk.dim(`Syncing: ${sprintFile.sprintId}...`));
+
+    const result = await syncSprintFile(sprintFile, graphId, token, API_BASE);
+    results.push(result);
+
+    if (result.error) {
+      console.log(chalk.red(`  ✗ Error: ${result.error}`));
+    } else if (result.tasksUpdated > 0) {
+      console.log(chalk.green(`  ✓ Updated ${result.tasksUpdated} task(s)`));
+      for (const change of result.changes) {
+        console.log(chalk.dim(`     ${change}`));
+      }
+    } else {
+      console.log(chalk.dim(`  ○ ${result.changes[0] || 'No changes'}`));
+    }
+  }
+
+  // Update CURRENT-SPRINT.md if we have an active sprint
+  const updatedSprints = results.filter(r => r.tasksUpdated > 0);
+  if (updatedSprints.length > 0) {
+    // Find the most recently updated sprint
+    const latestSprint = sprintFiles.find(sf => sf.sprintId === updatedSprints[0].sprintId);
+    if (latestSprint) {
+      try {
+        await updateCurrentSprintFile(projectRoot, latestSprint.path);
+        console.log(chalk.dim('\n  Updated CURRENT-SPRINT.md'));
+      } catch {
+        // Ignore errors updating CURRENT-SPRINT.md
+      }
+    }
+  }
+
+  return results;
 }
 
 /**
@@ -192,7 +287,38 @@ export async function syncCommand(options: SyncOptions): Promise<SyncResult> {
 
   const projectRoot = process.cwd();
 
-  // Fetch unsynced nodes
+  // Handle Sprint type separately (different sync mechanism)
+  if (options.type === 'Sprint') {
+    console.log(chalk.bold('📋 Sprint Sync Mode\n'));
+
+    const sprintResults = await syncSprints(graphId, token, projectRoot, options);
+
+    // Commit changes if any sprints were updated
+    const updatedSprints = sprintResults.filter(r => r.tasksUpdated > 0);
+    if (updatedSprints.length > 0) {
+      const files = updatedSprints.map(r => r.filePath);
+      // Also include CURRENT-SPRINT.md
+      files.push('docs/sprints/CURRENT-SPRINT.md');
+
+      console.log(chalk.dim('\n📝 Committing changes...'));
+      const committed = await commitSyncedFiles(files, projectRoot);
+
+      if (committed) {
+        console.log(chalk.green(`\n✓ Synced ${updatedSprints.length} sprint(s) and committed to git.`));
+      }
+    }
+
+    // Summary
+    const totalUpdated = sprintResults.reduce((sum, r) => sum + r.tasksUpdated, 0);
+    console.log(chalk.bold('\n📊 Summary:'));
+    console.log(`  Sprints processed: ${sprintResults.length}`);
+    console.log(`  Tasks updated: ${totalUpdated}`);
+    console.log(`  Errors: ${sprintResults.filter(r => r.error).length}`);
+
+    return result;
+  }
+
+  // Fetch unsynced nodes (knowledge nodes only)
   console.log(chalk.dim('📡 Fetching unsynced nodes from dashboard...'));
 
   let nodes: UnsyncedNode[];
@@ -353,6 +479,10 @@ function getTypeIcon(type: string): string {
       return '⚠️';
     case 'Charter':
       return '🎯';
+    case 'Sprint':
+      return '🏃';
+    case 'Task':
+      return '✅';
     default:
       return '📄';
   }
