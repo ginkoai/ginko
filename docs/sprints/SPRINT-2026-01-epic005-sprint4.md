@@ -6,7 +6,7 @@
 
 **Duration**: 2 weeks
 **Type**: Feature + Polish sprint
-**Progress:** 20% (2/10 tasks complete)
+**Progress:** 0% (0/0 tasks complete)
 
 **Success Criteria:**
 - [ ] Knowledge nodes can be created and edited in dashboard

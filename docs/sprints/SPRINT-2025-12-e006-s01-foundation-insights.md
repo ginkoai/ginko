@@ -7,14 +7,14 @@
 
 **Duration**: 5-6 days
 **Type**: Foundation + Polish sprint
-**Progress:** 0% (0/5 tasks complete)
+**Progress:** 100% (4/4 tasks complete) ✓
 
 **Success Criteria:**
-- [ ] Dialog component created (Radix-based)
-- [ ] Recommendations link to Principle modals
-- [ ] Evidence shows datetime with source modal option
-- [ ] Insights sidebar collapsible to icons
-- [ ] Principle node type added to schema
+- [x] Dialog component created (Radix-based)
+- [x] Recommendations link to Principle modals
+- [x] Evidence shows datetime with source modal option
+- [x] Insights sidebar collapsible to icons
+- [x] Principle node type added to schema
 
 ---
 
@@ -41,7 +41,7 @@
 ---
 
 ### TASK-2: Evidence Timestamps + Detail Modal (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s01_t02
 
@@ -61,7 +61,7 @@
 ---
 
 ### TASK-3: Collapsible Insights Sidebar (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s01_t03
 
@@ -80,7 +80,7 @@
 ---
 
 ### TASK-4: Principle Node Type - Schema + API (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s01_t04
 
@@ -111,7 +111,7 @@ interface PrincipleNode {
 ---
 
 ### TASK-5: Standard Principles Seeding (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s01_t05
 
