@@ -1,0 +1,154 @@
+/**
+ * Modal component styles
+ * Accessible dialog with focus trap
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm);
+  z-index: 1000;
+  animation: fadeIn var(--transition-normal);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    animation: none;
+  }
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - var(--spacing-lg) * 2);
+  background-color: var(--color-light-grey);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-modal);
+  overflow-y: auto;
+  animation: slideUp var(--transition-normal);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal {
+    animation: none;
+  }
+}
+
+/* Close Button */
+.closeButton {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-white);
+  border-radius: 50%;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--color-dark-grey);
+  transition: background-color var(--transition-fast);
+  z-index: 1;
+}
+
+.closeButton:hover {
+  background-color: var(--color-light-grey);
+}
+
+.closeButton:focus-visible {
+  outline: 3px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+/* Media Placeholder */
+.mediaPlaceholder {
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  color: var(--color-dark-grey);
+  opacity: 0.5;
+}
+
+.placeholderIcon {
+  width: 80px;
+  height: 80px;
+}
+
+.placeholderText {
+  font-size: var(--font-size-small);
+  font-weight: 500;
+}
+
+/* Content */
+.content {
+  padding: var(--spacing-lg);
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: clamp(20px, 4vw, 24px);
+  font-weight: 700;
+  color: var(--color-black);
+  margin-bottom: var(--spacing-sm);
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  color: var(--color-dark-grey);
+}
+
+/* CTA Button */
+.ctaButton {
+  display: block;
+  margin: 0 var(--spacing-lg) var(--spacing-lg);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-navy);
+  color: var(--color-white);
+  text-align: center;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ctaButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(1, 28, 64, 0.3);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+.ctaButton:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+}
