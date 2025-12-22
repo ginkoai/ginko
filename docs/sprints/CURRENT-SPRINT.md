@@ -7,11 +7,11 @@
 
 **Duration**: 4-5 days
 **Type**: Polish sprint
-**Progress:** 17% (1/6 tasks complete)
+**Progress:** 33% (2/6 tasks complete)
 
 **Success Criteria:**
 - [x] Bidirectional sprint sync working (graph ↔ markdown)
-- [ ] All edge cases handled gracefully
+- [x] All edge cases handled gracefully
 - [ ] Performance optimized (< 2s page loads)
 - [ ] UAT feedback incorporated
 - [ ] Documentation updated
@@ -52,10 +52,10 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ### TASK-2: Graph View Edge Cases (3h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s03_t02
-**Assignee:** Unassigned
+**Assignee:** Chris Norton (chris@watchhill.ai)
 
 **Goal:** Handle edge cases in C4-style graph navigation.
 
@@ -152,6 +152,15 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ## Accomplishments This Sprint
+
+### 2025-12-22: Graph View Edge Cases (T02)
+- Added skeleton UI components for better loading states (`dashboard/src/components/ui/skeleton.tsx`)
+- Created React Error Boundary component for graceful error handling (`dashboard/src/components/graph/ErrorBoundary.tsx`)
+- Implemented NodeNotFound component for invalid/deleted node URLs
+- Added stale breadcrumb filtering (auto-removes deleted nodes from navigation)
+- URL validation and cleanup for invalid node IDs
+- Improved empty state UI in CategoryView with better messaging
+- Files: `skeleton.tsx`, `ErrorBoundary.tsx`, `page.tsx`, `ProjectView.tsx`, `CategoryView.tsx`
 
 ### 2025-12-22: Bidirectional Sprint Sync (T01)
 - Implemented `ginko sync --type=Sprint` command

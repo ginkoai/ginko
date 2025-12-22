@@ -13,8 +13,9 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Loader2, AlertCircle } from 'lucide-react';
+import { FileText, AlertCircle } from 'lucide-react';
 import { useGraphStatus, useNodesByLabel } from '@/lib/graph/hooks';
+import { SkeletonHero, SkeletonCard } from '@/components/ui/skeleton';
 import type { NodeLabel, GraphNode, CharterNode } from '@/lib/graph/types';
 import { SummaryCard } from './SummaryCard';
 import { cn } from '@/lib/utils';
@@ -52,13 +53,7 @@ function CharterHeroCard({
   isLoading: boolean;
 }) {
   if (isLoading) {
-    return (
-      <div className="p-8 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
-        </div>
-      </div>
-    );
+    return <SkeletonHero />;
   }
 
   if (!charter) {
@@ -362,8 +357,10 @@ export function ProjectView({
         </h3>
 
         {statusLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {SUMMARY_NODE_TYPES.map((label) => (
+              <SkeletonCard key={label} />
+            ))}
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

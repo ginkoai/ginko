@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useEffect, useMemo, useRef, RefObject } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import { TreeExplorer } from '@/components/graph/tree-explorer';
 import { CardGrid } from '@/components/graph/card-grid';
 import { NodeDetailPanel } from '@/components/graph/node-detail-panel';
@@ -41,6 +41,36 @@ type ViewMode = 'project' | 'category' | 'detail';
 
 // Default graph ID - in production this would come from user settings or env
 const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
+
+// =============================================================================
+// NodeNotFound Component
+// =============================================================================
+
+interface NodeNotFoundProps {
+  onBackToProject: () => void;
+}
+
+function NodeNotFound({ onBackToProject }: NodeNotFoundProps) {
+  return (
+    <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+      <div className="flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-destructive/10">
+        <AlertCircle className="w-8 h-8 text-destructive" />
+      </div>
+      <h2 className="text-xl font-mono font-semibold text-foreground mb-2">
+        Node not found
+      </h2>
+      <p className="text-sm text-muted-foreground mb-6 max-w-md">
+        The node you're looking for doesn't exist or was deleted. It may have been removed or the link is invalid.
+      </p>
+      <button
+        onClick={onBackToProject}
+        className="px-4 py-2 bg-ginko-500 text-black font-mono font-medium rounded-full hover:bg-ginko-400 transition-colors"
+      >
+        Back to Project
+      </button>
+    </div>
+  );
+}
 
 // =============================================================================
 // Component
@@ -109,9 +139,27 @@ export default function GraphPage() {
       if (node) {
         setSelectedNode(node);
         setIsPanelOpen(true);
+      } else if (!nodesLoading) {
+        // Node not found and data is loaded - clear invalid state
+        setSelectedNode(null);
+        setIsPanelOpen(false);
+        // Clean up URL by removing invalid node param
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('node');
+        const newUrl = params.toString() ? `/dashboard/graph?${params.toString()}` : '/dashboard/graph';
+        router.replace(newUrl, { scroll: false });
       }
     }
-  }, [selectedNodeId, nodesData]);
+  }, [selectedNodeId, nodesData, nodesLoading, router, searchParams]);
+
+  // Clean up stale breadcrumbs when nodes data changes
+  useEffect(() => {
+    if (nodesData?.nodes && breadcrumbs.length > 0) {
+      setBreadcrumbs((prev) =>
+        prev.filter((crumb) => nodesData.nodes?.some((n) => n.id === crumb.id))
+      );
+    }
+  }, [nodesData, breadcrumbs.length]);
 
   // Scroll content to top when selected node changes
   useEffect(() => {
@@ -272,6 +320,7 @@ export default function GraphPage() {
     }
 
     // Add accumulated node breadcrumbs from navigation history
+    // Filter out stale breadcrumbs (nodes that no longer exist)
     breadcrumbs.forEach((crumb) => {
       const historyNode = nodesData?.nodes?.find((n) => n.id === crumb.id);
       if (historyNode) {
@@ -386,6 +435,11 @@ export default function GraphPage() {
                 onViewDetails={handleViewDetails}
                 onEdit={handleEditNode}
               />
+            )}
+
+            {/* Show NodeNotFound when node ID exists but node doesn't */}
+            {selectedNodeId && !selectedNode && !nodesLoading && (
+              <NodeNotFound onBackToProject={handleGoToProject} />
             )}
 
             {/* Full-page NodeView when panel is open */}

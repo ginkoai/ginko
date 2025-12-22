@@ -24,11 +24,12 @@ import {
   Search,
   SortAsc,
   SortDesc,
-  Loader2,
   AlertCircle,
+  FolderOpen,
   type LucideIcon,
 } from 'lucide-react';
 import { useNodesByLabel } from '@/lib/graph/hooks';
+import { SkeletonNodeCard } from '@/components/ui/skeleton';
 import type { NodeLabel, GraphNode } from '@/lib/graph/types';
 import { CondensedNodeCard } from './CondensedNodeCard';
 import { cn } from '@/lib/utils';
@@ -380,15 +381,25 @@ export function CategoryView({
       {/* Content */}
       <div className="flex-1 overflow-auto p-4">
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonNodeCard key={i} />
+            ))}
           </div>
         )}
 
         {!isLoading && filteredNodes.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm text-muted-foreground mb-2">
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="p-4 rounded-full bg-muted/30 mb-4">
+              <FolderOpen className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground mb-1">
               No {displayNames.plural.toLowerCase()} found
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+              {searchQuery || statusFilter !== 'all'
+                ? `No ${displayNames.plural.toLowerCase()} match your current filters.`
+                : `There are no ${displayNames.plural.toLowerCase()} in this graph yet.`}
             </p>
             {(searchQuery || statusFilter !== 'all') && (
               <button
@@ -396,7 +407,7 @@ export function CategoryView({
                   setSearchQuery('');
                   setStatusFilter('all');
                 }}
-                className="text-sm text-ginko-400 hover:text-ginko-300 underline"
+                className="px-4 py-2 text-sm font-medium text-ginko-400 hover:text-ginko-300 hover:bg-ginko-500/10 rounded-lg transition-colors"
               >
                 Clear filters
               </button>
