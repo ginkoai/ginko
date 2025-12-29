@@ -179,6 +179,10 @@
 | BUG-003 | MEDIUM | Duplicate task nodes in graph | Tasks e006_s03_t12-t18 each appear 4 times - data duplication issue | Open |
 | BUG-004 | LOW | Sprint 3 not synced to graph | Current sprint (e006_s03) doesn't exist in graph, only tasks from previous sync | Open |
 | BUG-005 | LOW | Active sprint mismatch | Active sprint shows e006_s02 but current sprint file is Sprint 3 | Open |
+| BUG-006 | HIGH | Task edit modal not pre-populating data | Open Task edit modal, fields are empty instead of showing existing values. Root cause: schema expects `task_id` but graph stores `id` | **FIXED** |
+| BUG-007 | HIGH | "Node Not Found" when clicking Tasks | Click task in CategoryView, shows error. Race condition: useEffect cleared node set by handleViewDetails | **FIXED** |
+| BUG-008 | MEDIUM | Title field not visible in Task edit modal | Title field not rendering in form despite data existing | Open |
+| BUG-009 | LOW | Some tasks missing descriptions | e006_s03 tasks have null descriptions - data quality issue from sync | Open |
 
 ---
 
@@ -188,6 +192,8 @@
 |----|----------|-------------|-----------|
 | ENH-001 | LOW | Add /graph/stats endpoint | Would be useful for dashboard metrics |
 | ENH-002 | MEDIUM | Re-enable semantic search | Requires Voyage AI embedding service configuration |
+| ENH-003 | MEDIUM | Make Task ID field read-only | Task IDs follow ADR-052 naming convention; editing breaks semantic naming and relationships |
+| ENH-004 | MEDIUM | Make Assignee a dropdown | Populate from project members instead of free-text; improves UX and data quality |
 
 ---
 
@@ -215,3 +221,17 @@
 - **Fix:** Added `import neo4j from 'neo4j-driver'` and wrapped limit with `neo4j.int(limit)`
 - **File:** `dashboard/src/app/api/v1/graph/nodes/unsynced/route.ts:117`
 - **Verified:** Endpoint now returns 100 unsynced nodes correctly
+
+### 2025-12-29: BUG-006 Fixed
+- **Issue:** Task edit modal not pre-populating existing data
+- **Root Cause:** Schema expects `task_id` but graph stores property as `id`
+- **Fix:** Added ID field mapping in NodeEditorModal to transform `id` → `task_id` (and similar for Sprint, Epic, ADR, etc.)
+- **File:** `dashboard/src/components/graph/NodeEditorModal.tsx:131-161`
+- **Verified:** Pending user confirmation
+
+### 2025-12-29: BUG-007 Fixed
+- **Issue:** "Node Not Found" when clicking Tasks in CategoryView
+- **Root Cause:** Race condition - useEffect was clearing `selectedNode` even after CategoryView passed node data directly via `handleViewDetails`. Page only loads 100 nodes but there are 223 tasks.
+- **Fix:** Added `!selectedNode` check before clearing state
+- **File:** `dashboard/src/app/dashboard/graph/page.tsx:153`
+- **Verified:** Pending user confirmation

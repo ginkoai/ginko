@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-17
+ * @updated: 2025-12-29
  * @tags: [editor, modal, dialog, knowledge-editing, crud]
  * @related: [NodeEditorForm.tsx, NodeEditor.tsx, dialog.tsx, NodeView.tsx, CondensedNodeCard.tsx]
  * @priority: medium
@@ -131,7 +131,30 @@ export function NodeEditorModal({
   // Reset form when node changes
   useEffect(() => {
     if (node && open) {
-      setFormData(node.properties as Record<string, unknown>);
+      const props = node.properties as Record<string, unknown>;
+
+      // Map 'id' property to the schema's expected ID field name
+      // e.g., Task expects 'task_id', Sprint expects 'sprint_id', etc.
+      const idFieldMap: Record<string, string> = {
+        Task: 'task_id',
+        Sprint: 'sprint_id',
+        Epic: 'epic_id',
+        ADR: 'adr_id',
+        PRD: 'prd_id',
+        Pattern: 'pattern_id',
+        Gotcha: 'gotcha_id',
+        Principle: 'principle_id',
+      };
+
+      const idFieldName = idFieldMap[node.label];
+      const mappedProps = { ...props };
+
+      // If schema expects a specific ID field and node has 'id', map it
+      if (idFieldName && props.id && !props[idFieldName]) {
+        mappedProps[idFieldName] = props.id;
+      }
+
+      setFormData(mappedProps);
       setErrors({});
       setSaveError(null);
     }

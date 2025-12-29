@@ -142,24 +142,18 @@ export default function GraphPage() {
   });
 
   // Update selected node when ID or data changes
+  // Note: This effect only handles nodes found in the initial 100-node cache.
+  // Nodes from CategoryView are passed directly via handleViewDetails and don't need this.
   useEffect(() => {
     if (selectedNodeId && nodesData?.nodes) {
       const node = nodesData.nodes.find((n) => n.id === selectedNodeId);
       if (node) {
         setSelectedNode(node);
         setIsPanelOpen(true);
-      } else if (!nodesLoading) {
-        // Node not found and data is loaded - clear invalid state
-        setSelectedNode(null);
-        setIsPanelOpen(false);
-        // Clean up URL by removing invalid node param
-        const params = new URLSearchParams(searchParams.toString());
-        params.delete('node');
-        const newUrl = params.toString() ? `/dashboard/graph?${params.toString()}` : '/dashboard/graph';
-        router.replace(newUrl, { scroll: false });
       }
+      // Don't clear if node not found - it may have been set directly by handleViewDetails
     }
-  }, [selectedNodeId, nodesData, nodesLoading, router, searchParams]);
+  }, [selectedNodeId, nodesData]);
 
   // Clean up stale breadcrumbs when nodes data changes
   useEffect(() => {
@@ -450,8 +444,9 @@ export default function GraphPage() {
               />
             )}
 
-            {/* Show NodeNotFound when node ID exists but node doesn't */}
-            {selectedNodeId && !selectedNode && !nodesLoading && (
+            {/* Show NodeNotFound only for truly invalid node IDs (from URL) */}
+            {/* Don't show if isPanelOpen - node was set via handleViewDetails */}
+            {selectedNodeId && !selectedNode && !nodesLoading && !isPanelOpen && viewMode === 'detail' && (
               <NodeNotFound onBackToProject={handleGoToProject} />
             )}
 
