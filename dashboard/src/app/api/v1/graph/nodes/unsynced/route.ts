@@ -1,7 +1,7 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2025-12-29
  * @tags: [api, graph, nodes, knowledge, neo4j, sync, unsynced]
  * @related: [../route.ts, ../_neo4j.ts, ../[id]/route.ts]
  * @priority: high
@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, getSession } from '../../_neo4j';
+import neo4j from 'neo4j-driver';
 
 interface NodeData {
   id: string;
@@ -113,7 +114,7 @@ export async function GET(request: NextRequest) {
            RETURN n, nodeLabels
            ORDER BY n.editedAt DESC
            LIMIT $limit`,
-          { graphId, limit }
+          { graphId, limit: neo4j.int(limit) }
         );
       });
 

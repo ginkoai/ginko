@@ -95,7 +95,7 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ### TASK-4: UAT Testing Session (4h)
-**Status:** [ ] Pending
+**Status:** [@] In Progress
 **Priority:** HIGH
 **ID:** e006_s03_t04
 **Assignee:** Chris Norton (chris@watchhill.ai)
