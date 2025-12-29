@@ -262,6 +262,17 @@ section {
     color: var(--color-accent);
 }
 
+.logo-image {
+    display: block;
+    width: auto;
+    transition: opacity var(--transition-fast);
+}
+
+.nav-logo:hover .logo-image,
+.footer-logo:hover .logo-image {
+    opacity: 0.85;
+}
+
 .nav-logo:hover .logo-icon,
 .footer-logo:hover .logo-icon {
     color: var(--color-accent-hover);

@@ -43,7 +43,7 @@ export interface CategoryViewProps {
   label: NodeLabel;
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string) => void;
-  onViewDetails: (nodeId: string) => void;
+  onViewDetails: (nodeId: string, node: GraphNode) => void;
   onEdit?: (nodeId: string, node?: GraphNode) => void;
   className?: string;
 }
@@ -455,7 +455,7 @@ export function CategoryView({
                 node={node}
                 isSelected={node.id === selectedNodeId}
                 onSelect={onSelectNode}
-                onViewDetails={onViewDetails}
+                onViewDetails={(nodeId) => onViewDetails(nodeId, node)}
                 onEdit={onEdit ? (nodeId) => onEdit(nodeId, node) : undefined}
               />
             ))}

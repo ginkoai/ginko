@@ -13,7 +13,9 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSupabase } from '@/components/providers'
+import ginkoLogo from '@/ginko-logo-green.png'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Dropdown } from '@/components/ui/dropdown'
@@ -75,9 +77,15 @@ export function DashboardNav({ user }: DashboardNavProps) {
         {/* Logo - Ginko branding with green accent */}
         <Link
           href="/dashboard"
-          className="font-mono text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
+          className="hover:opacity-80 transition-opacity"
         >
-          ginko
+          <Image
+            src={ginkoLogo}
+            alt="ginko"
+            height={32}
+            className="w-auto"
+            priority
+          />
         </Link>
 
         {/* Center - Navigation Tabs */}

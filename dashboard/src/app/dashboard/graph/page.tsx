@@ -200,8 +200,12 @@ export default function GraphPage() {
   }, [router, searchParams]);
 
   // Handle viewing node details (open panel)
-  const handleViewDetails = useCallback((nodeId: string) => {
+  const handleViewDetails = useCallback((nodeId: string, nodeData?: GraphNode) => {
     setSelectedNodeId(nodeId);
+    // Use provided node data directly (from CategoryView) to avoid lookup failures
+    if (nodeData) {
+      setSelectedNode(nodeData);
+    }
     setIsPanelOpen(true);
     // Track direction for transition (forward into detail)
     setTransitionDirection('forward');
