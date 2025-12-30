@@ -1,118 +1,80 @@
 ---
-handoff_id: handoff-2025-12-22T18-54
-session_id: session-2025-12-22T18-42-11-545Z
-created: 2025-12-22T18:54:00.000Z
+handoff_id: handoff-2025-12-30-insights-fixes
+session_id: session-2025-12-30T19-40-02-108Z
+created: 2025-12-30T20:02:00.000Z
 user: chris@watchhill.ai
 branch: main
 model: claude-opus-4-5-20251101
 provider: anthropic
 ---
 
-# Session Handoff: T03 Performance Optimization Complete
+# Session Handoff: Insights Subcomponents UAT Fixes
 
 ## Summary
-
-Completed TASK-3 (Performance Optimization) for EPIC-006 Sprint 3. Sprint is now at 50% progress (3/6 tasks complete).
+Fixed all Insights subcomponents based on UAT feedback. Cold start detection, evidence display, and principles have been addressed. Changes committed, ready to deploy.
 
 ## Completed This Session
 
-### T03: Performance Optimization ✓
+### 1. Cold Start Ratio Detection (Data Accuracy)
+- **Problem**: 100% cold start rate despite user always running handoff
+- **Root cause**: Flow state only detected from session log text patterns, ignored handoffs
+- **Solution**:
+  - Sessions with 2+ events now classified as "warm"
+  - Post-processing propagates handoff state from previous session
+  - Added detection for multiple flow state patterns
 
-1. **API-Level Pagination for CategoryView**
-   - Migrated from client-side to server-side pagination
-   - Removed 100-node hard limit - now scales to any dataset size
-   - Uses `useGraphNodes` hook with offset/limit parameters
-   - Accurate total counts from API response
-   - Shows filtered count when search/status filters active
-   - File: `dashboard/src/components/graph/CategoryView.tsx`
+### 2. Evidence Display Improvements
+- Evidence items now include timestamps from session `startedAt` dates
+- Descriptions enriched with context: event counts, handoff status, duration
+- Example: `"Cold start session (3 events, no handoff)"` instead of just `"Cold start session"`
 
-2. **Neo4j Performance Indexes**
-   - Created new migration: `src/graph/schema/011-performance-indexes.cypher`
-   - Added 15 new indexes for critical query paths:
-     - `synced` property index for unsynced nodes API (50-100x faster)
-     - Event temporal indexes (`timestamp`, `user_id+timestamp`)
-     - `graph_id` indexes for multi-tenant filtering (30-50x faster)
-     - `createdAt` indexes for sorted pagination queries
-   - Expected improvements: O(n log n) → O(k) for paginated queries
+### 3. Truncated Commit Evidence
+- Expanded commit message truncation from 40 to **80 characters**
+- Format: `"1234 lines changed: Full commit message here..."`
 
-3. **Verified Already Optimized**
-   - NodeEditorModal: Already lazy-loaded via `next/dynamic`
-   - React.memo: Added in previous session (commit 86b8a22)
+### 4. Silent Sessions vs Low Event Logging Clarification
+- **Silent sessions** (anti-patterns): Sessions with **zero** events - total context loss
+- **Low event logging** (quality): Events per session **average** below target
+- Descriptions now explicitly distinguish these metrics
 
-## Commits This Session
+### 5. Principles for ADR Awareness & Pattern Library
+Added to `PrinciplePreviewModal.tsx`:
+- "Architecture Decision Records" (ADR) - source: Michael Nygard/Thoughtworks
+- "Pattern Documentation" - source: Gang of Four/DDD
+- "Atomic Commits", "Session Handoff", `ginko log` keyword mapping
 
+## Files Changed
+- `packages/cli/src/lib/insights/data-collector.ts` - Flow state detection, handoff propagation
+- `packages/cli/src/lib/insights/analyzers/efficiency.ts` - Cold start evidence
+- `packages/cli/src/lib/insights/analyzers/anti-patterns.ts` - Silent session evidence
+- `packages/cli/src/lib/insights/analyzers/patterns.ts` - ADR/pattern recommendations
+- `packages/cli/src/lib/insights/analyzers/quality.ts` - Commit evidence, low logging clarity
+- `dashboard/src/components/insights/PrinciplePreviewModal.tsx` - 5 new principles
+
+## Commit
 ```
-8527454 chore: Update session files after T03 completion
-c0c2b9e docs: Update sprint progress - T03 Performance complete (50%)
-4ffc2b2 feat(T03): Add API pagination and Neo4j performance indexes
-f91a2a2 chore: Update ginko session files
+60de63e fix(insights): Improve data accuracy and evidence display based on UAT
 ```
+
+## Next Session: Deploy
+1. Run `git push` to push changes to remote
+2. Run `vercel --prod --yes` from monorepo root to deploy dashboard
+3. Test Insights page at https://app.ginkoai.com/dashboard/insights
+4. Verify:
+   - Cold start ratio reflects actual handoff usage
+   - Evidence items show dates and context
+   - Principles appear on ADR Awareness and Pattern Library insights
 
 ## Sprint Status
-
 **Sprint:** UX Polish Sprint 3 - Polish & UAT
-**Progress:** 50% (3/6 tasks)
+**Progress:** 50% (still 3/6 tasks) - This was a UAT bug fix iteration
 
-| Task | Status | Notes |
-|------|--------|-------|
-| T01: Bidirectional Sprint Sync | ✓ Complete | ginko sync --type=Sprint |
-| T02: Graph View Edge Cases | ✓ Complete | Error boundaries, skeleton UI |
-| T03: Performance Optimization | ✓ Complete | API pagination, Neo4j indexes |
-| T04: UAT Testing Session | Pending | HIGH priority - next |
-| T05: Bug Fixes from UAT | Pending | Depends on T04 |
-| T06: Documentation Update | Pending | LOW priority |
-
-## Next Steps
-
-1. **T04: UAT Testing Session** (HIGH priority)
-   - Create UAT test plan with key scenarios
-   - Test all navigation flows (Project → Category → Node → back)
-   - Test editing workflows
-   - Test My Tasks integration
-   - Document issues and enhancement requests
-
-2. **Apply Neo4j Indexes**
-   - Run migration `011-performance-indexes.cypher` against production Neo4j
-   - Verify index creation with `SHOW INDEXES`
-
-3. **Deploy Dashboard**
-   - Run `vercel --prod --yes` from monorepo root to deploy changes
+## Branch State
+- **Branch**: main
+- **Status**: Clean (all changes committed)
+- **Ahead of remote**: Yes (needs `git push`)
 
 ## Technical Notes
-
-### CategoryView Pagination Change
-
-The pagination now uses API-level offset/limit:
-
-```typescript
-// Before: Client-side with 100-node limit
-const { data: nodes } = useNodesByLabel(label, { graphId, limit: 100 });
-
-// After: API-level pagination (no limit)
-const { data: response } = useGraphNodes({
-  graphId,
-  labels: [label],
-  limit: pageSize,
-  offset: page * pageSize,
-});
-```
-
-### Neo4j Index Priority
-
-If applying indexes incrementally, prioritize:
-1. `node_synced_idx` - Critical for unsynced nodes API
-2. `event_user_timestamp_idx` - Critical for event chains
-3. `*_graph_id_idx` - Important for multi-tenancy
-
-## Codebase State
-
-- **Branch:** main (up to date with origin)
-- **Build:** Passing
-- **Tests:** Pre-existing TS errors in other files (not from this session)
-- **No uncommitted changes**
-
-## Files Modified
-
-- `dashboard/src/components/graph/CategoryView.tsx` - API pagination
-- `src/graph/schema/011-performance-indexes.cypher` - New migration
-- `docs/sprints/CURRENT-SPRINT.md` - Progress update
+- Dashboard has pre-existing type errors (not from this session)
+- CLI type-checks clean
+- No secrets or API keys in changes
