@@ -1,11 +1,12 @@
 ---
-session_id: session-2025-12-30T19-40-02-108Z
-started: 2025-12-30T19:40:02.108Z
+session_id: session-2025-12-30T21-36-33-070Z
+started: 2025-12-30T21:36:33.070Z
 user: chris@watchhill.ai
 branch: main
+flow_state: hot
 ---
 
-# Session Log: session-2025-12-30T19-40-02-108Z
+# Session Log: session-2025-12-30T21-36-33-070Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,18 +37,19 @@ branch: main
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 14:59 - [fix]
-# [FIX] 14:59
+### 17:53 - [fix]
+# [FIX] 17:53
 
-Fixed Insights subcomponents based on UAT feedback: (1) Cold start ratio detection now considers handoffs from previous sessions and events in sessions - sessions with events or following a handoff are warm, not cold; (2) Evidence items now include richer descriptions with timestamps, event counts, and handoff status; (3) Commit message evidence expanded from 40 to 80 chars; (4) Clarified Silent Sessions (zero events) vs Low Event Logging (avg rate below target) with distinct descriptions; (5) Added 5 new principles: ADR, Pattern Documentation, Atomic Commits, Session Handoff, ginko log - now ADR Awareness and Pattern Library insights show principles when expanded.
+Fixed insights period filtering. Root cause: date parsing in collectSessions was broken - regex replaced ALL hyphens with colons, making Invalid Date for all archive files. Solution: targeted regex that only converts time portion (T15-22-55-104Z → T15:22:55.104Z). Sessions now properly filter by 1/7/30 day periods. All insights re-synced to dashboard.
 
 **Files:**
-- packages/cli/src/lib/insights/data-collector.ts
-- packages/cli/src/lib/insights/analyzers/*.ts
-- dashboard/src/components/insights/PrinciplePreviewModal.tsx
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 
 **Impact:** high
-**Timestamp:** 2025-12-30T19:59:30.321Z
+**Timestamp:** 2025-12-30T22:53:59.390Z
 
-Files: packages/cli/src/lib/insights/data-collector.ts, packages/cli/src/lib/insights/analyzers/*.ts, dashboard/src/components/insights/PrinciplePreviewModal.tsx
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: high

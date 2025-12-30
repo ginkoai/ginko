@@ -779,10 +779,33 @@
       "relevance": "critical",
       "created": "2025-12-30T19:59:33.088Z",
       "sessionId": "session-chris-at-watchhill-ai-1767124773054"
+    },
+    {
+      "filename": "discovery-session-handoff-fixed-insights-metrics-cold-start-.md",
+      "type": "discovery",
+      "tags": [
+        "insight",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-30T20:48:25.536Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767127705491"
+    },
+    {
+      "filename": "gotcha-fixed-insights-period-filtering.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-30T22:54:02.833Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767135242793"
     }
   ],
-  "lastUpdated": "2025-12-30T19:59:33.091Z",
-  "totalModules": 57,
+  "lastUpdated": "2025-12-30T22:54:02.834Z",
+  "totalModules": 59,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
