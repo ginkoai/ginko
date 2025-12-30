@@ -20,6 +20,7 @@ import { InsightCategoryTabs, CategoryScoreCard } from './InsightCategoryTabs'
 import {
   DashboardCoachingReport,
   InsightCategory,
+  TrendScore,
   getScoreRating,
   getScoreBarColor,
   getTrendIcon,
@@ -30,6 +31,36 @@ interface InsightsOverviewProps {
   report: DashboardCoachingReport | null
   loading?: boolean
   error?: string | null
+}
+
+/**
+ * Compact trend score display for 1-day and 7-day scores.
+ */
+function TrendScoreCard({ label, trendScore }: { label: string; trendScore?: TrendScore }) {
+  if (!trendScore) return null
+
+  const rating = getScoreRating(trendScore.score)
+  const trendIcon = getTrendIcon(trendScore.trend)
+  const trendColor = getTrendColor(trendScore.trend)
+
+  return (
+    <div className="flex flex-col items-center p-2 rounded-lg bg-secondary/30 border border-border/50 min-w-[72px]">
+      <span className="text-xs text-muted-foreground font-mono">{label}</span>
+      <div className="flex items-center gap-1 mt-1">
+        <span className={clsx('font-mono font-bold text-lg', rating.color)}>
+          {trendScore.score}
+        </span>
+        {trendScore.trend && (
+          <span className={clsx('text-sm', trendColor)}>{trendIcon}</span>
+        )}
+      </div>
+      {trendScore.previousScore !== undefined && trendScore.trend && (
+        <span className="text-xs text-muted-foreground">
+          from {trendScore.previousScore}
+        </span>
+      )}
+    </div>
+  )
 }
 
 export function InsightsOverview({ report, loading, error }: InsightsOverviewProps) {
@@ -107,7 +138,7 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
           <div className="flex items-center gap-8">
             {/* Score Circle */}
             <div className="text-center">
-              <div className="relative w-24 h-24 flex items-center justify-center">
+              <div className="relative w-24 h-24">
                 <svg className="absolute inset-0 w-24 h-24 transform -rotate-90">
                   <circle
                     cx="48"
@@ -135,7 +166,9 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
                     strokeLinecap="round"
                   />
                 </svg>
-                <span className="font-mono font-bold text-2xl relative z-10">{report.overallScore}</span>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-mono font-bold text-2xl">{report.overallScore}</span>
+                </div>
               </div>
               <div className={clsx('font-mono font-medium mt-2', rating.color)}>
                 {rating.label}
@@ -143,6 +176,13 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
               {report.scoreTrend && (
                 <div className={clsx('text-sm', trendColor)}>
                   {trendIcon} {report.previousScore && `from ${report.previousScore}`}
+                </div>
+              )}
+              {/* Trend Scores: 1-day and 7-day */}
+              {report.trendScores && (report.trendScores.day1 || report.trendScores.day7) && (
+                <div className="flex gap-2 mt-3">
+                  <TrendScoreCard label="1 day" trendScore={report.trendScores.day1} />
+                  <TrendScoreCard label="7 day" trendScore={report.trendScores.day7} />
                 </div>
               )}
             </div>

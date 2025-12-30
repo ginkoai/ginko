@@ -36,6 +36,29 @@ const SAMPLE_REPORT: DashboardCoachingReport = {
   overallScore: 78,
   previousScore: 72,
   scoreTrend: 'up',
+  trendScores: {
+    day1: {
+      score: 82,
+      previousScore: 78,
+      trend: 'up',
+      periodDays: 1,
+      lastUpdated: new Date().toISOString()
+    },
+    day7: {
+      score: 76,
+      previousScore: 74,
+      trend: 'up',
+      periodDays: 7,
+      lastUpdated: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    },
+    day30: {
+      score: 78,
+      previousScore: 72,
+      trend: 'up',
+      periodDays: 30,
+      lastUpdated: new Date().toISOString()
+    }
+  },
   categoryScores: [
     {
       category: 'efficiency',
@@ -253,7 +276,8 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
               evidence: i.evidence || [],
               recommendations: i.recommendations || []
             })) || [],
-            summary: run.summary
+            summary: run.summary,
+            trendScores: run.metadata?.trendScores
           }
           setReport(report)
           setLoading(false)

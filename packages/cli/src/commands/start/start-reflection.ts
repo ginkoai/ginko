@@ -38,6 +38,11 @@ import {
 } from '../graph/api-client.js';
 import { isGraphInitialized, getGraphId } from '../graph/config.js';
 import { isAuthenticated } from '../../utils/auth-storage.js';
+import {
+  checkSchedule,
+  recordRun,
+  getPeriodDays
+} from '../../lib/insights/scheduler.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -448,6 +453,11 @@ export class StartReflectionCommand extends ReflectionCommand {
       } catch {
         // Cursor update is non-critical - don't block session start
       }
+
+      // Auto-update insights at scheduled intervals (1-day, 7-day, 30-day)
+      this.runScheduledInsights().catch(() => {
+        // Insights update is non-critical - don't block session start
+      });
 
     } catch (error) {
       spinner.fail('Session initialization failed');
@@ -1555,6 +1565,66 @@ Example output structure:
         userEmail,
         context.currentBranch || 'unknown'
       );
+    }
+  }
+
+  /**
+   * Run scheduled insights updates in the background.
+   * Checks which periods (1-day, 7-day, 30-day) need updates and runs them.
+   * Non-blocking - runs asynchronously without awaiting completion.
+   */
+  private async runScheduledInsights(): Promise<void> {
+    try {
+      // Only run if authenticated (needed for sync)
+      if (!await isAuthenticated()) {
+        return;
+      }
+
+      // Check which periods need updates
+      const periodsToRun = await checkSchedule();
+
+      if (periodsToRun.length === 0) {
+        return; // Nothing to update
+      }
+
+      // Import insights command dynamically to avoid circular dependency
+      const { insightsCommand } = await import('../insights/insights-command.js');
+
+      // Run insights for each period that needs updating
+      // Run in background without blocking (fire and forget)
+      for (const period of periodsToRun) {
+        const days = getPeriodDays(period);
+
+        try {
+          // Run insights with sync enabled (silent output)
+          const originalLog = console.log;
+          const originalError = console.error;
+
+          // Suppress output during background run
+          console.log = () => {};
+          console.error = () => {};
+
+          try {
+            await insightsCommand({
+              days,
+              sync: true,
+              json: false,  // Don't need JSON output
+            });
+
+            // Record successful run (we don't have the score here, but API will store it)
+            await recordRun(period, 0); // Score will be fetched from API later
+          } finally {
+            // Restore console output
+            console.log = originalLog;
+            console.error = originalError;
+          }
+        } catch {
+          // Individual period failure is non-critical
+          continue;
+        }
+      }
+    } catch {
+      // Entire scheduler failure is non-critical
     }
   }
 }

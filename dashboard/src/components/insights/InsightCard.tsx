@@ -231,39 +231,71 @@ export function InsightCard({ insight, expanded: initialExpanded = false }: Insi
               <h5 className="text-xs font-mono font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                 Recommendations
               </h5>
-              <ul className="space-y-1">
+              <ul className="space-y-2">
                 {insight.recommendations.map((rec, idx) => {
-                  const hasPrinciple = Boolean(mapRecommendationToPrinciple(rec))
+                  const principle = mapRecommendationToPrinciple(rec)
+                  const hasPrinciple = Boolean(principle)
                   return (
                     <li
                       key={idx}
                       className={clsx(
-                        'flex items-start gap-2 text-sm p-2 rounded-md -mx-2',
-                        hasPrinciple && 'hover:bg-white/5 cursor-pointer group transition-colors'
+                        'rounded-md -mx-2',
+                        hasPrinciple && 'bg-primary/5 border border-primary/20'
                       )}
-                      onClick={() => hasPrinciple && handleRecommendationClick(rec)}
                     >
-                      <span className={clsx(
-                        'mt-0.5',
-                        hasPrinciple ? 'text-primary' : 'text-muted-foreground'
-                      )}>
-                        {hasPrinciple ? (
-                          <LightBulbIcon className="h-4 w-4" />
-                        ) : (
-                          '-'
+                      {/* Recommendation text */}
+                      <div
+                        className={clsx(
+                          'flex items-start gap-2 text-sm p-2',
+                          hasPrinciple && 'cursor-pointer group hover:bg-primary/10 transition-colors'
                         )}
-                      </span>
-                      <span className={clsx(
-                        hasPrinciple
-                          ? 'text-foreground group-hover:text-primary'
-                          : 'text-muted-foreground'
-                      )}>
-                        {rec}
-                      </span>
-                      {hasPrinciple && (
-                        <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
-                          View principle →
+                        onClick={() => hasPrinciple && handleRecommendationClick(rec)}
+                      >
+                        <span className={clsx(
+                          'mt-0.5',
+                          hasPrinciple ? 'text-primary' : 'text-muted-foreground'
+                        )}>
+                          {hasPrinciple ? (
+                            <LightBulbIcon className="h-4 w-4" />
+                          ) : (
+                            '-'
+                          )}
                         </span>
+                        <div className="flex-1 min-w-0">
+                          <span className={clsx(
+                            hasPrinciple
+                              ? 'text-foreground group-hover:text-primary'
+                              : 'text-muted-foreground'
+                          )}>
+                            {rec}
+                          </span>
+                        </div>
+                        {hasPrinciple && (
+                          <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            Learn more →
+                          </span>
+                        )}
+                      </div>
+                      {/* Inline principle preview */}
+                      {principle && (
+                        <div
+                          className="px-8 pb-2 cursor-pointer group"
+                          onClick={() => handleRecommendationClick(rec)}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className="bg-primary/20 text-primary border-primary/30 text-xs">
+                              {principle.name}
+                            </Badge>
+                            {principle.source && (
+                              <span className="text-xs text-muted-foreground">
+                                from {principle.source}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2 group-hover:text-foreground transition-colors">
+                            {principle.theory.split('\n')[0]}
+                          </p>
+                        </div>
                       )}
                     </li>
                   )

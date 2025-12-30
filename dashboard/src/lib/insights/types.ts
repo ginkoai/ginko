@@ -294,6 +294,17 @@ export interface InsightsApiResponse {
 // ============================================================================
 
 /**
+ * Trend score for a specific time period.
+ */
+export interface TrendScore {
+  score: number;
+  previousScore?: number;
+  trend?: 'up' | 'down' | 'stable';
+  periodDays: number;
+  lastUpdated?: string;
+}
+
+/**
  * Dashboard-friendly coaching report with string dates (from JSON).
  */
 export interface DashboardCoachingReport {
@@ -311,6 +322,12 @@ export interface DashboardCoachingReport {
   categoryScores: CategoryScore[];
   insights: RawInsight[];
   summary: string;
+  // Trend scores for different time periods
+  trendScores?: {
+    day1?: TrendScore;
+    day7?: TrendScore;
+    day30?: TrendScore;
+  };
 }
 
 // ============================================================================
