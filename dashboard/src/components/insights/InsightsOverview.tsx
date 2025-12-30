@@ -241,20 +241,38 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
         onCategoryChange={setActiveCategory}
       />
 
-      {/* Insights List */}
-      <div className="space-y-3">
-        {sortedInsights.length === 0 ? (
-          <Card className="p-6">
-            <div className="text-center py-8">
-              <p className="text-muted-foreground font-mono">No insights in this category</p>
-            </div>
-          </Card>
-        ) : (
-          sortedInsights.map((insight, idx) => (
-            <InsightCard key={idx} insight={insight} />
-          ))
-        )}
-      </div>
+      {/* Period Mismatch - Show guidance instead of misleading insights */}
+      {report.insightsPeriodDays ? (
+        <Card className="p-6 border-yellow-500/30 bg-yellow-500/5">
+          <div className="text-center py-8">
+            <div className="text-4xl mb-4">📊</div>
+            <p className="font-mono text-foreground mb-2">
+              No {selectedPeriod}-day insights available
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Score shown is from trend data. Generate period-specific coaching insights:
+            </p>
+            <code className="bg-secondary px-3 py-2 rounded font-mono text-sm text-primary">
+              ginko insights --days={selectedPeriod}
+            </code>
+          </div>
+        </Card>
+      ) : (
+        /* Insights List - only show when period matches */
+        <div className="space-y-3">
+          {sortedInsights.length === 0 ? (
+            <Card className="p-6">
+              <div className="text-center py-8">
+                <p className="text-muted-foreground font-mono">No insights in this category</p>
+              </div>
+            </Card>
+          ) : (
+            sortedInsights.map((insight, idx) => (
+              <InsightCard key={idx} insight={insight} />
+            ))
+          )}
+        </div>
+      )}
 
       {/* Run Analysis Prompt */}
       <Card className="p-4">

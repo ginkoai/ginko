@@ -328,6 +328,8 @@ export interface DashboardCoachingReport {
     day7?: TrendScore;
     day30?: TrendScore;
   };
+  // When insights are from a different period than selected
+  insightsPeriodDays?: number;
 }
 
 // ============================================================================

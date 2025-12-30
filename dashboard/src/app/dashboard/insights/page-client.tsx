@@ -242,6 +242,27 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
           // Find run matching the requested period, or use the closest one
           const matchingRun = data.runs.find((r: any) => r.metadata?.periodDays === period) || data.runs[0]
           const run = matchingRun
+
+          // Check if we have trend scores for the selected period
+          const trendScores = run.metadata?.trendScores
+          const runPeriodDays = run.metadata?.periodDays || 30
+          const periodMismatch = runPeriodDays !== period
+
+          // Use trend score if available and period doesn't match run's period
+          let overallScore = run.overall_score
+          let previousScore: number | undefined
+          let scoreTrend: 'up' | 'down' | 'stable' | undefined
+
+          if (periodMismatch && trendScores) {
+            const trendKey = period === 1 ? 'day1' : period === 7 ? 'day7' : 'day30'
+            const trendData = trendScores[trendKey]
+            if (trendData?.score !== undefined) {
+              overallScore = trendData.score
+              previousScore = trendData.previousScore
+              scoreTrend = trendData.trend
+            }
+          }
+
           // Transform from DB format to DashboardCoachingReport format
           const report: DashboardCoachingReport = {
             userId: run.user_id,
@@ -250,9 +271,11 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
             period: {
               start: run.data_window_start,
               end: run.data_window_end,
-              days: run.metadata?.periodDays || 30
+              days: period  // Use selected period, not run's period
             },
-            overallScore: run.overall_score,
+            overallScore,
+            previousScore,
+            scoreTrend,
             categoryScores: run.metadata?.categoryScores || [],
             insights: run.insights?.map((i: any) => ({
               category: i.category,
@@ -267,7 +290,9 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
               evidence: i.evidence || [],
               recommendations: i.recommendations || []
             })) || [],
-            summary: run.summary
+            summary: run.summary,
+            // Track when insights are from a different period than selected
+            insightsPeriodDays: periodMismatch ? runPeriodDays : undefined
           }
           setReport(report)
           setLoading(false)
