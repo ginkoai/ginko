@@ -374,7 +374,14 @@ async function collectSessions(
       const match = file.match(/session-log-(\d{4}-\d{2}-\d{2}T[\d-]+Z)\.md/);
       if (!match) continue;
 
-      const timestamp = new Date(match[1].replace(/-/g, ':').replace('T', 'T').slice(0, -4).replace(/:(\d{2}):(\d{2}):(\d{3})/, ':$1:$2.$3'));
+      // Convert filename format to ISO: 2025-12-15T15-22-55-104Z → 2025-12-15T15:22:55.104Z
+      const isoDate = match[1].replace(/T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z/, 'T$1:$2:$3.$4Z');
+      const timestamp = new Date(isoDate);
+
+      // Skip if invalid date (shouldn't happen with correct format)
+      if (isNaN(timestamp.getTime())) {
+        continue;
+      }
 
       // Filter by date range
       if (timestamp < start || timestamp > end) {
