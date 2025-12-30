@@ -28,6 +28,7 @@ export interface FieldConfig {
   placeholder?: string;
   options?: { value: string; label: string }[];
   helperText?: string;
+  readOnly?: boolean;
 }
 
 // =============================================================================
@@ -54,6 +55,7 @@ export const ADR_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'ADR-055',
       helperText: 'Format: ADR-XXX (e.g., ADR-055)',
+      readOnly: true,
     },
     {
       name: 'title',
@@ -149,6 +151,7 @@ export const PRD_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'PRD-001',
       helperText: 'Format: PRD-XXX (e.g., PRD-001)',
+      readOnly: true,
     },
     {
       name: 'title',
@@ -244,6 +247,7 @@ export const PATTERN_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'PATTERN-001',
       helperText: 'Format: PATTERN-XXX (e.g., PATTERN-001)',
+      readOnly: true,
     },
     {
       name: 'name',
@@ -334,6 +338,7 @@ export const GOTCHA_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'GOTCHA-001',
       helperText: 'Format: GOTCHA-XXX (e.g., GOTCHA-001)',
+      readOnly: true,
     },
     {
       name: 'title',
@@ -478,6 +483,7 @@ export const PRINCIPLE_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'PRINCIPLE-001',
       helperText: 'Format: PRINCIPLE-XXX (e.g., PRINCIPLE-001)',
+      readOnly: true,
     },
     {
       name: 'name',
@@ -570,6 +576,7 @@ export const SPRINT_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'e005_s01',
       helperText: 'Format: e{NNN}_s{NN} (e.g., e005_s01)',
+      readOnly: true,
     },
     {
       name: 'title',
@@ -636,6 +643,7 @@ export const TASK_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'e005_s01_t01',
       helperText: 'Format: e{NNN}_s{NN}_t{NN} (e.g., e005_s01_t01)',
+      readOnly: true,
     },
     {
       name: 'title',
@@ -719,6 +727,7 @@ export const EPIC_SCHEMA: NodeSchema = {
       required: true,
       placeholder: 'e005',
       helperText: 'Format: e{NNN} (e.g., e005)',
+      readOnly: true,
     },
     {
       name: 'title',

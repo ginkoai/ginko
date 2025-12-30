@@ -12,6 +12,7 @@
 
 import { Input } from '@/components/ui/input';
 import { MarkdownEditor } from './MarkdownEditor';
+import { cn } from '@/lib/utils';
 import type { NodeSchema, FieldConfig } from '@/lib/node-schemas';
 
 interface NodeEditorFormProps {
@@ -40,6 +41,7 @@ export function NodeEditorForm({ schema, data, onChange, errors = {} }: NodeEdit
             <label className="block text-sm font-medium text-foreground">
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
+              {field.readOnly && <span className="text-muted-foreground ml-1">(read-only)</span>}
             </label>
             <Input
               type="text"
@@ -47,9 +49,13 @@ export function NodeEditorForm({ schema, data, onChange, errors = {} }: NodeEdit
               onChange={(e) => handleFieldChange(field.name, e.target.value)}
               placeholder={field.placeholder}
               error={!!error}
-              className={error ? 'border-red-500' : ''}
+              disabled={field.readOnly}
+              className={cn(
+                error ? 'border-red-500' : '',
+                field.readOnly ? 'bg-muted cursor-not-allowed opacity-70' : ''
+              )}
             />
-            {field.helperText && !error && (
+            {field.helperText && !error && !field.readOnly && (
               <p className="text-xs text-muted-foreground">{field.helperText}</p>
             )}
             {error && <p className="text-xs text-red-500">{error}</p>}

@@ -226,7 +226,7 @@ export async function PATCH(
         node: {
           id: updatedNode.id,
           label: nodeLabels[0] || 'Unknown',
-          ...updatedNode,
+          properties: { ...updatedNode },
         },
         syncStatus,
       };
@@ -341,7 +341,7 @@ export async function GET(
         node: {
           id: node.id,
           label: nodeLabels[0] || 'Unknown',
-          ...node,
+          properties: { ...node },
         },
       };
 

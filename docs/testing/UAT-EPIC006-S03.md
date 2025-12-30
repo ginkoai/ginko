@@ -180,8 +180,8 @@
 | BUG-004 | LOW | Sprint 3 not synced to graph | Current sprint (e006_s03) doesn't exist in graph, only tasks from previous sync | Open |
 | BUG-005 | LOW | Active sprint mismatch | Active sprint shows e006_s02 but current sprint file is Sprint 3 | Open |
 | BUG-006 | HIGH | Task edit modal not pre-populating data | Open Task edit modal, fields are empty instead of showing existing values. Root cause: schema expects `task_id` but graph stores `id` | **FIXED** |
-| BUG-007 | HIGH | "Node Not Found" when clicking Tasks | Click task in CategoryView, shows error. Race condition: useEffect cleared node set by handleViewDetails | **FIXED** |
-| BUG-008 | MEDIUM | Title field not visible in Task edit modal | Title field not rendering in form despite data existing | Open |
+| BUG-007 | HIGH | "Node Not Found" when clicking Tasks | Click task in CategoryView, shows error. Race condition: useEffect cleared node set by handleViewDetails | **FIXED** ✓ |
+| BUG-008 | MEDIUM | Title field not visible in Task edit modal | Title field not rendering in form despite data existing. Root cause: API returned properties flat on node object instead of in `node.properties` | **FIXED** |
 | BUG-009 | LOW | Some tasks missing descriptions | e006_s03 tasks have null descriptions - data quality issue from sync | Open |
 
 ---
@@ -192,7 +192,7 @@
 |----|----------|-------------|-----------|
 | ENH-001 | LOW | Add /graph/stats endpoint | Would be useful for dashboard metrics |
 | ENH-002 | MEDIUM | Re-enable semantic search | Requires Voyage AI embedding service configuration |
-| ENH-003 | MEDIUM | Make Task ID field read-only | Task IDs follow ADR-052 naming convention; editing breaks semantic naming and relationships |
+| ENH-003 | MEDIUM | Make Task ID field read-only | Task IDs follow ADR-052 naming convention; editing breaks semantic naming and relationships | **DONE** |
 | ENH-004 | MEDIUM | Make Assignee a dropdown | Populate from project members instead of free-text; improves UX and data quality |
 
 ---
@@ -234,4 +234,11 @@
 - **Root Cause:** Race condition - useEffect was clearing `selectedNode` even after CategoryView passed node data directly via `handleViewDetails`. Page only loads 100 nodes but there are 223 tasks.
 - **Fix:** Added `!selectedNode` check before clearing state
 - **File:** `dashboard/src/app/dashboard/graph/page.tsx:153`
-- **Verified:** Pending user confirmation
+- **Verified:** ✓ User confirmed
+
+### 2025-12-29: BUG-008 Fixed
+- **Issue:** Title field not populating in Task edit modal
+- **Root Cause:** API endpoints (`/nodes/:id`, `/nodes/unsynced`) returned properties flat on node object (`node.title`) instead of nested in `node.properties.title`. Frontend expected `node.properties.title`.
+- **Fix:** Updated GET and PATCH responses to wrap properties correctly: `properties: { ...node }`
+- **Files:** `dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:344`, `dashboard/src/app/api/v1/graph/nodes/unsynced/route.ts:139`
+- **Verified:** API now returns correct structure

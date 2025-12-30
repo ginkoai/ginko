@@ -135,10 +135,10 @@ export async function GET(request: NextRequest) {
         return {
           node: {
             id: node.id,
-            ...node,
+            label: nodeLabels[0] || 'Unknown',
+            properties: { ...node },
           },
           syncStatus,
-          label: nodeLabels[0] || 'Unknown',
         };
       });
 
