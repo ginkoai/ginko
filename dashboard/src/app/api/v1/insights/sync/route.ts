@@ -269,6 +269,7 @@ export async function GET(request: NextRequest) {
       const searchParams = request.nextUrl.searchParams;
       const projectId = searchParams.get('projectId');
       const limit = parseInt(searchParams.get('limit') || '1', 10);
+      const days = searchParams.get('days');
 
       // Use service role client to bypass RLS - we've already authenticated via withAuth
       const supabase = createServiceRoleClient();
@@ -288,7 +289,20 @@ export async function GET(request: NextRequest) {
         query = query.eq('project_id', projectId);
       }
 
-      const { data: runs, error } = await query;
+      const { data: allRuns, error } = await query;
+
+      // Filter by period days if specified (stored in metadata.periodDays)
+      let runs = allRuns;
+      if (days && allRuns) {
+        const targetDays = parseInt(days, 10);
+        runs = allRuns.filter((run: any) =>
+          run.metadata?.periodDays === targetDays
+        );
+        // If no matching period found, fall back to most recent run
+        if (runs.length === 0) {
+          runs = allRuns.slice(0, 1);
+        }
+      }
 
       if (error) {
         console.error('[Insights Sync] GET error:', error);
