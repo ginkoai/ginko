@@ -159,7 +159,8 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
             {/* Score Circle */}
             <div className="text-center">
               <div className="relative w-24 h-24">
-                <svg className="absolute inset-0 w-24 h-24 transform -rotate-90">
+                <svg className="w-24 h-24" viewBox="0 0 96 96">
+                  {/* Background circle */}
                   <circle
                     cx="48"
                     cy="48"
@@ -169,6 +170,7 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
                     strokeWidth="8"
                     className="text-secondary"
                   />
+                  {/* Progress arc - rotated to start from top */}
                   <circle
                     cx="48"
                     cy="48"
@@ -177,6 +179,8 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
                     stroke="currentColor"
                     strokeWidth="8"
                     strokeDasharray={`${(report.overallScore / 100) * 251.2} 251.2`}
+                    strokeDashoffset="0"
+                    transform="rotate(-90 48 48)"
                     className={clsx(
                       report.overallScore >= 90 ? 'text-green-500' :
                       report.overallScore >= 75 ? 'text-cyan-500' :
@@ -185,10 +189,18 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
                     )}
                     strokeLinecap="round"
                   />
+                  {/* Centered score text */}
+                  <text
+                    x="48"
+                    y="48"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="fill-current text-foreground font-mono font-bold"
+                    style={{ fontSize: '24px' }}
+                  >
+                    {report.overallScore}
+                  </text>
                 </svg>
-                <div className="absolute inset-0 grid place-items-center">
-                  <span className="font-mono font-bold text-2xl leading-none tabular-nums">{report.overallScore}</span>
-                </div>
               </div>
               <div className={clsx('font-mono font-medium mt-2', rating.color)}>
                 {rating.label}
