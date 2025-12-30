@@ -419,7 +419,8 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // 10. Create fresh session log for new session (ADR-033)
       spinner.text = 'Creating fresh session log...';
-      await this.initializeSessionLog(context, options);
+      const flowState = activeSynthesis?.flowState?.energy?.toLowerCase() as 'hot' | 'warm' | 'cool' | 'cold' | undefined;
+      await this.initializeSessionLog(context, options, flowState);
 
       if (!options.noLog) {
         spinner.info('Session logging enabled (use --no-log to disable)');
@@ -1546,7 +1547,7 @@ Example output structure:
   /**
    * Initialize session logging (ADR-033)
    */
-  private async initializeSessionLog(context: any, options: any): Promise<void> {
+  private async initializeSessionLog(context: any, options: any, flowState?: 'hot' | 'warm' | 'cool' | 'cold'): Promise<void> {
     // Skip if disabled
     if (options.noLog) {
       return;
@@ -1563,7 +1564,8 @@ Example output structure:
       await SessionLogManager.createSessionLog(
         sessionDir,
         userEmail,
-        context.currentBranch || 'unknown'
+        context.currentBranch || 'unknown',
+        flowState
       );
     }
   }

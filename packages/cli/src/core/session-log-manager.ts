@@ -34,11 +34,14 @@ export interface LogEntry {
   impact: LogImpact;
 }
 
+export type FlowState = 'hot' | 'warm' | 'cool' | 'cold';
+
 export interface SessionLogMetadata {
   session_id: string;
   started: string;
   user: string;
   branch: string;
+  flow_state?: FlowState;
 }
 
 export interface SessionLog {
@@ -74,15 +77,17 @@ export class SessionLogManager {
   static async createSessionLog(
     userDir: string,
     user: string,
-    branch: string
+    branch: string,
+    flowState?: FlowState
   ): Promise<void> {
     const sessionId = `session-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+    const flowStateLine = flowState ? `\nflow_state: ${flowState}` : '';
 
     const logContent = `---
 session_id: ${sessionId}
 started: ${new Date().toISOString()}
 user: ${user}
-branch: ${branch}
+branch: ${branch}${flowStateLine}
 ---
 
 # Session Log: ${sessionId}
@@ -303,7 +308,8 @@ Impact: ${entry.impact}
       session_id: metadata.session_id || '',
       started: metadata.started || '',
       user: metadata.user || '',
-      branch: metadata.branch || ''
+      branch: metadata.branch || '',
+      flow_state: metadata.flow_state as FlowState | undefined
     };
   }
 

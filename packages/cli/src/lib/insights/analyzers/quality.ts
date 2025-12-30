@@ -295,8 +295,10 @@ export class QualityAnalyzer implements InsightAnalyzer {
 
     if (data.sessions.length === 0) return insights;
 
-    // Calculate events per session (defensive logging metric)
-    const eventsPerSession = data.events.length / data.sessions.length;
+    // Calculate events per session using session-level event counts
+    // Each session tracks its own events in the Timeline section
+    const totalSessionEvents = data.sessions.reduce((sum, s) => sum + s.eventCount, 0);
+    const eventsPerSession = totalSessionEvents / data.sessions.length;
 
     // Find sessions with good logging
     const wellLoggedSessions = data.sessions.filter(s => s.eventCount >= 2);
