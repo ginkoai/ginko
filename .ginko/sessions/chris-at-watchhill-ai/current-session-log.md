@@ -1,11 +1,11 @@
 ---
-session_id: session-2025-12-22T18-42-11-545Z
-started: 2025-12-22T18:42:11.545Z
+session_id: session-2025-12-30T19-40-02-108Z
+started: 2025-12-30T19:40:02.108Z
 user: chris@watchhill.ai
 branch: main
 ---
 
-# Session Log: session-2025-12-22T18-42-11-545Z
+# Session Log: session-2025-12-30T19-40-02-108Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,12 +36,18 @@ branch: main
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 13:51 - [achievement]
-# [ACHIEVEMENT] 13:51
+### 14:59 - [fix]
+# [FIX] 14:59
 
-Completed T03 Performance Optimization: (1) Migrated CategoryView to API-level pagination removing 100-node limit, (2) Added 15 Neo4j performance indexes in new migration 011-performance-indexes.cypher including synced property, Event temporal, graph_id multi-tenant, and createdAt sorting indexes. Expected 50-100x improvement for unsynced nodes queries and 30-50x for graph filtering. Verified NodeEditorModal already lazy-loaded, React.memo from previous session.
+Fixed Insights subcomponents based on UAT feedback: (1) Cold start ratio detection now considers handoffs from previous sessions and events in sessions - sessions with events or following a handoff are warm, not cold; (2) Evidence items now include richer descriptions with timestamps, event counts, and handoff status; (3) Commit message evidence expanded from 40 to 80 chars; (4) Clarified Silent Sessions (zero events) vs Low Event Logging (avg rate below target) with distinct descriptions; (5) Added 5 new principles: ADR, Pattern Documentation, Atomic Commits, Session Handoff, ginko log - now ADR Awareness and Pattern Library insights show principles when expanded.
+
+**Files:**
+- packages/cli/src/lib/insights/data-collector.ts
+- packages/cli/src/lib/insights/analyzers/*.ts
+- dashboard/src/components/insights/PrinciplePreviewModal.tsx
 
 **Impact:** high
-**Timestamp:** 2025-12-22T18:51:53.756Z
+**Timestamp:** 2025-12-30T19:59:30.321Z
 
+Files: packages/cli/src/lib/insights/data-collector.ts, packages/cli/src/lib/insights/analyzers/*.ts, dashboard/src/components/insights/PrinciplePreviewModal.tsx
 Impact: high

@@ -166,7 +166,7 @@ export class QualityAnalyzer implements InsightAnalyzer {
     const evidence: InsightEvidence[] = data.commits.slice(0, 3).map(c => ({
       type: 'commit' as const,
       id: c.hash,
-      description: c.message.substring(0, 60),
+      description: c.message.substring(0, 80),
       timestamp: c.timestamp,
     }));
 
@@ -238,7 +238,7 @@ export class QualityAnalyzer implements InsightAnalyzer {
     const evidence: InsightEvidence[] = largeCommits.slice(0, 3).map(c => ({
       type: 'commit' as const,
       id: c.hash,
-      description: `${c.linesAdded + c.linesRemoved} lines: ${c.message.substring(0, 40)}`,
+      description: `${c.linesAdded + c.linesRemoved} lines changed: ${c.message.substring(0, 80)}${c.message.length > 80 ? '...' : ''}`,
       timestamp: c.timestamp,
     }));
 
@@ -307,7 +307,7 @@ export class QualityAnalyzer implements InsightAnalyzer {
     const evidence: InsightEvidence[] = wellLoggedSessions.slice(0, 3).map(s => ({
       type: 'session' as const,
       id: s.id,
-      description: `${s.eventCount} events logged`,
+      description: `${s.eventCount} events logged (${s.hasHandoff ? 'with' : 'no'} handoff)`,
       timestamp: s.startedAt,
     }));
 
@@ -338,20 +338,23 @@ export class QualityAnalyzer implements InsightAnalyzer {
         recommendations: ['Log decisions and gotchas, not just completions'],
       });
     } else if (eventsPerSession < THRESHOLDS.eventLoggingRate.warning) {
-      const silentSessions = data.sessions.filter(s => s.eventCount === 0);
+      // Note: This differs from "Silent sessions detected" in anti-patterns:
+      // - Silent sessions = count of sessions with ZERO events (total context loss)
+      // - Low event logging = overall events/session ratio (insufficient logging)
+      const lowEventSessions = data.sessions.filter(s => s.eventCount < 2);
       insights.push({
         category: this.category,
         severity: 'suggestion',
         title: 'Low event logging',
-        description: `${eventsPerSession.toFixed(1)} events per session. Context may be lost between sessions.`,
+        description: `${eventsPerSession.toFixed(1)} events per session on average. This differs from silent sessions (zero events) - here sessions have some events but not enough for good context preservation.`,
         metricName: 'events_per_session',
         metricValue: eventsPerSession,
         metricTarget: THRESHOLDS.eventLoggingRate.good,
         scoreImpact: -10,
-        evidence: silentSessions.slice(0, 3).map(s => ({
+        evidence: lowEventSessions.slice(0, 3).map(s => ({
           type: 'session' as const,
           id: s.id,
-          description: 'Silent session (no events)',
+          description: `Session with ${s.eventCount} event${s.eventCount === 1 ? '' : 's'} (target: 2+)`,
           timestamp: s.startedAt,
         })),
         recommendations: [

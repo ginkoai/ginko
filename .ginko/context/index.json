@@ -756,10 +756,33 @@
       "relevance": "critical",
       "created": "2025-12-22T17:52:54.054Z",
       "sessionId": "session-chris-at-watchhill-ai-1766425974011"
+    },
+    {
+      "filename": "gotcha-bug008-fixed-title-field-now-populates-in-task-edi.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-29T22:12:24.622Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767046344598"
+    },
+    {
+      "filename": "gotcha-fixed-insights-subcomponents-based-on-uat-feedback.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-30T19:59:33.088Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767124773054"
     }
   ],
-  "lastUpdated": "2025-12-22T17:52:54.055Z",
-  "totalModules": 55,
+  "lastUpdated": "2025-12-30T19:59:33.091Z",
+  "totalModules": 57,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

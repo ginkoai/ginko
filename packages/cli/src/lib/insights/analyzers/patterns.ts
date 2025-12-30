@@ -108,7 +108,7 @@ export class PatternAnalyzer implements InsightAnalyzer {
     const evidence: InsightEvidence[] = eventsWithADR.slice(0, 3).map(e => ({
       type: 'event' as const,
       id: e.id,
-      description: `Referenced ${e.adrRefs.join(', ')}`,
+      description: `Referenced ${e.adrRefs.join(', ')}: ${e.description.substring(0, 60)}`,
       timestamp: e.timestamp,
     }));
 
@@ -124,7 +124,9 @@ export class PatternAnalyzer implements InsightAnalyzer {
         metricUnit: '%',
         scoreImpact: 15,
         evidence,
-        recommendations: [],
+        recommendations: [
+          'ADR references connect daily work to architectural principles',
+        ],
       });
     } else if (adrRate >= THRESHOLDS.adrReferenceRate.good) {
       insights.push({
@@ -138,7 +140,10 @@ export class PatternAnalyzer implements InsightAnalyzer {
         metricUnit: '%',
         scoreImpact: 5,
         evidence,
-        recommendations: ['Reference relevant ADRs in commit messages'],
+        recommendations: [
+          'Reference relevant ADR decisions in commit messages and logs',
+          'Use `ginko log` with ADR references for architectural alignment',
+        ],
       });
     } else if (adrRate < THRESHOLDS.adrReferenceRate.warning) {
       insights.push({
@@ -200,7 +205,9 @@ export class PatternAnalyzer implements InsightAnalyzer {
         metricTarget: THRESHOLDS.patternUsage.excellent,
         scoreImpact: 10,
         evidence,
-        recommendations: [],
+        recommendations: [
+          'Pattern documentation enables knowledge transfer between AI sessions',
+        ],
       });
     } else if (patternCount >= THRESHOLDS.patternUsage.good) {
       insights.push({
@@ -213,7 +220,10 @@ export class PatternAnalyzer implements InsightAnalyzer {
         metricTarget: THRESHOLDS.patternUsage.good,
         scoreImpact: 5,
         evidence,
-        recommendations: ['Document successful solutions as patterns'],
+        recommendations: [
+          'Document recurring solutions as patterns in docs/patterns/',
+          'Pattern documentation enables knowledge transfer between sessions',
+        ],
       });
     } else {
       insights.push({
@@ -329,7 +339,7 @@ export class PatternAnalyzer implements InsightAnalyzer {
     const evidence: InsightEvidence[] = newPatterns.slice(0, 3).map(p => ({
       type: 'pattern' as const,
       id: p.id,
-      description: `New pattern: ${p.name}`,
+      description: `New pattern: ${p.name} (${p.confidence} confidence)`,
       timestamp: p.createdAt,
     }));
 

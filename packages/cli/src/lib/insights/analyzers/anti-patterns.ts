@@ -169,7 +169,7 @@ export class AntiPatternDetector implements InsightAnalyzer {
     const evidence: InsightEvidence[] = silentSessions.slice(0, 5).map(s => ({
       type: 'session' as const,
       id: s.id,
-      description: `Silent session (${Math.round(s.durationMinutes)}min, no events)`,
+      description: `Silent session (${Math.round(s.durationMinutes)}min duration, zero events logged)`,
       timestamp: s.startedAt,
     }));
 
@@ -227,7 +227,7 @@ export class AntiPatternDetector implements InsightAnalyzer {
     const evidence: InsightEvidence[] = silentSessions.slice(0, 3).map(s => ({
       type: 'session' as const,
       id: s.id,
-      description: `${Math.round(s.durationMinutes / 60)}h session with ${s.eventCount} events`,
+      description: `${Math.round(s.durationMinutes / 60)}h session with only ${s.eventCount} events (<1/hr)`,
       timestamp: s.startedAt,
     }));
 

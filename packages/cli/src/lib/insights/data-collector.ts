@@ -409,37 +409,75 @@ async function collectSessions(
     }
   }
 
-  return sessions.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
+  // Sort sessions chronologically
+  sessions.sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
+
+  // Post-process: If previous session had handoff, current session is warm (not cold)
+  for (let i = 1; i < sessions.length; i++) {
+    const prevSession = sessions[i - 1];
+    const currSession = sessions[i];
+
+    // If previous session had handoff and current is cold, upgrade to warm
+    if (prevSession.hasHandoff && currSession.flowState === 'cold') {
+      currSession.flowState = 'warm';
+    }
+  }
+
+  return sessions;
 }
 
 /**
  * Parse session log for metrics.
+ *
+ * Flow state detection improved to check:
+ * 1. Explicit "Hot/Warm/Cold" markers from ginko start
+ * 2. Event count (sessions with events = context preserved)
+ * 3. Handoff presence (indicates intentional context preservation)
  */
 function parseSessionLog(content: string, filename: string, timestamp: Date): SessionData {
-  // Count events (lines starting with timestamps)
-  const eventLines = content.match(/^\d{4}-\d{2}-\d{2}/gm) || [];
+  // Count events (lines starting with timestamps or [timestamp] format)
+  const eventLines = content.match(/^\d{4}-\d{2}-\d{2}|\[\d{4}-\d{2}-\d{2}/gm) || [];
+  const eventCount = eventLines.length;
 
-  // Check for handoff
+  // Check for handoff (multiple patterns)
   const hasHandoff = content.toLowerCase().includes('handoff') ||
-                     content.toLowerCase().includes('session summary');
+                     content.toLowerCase().includes('session summary') ||
+                     content.toLowerCase().includes('session complete') ||
+                     content.toLowerCase().includes('context preserved');
 
-  // Estimate flow state from content
+  // Estimate flow state from content - check multiple patterns
   let flowState: SessionData['flowState'] = 'cold';
-  if (content.includes('Hot (10/10)') || content.includes('Hot (9/10)')) {
+
+  // Check for explicit Hot markers (multiple formats)
+  if (content.includes('Hot (10/10)') ||
+      content.includes('Hot (9/10)') ||
+      content.match(/Hot\s*\|/i) ||
+      content.match(/flow.*hot/i)) {
     flowState = 'hot';
-  } else if (content.includes('Warm') || content.includes('(7/10)') || content.includes('(8/10)')) {
+  }
+  // Check for Warm markers
+  else if (content.includes('Warm') ||
+           content.includes('(7/10)') ||
+           content.includes('(8/10)') ||
+           content.match(/flow.*warm/i)) {
     flowState = 'warm';
   }
+  // If session has events, it's at least warm (context was captured)
+  else if (eventCount >= 2) {
+    flowState = 'warm';
+  }
+  // If previous session had handoff, start is warm (checked at collection time)
+  // This is handled in collectSessions by looking at hasHandoff
 
   // Estimate duration (rough: count of events * avg time between)
-  const durationMinutes = Math.max(15, eventLines.length * 10);
+  const durationMinutes = Math.max(15, eventCount * 10);
 
   return {
     id: filename.replace('.md', ''),
     startedAt: timestamp,
     durationMinutes,
     flowState,
-    eventCount: eventLines.length,
+    eventCount,
     hasHandoff,
     archiveFile: filename,
   };

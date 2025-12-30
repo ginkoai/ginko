@@ -228,7 +228,7 @@ export class EfficiencyAnalyzer implements InsightAnalyzer {
     const evidence: InsightEvidence[] = longSessions.slice(0, 3).map(s => ({
       type: 'session' as const,
       id: s.id,
-      description: `${Math.round(s.durationMinutes / 60)}h session`,
+      description: `${Math.round(s.durationMinutes / 60)}h session (${s.eventCount} events)`,
       timestamp: s.startedAt,
     }));
 
@@ -288,7 +288,7 @@ export class EfficiencyAnalyzer implements InsightAnalyzer {
       .map(s => ({
         type: 'session' as const,
         id: s.id,
-        description: 'Cold start session',
+        description: `Cold start session (${s.eventCount} events, ${s.hasHandoff ? 'had handoff' : 'no handoff'})`,
         timestamp: s.startedAt,
       }));
 

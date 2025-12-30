@@ -212,6 +212,60 @@ export function mapRecommendationToPrinciple(recommendation: string): Principle 
       relatedPatterns: ['session-archiving'],
       relatedADRs: [],
       source: 'Ginko Core'
+    },
+    'adr': {
+      id: 'PRINCIPLE-004',
+      name: 'Architecture Decision Records',
+      theory: 'ADRs (Architecture Decision Records) document important architectural decisions along with their context and consequences. Referencing ADRs in commits and logs connects daily work to architectural principles.\n\nWhen work aligns with ADRs, decisions are traceable and consistent. When ADRs are rarely referenced, teams may drift from intended architecture without realizing it.\n\nAim to reference relevant ADRs in at least 5% of logged events and commits.',
+      category: 'standard',
+      relatedPatterns: ['adr-workflow', 'documentation-as-code'],
+      relatedADRs: ['ADR-002', 'ADR-033'],
+      source: 'Michael Nygard / Thoughtworks'
+    },
+    'pattern': {
+      id: 'PRINCIPLE-005',
+      name: 'Pattern Documentation',
+      theory: 'Patterns capture proven solutions to recurring problems. A growing pattern library prevents reinventing the wheel and enables knowledge transfer between team members and AI assistants.\n\nWell-documented patterns include: the problem context, the solution approach, code examples, and when NOT to use the pattern.\n\nEach documented pattern saves future time by providing instant context for common challenges.',
+      category: 'standard',
+      relatedPatterns: ['pattern-catalog', 'knowledge-management'],
+      relatedADRs: [],
+      source: 'Gang of Four / Domain-Driven Design'
+    },
+    'recurring solutions': {
+      id: 'PRINCIPLE-005',
+      name: 'Pattern Documentation',
+      theory: 'Patterns capture proven solutions to recurring problems. A growing pattern library prevents reinventing the wheel and enables knowledge transfer between team members and AI assistants.\n\nWell-documented patterns include: the problem context, the solution approach, code examples, and when NOT to use the pattern.\n\nEach documented pattern saves future time by providing instant context for common challenges.',
+      category: 'standard',
+      relatedPatterns: ['pattern-catalog', 'knowledge-management'],
+      relatedADRs: [],
+      source: 'Gang of Four / Domain-Driven Design'
+    },
+    'commit messages': {
+      id: 'PRINCIPLE-007',
+      name: 'Atomic Commits',
+      theory: 'Atomic commits contain a single logical change with a clear message explaining WHY the change was made. Smaller commits are easier to review, revert, and understand.\n\nAim for commits under 500 lines with messages that explain intent, not just what changed. Reference related ADRs and tasks in commit messages for traceability.',
+      category: 'standard',
+      relatedPatterns: ['git-workflow'],
+      relatedADRs: [],
+      source: 'Git Best Practices'
+    },
+    'ginko log': {
+      id: 'PRINCIPLE-002',
+      name: 'Defensive Logging at Low Pressure',
+      theory: 'Log insights when context pressure is low (20-80%) rather than waiting until session end. This ensures high-quality handoffs even when called at 95%+ pressure.\n\nThe "Fresh Session Test" standard: write for an AI with ZERO context about your session.',
+      category: 'standard',
+      relatedPatterns: ['context-pressure-monitoring'],
+      relatedADRs: ['ADR-033'],
+      source: 'ADR-033'
+    },
+    'handoff': {
+      id: 'PRINCIPLE-008',
+      name: 'Session Handoff',
+      theory: 'Session handoffs preserve context between work sessions. A good handoff summarizes what was accomplished, what remains to do, and any important decisions or blockers.\n\nHandoffs enable warm starts instead of cold starts, dramatically reducing ramp-up time for the next session. Running `ginko handoff` before ending a session ensures continuity.',
+      category: 'standard',
+      relatedPatterns: ['session-management', 'context-preservation'],
+      relatedADRs: ['ADR-033'],
+      source: 'Ginko Core'
     }
   }
 
