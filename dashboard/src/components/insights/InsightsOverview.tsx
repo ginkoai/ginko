@@ -186,8 +186,8 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
                     strokeLinecap="round"
                   />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="font-mono font-bold text-2xl">{report.overallScore}</span>
+                <div className="absolute inset-0 grid place-items-center">
+                  <span className="font-mono font-bold text-2xl leading-none tabular-nums">{report.overallScore}</span>
                 </div>
               </div>
               <div className={clsx('font-mono font-medium mt-2', rating.color)}>
