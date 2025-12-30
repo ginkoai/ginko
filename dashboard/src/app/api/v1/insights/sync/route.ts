@@ -260,6 +260,8 @@ export async function POST(request: NextRequest) {
  * Optional query params:
  * - projectId: Filter by project
  * - limit: Number of runs to return (default 1)
+ *
+ * Also calculates trend scores for 1-day and 7-day periods from historical data.
  */
 export async function GET(request: NextRequest) {
   return withAuth(request, async (user: AuthenticatedUser, _supabase: any) => {
@@ -296,6 +298,19 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      // Calculate trend scores from historical data
+      if (runs && runs.length > 0) {
+        const latestRun = runs[0];
+        const trendScores = await calculateTrendScores(supabase, user.email, latestRun.project_id);
+
+        // Add trendScores to metadata
+        if (latestRun.metadata) {
+          latestRun.metadata.trendScores = trendScores;
+        } else {
+          latestRun.metadata = { trendScores };
+        }
+      }
+
       return NextResponse.json({
         runs: runs || [],
         count: runs?.length || 0,
@@ -309,4 +324,101 @@ export async function GET(request: NextRequest) {
       );
     }
   });
+}
+
+/**
+ * Calculate trend scores for different time periods.
+ * Uses historical trend data to compute 1-day, 7-day, and 30-day scores.
+ */
+async function calculateTrendScores(
+  supabase: any,
+  userId: string,
+  projectId: string
+): Promise<{
+  day1?: { score: number; previousScore?: number; trend?: 'up' | 'down' | 'stable'; periodDays: number; lastUpdated?: string };
+  day7?: { score: number; previousScore?: number; trend?: 'up' | 'down' | 'stable'; periodDays: number; lastUpdated?: string };
+  day30?: { score: number; previousScore?: number; trend?: 'up' | 'down' | 'stable'; periodDays: number; lastUpdated?: string };
+}> {
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+  // Fetch overall_score trends from the last 60 days
+  const { data: trends, error } = await supabase
+    .from('insight_trends')
+    .select('metric_value, measured_at')
+    .eq('user_id', userId)
+    .eq('project_id', projectId)
+    .eq('metric_name', 'overall_score')
+    .gte('measured_at', sixtyDaysAgo.toISOString())
+    .order('measured_at', { ascending: false });
+
+  if (error || !trends || trends.length === 0) {
+    return {};
+  }
+
+  // Helper to calculate average score for a time window
+  const calculatePeriodScore = (startDate: Date, endDate: Date): number | null => {
+    const periodTrends = trends.filter((t: any) => {
+      const date = new Date(t.measured_at);
+      return date >= startDate && date <= endDate;
+    });
+    if (periodTrends.length === 0) return null;
+    const sum = periodTrends.reduce((acc: number, t: any) => acc + t.metric_value, 0);
+    return Math.round(sum / periodTrends.length);
+  };
+
+  // Helper to determine trend direction
+  const getTrend = (current: number, previous: number | null): 'up' | 'down' | 'stable' | undefined => {
+    if (previous === null) return undefined;
+    const diff = current - previous;
+    if (diff > 2) return 'up';
+    if (diff < -2) return 'down';
+    return 'stable';
+  };
+
+  const result: any = {};
+
+  // 1-day score (last 24 hours vs previous 24 hours)
+  const day1Score = calculatePeriodScore(oneDayAgo, now);
+  const day1Previous = calculatePeriodScore(new Date(oneDayAgo.getTime() - 24 * 60 * 60 * 1000), oneDayAgo);
+  if (day1Score !== null) {
+    result.day1 = {
+      score: day1Score,
+      previousScore: day1Previous ?? undefined,
+      trend: getTrend(day1Score, day1Previous),
+      periodDays: 1,
+      lastUpdated: now.toISOString(),
+    };
+  }
+
+  // 7-day score (last 7 days vs previous 7 days)
+  const day7Score = calculatePeriodScore(sevenDaysAgo, now);
+  const day7Previous = calculatePeriodScore(new Date(sevenDaysAgo.getTime() - 7 * 24 * 60 * 60 * 1000), sevenDaysAgo);
+  if (day7Score !== null) {
+    result.day7 = {
+      score: day7Score,
+      previousScore: day7Previous ?? undefined,
+      trend: getTrend(day7Score, day7Previous),
+      periodDays: 7,
+      lastUpdated: now.toISOString(),
+    };
+  }
+
+  // 30-day score (last 30 days vs previous 30 days)
+  const day30Score = calculatePeriodScore(thirtyDaysAgo, now);
+  const day30Previous = calculatePeriodScore(sixtyDaysAgo, thirtyDaysAgo);
+  if (day30Score !== null) {
+    result.day30 = {
+      score: day30Score,
+      previousScore: day30Previous ?? undefined,
+      trend: getTrend(day30Score, day30Previous),
+      periodDays: 30,
+      lastUpdated: now.toISOString(),
+    };
+  }
+
+  return result;
 }
