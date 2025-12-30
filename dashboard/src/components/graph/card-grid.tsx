@@ -54,7 +54,7 @@ export function CardGrid({
 
   // Pagination
   const [offset, setOffset] = useState(0);
-  const limit = 24;
+  const limit = 12;
 
   // Ref for scrolling to selected card
   const selectedCardRef = useRef<HTMLDivElement>(null);

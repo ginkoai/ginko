@@ -10,7 +10,7 @@
  */
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,16 @@ import {
   DialogBody,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert } from '@/components/ui/alert';
@@ -123,10 +133,41 @@ export function NodeEditorModal({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const initialDataRef = useRef<Record<string, unknown>>({});
 
   const schema = node ? getNodeSchema(node.label as NodeLabel) : null;
   const Icon = node ? nodeIcons[node.label as NodeLabel] : null;
   const color = node ? nodeColors[node.label as NodeLabel] : 'ginko';
+
+  // Check if form has unsaved changes
+  const hasUnsavedChanges = useCallback((): boolean => {
+    const initial = initialDataRef.current;
+    const current = formData;
+
+    // Get all keys from both objects
+    const allKeys = new Set([...Object.keys(initial), ...Object.keys(current)]);
+
+    for (const key of allKeys) {
+      const initialVal = initial[key];
+      const currentVal = current[key];
+
+      // Handle arrays
+      if (Array.isArray(initialVal) && Array.isArray(currentVal)) {
+        if (JSON.stringify(initialVal) !== JSON.stringify(currentVal)) {
+          return true;
+        }
+        continue;
+      }
+
+      // Handle other values
+      if (initialVal !== currentVal) {
+        return true;
+      }
+    }
+
+    return false;
+  }, [formData]);
 
   // Reset form when node changes
   useEffect(() => {
@@ -155,8 +196,10 @@ export function NodeEditorModal({
       }
 
       setFormData(mappedProps);
+      initialDataRef.current = mappedProps;
       setErrors({});
       setSaveError(null);
+      setShowUnsavedWarning(false);
     }
   }, [node, open]);
 
@@ -222,9 +265,39 @@ export function NodeEditorModal({
     }
   }, [node, graphId, formData, handleValidate, onSave, onOpenChange]);
 
+  // Handle attempts to close the modal
+  const handleRequestClose = useCallback(() => {
+    if (hasUnsavedChanges()) {
+      setShowUnsavedWarning(true);
+    } else {
+      onOpenChange(false);
+    }
+  }, [hasUnsavedChanges, onOpenChange]);
+
   const handleCancel = useCallback(() => {
+    handleRequestClose();
+  }, [handleRequestClose]);
+
+  // Confirm discard changes
+  const handleConfirmDiscard = useCallback(() => {
+    setShowUnsavedWarning(false);
     onOpenChange(false);
   }, [onOpenChange]);
+
+  // Cancel discard and continue editing
+  const handleCancelDiscard = useCallback(() => {
+    setShowUnsavedWarning(false);
+  }, []);
+
+  // Handle dialog open change (intercept outside clicks and escape key)
+  const handleDialogOpenChange = useCallback((newOpen: boolean) => {
+    if (!newOpen) {
+      // User is trying to close - check for unsaved changes
+      handleRequestClose();
+    } else {
+      onOpenChange(newOpen);
+    }
+  }, [handleRequestClose, onOpenChange]);
 
   // Get node title for display
   const getNodeTitle = () => {
@@ -238,7 +311,8 @@ export function NodeEditorModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent size="lg" showCloseButton={!loading}>
         <DialogHeader>
           <div className="flex items-center gap-3">
@@ -306,6 +380,27 @@ export function NodeEditorModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Unsaved Changes Warning Dialog */}
+    <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>You have unsaved changes</AlertDialogTitle>
+          <AlertDialogDescription>
+            Are you sure you want to close? Your changes will be lost.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleConfirmDiscard} className="bg-secondary text-secondary-foreground hover:bg-secondary/80">
+            Discard Changes
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={handleCancelDiscard}>
+            Continue Editing
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 

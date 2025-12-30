@@ -196,7 +196,7 @@ export function CategoryView({
 
   // Pagination state - API-level pagination for scalability
   const [page, setPage] = useState(0);
-  const pageSize = 24;
+  const pageSize = 12;
   const offset = page * pageSize;
 
   // Fetch nodes with API-level pagination
@@ -467,7 +467,7 @@ export function CategoryView({
       {(response?.total || 0) > pageSize && (
         <div className="flex items-center justify-between px-6 py-3 border-t border-border">
           <p className="text-xs text-muted-foreground font-mono">
-            Showing {offset + 1}-{Math.min(offset + pageSize, response?.total || 0)} of {response?.total || 0}
+            Showing {paginatedNodes.length} of {response?.total || 0}
             {isFiltered && ` (${filteredNodes.length} matching filters)`}
           </p>
           <div className="flex items-center gap-2">
