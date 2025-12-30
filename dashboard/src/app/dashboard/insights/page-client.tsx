@@ -11,7 +11,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { InsightsOverview } from '@/components/insights/InsightsOverview'
+import { InsightsOverview, TimescalePeriod } from '@/components/insights/InsightsOverview'
 import { DashboardCoachingReport } from '@/lib/insights/types'
 import {
   ArrowPathIcon,
@@ -36,29 +36,6 @@ const SAMPLE_REPORT: DashboardCoachingReport = {
   overallScore: 78,
   previousScore: 72,
   scoreTrend: 'up',
-  trendScores: {
-    day1: {
-      score: 82,
-      previousScore: 78,
-      trend: 'up',
-      periodDays: 1,
-      lastUpdated: new Date().toISOString()
-    },
-    day7: {
-      score: 76,
-      previousScore: 74,
-      trend: 'up',
-      periodDays: 7,
-      lastUpdated: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    },
-    day30: {
-      score: 78,
-      previousScore: 72,
-      trend: 'up',
-      periodDays: 30,
-      lastUpdated: new Date().toISOString()
-    }
-  },
   categoryScores: [
     {
       category: 'efficiency',
@@ -231,26 +208,40 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [useDemo, setUseDemo] = useState(false)
+  const [selectedPeriod, setSelectedPeriod] = useState<TimescalePeriod>(30)
 
-  const loadInsights = useCallback(async () => {
+  const loadInsights = useCallback(async (period: TimescalePeriod = selectedPeriod) => {
     setLoading(true)
     setError(null)
 
     try {
       // If demo mode is enabled, show demo data immediately
       if (useDemo) {
-        setReport({ ...SAMPLE_REPORT, userId, projectId: 'ginko' })
+        // Adjust sample report for the selected period
+        const adjustedReport = {
+          ...SAMPLE_REPORT,
+          userId,
+          projectId: 'ginko',
+          period: {
+            start: new Date(Date.now() - period * 24 * 60 * 60 * 1000).toISOString(),
+            end: new Date().toISOString(),
+            days: period
+          }
+        }
+        setReport(adjustedReport)
         setLoading(false)
         return
       }
 
-      // Fetch from Supabase via API
-      const response = await fetch('/api/v1/insights/sync?limit=1')
+      // Fetch from Supabase via API with period filter
+      const response = await fetch(`/api/v1/insights/sync?limit=10&days=${period}`)
 
       if (response.ok) {
         const data = await response.json()
         if (data.runs && data.runs.length > 0) {
-          const run = data.runs[0]
+          // Find run matching the requested period, or use the closest one
+          const matchingRun = data.runs.find((r: any) => r.metadata?.periodDays === period) || data.runs[0]
+          const run = matchingRun
           // Transform from DB format to DashboardCoachingReport format
           const report: DashboardCoachingReport = {
             userId: run.user_id,
@@ -276,8 +267,7 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
               evidence: i.evidence || [],
               recommendations: i.recommendations || []
             })) || [],
-            summary: run.summary,
-            trendScores: run.metadata?.trendScores
+            summary: run.summary
           }
           setReport(report)
           setLoading(false)
@@ -292,7 +282,13 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
     } finally {
       setLoading(false)
     }
-  }, [userId, useDemo])
+  }, [userId, useDemo, selectedPeriod])
+
+  // Handle period change
+  const handlePeriodChange = useCallback((period: TimescalePeriod) => {
+    setSelectedPeriod(period)
+    loadInsights(period)
+  }, [loadInsights])
 
   useEffect(() => {
     loadInsights()
@@ -328,7 +324,13 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
       </div>
 
       {/* Main Content */}
-      <InsightsOverview report={report} loading={loading} error={error} />
+      <InsightsOverview
+        report={report}
+        loading={loading}
+        error={error}
+        selectedPeriod={selectedPeriod}
+        onPeriodChange={handlePeriodChange}
+      />
     </div>
   )
 }

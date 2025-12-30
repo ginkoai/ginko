@@ -20,50 +20,63 @@ import { InsightCategoryTabs, CategoryScoreCard } from './InsightCategoryTabs'
 import {
   DashboardCoachingReport,
   InsightCategory,
-  TrendScore,
   getScoreRating,
   getScoreBarColor,
   getTrendIcon,
   getTrendColor
 } from '@/lib/insights/types'
 
+export type TimescalePeriod = 1 | 7 | 30
+
 interface InsightsOverviewProps {
   report: DashboardCoachingReport | null
   loading?: boolean
   error?: string | null
+  selectedPeriod: TimescalePeriod
+  onPeriodChange: (period: TimescalePeriod) => void
 }
 
+const TIMESCALE_OPTIONS: { value: TimescalePeriod; label: string }[] = [
+  { value: 1, label: '1 Day' },
+  { value: 7, label: '7 Days' },
+  { value: 30, label: '30 Days' },
+]
+
 /**
- * Compact trend score display for 1-day and 7-day scores.
+ * Timescale selector component for switching between 1-day, 7-day, and 30-day views.
  */
-function TrendScoreCard({ label, trendScore }: { label: string; trendScore?: TrendScore }) {
-  if (!trendScore) return null
-
-  const rating = getScoreRating(trendScore.score)
-  const trendIcon = getTrendIcon(trendScore.trend)
-  const trendColor = getTrendColor(trendScore.trend)
-
+function TimescaleSelector({
+  selected,
+  onChange,
+  disabled
+}: {
+  selected: TimescalePeriod
+  onChange: (period: TimescalePeriod) => void
+  disabled?: boolean
+}) {
   return (
-    <div className="flex flex-col items-center p-2 rounded-lg bg-secondary/30 border border-border/50 min-w-[72px]">
-      <span className="text-xs text-muted-foreground font-mono">{label}</span>
-      <div className="flex items-center gap-1 mt-1">
-        <span className={clsx('font-mono font-bold text-lg', rating.color)}>
-          {trendScore.score}
-        </span>
-        {trendScore.trend && (
-          <span className={clsx('text-sm', trendColor)}>{trendIcon}</span>
-        )}
-      </div>
-      {trendScore.previousScore !== undefined && trendScore.trend && (
-        <span className="text-xs text-muted-foreground">
-          from {trendScore.previousScore}
-        </span>
-      )}
+    <div className="flex items-center gap-1 bg-secondary/50 rounded-lg p-1">
+      {TIMESCALE_OPTIONS.map((option) => (
+        <button
+          key={option.value}
+          onClick={() => onChange(option.value)}
+          disabled={disabled}
+          className={clsx(
+            'px-3 py-1.5 rounded-md text-sm font-mono transition-all',
+            selected === option.value
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+            disabled && 'opacity-50 cursor-not-allowed'
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
     </div>
   )
 }
 
-export function InsightsOverview({ report, loading, error }: InsightsOverviewProps) {
+export function InsightsOverview({ report, loading, error, selectedPeriod, onPeriodChange }: InsightsOverviewProps) {
   const [activeCategory, setActiveCategory] = useState<InsightCategory | 'all'>('all')
 
   if (loading) {
@@ -129,9 +142,16 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
                 Analysis period: {report.period.days} days ({new Date(report.period.start).toLocaleDateString()} - {new Date(report.period.end).toLocaleDateString()})
               </CardDescription>
             </div>
-            <Badge className="bg-secondary text-muted-foreground">
-              Last analyzed: {new Date(report.runAt).toLocaleString()}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <TimescaleSelector
+                selected={selectedPeriod}
+                onChange={onPeriodChange}
+                disabled={loading}
+              />
+              <Badge className="bg-secondary text-muted-foreground">
+                Last analyzed: {new Date(report.runAt).toLocaleString()}
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -176,13 +196,6 @@ export function InsightsOverview({ report, loading, error }: InsightsOverviewPro
               {report.scoreTrend && (
                 <div className={clsx('text-sm', trendColor)}>
                   {trendIcon} {report.previousScore && `from ${report.previousScore}`}
-                </div>
-              )}
-              {/* Trend Scores: 1-day and 7-day */}
-              {report.trendScores && (report.trendScores.day1 || report.trendScores.day7) && (
-                <div className="flex gap-2 mt-3">
-                  <TrendScoreCard label="1 day" trendScore={report.trendScores.day1} />
-                  <TrendScoreCard label="7 day" trendScore={report.trendScores.day7} />
                 </div>
               )}
             </div>
