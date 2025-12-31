@@ -135,8 +135,16 @@ export async function PATCH(
       const updateProps: Record<string, any> = body.properties
         ? { ...body.properties }
         : { ...body };
-      // Remove graphId from updateProps if present (it's a query param, not a node property)
-      delete updateProps.graphId;
+
+      // Remove system-managed fields that shouldn't be client-editable
+      // These are either query params or auto-managed by the API
+      const systemFields = [
+        'graphId', 'graph_id', 'id',           // Identity fields
+        'editedAt', 'editedBy', 'updatedAt', 'createdAt',  // Timestamp fields (managed by API)
+        'syncedAt', 'synced', 'contentHash', 'gitHash',    // Sync tracking fields
+      ];
+      systemFields.forEach(field => delete updateProps[field]);
+
       const now = new Date().toISOString();
 
       const result = await session.executeWrite(async (tx) => {

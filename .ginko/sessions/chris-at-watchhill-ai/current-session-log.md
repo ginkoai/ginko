@@ -1,12 +1,12 @@
 ---
-session_id: session-2025-12-30T21-36-33-070Z
-started: 2025-12-30T21:36:33.070Z
+session_id: session-2025-12-30T22-55-51-280Z
+started: 2025-12-30T22:55:51.280Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2025-12-30T21-36-33-070Z
+# Session Log: session-2025-12-30T22-55-51-280Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,19 +37,30 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 17:53 - [fix]
-# [FIX] 17:53
+### 11:25 - [fix]
+# [FIX] 11:25
 
-Fixed insights period filtering. Root cause: date parsing in collectSessions was broken - regex replaced ALL hyphens with colons, making Invalid Date for all archive files. Solution: targeted regex that only converts time portion (T15-22-55-104Z → T15:22:55.104Z). Sessions now properly filter by 1/7/30 day periods. All insights re-synced to dashboard.
+Fixed B12 critical blocker: NodeEditorModal was sending graphId in request body but API expects it as query parameter. Changed fetch URL from /api/v1/graph/nodes/{id} to /api/v1/graph/nodes/{id}?graphId={graphId}. Also wrapped formData in 'properties' key to match API expectation.
 
 **Files:**
-- .ginko/context/index.json
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/components/graph/NodeEditorModal.tsx:241
 
 **Impact:** high
-**Timestamp:** 2025-12-30T22:53:59.390Z
+**Timestamp:** 2025-12-31T16:25:00.088Z
 
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Files: dashboard/src/components/graph/NodeEditorModal.tsx:241
+Impact: high
+
+### 13:36 - [fix]
+# [FIX] 13:36
+
+Fixed B20: timeZoneOffsetSeconds error when saving nodes. Root cause: Neo4j DateTime objects from loaded nodes were being sent back in form data. Solution: Filter out system-managed fields (editedAt, updatedAt, createdAt, syncedAt, synced, contentHash, gitHash, id, graphId) before building the Cypher SET clause. These fields are auto-managed by the API.
+
+**Files:**
+- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:139-146
+
+**Impact:** high
+**Timestamp:** 2025-12-31T18:36:52.997Z
+
+Files: dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:139-146
 Impact: high

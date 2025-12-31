@@ -238,15 +238,14 @@ export function NodeEditorModal({
 
     try {
       const token = await getAuthToken();
-      const response = await fetch(`/api/v1/graph/nodes/${node.id}`, {
+      const response = await fetch(`/api/v1/graph/nodes/${node.id}?graphId=${encodeURIComponent(graphId)}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          graphId,
-          updates: formData,
+          properties: formData,
         }),
       });
 

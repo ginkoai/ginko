@@ -802,10 +802,35 @@
       "relevance": "critical",
       "created": "2025-12-30T22:54:02.833Z",
       "sessionId": "session-chris-at-watchhill-ai-1767135242793"
+    },
+    {
+      "filename": "gotcha-fixed-b12-critical-blocker-nodeeditormodal-was-sen.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-31T16:25:03.672Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767198303650"
+    },
+    {
+      "filename": "gotcha-fixed-b20-timezoneoffsetseconds-error-when-saving-.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api",
+        "git"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-31T18:36:57.530Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767206217467"
     }
   ],
-  "lastUpdated": "2025-12-30T22:54:02.834Z",
-  "totalModules": 59,
+  "lastUpdated": "2025-12-31T18:36:57.544Z",
+  "totalModules": 61,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
