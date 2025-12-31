@@ -25,17 +25,18 @@ export function createSyncCommand(): Command {
     .option('--dry-run', 'Preview changes without applying')
     .option('--force', 'Overwrite local files with graph versions')
     .option('--type <type>', 'Sync only specific node type (ADR, PRD, Pattern, Gotcha, Charter, Sprint)')
-    .option('--no-commit', 'Sync files but do not commit')
-    .action(async (options) => {
-      const syncOptions: SyncOptions = {
-        dryRun: options.dryRun || false,
-        force: options.force || false,
-        type: options.type as NodeType | undefined,
-        interactive: true,
-      };
+    .option('--no-commit', 'Sync files but do not commit');
 
-      await syncCommand(syncOptions);
-    });
+  sync.action(async (options: Record<string, unknown>) => {
+    const syncOptions: SyncOptions = {
+      dryRun: options.dryRun === true,
+      force: options.force === true,
+      type: options.type as NodeType | undefined,
+      interactive: true,
+    };
+
+    await syncCommand(syncOptions);
+  });
 
   return sync;
 }

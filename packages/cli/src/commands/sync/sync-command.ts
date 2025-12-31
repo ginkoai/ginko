@@ -49,6 +49,47 @@ import type {
 const API_BASE = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
 
 /**
+ * Raw API response node structure (from Neo4j)
+ */
+interface RawApiNode {
+  node: {
+    id: string;
+    label: string;
+    properties: Record<string, unknown>;
+  };
+  syncStatus: {
+    synced: boolean;
+    syncedAt: string | null;
+    editedAt: string;
+    editedBy: string;
+    contentHash: string;
+    gitHash: string | null;
+  };
+}
+
+/**
+ * Transform raw API node to UnsyncedNode
+ */
+function transformApiNode(raw: RawApiNode): UnsyncedNode {
+  const props = raw.node.properties || {};
+  return {
+    id: raw.node.id || (props.id as string) || '',
+    type: (raw.node.label || props.type || 'ADR') as UnsyncedNode['type'],
+    title: (props.title as string) || (props.name as string) || raw.node.id || 'Untitled',
+    content: (props.content as string) || (props.body as string) || '',
+    status: (props.status as string) || 'draft',
+    tags: Array.isArray(props.tags) ? props.tags : [],
+    synced: raw.syncStatus?.synced ?? false,
+    syncedAt: raw.syncStatus?.syncedAt || null,
+    editedAt: raw.syncStatus?.editedAt || new Date().toISOString(),
+    editedBy: raw.syncStatus?.editedBy || 'unknown',
+    contentHash: raw.syncStatus?.contentHash || '',
+    gitHash: raw.syncStatus?.gitHash || null,
+    slug: (props.slug as string) || undefined,
+  };
+}
+
+/**
  * Fetch unsynced nodes from API
  */
 async function fetchUnsyncedNodes(
@@ -74,8 +115,10 @@ async function fetchUnsyncedNodes(
     throw new Error(`Failed to fetch unsynced nodes: ${response.status} ${text}`);
   }
 
-  const data = (await response.json()) as SyncApiResponse;
-  return data.nodes || [];
+  const data = (await response.json()) as { nodes: RawApiNode[]; count: number };
+
+  // Transform raw API nodes to expected UnsyncedNode format
+  return (data.nodes || []).map(transformApiNode);
 }
 
 /**

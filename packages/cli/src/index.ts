@@ -601,10 +601,10 @@ program
 
 // Magic command - catch-all for natural language (Level 4-5)
 // This must be defined AFTER all other commands to work as a catch-all
+// NOTE: Do not add global options like --dry-run here - they will shadow subcommand options
 program
   .argument('[request]', 'Natural language request')
   .option('-v, --verbose', 'Show AI reasoning')
-  .option('--dry-run', 'Show what would be done without executing')
   .action((request, options) => {
     // If no request and no other command matched, show help
     if (!request) {

@@ -53,12 +53,15 @@ export function getFilePath(projectRoot: string, node: UnsyncedNode): string {
 /**
  * Convert title to URL-friendly slug
  */
-function slugify(text: string): string {
+function slugify(text: string | undefined | null): string {
+  if (!text) {
+    return 'untitled';
+  }
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .substring(0, 50);
+    .substring(0, 50) || 'untitled';
 }
 
 /**
