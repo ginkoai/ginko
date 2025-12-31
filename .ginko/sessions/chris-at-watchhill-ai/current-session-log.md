@@ -1,12 +1,12 @@
 ---
-session_id: session-2025-12-31T18-52-37-041Z
-started: 2025-12-31T18:52:37.041Z
+session_id: session-2025-12-31T21-44-18-426Z
+started: 2025-12-31T21:44:18.426Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2025-12-31T18-52-37-041Z
+# Session Log: session-2025-12-31T21-44-18-426Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,37 +37,20 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 14:31 - [fix]
-# [FIX] 14:31
+### 17:39 - [insight]
+# [INSIGHT] 17:39
 
-Fixed BUG-003: Duplicate task nodes. Root cause: same EPIC-005 Sprint 1 tasks synced with 3 different ID formats during development (e005_s01_t04, adhoc_251209_s01_t04, task_4_1765310251941). Added DELETE handler to /api/v1/graph/nodes/[id]/route.ts. Deleted 20 duplicate nodes. Prevention: mergeNode already in place for ID-based upsert.
+Known issue: Score ring SVG gradient direction not following arc correctly - linear gradient on circular stroke behaves unexpectedly with transform rotation. Progress bar gradients working correctly. Will revisit later.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
-- docs/testing/UAT-EPIC006-S03.md
-
-**Impact:** medium
-**Timestamp:** 2025-12-31T19:31:59.266Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts, docs/testing/UAT-EPIC006-S03.md
-Impact: medium
-
-### 15:13 - [fix]
-# [FIX] 15:13
-
-Fixed BUG-004 & BUG-005: Synced Sprint 3 to graph. Active sprint now correctly shows e006_s03 with 50% progress. Also cleaned up 7 stale tasks (t12-t18) from old sprint definition.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
-- docs/testing/UAT-EPIC006-S03.md
+- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+- dashboard/src/components/insights/InsightCategoryTabs.tsx
+- dashboard/src/components/insights/InsightsOverview.tsx
 
 **Impact:** low
-**Timestamp:** 2025-12-31T20:13:43.612Z
+**Timestamp:** 2025-12-31T22:39:08.055Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts, docs/testing/UAT-EPIC006-S03.md
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/components/insights/InsightCategoryTabs.tsx, dashboard/src/components/insights/InsightsOverview.tsx
 Impact: low
