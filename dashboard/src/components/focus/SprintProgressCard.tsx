@@ -247,12 +247,12 @@ export function SprintProgressCard({ graphId }: SprintProgressCardProps) {
               className={clsx(
                 'h-3 rounded-full transition-all duration-300',
                 stats.progressPercentage >= 100
-                  ? 'bg-green-600'
+                  ? 'bg-gradient-to-r from-[#0a2a17] to-green-400'
                   : stats.progressPercentage >= 75
-                  ? 'bg-blue-600'
+                  ? 'bg-gradient-to-r from-[#03271e] to-emerald-400'
                   : stats.progressPercentage >= 50
-                  ? 'bg-yellow-500'
-                  : 'bg-amber-500'
+                  ? 'bg-gradient-to-r from-[#513104] to-yellow-300'
+                  : 'bg-gradient-to-r from-[#4d1a09] to-orange-400'
               )}
               style={{ width: `${Math.min(stats.progressPercentage, 100)}%` }}
             />

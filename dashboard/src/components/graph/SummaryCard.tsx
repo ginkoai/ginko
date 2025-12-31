@@ -76,26 +76,26 @@ const nodeColors: Record<NodeLabel, { bg: string; text: string; border: string }
   Commit: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' },
 };
 
-// Status colors for the preview bar
+// Status colors for the preview bar (dark-to-light gradients)
 const statusColors: Record<string, string> = {
   // Task/Sprint statuses
-  complete: 'bg-emerald-500',
-  in_progress: 'bg-ginko-500',
-  paused: 'bg-amber-500',
-  todo: 'bg-slate-600',
+  complete: 'bg-gradient-to-r from-[#03271e] to-emerald-400',
+  in_progress: 'bg-gradient-to-r from-[#1a3a1a] to-ginko-400',
+  paused: 'bg-gradient-to-r from-[#513104] to-amber-400',
+  todo: 'bg-gradient-to-r from-slate-800 to-slate-500',
   // ADR statuses
-  accepted: 'bg-emerald-500',
-  proposed: 'bg-blue-500',
-  deprecated: 'bg-red-500',
-  superseded: 'bg-orange-500',
+  accepted: 'bg-gradient-to-r from-[#03271e] to-emerald-400',
+  proposed: 'bg-gradient-to-r from-blue-900 to-blue-400',
+  deprecated: 'bg-gradient-to-r from-[#400f0f] to-red-400',
+  superseded: 'bg-gradient-to-r from-[#4d1a09] to-orange-400',
   // Generic
-  active: 'bg-ginko-500',
-  planning: 'bg-blue-500',
+  active: 'bg-gradient-to-r from-[#1a3a1a] to-ginko-400',
+  planning: 'bg-gradient-to-r from-blue-900 to-blue-400',
   // Severity/confidence for patterns/gotchas
-  high: 'bg-emerald-500',
-  medium: 'bg-amber-500',
-  low: 'bg-slate-600',
-  critical: 'bg-red-500',
+  high: 'bg-gradient-to-r from-[#03271e] to-emerald-400',
+  medium: 'bg-gradient-to-r from-[#513104] to-amber-400',
+  low: 'bg-gradient-to-r from-slate-800 to-slate-500',
+  critical: 'bg-gradient-to-r from-[#400f0f] to-red-400',
 };
 
 // Display names for node types

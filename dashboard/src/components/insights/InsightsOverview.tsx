@@ -160,6 +160,29 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
             <div className="text-center">
               <div className="relative w-24 h-24">
                 <svg className="w-24 h-24" viewBox="0 0 96 96">
+                  {/* Gradient definitions - dark at arc start (top), light toward arc end */}
+                  <defs>
+                    <linearGradient id="scoreGradientGreen" gradientUnits="userSpaceOnUse" x1="48" y1="8" x2="48" y2="88">
+                      <stop offset="0%" stopColor="#4ade80" />
+                      <stop offset="100%" stopColor="#0a2a17" />
+                    </linearGradient>
+                    <linearGradient id="scoreGradientEmerald" gradientUnits="userSpaceOnUse" x1="48" y1="8" x2="48" y2="88">
+                      <stop offset="0%" stopColor="#34d399" />
+                      <stop offset="100%" stopColor="#03271e" />
+                    </linearGradient>
+                    <linearGradient id="scoreGradientYellow" gradientUnits="userSpaceOnUse" x1="48" y1="8" x2="48" y2="88">
+                      <stop offset="0%" stopColor="#fde047" />
+                      <stop offset="100%" stopColor="#513104" />
+                    </linearGradient>
+                    <linearGradient id="scoreGradientOrange" gradientUnits="userSpaceOnUse" x1="48" y1="8" x2="48" y2="88">
+                      <stop offset="0%" stopColor="#fb923c" />
+                      <stop offset="100%" stopColor="#4d1a09" />
+                    </linearGradient>
+                    <linearGradient id="scoreGradientRed" gradientUnits="userSpaceOnUse" x1="48" y1="8" x2="48" y2="88">
+                      <stop offset="0%" stopColor="#f87171" />
+                      <stop offset="100%" stopColor="#400f0f" />
+                    </linearGradient>
+                  </defs>
                   {/* Background circle */}
                   <circle
                     cx="48"
@@ -176,17 +199,16 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
                     cy="48"
                     r="40"
                     fill="none"
-                    stroke="currentColor"
+                    stroke={
+                      report.overallScore >= 90 ? 'url(#scoreGradientGreen)' :
+                      report.overallScore >= 75 ? 'url(#scoreGradientEmerald)' :
+                      report.overallScore >= 60 ? 'url(#scoreGradientYellow)' :
+                      report.overallScore >= 40 ? 'url(#scoreGradientOrange)' : 'url(#scoreGradientRed)'
+                    }
                     strokeWidth="8"
                     strokeDasharray={`${(report.overallScore / 100) * 251.2} 251.2`}
                     strokeDashoffset="0"
                     transform="rotate(-90 48 48)"
-                    className={clsx(
-                      report.overallScore >= 90 ? 'text-green-500' :
-                      report.overallScore >= 75 ? 'text-cyan-500' :
-                      report.overallScore >= 60 ? 'text-yellow-500' :
-                      report.overallScore >= 40 ? 'text-orange-500' : 'text-red-500'
-                    )}
                     strokeLinecap="round"
                   />
                   {/* Centered score text */}

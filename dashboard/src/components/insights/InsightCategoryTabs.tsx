@@ -102,14 +102,14 @@ const CATEGORY_BAR_COLORS: Record<InsightCategory, string> = {
   'anti-patterns': 'bg-yellow-500'
 }
 
-// Get bar color based on score AND category
+// Get bar color based on score - dark-to-light gradient (50% darker dark end)
 function getCategoryBarColor(category: InsightCategory, score: number): string {
-  // For quality and efficiency, use score-based coloring
-  if (score >= 90) return 'bg-green-500';
-  if (score >= 75) return 'bg-emerald-500'; // More visible than cyan
-  if (score >= 60) return 'bg-yellow-500';
-  if (score >= 40) return 'bg-orange-500';
-  return 'bg-red-500';
+  // Score-based gradient coloring (dark to light, left to right)
+  if (score >= 90) return 'bg-gradient-to-r from-[#0a2a17] to-green-400';
+  if (score >= 75) return 'bg-gradient-to-r from-[#03271e] to-emerald-400';
+  if (score >= 60) return 'bg-gradient-to-r from-[#513104] to-yellow-300';
+  if (score >= 40) return 'bg-gradient-to-r from-[#4d1a09] to-orange-400';
+  return 'bg-gradient-to-r from-[#400f0f] to-red-400';
 }
 
 export function CategoryScoreCard({ categoryScore, onClick, isActive }: CategoryScoreCardProps) {
