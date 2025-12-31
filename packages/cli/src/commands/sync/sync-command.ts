@@ -130,7 +130,8 @@ async function markNodeSynced(
   graphId: string,
   token: string
 ): Promise<void> {
-  const url = `${API_BASE}/api/v1/graph/nodes/${nodeId}/sync`;
+  // graphId must be in query params, not just body
+  const url = `${API_BASE}/api/v1/graph/nodes/${encodeURIComponent(nodeId)}/sync?graphId=${encodeURIComponent(graphId)}`;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -139,7 +140,6 @@ async function markNodeSynced(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      graphId,
       gitHash,
       syncedAt: new Date().toISOString(),
     }),
@@ -328,7 +328,17 @@ export async function syncCommand(options: SyncOptions): Promise<SyncResult> {
     return result;
   }
 
-  const projectRoot = process.cwd();
+  // Get git root directory (not cwd, which might be a subdirectory)
+  let projectRoot = process.cwd();
+  try {
+    const { simpleGit } = await import('simple-git');
+    const git = simpleGit(process.cwd());
+    projectRoot = await git.revparse(['--show-toplevel']);
+    projectRoot = projectRoot.trim();
+  } catch {
+    // Fall back to cwd if not in a git repo
+    console.warn(chalk.dim('⚠️  Not in a git repository, using current directory.'));
+  }
 
   // Handle Sprint type separately (different sync mechanism)
   if (options.type === 'Sprint') {

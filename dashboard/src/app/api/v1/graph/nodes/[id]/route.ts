@@ -433,10 +433,13 @@ export async function DELETE(
     const session = getSession();
     try {
       const result = await session.executeWrite(async (tx) => {
-        // First check if node exists
+        // First check if node exists - try both by property and by CONTAINS relationship
+        // Some orphan nodes only have CONTAINS relationship, not graphId property
         const checkResult = await tx.run(
           `MATCH (n {id: $id})
-           WHERE n.graph_id = $graphId OR n.graphId = $graphId
+           WHERE n.graph_id = $graphId
+              OR n.graphId = $graphId
+              OR EXISTS { MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(n) }
            RETURN n`,
           { id: nodeId, graphId }
         );
@@ -445,10 +448,12 @@ export async function DELETE(
           return { deleted: false, notFound: true };
         }
 
-        // Delete node and all its relationships
+        // Delete node and all its relationships - use same pattern
         await tx.run(
           `MATCH (n {id: $id})
-           WHERE n.graph_id = $graphId OR n.graphId = $graphId
+           WHERE n.graph_id = $graphId
+              OR n.graphId = $graphId
+              OR EXISTS { MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(n) }
            DETACH DELETE n`,
           { id: nodeId, graphId }
         );

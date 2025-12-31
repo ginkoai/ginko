@@ -110,9 +110,12 @@ export async function POST(
     try {
       const result = await session.executeWrite(async (tx) => {
         // Update node with sync status
+        // Support both graphId property and CONTAINS relationship (for consistency with other endpoints)
         const updateResult = await tx.run(
           `MATCH (n {id: $id})
-           WHERE n.graph_id = $graphId OR n.graphId = $graphId
+           WHERE n.graph_id = $graphId
+              OR n.graphId = $graphId
+              OR EXISTS { MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(n) }
            SET n.synced = true,
                n.syncedAt = datetime($syncedAt),
                n.gitHash = $gitHash,
