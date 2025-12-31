@@ -176,9 +176,9 @@
 |----|----------|-------------|-------------------|--------|
 | BUG-001 | HIGH | Unsynced nodes endpoint fails with Neo4j type error | GET /graph/nodes/unsynced returns "Invalid input. '100.0' is not a valid value. Must be a non-negative integer." - JavaScript number passed to Neo4j LIMIT without integer conversion | **FIXED** |
 | BUG-002 | MEDIUM | Semantic search unavailable | POST /graph/query returns "Embedding service not configured" - semantic search doesn't work | Open |
-| BUG-003 | MEDIUM | Duplicate task nodes in graph | Tasks e006_s03_t12-t18 each appear 4 times - data duplication issue | Open |
-| BUG-004 | LOW | Sprint 3 not synced to graph | Current sprint (e006_s03) doesn't exist in graph, only tasks from previous sync | Open |
-| BUG-005 | LOW | Active sprint mismatch | Active sprint shows e006_s02 but current sprint file is Sprint 3 | Open |
+| BUG-003 | MEDIUM | Duplicate task nodes in graph | Tasks e006_s03_t12-t18 each appear 4 times - data duplication issue | **FIXED** |
+| BUG-004 | LOW | Sprint 3 not synced to graph | Current sprint (e006_s03) doesn't exist in graph, only tasks from previous sync | **FIXED** |
+| BUG-005 | LOW | Active sprint mismatch | Active sprint shows e006_s02 but current sprint file is Sprint 3 | **FIXED** |
 | BUG-006 | HIGH | Task edit modal not pre-populating data | Open Task edit modal, fields are empty instead of showing existing values. Root cause: schema expects `task_id` but graph stores `id` | **FIXED** |
 | BUG-007 | HIGH | "Node Not Found" when clicking Tasks | Click task in CategoryView, shows error. Race condition: useEffect cleared node set by handleViewDetails | **FIXED** ✓ |
 | BUG-008 | MEDIUM | Title field not visible in Task edit modal | Title field not rendering in form despite data existing. Root cause: API returned properties flat on node object instead of in `node.properties` | **FIXED** |
@@ -242,3 +242,24 @@
 - **Fix:** Updated GET and PATCH responses to wrap properties correctly: `properties: { ...node }`
 - **Files:** `dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:344`, `dashboard/src/app/api/v1/graph/nodes/unsynced/route.ts:139`
 - **Verified:** API now returns correct structure
+
+### 2025-12-31: BUG-003 Fixed
+- **Issue:** Duplicate task nodes in graph (10 EPIC-005 Sprint 1 tasks each appearing 3 times)
+- **Root Cause:** Same sprint synced multiple times with different ID generation strategies:
+  - `e005_s01_t04` (proper ADR-052 format) ✓ Keep
+  - `adhoc_251209_s01_t04` (ad-hoc format duplicate) ❌ Delete
+  - `task_4_1765310251941` (old timestamp format) ❌ Delete
+- **Fix:**
+  1. Added DELETE handler to `/api/v1/graph/nodes/[id]/route.ts` (was returning 405)
+  2. Deleted 20 duplicate nodes (10 adhoc_251209_* + 10 task_*_1765310251*)
+- **Files:** `dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:375-491`
+- **Verified:** Task count 115 → 95, 0 remaining duplicates
+
+### 2025-12-31: BUG-004 & BUG-005 Fixed
+- **Issue:** Sprint 3 not synced to graph; active sprint showing e006_s02 instead of e006_s03
+- **Root Cause:** Current sprint had never been pushed to graph API
+- **Fix:**
+  1. Pushed CURRENT-SPRINT.md to `/api/v1/sprint/sync` endpoint
+  2. Deleted 7 stale tasks (e006_s03_t12-t18) from previous sprint definition
+- **Result:** Active sprint now e006_s03, 50% progress, 6 tasks (t01-t06), next task: t04 (UAT Testing)
+- **Verified:** `/api/v1/sprint/active` returns correct sprint

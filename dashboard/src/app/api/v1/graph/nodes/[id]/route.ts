@@ -371,3 +371,121 @@ export async function GET(
     );
   }
 }
+
+/**
+ * DELETE /api/v1/graph/nodes/:id
+ * Delete a node by ID (with DETACH to remove relationships)
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  console.log('[Nodes API] DELETE /api/v1/graph/nodes/:id called');
+
+  try {
+    // Verify Neo4j connection
+    const isConnected = await verifyConnection();
+    if (!isConnected) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'SERVICE_UNAVAILABLE',
+            message: 'Graph database is unavailable. Please try again later.',
+          },
+        },
+        { status: 503 }
+      );
+    }
+
+    // Verify authentication
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'AUTH_REQUIRED',
+            message: 'Authentication required. Include Bearer token in Authorization header.',
+          },
+        },
+        { status: 401 }
+      );
+    }
+
+    // Parse query parameters
+    const { searchParams } = new URL(request.url);
+    const graphId = searchParams.get('graphId');
+
+    if (!graphId) {
+      return NextResponse.json(
+        {
+          error: {
+            code: 'MISSING_GRAPH_ID',
+            message: 'graphId query parameter is required',
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    const nodeId = params.id;
+    console.log('[Nodes API] Deleting node:', { nodeId, graphId });
+
+    const session = getSession();
+    try {
+      const result = await session.executeWrite(async (tx) => {
+        // First check if node exists
+        const checkResult = await tx.run(
+          `MATCH (n {id: $id})
+           WHERE n.graph_id = $graphId OR n.graphId = $graphId
+           RETURN n`,
+          { id: nodeId, graphId }
+        );
+
+        if (checkResult.records.length === 0) {
+          return { deleted: false, notFound: true };
+        }
+
+        // Delete node and all its relationships
+        await tx.run(
+          `MATCH (n {id: $id})
+           WHERE n.graph_id = $graphId OR n.graphId = $graphId
+           DETACH DELETE n`,
+          { id: nodeId, graphId }
+        );
+
+        return { deleted: true, notFound: false };
+      });
+
+      if (result.notFound) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'NODE_NOT_FOUND',
+              message: `Node with id '${nodeId}' not found in graph '${graphId}'`,
+            },
+          },
+          { status: 404 }
+        );
+      }
+
+      console.log('[Nodes API] Node deleted successfully:', nodeId);
+      return NextResponse.json({
+        message: 'Node deleted successfully',
+        nodeId
+      });
+    } finally {
+      await session.close();
+    }
+  } catch (error) {
+    console.error('[Nodes API] ERROR deleting node:', error);
+    return NextResponse.json(
+      {
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: error instanceof Error ? error.message : 'Failed to delete node',
+        },
+      },
+      { status: 500 }
+    );
+  }
+}

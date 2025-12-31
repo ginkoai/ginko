@@ -1,12 +1,12 @@
 ---
-session_id: session-2025-12-30T22-55-51-280Z
-started: 2025-12-30T22:55:51.280Z
+session_id: session-2025-12-31T18-52-37-041Z
+started: 2025-12-31T18:52:37.041Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2025-12-30T22-55-51-280Z
+# Session Log: session-2025-12-31T18-52-37-041Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,30 +37,37 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 11:25 - [fix]
-# [FIX] 11:25
+### 14:31 - [fix]
+# [FIX] 14:31
 
-Fixed B12 critical blocker: NodeEditorModal was sending graphId in request body but API expects it as query parameter. Changed fetch URL from /api/v1/graph/nodes/{id} to /api/v1/graph/nodes/{id}?graphId={graphId}. Also wrapped formData in 'properties' key to match API expectation.
-
-**Files:**
-- dashboard/src/components/graph/NodeEditorModal.tsx:241
-
-**Impact:** high
-**Timestamp:** 2025-12-31T16:25:00.088Z
-
-Files: dashboard/src/components/graph/NodeEditorModal.tsx:241
-Impact: high
-
-### 13:36 - [fix]
-# [FIX] 13:36
-
-Fixed B20: timeZoneOffsetSeconds error when saving nodes. Root cause: Neo4j DateTime objects from loaded nodes were being sent back in form data. Solution: Filter out system-managed fields (editedAt, updatedAt, createdAt, syncedAt, synced, contentHash, gitHash, id, graphId) before building the Cypher SET clause. These fields are auto-managed by the API.
+Fixed BUG-003: Duplicate task nodes. Root cause: same EPIC-005 Sprint 1 tasks synced with 3 different ID formats during development (e005_s01_t04, adhoc_251209_s01_t04, task_4_1765310251941). Added DELETE handler to /api/v1/graph/nodes/[id]/route.ts. Deleted 20 duplicate nodes. Prevention: mergeNode already in place for ID-based upsert.
 
 **Files:**
-- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:139-146
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
+- docs/testing/UAT-EPIC006-S03.md
 
-**Impact:** high
-**Timestamp:** 2025-12-31T18:36:52.997Z
+**Impact:** medium
+**Timestamp:** 2025-12-31T19:31:59.266Z
 
-Files: dashboard/src/app/api/v1/graph/nodes/[id]/route.ts:139-146
-Impact: high
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts, docs/testing/UAT-EPIC006-S03.md
+Impact: medium
+
+### 15:13 - [fix]
+# [FIX] 15:13
+
+Fixed BUG-004 & BUG-005: Synced Sprint 3 to graph. Active sprint now correctly shows e006_s03 with 50% progress. Also cleaned up 7 stale tasks (t12-t18) from old sprint definition.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
+- docs/testing/UAT-EPIC006-S03.md
+
+**Impact:** low
+**Timestamp:** 2025-12-31T20:13:43.612Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts, docs/testing/UAT-EPIC006-S03.md
+Impact: low
