@@ -7,13 +7,13 @@
 
 **Duration**: 4-5 days
 **Type**: Polish sprint
-**Progress:** 50% (3/6 tasks complete)
+**Progress:** 67% (4/6 tasks complete)
 
 **Success Criteria:**
 - [x] Bidirectional sprint sync working (graph ↔ markdown)
 - [x] All edge cases handled gracefully
 - [x] Performance optimized (< 2s page loads)
-- [ ] UAT feedback incorporated
+- [x] UAT feedback incorporated
 - [ ] Documentation updated
 
 ---
@@ -95,7 +95,7 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ### TASK-4: UAT Testing Session (4h)
-**Status:** [@] In Progress
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s03_t04
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -177,6 +177,16 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 - Syncs task status checkboxes (`[ ]` -> `[x]`) and progress percentages
 - Automatically updates CURRENT-SPRINT.md
 - Files: `packages/cli/src/commands/sync/sprint-syncer.ts` (new)
+
+### 2025-12-31: UAT Testing - ginko sync command (T04)
+- Completed comprehensive UAT testing for `ginko sync` command
+- Fixed 3 critical bugs:
+  - BUG-006: DELETE/sync endpoints now use CONTAINS relationship pattern (consistency with unsynced)
+  - BUG-007: Sync command uses git root instead of cwd for file paths
+  - BUG-009: mark-as-synced API call includes graphId in query params
+- Cleaned 21 orphan/duplicate nodes from graph (24 → 2 unsynced)
+- Graph cleanup also completed earlier session data issues (duplicate ADRs, Sprints, Gotchas)
+- Files: `nodes/[id]/route.ts`, `nodes/[id]/sync/route.ts`, `sync-command.ts`
 
 ---
 
