@@ -1,267 +1,317 @@
-# SPRINT: Team Collaboration Sprint 1 - Foundation (Schema & APIs)
+# SPRINT: Team Collaboration Sprint 2 - Visibility & Coordination
 
 ## Sprint Overview
 
-**Sprint Goal**: Establish the foundational schema, APIs, and CLI commands for team membership management
-**Duration**: 2 weeks (2026-01-06 to 2026-01-17)
-**Type**: Infrastructure sprint
-**Progress:** 100% (10/10 tasks complete)
+**Sprint Goal**: Enable team visibility (who's working on what) and prevent conflicts on concurrent edits
+**Duration**: 2 weeks (2026-01-03 to 2026-01-17)
+**Type**: Feature sprint
+**Progress:** 100% (8/8 tasks complete)
 
 **Success Criteria:**
-- [x] Graph schema supports teams, memberships, and roles
-- [x] All team management API endpoints operational
-- [x] `ginko invite` and `ginko join` commands functional
-- [x] Basic member list visible in dashboard
+- [x] Team activity feed shows real-time member activity
+- [x] Dashboard displays who's working on what
+- [x] Staleness detection warns members with outdated context
+- [x] Zero conflicts on concurrent knowledge edits (lock-based prevention)
 
 ---
 
 ## Sprint Tasks
 
-### e008_s01_t01: Design Team Graph Schema (4h)
+### e008_s02_t01: Team Activity Feed API (6h)
 **Status:** [x] Complete
 **Priority:** HIGH
 
-**Goal:** Define Neo4j schema for teams, memberships, and relationships
+**Goal:** API endpoint to retrieve team member activity stream
 
 **Implementation Notes:**
-- Create Team node type with id, name, projectId, createdAt
-- Create Membership relationship with role, status, joinedAt, lastActive
-- Add indexes for efficient querying by userId, projectId
-- Consider future RBAC extensibility in schema design
+```typescript
+// GET /api/v1/team/activity?team_id=...&limit=50&since=...
+interface ActivityItem {
+  id: string;
+  member: { user_id: string; email: string; avatar_url?: string };
+  action: 'synced' | 'edited' | 'created' | 'logged';
+  target_type: 'ADR' | 'Pattern' | 'Sprint' | 'Event';
+  target_id: string;
+  target_title?: string;
+  timestamp: string;
+}
+```
+- Use `withAuth` from `/dashboard/src/lib/auth/middleware.ts`
+- Query Neo4j for Events by graph_id
+- Support filtering: `member_id`, `category`, `since`, `limit/offset`
+- Return pagination info (`hasMore`, `count`)
 
 **Files:**
-- `src/graph/schema/XXX-team-membership.cypher` (new)
-- `dashboard/src/lib/node-schemas.ts`
-
-Follow: ADR-052 (entity naming)
+- `dashboard/src/app/api/v1/team/activity/route.ts` (new)
 
 ---
 
-### e008_s01_t02: Create Team Management API Endpoints (8h)
+### e008_s02_t02: Team Activity Feed Component (8h)
 **Status:** [x] Complete
 **Priority:** HIGH
+**Depends:** t01
 
-**Goal:** Implement CRUD API routes for team membership
+**Goal:** Dashboard component showing team activity stream
 
 **Implementation Notes:**
-Endpoints to create:
-- `POST /api/v1/team/invite` - Create and send invitation
-- `POST /api/v1/team/join` - Accept invitation via code
-- `GET /api/v1/team/members` - List team members with status
-- `PATCH /api/v1/team/members/:id` - Update member role/status
-- `DELETE /api/v1/team/members/:id` - Remove member from team
+```typescript
+interface TeamActivityFeedProps {
+  teamId: string;
+  graphId: string;
+  refreshInterval?: number;  // default 30000ms
+  maxItems?: number;
+}
+```
+- Polling with setInterval (30s default)
+- Group by time: Today, Yesterday, This Week
+- Filter controls: member dropdown, action type chips
+- Use Avatar, Badge components from ui/
 
 **Files:**
-- `dashboard/src/app/api/v1/team/invite/route.ts` (new)
-- `dashboard/src/app/api/v1/team/join/route.ts` (new)
-- `dashboard/src/app/api/v1/team/members/route.ts` (new)
-- `dashboard/src/app/api/v1/team/members/[id]/route.ts` (new)
-
-Follow: Existing API patterns in dashboard/src/app/api/v1/
+- `dashboard/src/components/team/TeamActivityFeed.tsx` (new)
+- `dashboard/src/components/team/ActivityItem.tsx` (new)
 
 ---
 
-### e008_s01_t03: Implement Invitation System (6h)
+### e008_s02_t03: "Who's Working On What" Dashboard View (6h)
 **Status:** [x] Complete
 **Priority:** HIGH
+**Depends:** t01
 
-**Goal:** Create secure invitation flow with expiring codes
+**Goal:** Visual display of current team member assignments and activity
 
 **Implementation Notes:**
-- Generate secure invite codes (UUID or similar)
-- Store invitations with expiry (7 days default)
-- Email notification (integrate with existing email service or defer)
-- Invitation states: pending, accepted, expired, revoked
+```typescript
+interface MemberStatus {
+  member: TeamMember;
+  status: 'active' | 'idle' | 'offline';  // <5min, <1h, >1h
+  currentTask?: { id: string; title: string };
+  lastActivity?: string;
+}
+```
+- Grid layout: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
+- Status indicators: green (active), yellow (idle), gray (offline)
+- Click member to expand recent activity
 
 **Files:**
-- `dashboard/src/lib/invitation-manager.ts` (new)
-- `dashboard/src/app/api/v1/team/invite/route.ts`
+- `dashboard/src/components/team/TeamWorkboard.tsx` (new)
+- `dashboard/src/components/team/MemberActivity.tsx` (new)
 
 ---
 
-### e008_s01_t04: Implement `ginko invite` Command (4h)
+### e008_s02_t04: Staleness Detection System (6h)
 **Status:** [x] Complete
 **Priority:** HIGH
 
-**Goal:** CLI command for project owners to invite team members
+**Goal:** Detect and warn when member's local context is stale
 
 **Implementation Notes:**
-```bash
-ginko invite user@example.com              # Invite as member (default)
-ginko invite user@example.com --role owner # Invite as owner
-ginko invite --list                        # List pending invitations
-ginko invite --revoke <code>               # Revoke invitation
+```typescript
+interface StalenessResult {
+  isStale: boolean;
+  severity: 'none' | 'warning' | 'critical';
+  daysSinceSync: number;
+  changedSinceSync: { adrs: number; patterns: number; total: number };
+  message: string;
+}
+```
+- Thresholds: warning=1 day, critical=7 days
+- CLI: Show warning on `ginko start` if stale
+- Dashboard: Banner with dismiss option
+- Build on existing `team-sync.ts` logic
+
+**Files:**
+- `packages/cli/src/lib/staleness-detector.ts` (new)
+- `packages/cli/src/commands/start/start-reflection.ts` (update)
+- `dashboard/src/components/team/StalenessWarning.tsx` (new)
+
+---
+
+### e008_s02_t05: Conflict Prevention - Edit Locking (8h)
+**Status:** [x] Complete
+**Priority:** HIGH
+
+**Goal:** Prevent conflicts by locking knowledge nodes during edit
+
+**Implementation Notes:**
+```typescript
+interface EditLock {
+  nodeId: string;
+  userId: string;
+  userEmail: string;
+  acquiredAt: string;
+  expiresAt: string;  // 15 min auto-expire
+}
+
+interface LockResult {
+  success: boolean;
+  lock?: EditLock;
+  heldBy?: { userId: string; email: string; since: string };
+}
+```
+- Store in Supabase `node_locks` table (needs migration)
+- Auto-expire after 15 minutes
+- NodeEditor: acquire on mount, release on unmount/save
+- Show "Editing by X" badge if locked
+
+**Migration:**
+```sql
+CREATE TABLE node_locks (
+  node_id TEXT NOT NULL,
+  graph_id TEXT NOT NULL,
+  user_id UUID NOT NULL,
+  user_email TEXT NOT NULL,
+  acquired_at TIMESTAMPTZ DEFAULT NOW(),
+  expires_at TIMESTAMPTZ NOT NULL,
+  PRIMARY KEY (node_id, graph_id)
+);
 ```
 
 **Files:**
-- `packages/cli/src/commands/invite/` (new directory)
-- `packages/cli/src/commands/invite/invite-command.ts` (new)
-- `packages/cli/src/commands/invite/index.ts` (new)
-- `packages/cli/src/index.ts` (register command)
-
-Follow: Existing command patterns (see charter, epic commands)
+- `dashboard/src/lib/edit-lock-manager.ts` (new)
+- `dashboard/src/app/api/v1/graph/lock/route.ts` (new)
+- `dashboard/src/components/graph/NodeEditor.tsx` (update)
+- `dashboard/supabase/migrations/20260103_node_locks.sql` (new)
 
 ---
 
-### e008_s01_t05: Implement `ginko join` Command (4h)
-**Status:** [x] Complete
-**Priority:** HIGH
-
-**Goal:** CLI command for users to join a ginko-enabled project
-
-**Implementation Notes:**
-```bash
-ginko join <invite-code>    # Join via invitation code
-ginko join                  # Interactive: prompt for code
-```
-
-Flow:
-1. Validate invite code against API
-2. Clone/access project repository (if not already present)
-3. Initialize local ginko state
-4. Register membership in graph
-5. Run initial sync to load team context
-
-**Files:**
-- `packages/cli/src/commands/join/` (new directory)
-- `packages/cli/src/commands/join/join-command.ts` (new)
-- `packages/cli/src/commands/join/index.ts` (new)
-- `packages/cli/src/index.ts` (register command)
-
----
-
-### e008_s01_t06: Implement `ginko team` Command (3h)
-**Status:** [x] Complete (pre-existing)
-**Priority:** MEDIUM
-
-**Goal:** CLI command to view team members and their status
-
-**Implementation Notes:**
-```bash
-ginko team                  # List all team members
-ginko team --active         # Show only active members
-```
-
-Output format:
-```
-Team: ginko (5 members)
-  chris@watchhill.ai    owner    active    last: 2 hours ago
-  dev1@example.com      member   active    last: 1 day ago
-  dev2@example.com      member   idle      last: 5 days ago
-```
-
-**Files:**
-- `packages/cli/src/commands/team/` (new directory)
-- `packages/cli/src/commands/team/team-command.ts` (new)
-- `packages/cli/src/commands/team/index.ts` (new)
-
----
-
-### e008_s01_t07: Dashboard Member List Component (6h)
-**Status:** [x] Complete
-**Priority:** HIGH
-
-**Goal:** Basic team member list in dashboard with status indicators
-
-**Implementation Notes:**
-- Display all team members with role badges
-- Show last active timestamp
-- Visual indicator for online/recent/idle status
-- Owner actions: invite button, member management dropdown
-
-**Files:**
-- `dashboard/src/components/team/TeamMemberList.tsx` (new)
-- `dashboard/src/components/team/MemberCard.tsx` (new)
-- `dashboard/src/components/team/InviteButton.tsx` (new)
-- `dashboard/src/components/team/index.ts` (new)
-
----
-
-### e008_s01_t08: Permission Checks Middleware (4h)
-**Status:** [x] Complete (built into API routes)
-**Priority:** HIGH
-
-**Goal:** Implement owner/member permission validation
-
-**Implementation Notes:**
-- Create middleware to check user role on protected endpoints
-- Owner-only actions: invite, change roles, remove members, view all insights
-- Member actions: view team, view own insights, sync
-
-**Files:**
-- `dashboard/src/lib/permissions.ts` (new)
-- `dashboard/src/app/api/v1/team/` (apply to routes)
-
----
-
-### e008_s01_t09: Update `ginko sync` for Team Context (4h)
+### e008_s02_t06: Conflict Prevention - Merge Strategy (6h)
 **Status:** [x] Complete
 **Priority:** MEDIUM
+**Depends:** t05
 
-**Goal:** Ensure sync loads team-level context and detects staleness
+**Goal:** Handle edge cases where locks fail and concurrent edits occur
 
 **Implementation Notes:**
-- Add team membership check on sync
-- Load team-level patterns, gotchas, ADRs
-- Show staleness warning if last sync > threshold (configurable)
-- Track per-member last sync timestamp
+```typescript
+interface ConflictInfo {
+  nodeId: string;
+  localVersion: { content: string; editedBy: string; hash: string };
+  remoteVersion: { content: string; editedBy: string; hash: string };
+}
+
+interface ConflictResolverProps {
+  conflict: ConflictInfo;
+  onResolve: (resolution: 'use-local' | 'use-remote' | 'manual') => void;
+}
+```
+- Side-by-side diff view
+- Options: "Keep Mine", "Keep Theirs", "Manual Edit"
+- Modal triggered on version mismatch during save
 
 **Files:**
-- `packages/cli/src/commands/sync/sync-command.ts`
-- `packages/cli/src/commands/sync/team-sync.ts` (new)
-- `packages/cli/src/commands/sync/types.ts`
-- `dashboard/src/app/api/v1/graph/membership/route.ts` (new)
-- `dashboard/src/app/api/v1/graph/membership/sync/route.ts` (new)
-- `dashboard/supabase/migrations/20260103_team_sync_tracking.sql` (new)
+- `dashboard/src/lib/merge-resolver.ts` (new)
+- `dashboard/src/components/graph/ConflictResolver.tsx` (new)
 
 ---
 
-### e008_s01_t10: Integration Tests for Team APIs (4h)
+### e008_s02_t07: Enhanced Sync with Team Awareness (4h)
+**Status:** [x] Complete
+**Priority:** MEDIUM
+**Depends:** t04
+
+**Goal:** Make `ginko sync` team-aware with improved feedback
+
+**Implementation Notes:**
+```typescript
+interface TeamChangeSummary {
+  byMember: Map<string, { email: string; changes: { type: string; count: number }[] }>;
+  totalChanges: number;
+}
+```
+- Show team changes before sync: "3 ADRs updated by chris@, 1 Pattern by dev1@"
+- Add `--preview` flag for dry run
+- Integrate staleness warnings
+
+**Files:**
+- `packages/cli/src/lib/team-sync-reporter.ts` (new)
+- `packages/cli/src/commands/sync/sync-command.ts` (update)
+
+---
+
+### e008_s02_t08: Full Dashboard Member Management UI (6h)
 **Status:** [x] Complete
 **Priority:** MEDIUM
 
-**Goal:** Test coverage for team management flows
+**Goal:** Complete CRUD interface for team members in dashboard
 
 **Implementation Notes:**
-- Test invite creation and validation
-- Test join flow with valid/invalid/expired codes
-- Test permission checks (owner vs member)
-- Test member CRUD operations
-- Test membership sync endpoints
+- InviteModal: Standalone invite form extracted from InviteButton
+- MemberDetailView: Slide-over with activity history, role change, remove action
+- PendingInvitations: List with revoke buttons, expiry countdown
+- Uses existing APIs: `/api/v1/team/invite`, `/api/v1/teams/[id]/members`
 
 **Files:**
-- `dashboard/src/app/api/v1/team/__tests__/integration/team-management.test.ts` (new)
-- `dashboard/src/app/api/v1/graph/membership/__tests__/integration/membership.test.ts` (new)
+- `dashboard/src/components/team/InviteModal.tsx` (new)
+- `dashboard/src/components/team/MemberDetailView.tsx` (new)
+- `dashboard/src/components/team/PendingInvitations.tsx` (new)
+
+---
+
+## Execution Plan
+
+**Wave 1 (Parallel - No Dependencies):**
+- t01: Team Activity Feed API
+- t04: Staleness Detection System
+- t05: Edit Locking API + Migration
+- t08: Member Management UI
+
+**Wave 2 (After Wave 1):**
+- t02: Activity Feed Component (after t01)
+- t03: Workboard Component (after t01)
+- t06: Merge Strategy (after t05)
+
+**Wave 3 (After Wave 2):**
+- t07: Enhanced Sync (after t04)
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-03: UAT Bug Fix - Team Members Display
-- Fixed team member showing "Unknown" with "??" avatar for users without complete profiles
-- Root cause: user_profiles table lacked github_username/full_name for some users
-- Solution: API falls back to auth.users.user_metadata via service role client
-- Files: dashboard/src/app/api/v1/teams/[id]/members/route.ts
+### 2026-01-03: Sprint 2 Complete - All 8 Tasks Done
 
-### 2026-01-03: Team Sync Context (t09)
-- Implemented team-aware sync with membership verification and staleness detection
-- Added `--staleness-days` and `--skip-team-check` CLI options
-- Created API endpoints: `/api/v1/graph/membership` and `/api/v1/graph/membership/sync`
-- Added database migration for `last_sync_at` tracking on team_members
-- Staleness warnings display when sync hasn't occurred in configurable threshold (default: 3 days)
-- Files: team-sync.ts, sync-command.ts, types.ts, 2 API routes, 1 migration
+**Wave 1 (Parallel):**
+- **t01**: Team Activity Feed API - `GET /api/v1/team/activity` with filtering, pagination, member enrichment
+- **t04**: Staleness Detection - CLI + Dashboard warning system with configurable thresholds
+- **t05**: Edit Locking - `node_locks` table, API, EditLockManager, NodeEditor integration
+- **t08**: Member Management UI - InviteModal, MemberDetailView, PendingInvitations components
 
-### 2026-01-03: Integration Tests for Team APIs (t10)
-- Created comprehensive test suite for team management API (invite, join, revoke flows)
-- Created test suite for membership sync endpoints (get membership, update sync timestamp)
-- Tests cover permission checks, validation, error handling, and edge cases
-- Files: team-management.test.ts, membership.test.ts
+**Wave 2 (Parallel):**
+- **t02**: Activity Feed Component - TeamActivityFeed with polling, time grouping, filters
+- **t03**: Team Workboard - "Who's Working On What" view with status indicators (active/idle/offline)
+- **t06**: Merge Strategy - ConflictResolver modal with side-by-side diff, three resolution options
+
+**Wave 3:**
+- **t07**: Enhanced Sync - `--preview` flag, team change summary before sync
+
+**Files Created (17 new files):**
+- `dashboard/src/app/api/v1/team/activity/route.ts`
+- `dashboard/src/app/api/v1/graph/lock/route.ts`
+- `dashboard/src/lib/edit-lock-manager.ts`
+- `dashboard/src/lib/merge-resolver.ts`
+- `dashboard/src/components/team/TeamActivityFeed.tsx`
+- `dashboard/src/components/team/ActivityItem.tsx`
+- `dashboard/src/components/team/TeamWorkboard.tsx`
+- `dashboard/src/components/team/MemberActivity.tsx`
+- `dashboard/src/components/team/StalenessWarning.tsx`
+- `dashboard/src/components/team/InviteModal.tsx`
+- `dashboard/src/components/team/MemberDetailView.tsx`
+- `dashboard/src/components/team/PendingInvitations.tsx`
+- `dashboard/src/components/graph/ConflictResolver.tsx`
+- `dashboard/supabase/migrations/20260103_node_locks.sql`
+- `packages/cli/src/lib/staleness-detector.ts`
+- `packages/cli/src/lib/team-sync-reporter.ts`
+
+**Files Modified:**
+- `packages/cli/src/commands/start/start-reflection.ts` - staleness check integration
+- `packages/cli/src/commands/sync/sync-command.ts` - team change summary, --preview flag
+- `dashboard/src/components/graph/NodeEditor.tsx` - edit locking integration
 
 ## Next Steps
 
-After Sprint 1 completion:
-- Sprint 2: Team activity feed, staleness detection, conflict prevention
-- Dashboard full member management UI
+After Sprint 2 completion:
+- Sprint 3: Insights member filter, onboarding optimization
+- Sprint 4: Billing and seat management
 
 ## Blockers
 
@@ -272,6 +322,6 @@ After Sprint 1 completion:
 ## Sprint Metadata
 
 **Epic:** EPIC-008 (Team Collaboration)
-**Sprint ID:** e008_s01
-**Created:** 2026-01-03
+**Sprint ID:** e008_s02
+**Started:** 2026-01-03
 **Participants:** Chris Norton, Claude

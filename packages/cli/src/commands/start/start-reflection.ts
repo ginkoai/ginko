@@ -43,6 +43,8 @@ import {
   recordRun,
   getPeriodDays
 } from '../../lib/insights/scheduler.js';
+import { checkStaleness, displayStalenessWarning } from '../../lib/staleness-detector.js';
+import { getAccessToken } from '../../utils/auth-storage.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -446,6 +448,9 @@ export class StartReflectionCommand extends ReflectionCommand {
       }
 
       spinner.succeed('Session initialized with strategic context!');
+
+      // EPIC-008 Sprint 2: Check team context staleness
+      await this.checkTeamStaleness();
 
       // EPIC-004: Push real-time cursor update on session start
       try {
@@ -1567,6 +1572,38 @@ Example output structure:
         context.currentBranch || 'unknown',
         flowState
       );
+    }
+  }
+
+  /**
+   * Check team context staleness and display warning if needed (EPIC-008 Sprint 2)
+   *
+   * Runs after session initialization to alert users when team context
+   * may be outdated. Non-blocking on failure.
+   */
+  private async checkTeamStaleness(): Promise<void> {
+    try {
+      // Only check if authenticated and graph initialized
+      if (!await isAuthenticated() || !await isGraphInitialized()) {
+        return;
+      }
+
+      const graphId = await getGraphId();
+      const token = await getAccessToken();
+
+      if (!graphId || !token) {
+        return;
+      }
+
+      // Check staleness with default thresholds (1 day warning, 7 day critical)
+      const result = await checkStaleness(graphId, token);
+
+      // Display warning if stale
+      if (result.isStale) {
+        displayStalenessWarning(result);
+      }
+    } catch {
+      // Staleness check is non-critical - don't block session start
     }
   }
 

@@ -5,20 +5,21 @@
 **Sprint Goal**: Establish the foundational schema, APIs, and CLI commands for team membership management
 **Duration**: 2 weeks (2026-01-06 to 2026-01-17)
 **Type**: Infrastructure sprint
-**Progress:** 0% (0/10 tasks complete)
+**Progress:** 100% (10/10 tasks complete) ✅ CLOSED
+**Closed:** 2026-01-03
 
 **Success Criteria:**
-- [ ] Graph schema supports teams, memberships, and roles
-- [ ] All team management API endpoints operational
-- [ ] `ginko invite` and `ginko join` commands functional
-- [ ] Basic member list visible in dashboard
+- [x] Graph schema supports teams, memberships, and roles
+- [x] All team management API endpoints operational
+- [x] `ginko invite` and `ginko join` commands functional
+- [x] Basic member list visible in dashboard
 
 ---
 
 ## Sprint Tasks
 
 ### e008_s01_t01: Design Team Graph Schema (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Define Neo4j schema for teams, memberships, and relationships
@@ -38,7 +39,7 @@ Follow: ADR-052 (entity naming)
 ---
 
 ### e008_s01_t02: Create Team Management API Endpoints (8h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Implement CRUD API routes for team membership
@@ -62,7 +63,7 @@ Follow: Existing API patterns in dashboard/src/app/api/v1/
 ---
 
 ### e008_s01_t03: Implement Invitation System (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Create secure invitation flow with expiring codes
@@ -80,7 +81,7 @@ Follow: Existing API patterns in dashboard/src/app/api/v1/
 ---
 
 ### e008_s01_t04: Implement `ginko invite` Command (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** CLI command for project owners to invite team members
@@ -104,7 +105,7 @@ Follow: Existing command patterns (see charter, epic commands)
 ---
 
 ### e008_s01_t05: Implement `ginko join` Command (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** CLI command for users to join a ginko-enabled project
@@ -131,7 +132,7 @@ Flow:
 ---
 
 ### e008_s01_t06: Implement `ginko team` Command (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (pre-existing)
 **Priority:** MEDIUM
 
 **Goal:** CLI command to view team members and their status
@@ -158,7 +159,7 @@ Team: ginko (5 members)
 ---
 
 ### e008_s01_t07: Dashboard Member List Component (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Basic team member list in dashboard with status indicators
@@ -178,7 +179,7 @@ Team: ginko (5 members)
 ---
 
 ### e008_s01_t08: Permission Checks Middleware (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (built into API routes)
 **Priority:** HIGH
 
 **Goal:** Implement owner/member permission validation
@@ -195,7 +196,7 @@ Team: ginko (5 members)
 ---
 
 ### e008_s01_t09: Update `ginko sync` for Team Context (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Ensure sync loads team-level context and detects staleness
@@ -208,12 +209,16 @@ Team: ginko (5 members)
 
 **Files:**
 - `packages/cli/src/commands/sync/sync-command.ts`
-- `packages/cli/src/commands/sync/node-syncer.ts`
+- `packages/cli/src/commands/sync/team-sync.ts` (new)
+- `packages/cli/src/commands/sync/types.ts`
+- `dashboard/src/app/api/v1/graph/membership/route.ts` (new)
+- `dashboard/src/app/api/v1/graph/membership/sync/route.ts` (new)
+- `dashboard/supabase/migrations/20260103_team_sync_tracking.sql` (new)
 
 ---
 
 ### e008_s01_t10: Integration Tests for Team APIs (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Test coverage for team management flows
@@ -223,26 +228,43 @@ Team: ginko (5 members)
 - Test join flow with valid/invalid/expired codes
 - Test permission checks (owner vs member)
 - Test member CRUD operations
+- Test membership sync endpoints
 
 **Files:**
-- `packages/cli/test/integration/team-management.test.ts` (new)
-- `dashboard/src/app/api/v1/team/__tests__/` (new)
+- `dashboard/src/app/api/v1/team/__tests__/integration/team-management.test.ts` (new)
+- `dashboard/src/app/api/v1/graph/membership/__tests__/integration/membership.test.ts` (new)
 
 ---
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2026-01-03: UAT Bug Fix - Team Members Display
+- Fixed team member showing "Unknown" with "??" avatar for users without complete profiles
+- Root cause: user_profiles table lacked github_username/full_name for some users
+- Solution: API falls back to auth.users.user_metadata via service role client
+- Files: dashboard/src/app/api/v1/teams/[id]/members/route.ts
+
+### 2026-01-03: Team Sync Context (t09)
+- Implemented team-aware sync with membership verification and staleness detection
+- Added `--staleness-days` and `--skip-team-check` CLI options
+- Created API endpoints: `/api/v1/graph/membership` and `/api/v1/graph/membership/sync`
+- Added database migration for `last_sync_at` tracking on team_members
+- Staleness warnings display when sync hasn't occurred in configurable threshold (default: 3 days)
+- Files: team-sync.ts, sync-command.ts, types.ts, 2 API routes, 1 migration
+
+### 2026-01-03: Integration Tests for Team APIs (t10)
+- Created comprehensive test suite for team management API (invite, join, revoke flows)
+- Created test suite for membership sync endpoints (get membership, update sync timestamp)
+- Tests cover permission checks, validation, error handling, and edge cases
+- Files: team-management.test.ts, membership.test.ts
 
 ## Next Steps
 
-After Sprint 1 completion:
-- Sprint 2: Team activity feed, staleness detection, conflict prevention
-- Dashboard full member management UI
+Sprint 1 complete. Proceeding to Sprint 2: Team activity feed, staleness detection, conflict prevention.
 
 ## Blockers
 
-[To be updated if blockers arise]
+None - Sprint completed successfully.
 
 ---
 
@@ -251,4 +273,5 @@ After Sprint 1 completion:
 **Epic:** EPIC-008 (Team Collaboration)
 **Sprint ID:** e008_s01
 **Created:** 2026-01-03
+**Closed:** 2026-01-03
 **Participants:** Chris Norton, Claude

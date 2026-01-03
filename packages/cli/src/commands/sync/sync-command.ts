@@ -1,21 +1,23 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-12-15
- * @tags: [sync, cloud-to-local, git, ADR-054]
- * @related: [index.ts, node-syncer.ts, types.ts]
+ * @updated: 2026-01-03
+ * @tags: [sync, cloud-to-local, git, ADR-054, EPIC-008]
+ * @related: [index.ts, node-syncer.ts, types.ts, team-sync.ts, ../../lib/team-sync-reporter.ts]
  * @priority: critical
  * @complexity: high
  * @dependencies: [chalk, prompts, simple-git]
  */
 
 /**
- * Sync Command (ADR-054)
+ * Sync Command (ADR-054, EPIC-008)
  *
  * Pull dashboard edits from cloud graph to local git repository.
+ * Team-aware with enhanced feedback showing who changed what.
  *
  * Usage:
  *   ginko sync              # Sync all unsynced nodes
+ *   ginko sync --preview    # Preview team changes without syncing
  *   ginko sync --dry-run    # Preview what would be synced
  *   ginko sync --force      # Overwrite local with graph versions
  *   ginko sync --type=ADR   # Sync only specific node type
@@ -42,6 +44,11 @@ import {
   displayStalenessWarning,
   displayTeamInfo,
 } from './team-sync.js';
+import {
+  getTeamChangesSinceLast,
+  displayTeamChangeReport,
+  formatCompactSummary,
+} from '../../lib/team-sync-reporter.js';
 import type {
   SyncOptions,
   UnsyncedNode,
@@ -351,6 +358,28 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
     if (teamStatus.isMember && teamStatus.staleness.isStale) {
       displayStalenessWarning(teamStatus);
     }
+  }
+
+  // Fetch and display team changes (EPIC-008 Sprint 2)
+  let teamChangeSummary = null;
+  if (teamStatus?.isMember) {
+    const lastSyncAt = teamStatus.staleness.lastSyncAt;
+    teamChangeSummary = await getTeamChangesSinceLast(graphId, token, lastSyncAt);
+
+    if (teamChangeSummary.totalChanges > 0) {
+      displayTeamChangeReport(teamChangeSummary);
+    }
+  }
+
+  // Preview mode: show team changes and exit (EPIC-008 Sprint 2)
+  if (options.preview) {
+    if (!teamChangeSummary || teamChangeSummary.totalChanges === 0) {
+      console.log(chalk.green('✓ No pending changes from team members.'));
+    } else {
+      console.log(chalk.dim('Preview mode - no changes applied.'));
+      console.log(chalk.dim('Run `ginko sync` to apply these changes.'));
+    }
+    return result;
   }
 
   // Get git root directory (not cwd, which might be a subdirectory)

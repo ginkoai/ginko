@@ -3,6 +3,7 @@ epic_id: EPIC-008
 status: active
 created: 2026-01-03
 updated: 2026-01-03
+current_sprint: e008_s02
 adr: TBD
 ---
 
@@ -69,12 +70,21 @@ Build team collaboration features that support project onboarding, role/permissi
 
 | Sprint | Goal | Duration | Status |
 |--------|------|----------|--------|
-| Sprint 1 | Foundation (Schema & APIs) | 2 weeks | Not Started |
-| Sprint 2 | Visibility & Coordination | 2 weeks | Not Started |
+| Sprint 1 | Foundation (Schema & APIs) | 2 weeks | **Complete** |
+| Sprint 2 | Visibility & Coordination | 2 weeks | **In Progress** |
 | Sprint 3 | Insights & Polish | 1 week | Not Started |
 | Sprint 4 | Billing & Seats | 1-2 weeks | Not Started |
 
 **Estimated Total:** 6-7 weeks
+
+### Sprint 1 Accomplishments (Closed 2026-01-03)
+- Graph schema for teams, memberships, and roles
+- Team management API endpoints (invite, join, members CRUD)
+- `ginko invite` and `ginko join` CLI commands
+- Dashboard member list component with status indicators
+- Permission checks (owner/member model)
+- Team-aware sync with staleness detection
+- Integration tests for team APIs
 
 ## Technical Considerations
 
@@ -119,6 +129,11 @@ Build team collaboration features that support project onboarding, role/permissi
 ---
 
 ## Changelog
+
+### v1.1.0 - 2026-01-03
+- Sprint 1 complete (10/10 tasks)
+- Sprint 2 started: Visibility & Coordination
+- Added Sprint 1 accomplishments summary
 
 ### v1.0.0 - 2026-01-03
 - Initial epic creation

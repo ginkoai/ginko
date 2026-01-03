@@ -1,9 +1,9 @@
 /**
  * @fileType: types
  * @status: current
- * @updated: 2025-12-15
- * @tags: [sync, types, cloud-to-local, ADR-054]
- * @related: [sync-command.ts, node-syncer.ts]
+ * @updated: 2026-01-03
+ * @tags: [sync, types, cloud-to-local, ADR-054, EPIC-008]
+ * @related: [sync-command.ts, node-syncer.ts, team-sync.ts]
  * @priority: high
  * @complexity: low
  * @dependencies: []
@@ -143,4 +143,6 @@ export interface TeamSyncOptions extends SyncOptions {
   teamId?: string;
   stalenessThresholdDays?: number;
   skipMembershipCheck?: boolean;
+  /** Preview mode: show team changes without syncing (EPIC-008 Sprint 2) */
+  preview?: boolean;
 }
