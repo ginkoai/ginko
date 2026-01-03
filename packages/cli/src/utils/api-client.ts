@@ -133,8 +133,8 @@ export const api = {
   put: <T = any>(endpoint: string, body: any, requireAuth = true) =>
     apiRequest<T>(endpoint, { method: 'PUT', body, requireAuth }),
 
-  delete: <T = any>(endpoint: string, requireAuth = true) =>
-    apiRequest<T>(endpoint, { method: 'DELETE', requireAuth }),
+  delete: <T = any>(endpoint: string, body?: any, requireAuth = true) =>
+    apiRequest<T>(endpoint, { method: 'DELETE', body, requireAuth }),
 
   patch: <T = any>(endpoint: string, body: any, requireAuth = true) =>
     apiRequest<T>(endpoint, { method: 'PATCH', body, requireAuth }),

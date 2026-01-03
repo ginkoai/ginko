@@ -27,7 +27,10 @@ export type NodeLabel =
   | 'Principle'
   | 'Event'
   | 'Session'
-  | 'Commit';
+  | 'Commit'
+  | 'Team'
+  | 'Membership'
+  | 'Invitation';
 
 /** Base properties all nodes share */
 export interface BaseNodeProperties {
@@ -139,6 +142,38 @@ export interface EventNode extends BaseNodeProperties {
   files?: string[];
 }
 
+/** Team node - collaboration workspace */
+export interface TeamNode extends BaseNodeProperties {
+  name: string;
+  description?: string;
+  created_by: string;
+  member_count?: number;
+}
+
+/** Membership node - user's membership in a team */
+export interface MembershipNode extends BaseNodeProperties {
+  team_id: string;
+  user_id: string;
+  role: 'owner' | 'admin' | 'member';
+  status: 'active' | 'inactive' | 'suspended';
+  joined_at: string;
+  last_active_at?: string;
+  invited_by?: string;
+}
+
+/** Invitation node - pending team invitation */
+export interface InvitationNode extends BaseNodeProperties {
+  code: string;
+  team_id: string;
+  email: string;
+  role: 'owner' | 'admin' | 'member';
+  status: 'pending' | 'accepted' | 'expired' | 'revoked';
+  expires_at: string;
+  inviter_id: string;
+  accepted_at?: string;
+  accepted_by?: string;
+}
+
 /** Union type for all node property types */
 export type NodeProperties =
   | ProjectNode
@@ -151,7 +186,10 @@ export type NodeProperties =
   | PatternNode
   | GotchaNode
   | PrincipleNode
-  | EventNode;
+  | EventNode
+  | TeamNode
+  | MembershipNode
+  | InvitationNode;
 
 /** Generic graph node with label and properties */
 export interface GraphNode<T extends NodeProperties = NodeProperties> {
@@ -174,7 +212,10 @@ export type RelationshipType =
   | 'MENTIONS'
   | 'RELATED_TO'
   | 'PARENT_OF'
-  | 'CHILD_OF';
+  | 'CHILD_OF'
+  | 'MEMBER_OF'
+  | 'INVITES_TO'
+  | 'INVITED_BY';
 
 /** Graph relationship between nodes */
 export interface GraphRelationship {

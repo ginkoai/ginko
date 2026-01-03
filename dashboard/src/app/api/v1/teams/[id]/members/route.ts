@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-07
- * @tags: [teams, members, rest-api, task-022, authorization]
+ * @updated: 2026-01-03
+ * @tags: [teams, members, rest-api, epic-008, authorization]
  * @related: [../route.ts, [userId]/route.ts]
  * @priority: high
  * @complexity: medium
@@ -10,9 +10,10 @@
  */
 
 /**
+ * GET /api/v1/teams/[id]/members - List team members
  * POST /api/v1/teams/[id]/members - Add team member (owners only)
  *
- * TASK-022: Project Management API
+ * EPIC-008: Team Collaboration Sprint 1
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -149,6 +150,100 @@ export async function POST(
       console.error('[Team Members API] POST error:', error);
       return NextResponse.json(
         { error: 'Failed to add member', message: error.message },
+        { status: 500 }
+      );
+    }
+  });
+}
+
+/**
+ * Helper: Check if user is team member
+ */
+async function isTeamMember(
+  supabase: any,
+  teamId: string,
+  userId: string
+): Promise<{ isMember: boolean; role?: string }> {
+  const { data } = await supabase
+    .from('team_members')
+    .select('role')
+    .eq('team_id', teamId)
+    .eq('user_id', userId)
+    .single();
+
+  return { isMember: !!data, role: data?.role };
+}
+
+/**
+ * GET /api/v1/teams/[id]/members
+ * List team members (members can view, includes status)
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return withAuth(request, async (user, supabase) => {
+    try {
+      const teamId = params.id;
+
+      // Check if requester is team member
+      const { isMember } = await isTeamMember(supabase, teamId, user.id);
+      if (!isMember) {
+        return NextResponse.json(
+          { error: 'Only team members can view the member list' },
+          { status: 403 }
+        );
+      }
+
+      // Get team members with user profiles
+      const { data: members, error: memberError } = await supabase
+        .from('team_members')
+        .select(`
+          user_id,
+          role,
+          created_at,
+          invited_by,
+          user_profiles!team_members_user_id_fkey(
+            id,
+            email,
+            github_username,
+            full_name
+          )
+        `)
+        .eq('team_id', teamId)
+        .order('created_at', { ascending: true });
+
+      if (memberError) {
+        console.error('[Team Members API] List members error:', memberError);
+        return NextResponse.json(
+          { error: 'Failed to list members', message: memberError.message },
+          { status: 500 }
+        );
+      }
+
+      // Transform response
+      const formattedMembers = members?.map((m: any) => ({
+        user_id: m.user_id,
+        role: m.role,
+        joined_at: m.created_at,
+        invited_by: m.invited_by,
+        user: m.user_profiles ? {
+          id: m.user_profiles.id,
+          email: m.user_profiles.email,
+          github_username: m.user_profiles.github_username,
+          full_name: m.user_profiles.full_name,
+        } : null,
+      })) || [];
+
+      return NextResponse.json({
+        members: formattedMembers,
+        count: formattedMembers.length,
+      });
+
+    } catch (error: any) {
+      console.error('[Team Members API] GET error:', error);
+      return NextResponse.json(
+        { error: 'Failed to list members', message: error.message },
         { status: 500 }
       );
     }

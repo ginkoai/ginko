@@ -69,6 +69,8 @@ import { notificationsCommand } from './commands/notifications/index.js';
 import { insightsCommand } from './commands/insights/index.js';
 import { createSyncCommand } from './commands/sync/index.js';
 import { assignCommand } from './commands/assign.js';
+import { inviteCommand } from './commands/invite/index.js';
+import { joinCommand } from './commands/join/index.js';
 
 const program = new Command();
 
@@ -531,6 +533,10 @@ program.addCommand(projectCommand());
 
 // Team management commands (TASK-023)
 program.addCommand(teamManagementCommand());
+
+// Team collaboration commands (EPIC-008 Sprint 1)
+program.addCommand(inviteCommand());
+program.addCommand(joinCommand());
 
 // Agent management commands (EPIC-004 Sprint 1 TASK-6)
 program.addCommand(agentCommand());
