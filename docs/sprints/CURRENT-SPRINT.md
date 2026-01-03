@@ -237,6 +237,12 @@ Team: ginko (5 members)
 
 ## Accomplishments This Sprint
 
+### 2026-01-03: UAT Bug Fix - Team Members Display
+- Fixed team member showing "Unknown" with "??" avatar for users without complete profiles
+- Root cause: user_profiles table lacked github_username/full_name for some users
+- Solution: API falls back to auth.users.user_metadata via service role client
+- Files: dashboard/src/app/api/v1/teams/[id]/members/route.ts
+
 ### 2026-01-03: Team Sync Context (t09)
 - Implemented team-aware sync with membership verification and staleness detection
 - Added `--staleness-days` and `--skip-team-check` CLI options
