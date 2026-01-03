@@ -156,6 +156,13 @@ interface PrincipleNode {
 
 ## Changelog
 
+### v1.1.0 - 2026-01-03 (CLOSED)
+- Epic complete and closed
+- Published @ginkoai/cli@2.0.0-beta.2 to npm
+- All 3 sprints delivered, all success criteria met
+- Total duration: ~17 days
+- Participants: chris@watchhill.ai, Claude
+
 ### v1.0.0 - 2025-12-16
 - Initial epic creation
 - Defined 3-sprint structure
