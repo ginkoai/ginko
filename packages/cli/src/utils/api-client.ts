@@ -39,7 +39,7 @@ export async function apiRequest<T = any>(
     requireAuth = true
   } = options;
 
-  const apiUrl = process.env.GINKO_API_URL || 'https://app.ginko.ai';
+  const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
   const url = `${apiUrl}${endpoint}`;
 
   // Check authentication if required
