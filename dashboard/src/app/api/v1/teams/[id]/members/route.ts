@@ -195,21 +195,10 @@ export async function GET(
         );
       }
 
-      // Get team members with user profiles
+      // Get team members
       const { data: members, error: memberError } = await supabase
         .from('team_members')
-        .select(`
-          user_id,
-          role,
-          created_at,
-          invited_by,
-          user_profiles!team_members_user_id_fkey(
-            id,
-            email,
-            github_username,
-            full_name
-          )
-        `)
+        .select('user_id, role, created_at, invited_by')
         .eq('team_id', teamId)
         .order('created_at', { ascending: true });
 
@@ -221,19 +210,36 @@ export async function GET(
         );
       }
 
+      // Get user profiles for all members
+      const userIds = members?.map((m: any) => m.user_id) || [];
+      const { data: profiles } = userIds.length > 0
+        ? await supabase
+            .from('user_profiles')
+            .select('id, email, github_username, full_name')
+            .in('id', userIds)
+        : { data: [] };
+
+      // Create lookup map
+      const profileMap = new Map(
+        (profiles || []).map((p: any) => [p.id, p])
+      );
+
       // Transform response
-      const formattedMembers = members?.map((m: any) => ({
-        user_id: m.user_id,
-        role: m.role,
-        joined_at: m.created_at,
-        invited_by: m.invited_by,
-        user: m.user_profiles ? {
-          id: m.user_profiles.id,
-          email: m.user_profiles.email,
-          github_username: m.user_profiles.github_username,
-          full_name: m.user_profiles.full_name,
-        } : null,
-      })) || [];
+      const formattedMembers = members?.map((m: any) => {
+        const profile = profileMap.get(m.user_id);
+        return {
+          user_id: m.user_id,
+          role: m.role,
+          joined_at: m.created_at,
+          invited_by: m.invited_by,
+          user: profile ? {
+            id: profile.id,
+            email: profile.email,
+            github_username: profile.github_username,
+            full_name: profile.full_name,
+          } : null,
+        };
+      }) || [];
 
       return NextResponse.json({
         members: formattedMembers,

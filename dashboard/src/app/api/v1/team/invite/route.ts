@@ -244,16 +244,7 @@ export async function GET(request: NextRequest) {
       // Get pending invitations
       const { data: invitations, error: inviteError } = await supabase
         .from('team_invitations')
-        .select(`
-          code,
-          email,
-          role,
-          status,
-          expires_at,
-          created_at,
-          inviter_id,
-          user_profiles!team_invitations_inviter_id_fkey(email, github_username)
-        `)
+        .select('code, email, role, status, expires_at, created_at, inviter_id')
         .eq('team_id', teamId)
         .eq('status', 'pending')
         .gt('expires_at', new Date().toISOString())
@@ -267,19 +258,35 @@ export async function GET(request: NextRequest) {
         );
       }
 
+      // Get inviter profiles
+      const inviterIds = [...new Set(invitations?.map((inv: any) => inv.inviter_id) || [])];
+      const { data: profiles } = inviterIds.length > 0
+        ? await supabase
+            .from('user_profiles')
+            .select('id, email, github_username')
+            .in('id', inviterIds)
+        : { data: [] };
+
+      const profileMap = new Map(
+        (profiles || []).map((p: any) => [p.id, p])
+      );
+
       // Transform response
-      const formattedInvitations = invitations?.map((inv: any) => ({
-        code: inv.code,
-        email: inv.email,
-        role: inv.role,
-        status: inv.status,
-        expires_at: inv.expires_at,
-        created_at: inv.created_at,
-        inviter: inv.user_profiles ? {
-          email: inv.user_profiles.email,
-          github_username: inv.user_profiles.github_username,
-        } : null,
-      })) || [];
+      const formattedInvitations = invitations?.map((inv: any) => {
+        const inviter = profileMap.get(inv.inviter_id);
+        return {
+          code: inv.code,
+          email: inv.email,
+          role: inv.role,
+          status: inv.status,
+          expires_at: inv.expires_at,
+          created_at: inv.created_at,
+          inviter: inviter ? {
+            email: inviter.email,
+            github_username: inviter.github_username,
+          } : null,
+        };
+      }) || [];
 
       return NextResponse.json({
         invitations: formattedInvitations,

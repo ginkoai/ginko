@@ -21,6 +21,20 @@ import { withAuth } from '@/lib/auth/middleware';
 
 interface CreateTeamRequest {
   name: string;
+  slug?: string;
+  description?: string;
+  graph_id?: string;
+}
+
+/**
+ * Generate a URL-friendly slug from a name
+ */
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .substring(0, 100);
 }
 
 /**
@@ -40,11 +54,17 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // Generate slug if not provided
+      const slug = body.slug?.trim() || generateSlug(body.name);
+
       // Create team
       const { data: team, error: teamError } = await supabase
         .from('teams')
         .insert({
           name: body.name.trim(),
+          slug,
+          description: body.description?.trim() || null,
+          graph_id: body.graph_id || null,
           created_by: user.id,
         })
         .select()
@@ -82,6 +102,9 @@ export async function POST(request: NextRequest) {
         team: {
           id: team.id,
           name: team.name,
+          slug: team.slug,
+          description: team.description,
+          graph_id: team.graph_id,
           created_by: team.created_by,
           created_at: team.created_at,
           updated_at: team.updated_at,

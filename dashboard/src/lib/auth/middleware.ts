@@ -73,6 +73,8 @@ export async function verifyAuth(
           try {
             const isValid = await bcrypt.compare(token, profile.api_key_hash);
             if (isValid) {
+              // Return service client for API key auth (bypasses RLS)
+              // API key users are trusted and should have full access
               return {
                 user: {
                   id: profile.id,
@@ -81,7 +83,7 @@ export async function verifyAuth(
                   github_id: profile.github_id,
                   full_name: profile.full_name,
                 },
-                supabase
+                supabase: serviceClient
               };
             }
           } catch (bcryptError) {
