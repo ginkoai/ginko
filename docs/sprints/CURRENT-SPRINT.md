@@ -1,245 +1,254 @@
-# SPRINT: UX Polish Sprint 3 - Polish + UAT
+# SPRINT: Team Collaboration Sprint 1 - Foundation (Schema & APIs)
 
 ## Sprint Overview
 
-**Epic:** EPIC-006 (UX Polish and UAT)
-**Sprint Goal**: Final polish, Principle UI integration, mobile responsiveness, and User Acceptance Testing preparation.
-
-**Duration**: 4-5 days
-**Type**: Polish + Testing sprint
-**Progress:** 0% (0/6 tasks complete)
+**Sprint Goal**: Establish the foundational schema, APIs, and CLI commands for team membership management
+**Duration**: 2 weeks (2026-01-06 to 2026-01-17)
+**Type**: Infrastructure sprint
+**Progress:** 0% (0/10 tasks complete)
 
 **Success Criteria:**
-- [ ] Edit modal integrated with Node View
-- [ ] Principle nodes styled and visible in all views
-- [ ] Recommendations link to Principles
-- [ ] Mobile responsive at all breakpoints
-- [ ] UAT checklist created and executed
-- [ ] Documentation updated
+- [ ] Graph schema supports teams, memberships, and roles
+- [ ] All team management API endpoints operational
+- [ ] `ginko invite` and `ginko join` commands functional
+- [ ] Basic member list visible in dashboard
 
 ---
 
 ## Sprint Tasks
 
-### TASK-12: Edit Mode Integration (4h)
+### e008_s01_t01: Design Team Graph Schema (4h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
-**ID:** e006_s03_t12
 
-**Goal:** Add edit button to Node View that opens NodeEditor modal.
+**Goal:** Define Neo4j schema for teams, memberships, and relationships
 
-**Implementation:**
-1. Add "Edit" button to NodeView header (for editable types)
-2. Open NodeEditor in modal overlay
-3. After save, refresh node data
-4. Show "Pending Sync" indicator for unsynced nodes
-
-**Editable Types:**
-- ADR, PRD, Pattern, Gotcha, Charter (project docs)
-- Custom Principles (not Standard)
+**Implementation Notes:**
+- Create Team node type with id, name, projectId, createdAt
+- Create Membership relationship with role, status, joinedAt, lastActive
+- Add indexes for efficient querying by userId, projectId
+- Consider future RBAC extensibility in schema design
 
 **Files:**
-- `dashboard/src/components/graph/NodeView.tsx` (add edit button)
-- `dashboard/src/components/graph/NodeEditorModal.tsx` (new - modal wrapper)
+- `src/graph/schema/XXX-team-membership.cypher` (new)
+- `dashboard/src/lib/node-schemas.ts`
+
+Follow: ADR-052 (entity naming)
 
 ---
 
-### TASK-13: Principle Node UI (4h)
-**Status:** [ ] Pending
-**Priority:** MEDIUM
-**ID:** e006_s03_t13
-
-**Goal:** Add Principle nodes to all views with proper styling.
-
-**Implementation:**
-1. Add Principle to NodeCard icon/color mapping (suggest: indigo/violet)
-2. Add Principle to TreeExplorer hierarchy
-3. Add Principle Summary Card to Project View
-4. Add Principle detail view in NodeView
-5. Show "Standard" badge for read-only principles
-
-**Color Scheme:**
-```typescript
-Principle: {
-  bg: 'bg-indigo-500/10',
-  text: 'text-indigo-400',
-  border: 'border-indigo-500/30',
-  icon: BookOpen or Lightbulb
-}
-```
-
-**Files:**
-- `dashboard/src/components/graph/node-card.tsx` (add Principle colors/icon)
-- `dashboard/src/components/graph/adjacency-list.tsx` (add Principle support)
-- `dashboard/src/lib/graph/types.ts` (already updated in Sprint 1)
-
----
-
-### TASK-14: Recommendation-to-Principle Linking (3h)
-**Status:** [ ] Pending
-**Priority:** MEDIUM
-**ID:** e006_s03_t14
-
-**Goal:** Link insight recommendations to Principle nodes.
-
-**Implementation:**
-1. Store principle_id references in recommendations
-2. Update PrinciplePreviewModal to fetch from graph
-3. Add "View in Graph" link in modal
-4. Navigate to Principle in Graph section when clicked
-
-**Data Flow:**
-```
-InsightCard → Click recommendation
-  → PrinciplePreviewModal (shows theory, related)
-    → "View in Graph" button
-      → Navigate to /dashboard/graph?view=node&node=principle_id
-```
-
-**Files:**
-- `dashboard/src/lib/insights/types.ts` (add principle_id to recommendations)
-- `dashboard/src/components/insights/PrinciplePreviewModal.tsx` (update)
-- `dashboard/src/components/insights/InsightCard.tsx` (update linking)
-
----
-
-### TASK-15: Mobile Responsive Polish (3h)
-**Status:** [ ] Pending
-**Priority:** MEDIUM
-**ID:** e006_s03_t15
-
-**Goal:** Ensure all new views work on mobile/tablet.
-
-**Test Breakpoints:**
-- `sm`: 640px (mobile)
-- `md`: 768px (tablet)
-- `lg`: 1024px (desktop)
-
-**Key Adjustments:**
-1. Project View: Stack Summary Cards vertically on mobile
-2. Category View: Single column card grid on mobile
-3. Node View: Full-width on mobile, scrollable
-4. Breadcrumbs: Truncate middle items on narrow screens
-5. Modals: Full-screen on mobile, scrollable content
-
-**Files:**
-- Various component files (responsive Tailwind adjustments)
-
----
-
-### TASK-16: UAT Testing Checklist (2h)
-**Status:** [ ] Pending
+### e008_s01_t02: Create Team Management API Endpoints (8h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
-**ID:** e006_s03_t16
 
-**Goal:** Create and execute UAT testing checklist.
+**Goal:** Implement CRUD API routes for team membership
 
-**Test Scenarios:**
-
-**Navigation Flow:**
-- [ ] Navigate Project → Category → Node
-- [ ] Use breadcrumbs to return to Project
-- [ ] Browser back/forward buttons work
-- [ ] URL reflects current view state
-
-**Insights Section:**
-- [ ] Click recommendation opens Principle modal
-- [ ] Modal shows theory and related patterns
-- [ ] Evidence shows full datetime
-- [ ] Evidence "View Source" opens detail modal
-- [ ] Sidebar collapses to icons
-- [ ] Collapse state persists on refresh
-
-**Graph Section:**
-- [ ] Project View shows Charter and metrics
-- [ ] Summary Cards show count + progress
-- [ ] Category View displays filtered cards
-- [ ] Node View shows full detail
-- [ ] Edit button opens modal (editable types only)
-- [ ] "Pending Sync" indicator shows for unsynced
-
-**Principle Nodes:**
-- [ ] Standard Principles display with badge
-- [ ] Standard Principles are not editable
-- [ ] Custom Principles are editable
-- [ ] Principles appear in tree, cards, and modals
-
-**Cross-Browser:**
-- [ ] Chrome (latest)
-- [ ] Firefox (latest)
-- [ ] Safari (latest)
+**Implementation Notes:**
+Endpoints to create:
+- `POST /api/v1/team/invite` - Create and send invitation
+- `POST /api/v1/team/join` - Accept invitation via code
+- `GET /api/v1/team/members` - List team members with status
+- `PATCH /api/v1/team/members/:id` - Update member role/status
+- `DELETE /api/v1/team/members/:id` - Remove member from team
 
 **Files:**
-- `docs/uat/EPIC-006-UAT-CHECKLIST.md` (new)
+- `dashboard/src/app/api/v1/team/invite/route.ts` (new)
+- `dashboard/src/app/api/v1/team/join/route.ts` (new)
+- `dashboard/src/app/api/v1/team/members/route.ts` (new)
+- `dashboard/src/app/api/v1/team/members/[id]/route.ts` (new)
+
+Follow: Existing API patterns in dashboard/src/app/api/v1/
 
 ---
 
-### TASK-17: Documentation Updates (2h)
-**Status:** [ ] Pending
-**Priority:** MEDIUM
-**ID:** e006_s03_t17
+### e008_s01_t03: Implement Invitation System (6h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
 
-**Goal:** Update user guides for new features.
+**Goal:** Create secure invitation flow with expiring codes
 
-**Updates:**
-
-1. **GRAPH-VISUALIZATION.md**
-   - Add C4-style navigation explanation
-   - Document Project/Category/Node views
-   - Update navigation instructions
-   - Add breadcrumb usage
-
-2. **COACHING-INSIGHTS.md**
-   - Add recommendation modal instructions
-   - Document Principle linking
-   - Update evidence display description
-
-3. **New Screenshots**
-   - Project View
-   - Category View
-   - Node View with breadcrumbs
-   - Recommendation modal
+**Implementation Notes:**
+- Generate secure invite codes (UUID or similar)
+- Store invitations with expiry (7 days default)
+- Email notification (integrate with existing email service or defer)
+- Invitation states: pending, accepted, expired, revoked
 
 **Files:**
-- `docs/guides/GRAPH-VISUALIZATION.md` (update)
-- `docs/guides/COACHING-INSIGHTS.md` (update)
+- `dashboard/src/lib/invitation-manager.ts` (new)
+- `dashboard/src/app/api/v1/team/invite/route.ts`
 
 ---
 
-### TASK-18: Sprint Sync Deduplication (2h)
-**Status:** [ ] Pending
-**Priority:** MEDIUM
-**ID:** e006_s03_t18
-**Assignee:** Chris Norton (chris@watchhill.ai)
+### e008_s01_t04: Implement `ginko invite` Command (4h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
 
-**Goal:** Prevent duplicate tasks when sprint is synced multiple times.
+**Goal:** CLI command for project owners to invite team members
 
-**Problem:**
-Sprint sync endpoint creates new Task nodes each time, leading to 4x duplicates when synced repeatedly.
-
-**Implementation:**
-1. Check if task already exists by ID before creating
-2. Use MERGE instead of CREATE for Task nodes
-3. Update existing task properties if node exists
-4. Return count of created vs updated tasks in response
+**Implementation Notes:**
+```bash
+ginko invite user@example.com              # Invite as member (default)
+ginko invite user@example.com --role owner # Invite as owner
+ginko invite --list                        # List pending invitations
+ginko invite --revoke <code>               # Revoke invitation
+```
 
 **Files:**
-- `dashboard/src/app/api/v1/sprint/sync/route.ts` (update)
+- `packages/cli/src/commands/invite/` (new directory)
+- `packages/cli/src/commands/invite/invite-command.ts` (new)
+- `packages/cli/src/commands/invite/index.ts` (new)
+- `packages/cli/src/index.ts` (register command)
+
+Follow: Existing command patterns (see charter, epic commands)
+
+---
+
+### e008_s01_t05: Implement `ginko join` Command (4h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+
+**Goal:** CLI command for users to join a ginko-enabled project
+
+**Implementation Notes:**
+```bash
+ginko join <invite-code>    # Join via invitation code
+ginko join                  # Interactive: prompt for code
+```
+
+Flow:
+1. Validate invite code against API
+2. Clone/access project repository (if not already present)
+3. Initialize local ginko state
+4. Register membership in graph
+5. Run initial sync to load team context
+
+**Files:**
+- `packages/cli/src/commands/join/` (new directory)
+- `packages/cli/src/commands/join/join-command.ts` (new)
+- `packages/cli/src/commands/join/index.ts` (new)
+- `packages/cli/src/index.ts` (register command)
+
+---
+
+### e008_s01_t06: Implement `ginko team` Command (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** CLI command to view team members and their status
+
+**Implementation Notes:**
+```bash
+ginko team                  # List all team members
+ginko team --active         # Show only active members
+```
+
+Output format:
+```
+Team: ginko (5 members)
+  chris@watchhill.ai    owner    active    last: 2 hours ago
+  dev1@example.com      member   active    last: 1 day ago
+  dev2@example.com      member   idle      last: 5 days ago
+```
+
+**Files:**
+- `packages/cli/src/commands/team/` (new directory)
+- `packages/cli/src/commands/team/team-command.ts` (new)
+- `packages/cli/src/commands/team/index.ts` (new)
+
+---
+
+### e008_s01_t07: Dashboard Member List Component (6h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+
+**Goal:** Basic team member list in dashboard with status indicators
+
+**Implementation Notes:**
+- Display all team members with role badges
+- Show last active timestamp
+- Visual indicator for online/recent/idle status
+- Owner actions: invite button, member management dropdown
+
+**Files:**
+- `dashboard/src/components/team/TeamMemberList.tsx` (new)
+- `dashboard/src/components/team/MemberCard.tsx` (new)
+- `dashboard/src/components/team/InviteButton.tsx` (new)
+- `dashboard/src/components/team/index.ts` (new)
+
+---
+
+### e008_s01_t08: Permission Checks Middleware (4h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+
+**Goal:** Implement owner/member permission validation
+
+**Implementation Notes:**
+- Create middleware to check user role on protected endpoints
+- Owner-only actions: invite, change roles, remove members, view all insights
+- Member actions: view team, view own insights, sync
+
+**Files:**
+- `dashboard/src/lib/permissions.ts` (new)
+- `dashboard/src/app/api/v1/team/` (apply to routes)
+
+---
+
+### e008_s01_t09: Update `ginko sync` for Team Context (4h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Ensure sync loads team-level context and detects staleness
+
+**Implementation Notes:**
+- Add team membership check on sync
+- Load team-level patterns, gotchas, ADRs
+- Show staleness warning if last sync > threshold (configurable)
+- Track per-member last sync timestamp
+
+**Files:**
+- `packages/cli/src/commands/sync/sync-command.ts`
+- `packages/cli/src/commands/sync/node-syncer.ts`
+
+---
+
+### e008_s01_t10: Integration Tests for Team APIs (4h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Test coverage for team management flows
+
+**Implementation Notes:**
+- Test invite creation and validation
+- Test join flow with valid/invalid/expired codes
+- Test permission checks (owner vs member)
+- Test member CRUD operations
+
+**Files:**
+- `packages/cli/test/integration/team-management.test.ts` (new)
+- `dashboard/src/app/api/v1/team/__tests__/` (new)
 
 ---
 
 ## Accomplishments This Sprint
 
-[To be updated as tasks complete]
-
----
+[To be filled as work progresses]
 
 ## Next Steps
 
-After Sprint 3 complete → EPIC-006 Complete, ready for beta testing
-
----
+After Sprint 1 completion:
+- Sprint 2: Team activity feed, staleness detection, conflict prevention
+- Dashboard full member management UI
 
 ## Blockers
 
 [To be updated if blockers arise]
+
+---
+
+## Sprint Metadata
+
+**Epic:** EPIC-008 (Team Collaboration)
+**Sprint ID:** e008_s01
+**Created:** 2026-01-03
+**Participants:** Chris Norton, Claude
