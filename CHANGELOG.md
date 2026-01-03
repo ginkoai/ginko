@@ -7,6 +7,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0-beta.2] - 2026-01-03
+
+### 🎯 EPIC-006: UX Polish and UAT Complete
+
+This release includes all fixes and improvements from user acceptance testing.
+
+### Fixed
+
+#### CLI
+- **Sync command** - Fixed API response parsing and --dry-run flag behavior
+- **Sync command** - Fixed graph API query consistency (DELETE/sync endpoints use CONTAINS pattern)
+- **Sync command** - Use git root instead of cwd for file paths
+- **Sync command** - Include graphId in mark-as-synced API call
+
+#### Dashboard
+- **Node editing** - Fixed save errors for nodes with certain property combinations (B12, B20)
+- **API** - Added DELETE handler for graph nodes (BUG-003)
+- **UAT bugs** - Fixed multiple issues discovered during acceptance testing (BUG-004, BUG-005)
+
+#### Insights
+- **Metrics accuracy** - Fixed cold start ratio and events per session calculations
+- **Period filtering** - Fixed session date parsing for period-aware filtering
+- **Score display** - Add period-aware score display and hide mismatched insights
+- **Evidence** - Improved data accuracy and evidence display
+
+### Added
+
+#### Dashboard
+- **Progress bars** - Dark-to-light gradient progress bars for visual polish
+- **Error handling** - React Error Boundary for graceful error states
+- **Loading states** - Skeleton UI components for better loading experience
+- **Node validation** - NodeNotFound component for invalid/deleted node URLs
+
+### Performance
+- **Neo4j indexes** - Added 15 performance indexes (50-100x faster unsynced queries)
+- **Pagination** - Migrated CategoryView to API-level pagination (removes 100-node limit)
+- **Graph cleanup** - Removed 21 orphan/duplicate nodes from graph
+
+---
+
 ## [2.0.0-beta.1] - 2025-12-15
 
 ### 🎉 First Beta Release
@@ -105,6 +145,7 @@ This is the first public beta of Ginko - The AI Collaboration Platform. Where hu
 
 ---
 
+[2.0.0-beta.2]: https://github.com/ginkoai/ginko/releases/tag/v2.0.0-beta.2
 [2.0.0-beta.1]: https://github.com/ginkoai/ginko/releases/tag/v2.0.0-beta.1
 [1.8.0]: https://github.com/ginkoai/ginko/releases/tag/v1.8.0
 [1.7.0]: https://github.com/ginkoai/ginko/releases/tag/v1.7.0

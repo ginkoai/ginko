@@ -4,8 +4,8 @@
 
 A git-native workflow tool for AI-assisted development that transforms human intent into structured, reusable knowledge.
 
-**Version**: 2.0.0
-**Status**: Production Ready - Phase 1 Complete
+**Version**: 2.0.0-beta.2
+**Status**: Public Beta - Dashboard & CLI Complete
 
 ---
 
@@ -238,13 +238,19 @@ Both syntaxes execute identically - use whichever fits your workflow.
 
 ## 🔮 Roadmap
 
-### Phase 2: Team Collaboration (Q4 2025)
+### Current: Public Beta (Q1 2026)
+- ✅ Dashboard with graph visualization
+- ✅ Coaching insights and analytics
+- ✅ Knowledge sync (dashboard ↔ git)
+- ✅ C4-style navigation
+
+### Next: Team Collaboration (Q2 2026)
 - Real-time context synchronization
 - Team activity insights
 - Shared knowledge modules
 - Collaborative handoffs
 
-### Phase 3: Marketplace & Extensions (Q1 2026)
+### Future: Marketplace & Extensions (Q3 2026)
 - Custom reflector marketplace
 - IDE integrations (VS Code, JetBrains)
 - Third-party domain plugins
