@@ -7,7 +7,7 @@
 
 **Duration**: 4-5 days
 **Type**: Polish sprint
-**Progress:** 33% (2/6 tasks complete)
+**Progress:** 60% (3/5 tasks complete)
 
 **Success Criteria:**
 - [x] Bidirectional sprint sync working (graph ↔ markdown)
@@ -52,7 +52,7 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ### TASK-2: Graph View Edge Cases (3h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **ID:** e006_s03_t02
 **Assignee:** Unassigned
@@ -95,7 +95,7 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ### TASK-4: UAT Testing Session (4h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** HIGH
 **ID:** e006_s03_t04
 **Assignee:** Chris Norton (chris@watchhill.ai)
@@ -117,7 +117,7 @@ Sprint 2 revealed that sprint/task status changes in the graph don't sync back t
 ---
 
 ### TASK-5: Bug Fixes from UAT (4h)
-**Status:** [ ] Pending
+**Status:** [@] In Progress
 **Priority:** HIGH
 **ID:** e006_s03_t05
 **Assignee:** Unassigned
