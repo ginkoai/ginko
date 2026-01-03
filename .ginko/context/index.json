@@ -840,10 +840,34 @@
       "relevance": "critical",
       "created": "2025-12-31T23:32:08.846Z",
       "sessionId": "session-chris-at-watchhill-ai-1767223928767"
+    },
+    {
+      "filename": "decision-session-handoff-epic008-sprint-1-at-80-complete.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-03T15:49:33.065Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767455373026"
+    },
+    {
+      "filename": "decision-session-handoff-epic008-sprint-1-100-complete.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-03T16:14:20.370Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767456859972"
     }
   ],
-  "lastUpdated": "2025-12-31T23:32:08.850Z",
-  "totalModules": 62,
+  "lastUpdated": "2026-01-03T16:14:20.371Z",
+  "totalModules": 64,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
