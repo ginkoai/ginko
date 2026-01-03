@@ -89,6 +89,32 @@ Branch: main (12 uncommitted files)
 - Confidence icons: ★ high, ◐ medium, ○ low
 - Severity icons: 🚨 critical, ⚠️ high, 💡 medium/low
 
+### Auto-Sync on Staleness Warning
+
+When \`ginko start\` shows a staleness warning, **automatically run \`ginko sync\`**:
+
+**Detection:**
+\`\`\`
+🚨 Team context is critically stale
+   Never synced - team context not loaded
+   Run \`ginko sync\` to pull team updates.
+\`\`\`
+
+**Action:** Immediately run \`ginko sync\` without asking.
+
+**Example:**
+\`\`\`
+[ginko start shows staleness warning]
+AI: Team context is stale. Syncing now...
+[Executes: ginko sync]
+AI: ✓ Team context updated. Ready to work.
+\`\`\`
+
+**Thresholds:**
+- 🚨 Critical (never synced or >7 days): Always auto-sync
+- ⚠️ Warning (1-7 days stale): Auto-sync at session start
+- No warning: Context is fresh, no action needed
+
 ### New Project Onboarding
 
 **After first \`ginko start\`**, check for charter (\`docs/PROJECT-CHARTER.md\`):

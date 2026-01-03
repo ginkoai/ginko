@@ -175,6 +175,38 @@ Branch: main (5 uncommitted files)
 - Severity icons: 🚨 critical, ⚠️ high, 💡 medium/low
 - If sprint complete or no current task, show "What would you like to work on?"
 
+**🔄 AUTO-SYNC: Staleness Warning Response**
+
+When `ginko start` shows a staleness warning, **automatically run `ginko sync`** to pull team context:
+
+**Detection:**
+```
+🚨 Team context is critically stale
+   Never synced - team context not loaded
+
+   Run `ginko sync` to pull team updates.
+```
+
+**Action:** Immediately run `ginko sync` without asking the user.
+
+**Example flow:**
+```
+[ginko start output shows staleness warning]
+AI: Team context is stale. Syncing now...
+[Executes: ginko sync]
+AI: ✓ Team context updated. Ready to work.
+```
+
+**Why auto-sync:**
+- Staleness means the AI is missing team knowledge (patterns, ADRs, gotchas)
+- Fresh context improves AI decision quality
+- User shouldn't need to manually sync - the AI handles it
+
+**Thresholds:**
+- `🚨 Critical` (never synced or >7 days): Always auto-sync
+- `⚠️ Warning` (1-7 days stale): Auto-sync at session start
+- No warning: Context is fresh, no action needed
+
 ---
 
 ## Autonomous Development Mode

@@ -307,6 +307,29 @@ interface TeamChangeSummary {
 - `packages/cli/src/commands/sync/sync-command.ts` - team change summary, --preview flag
 - `dashboard/src/components/graph/NodeEditor.tsx` - edit locking integration
 
+### 2026-01-03: UAT Validation & CLI Publish
+
+**CLI Published:**
+- `@ginkoai/cli@2.0.0-beta.5` - Team features, staleness detection, name lookup
+- `@ginkoai/cli@2.0.0-beta.6` - Auto-sync instructions in `ginko init` template
+
+**UAT Results (All Pass):**
+1. ✅ Staleness detection on `ginko start`
+2. ✅ Team list with member count
+3. ✅ List members by team name (not UUID)
+4. ✅ Member profile display (username/email)
+5. ✅ Invalid team name error handling
+6. ✅ Sync dry-run preview
+
+**Cross-Machine Validation:**
+- Team member (xtophr) started session on separate workstation
+- `ginko start` auto-synced from graph
+- Team sprint visible: "Team Collaboration Sprint 2"
+
+**Docs Updated:**
+- `CLAUDE.md` - Added AUTO-SYNC behavior for staleness warnings
+- `ai-instructions-template.ts` - Template for `ginko init` includes auto-sync
+
 ## Next Steps
 
 After Sprint 2 completion:
