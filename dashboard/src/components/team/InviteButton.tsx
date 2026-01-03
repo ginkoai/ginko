@@ -54,7 +54,7 @@ interface InviteResponse {
 export function InviteButton({ teamId, onInviteSent }: InviteButtonProps) {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<'member' | 'admin' | 'owner'>('member');
+  const [role, setRole] = useState<'member' | 'owner'>('member');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -217,12 +217,11 @@ export function InviteButton({ teamId, onInviteSent }: InviteButtonProps) {
               <label className="text-sm font-medium">Role</label>
               <Select
                 value={role}
-                onValueChange={(value) => setRole(value as 'member' | 'admin' | 'owner')}
+                onValueChange={(value) => setRole(value as 'member' | 'owner')}
                 disabled={loading}
                 options={[
                   { value: 'member', label: 'Member - Can collaborate and sync' },
-                  { value: 'admin', label: 'Admin - Can also manage members' },
-                  { value: 'owner', label: 'Owner - Full control' },
+                  { value: 'owner', label: 'Owner - Full control (can manage members)' },
                 ]}
               />
             </div>

@@ -40,7 +40,7 @@ interface MembersResponse {
 interface PendingInvitation {
   code: string;
   email: string;
-  role: 'owner' | 'admin' | 'member';
+  role: 'owner' | 'member';
   status: string;
   expires_at: string;
   created_at: string;
@@ -113,7 +113,7 @@ export function TeamMemberList({
       const membersData: MembersResponse = await membersRes.json();
       setMembers(membersData.members);
 
-      // Invitations might fail for non-admins, that's ok
+      // Invitations might fail for non-owners, that's ok
       if (invitesRes.ok) {
         const invitesData: InvitationsResponse = await invitesRes.json();
         setPendingInvites(invitesData.invitations || []);
@@ -131,11 +131,11 @@ export function TeamMemberList({
     fetchMembers();
   }, [fetchMembers]);
 
-  // Sort members: owners first, then admins, then members, then by join date
+  // Sort members: owners first, then members, then by join date
   const sortedMembers = [...members].sort((a, b) => {
-    const roleOrder = { owner: 0, admin: 1, member: 2 };
-    const aOrder = roleOrder[a.role] ?? 3;
-    const bOrder = roleOrder[b.role] ?? 3;
+    const roleOrder: Record<string, number> = { owner: 0, member: 1 };
+    const aOrder = roleOrder[a.role] ?? 2;
+    const bOrder = roleOrder[b.role] ?? 2;
     if (aOrder !== bOrder) return aOrder - bOrder;
     return new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime();
   });

@@ -25,16 +25,62 @@ interface AddMemberOptions {
 }
 
 /**
+ * Resolve team name or ID to team ID
+ * Accepts either UUID or team name
+ */
+async function resolveTeamId(teamIdOrName: string): Promise<{ teamId: string; teamName: string } | null> {
+  // If it looks like a UUID, return as-is
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidRegex.test(teamIdOrName)) {
+    // Verify team exists and get name
+    const response = await TeamsClient.get(teamIdOrName);
+    if (response.data) {
+      return { teamId: teamIdOrName, teamName: response.data.name };
+    }
+    return null;
+  }
+
+  // Otherwise, look up by name
+  const response = await TeamsClient.list();
+  if (response.error || !response.data?.teams) {
+    return null;
+  }
+
+  // Find team by name (case-insensitive)
+  const team = response.data.teams.find(
+    (t) => t.name.toLowerCase() === teamIdOrName.toLowerCase()
+  );
+
+  if (team) {
+    return { teamId: team.id, teamName: team.name };
+  }
+
+  return null;
+}
+
+/**
  * Add a member to a team
  */
 export async function addTeamMemberCommand(
-  teamId: string,
+  teamIdOrName: string,
   githubUsername: string,
   options: AddMemberOptions
 ): Promise<void> {
   const spinner = ora(`Adding ${githubUsername} to team...`).start();
 
   try {
+    // Resolve team name to ID
+    const resolved = await resolveTeamId(teamIdOrName);
+    if (!resolved) {
+      spinner.fail(chalk.red('Team not found'));
+      console.error(chalk.red(`  No team found with name or ID: ${teamIdOrName}`));
+      console.log('');
+      console.log(chalk.dim('💡 List available teams:'));
+      console.log(chalk.dim('  ginko teams list'));
+      process.exit(1);
+    }
+
+    const { teamId, teamName } = resolved;
     const response = await TeamsClient.addMember(teamId, {
       github_username: githubUsername,
       role: options.role || 'member',
@@ -53,10 +99,10 @@ export async function addTeamMemberCommand(
     console.log('');
     console.log(chalk.bold(`  ${githubUsername}`));
     console.log(chalk.dim(`  Role: ${role}`));
-    console.log(chalk.dim(`  User ID: ${member.user_id}`));
+    console.log(chalk.dim(`  Team: ${teamName}`));
     console.log('');
     console.log(chalk.dim('💡 View all members:'));
-    console.log(chalk.dim(`  ginko team list-members ${teamId}`));
+    console.log(chalk.dim(`  ginko teams list-members ${teamName}`));
   } catch (error: any) {
     spinner.fail(chalk.red('Failed to add member'));
     console.error(chalk.red(`  ${error.message}`));
@@ -68,13 +114,26 @@ export async function addTeamMemberCommand(
  * Remove a member from a team
  */
 export async function removeTeamMemberCommand(
-  teamId: string,
+  teamIdOrName: string,
   githubUsernameOrUserId: string
 ): Promise<void> {
   const spinner = ora(`Removing ${githubUsernameOrUserId} from team...`).start();
 
   try {
-    // First, list members to find the user ID if username was provided
+    // Resolve team name to ID
+    const resolved = await resolveTeamId(teamIdOrName);
+    if (!resolved) {
+      spinner.fail(chalk.red('Team not found'));
+      console.error(chalk.red(`  No team found with name or ID: ${teamIdOrName}`));
+      console.log('');
+      console.log(chalk.dim('💡 List available teams:'));
+      console.log(chalk.dim('  ginko teams list'));
+      process.exit(1);
+    }
+
+    const { teamId, teamName } = resolved;
+
+    // List members to find the user ID if username was provided
     const membersResponse = await TeamsClient.listMembers(teamId);
 
     if (membersResponse.error) {
@@ -85,9 +144,11 @@ export async function removeTeamMemberCommand(
 
     const members = membersResponse.data!.members;
     const member = members.find(
-      (m) =>
+      (m: any) =>
         m.user_id === githubUsernameOrUserId ||
+        m.user?.github_username === githubUsernameOrUserId ||
         m.github_username === githubUsernameOrUserId ||
+        m.user?.email === githubUsernameOrUserId ||
         m.email === githubUsernameOrUserId
     );
 
@@ -108,7 +169,7 @@ export async function removeTeamMemberCommand(
 
     spinner.succeed(chalk.green('Member removed'));
     console.log('');
-    console.log(chalk.dim(`  ${githubUsernameOrUserId} has been removed from the team`));
+    console.log(chalk.dim(`  ${githubUsernameOrUserId} has been removed from ${teamName}`));
   } catch (error: any) {
     spinner.fail(chalk.red('Failed to remove member'));
     console.error(chalk.red(`  ${error.message}`));
@@ -119,10 +180,22 @@ export async function removeTeamMemberCommand(
 /**
  * List team members
  */
-export async function listTeamMembersCommand(teamId: string): Promise<void> {
+export async function listTeamMembersCommand(teamIdOrName: string): Promise<void> {
   const spinner = ora('Loading team members...').start();
 
   try {
+    // Resolve team name to ID
+    const resolved = await resolveTeamId(teamIdOrName);
+    if (!resolved) {
+      spinner.fail(chalk.red('Team not found'));
+      console.error(chalk.red(`  No team found with name or ID: ${teamIdOrName}`));
+      console.log('');
+      console.log(chalk.dim('💡 List available teams:'));
+      console.log(chalk.dim('  ginko teams list'));
+      process.exit(1);
+    }
+
+    const { teamId, teamName } = resolved;
     const response = await TeamsClient.listMembers(teamId);
 
     if (response.error) {
@@ -133,7 +206,7 @@ export async function listTeamMembersCommand(teamId: string): Promise<void> {
 
     const members = response.data!.members;
 
-    spinner.succeed(chalk.green(`Found ${members.length} member${members.length !== 1 ? 's' : ''}`));
+    spinner.succeed(chalk.green(`${teamName}: ${members.length} member${members.length !== 1 ? 's' : ''}`));
     console.log('');
 
     if (members.length === 0) {
@@ -148,9 +221,10 @@ export async function listTeamMembersCommand(teamId: string): Promise<void> {
       wordWrap: true,
     });
 
-    members.forEach((member) => {
-      const username = member.github_username || '-';
-      const email = member.email || '-';
+    members.forEach((member: any) => {
+      // Profile data is in nested 'user' object from API
+      const username = member.user?.github_username || member.github_username || '-';
+      const email = member.user?.email || member.email || '-';
       const role = member.role === 'owner' ? chalk.yellow('owner') : 'member';
       const joined = new Date(member.joined_at).toLocaleDateString();
 
@@ -160,8 +234,8 @@ export async function listTeamMembersCommand(teamId: string): Promise<void> {
     console.log(table.toString());
     console.log('');
     console.log(chalk.dim('💡 Manage members:'));
-    console.log(chalk.dim(`  ginko team add-member ${teamId} <github-username>`));
-    console.log(chalk.dim(`  ginko team remove-member ${teamId} <github-username>`));
+    console.log(chalk.dim(`  ginko teams add-member ${teamName} <github-username>`));
+    console.log(chalk.dim(`  ginko teams remove-member ${teamName} <github-username>`));
   } catch (error: any) {
     spinner.fail(chalk.red('Failed to load members'));
     console.error(chalk.red(`  ${error.message}`));

@@ -149,10 +149,31 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Transform response
+      // Get team IDs for counting members
+      const teamIds = memberships?.map((m: any) => m.team_id) || [];
+
+      // Get member counts for all teams in one query
+      let memberCounts: Record<string, number> = {};
+      if (teamIds.length > 0) {
+        const { data: counts } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .in('team_id', teamIds);
+
+        // Count members per team
+        if (counts) {
+          memberCounts = counts.reduce((acc: Record<string, number>, row: any) => {
+            acc[row.team_id] = (acc[row.team_id] || 0) + 1;
+            return acc;
+          }, {});
+        }
+      }
+
+      // Transform response with member counts
       const teams = memberships?.map((m: any) => ({
         ...m.teams,
         role: m.role,
+        member_count: memberCounts[m.team_id] || 0,
       })) || [];
 
       // Sort by updated_at descending

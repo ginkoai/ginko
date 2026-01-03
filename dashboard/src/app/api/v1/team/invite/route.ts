@@ -24,7 +24,7 @@ import { randomBytes } from 'crypto';
 interface CreateInviteRequest {
   team_id: string;
   email: string;
-  role?: 'owner' | 'admin' | 'member';
+  role?: 'owner' | 'member';
   expires_in_days?: number;
 }
 
@@ -40,13 +40,13 @@ function generateInviteCode(): string {
 }
 
 /**
- * Helper: Check if user is team owner or admin
+ * Helper: Check if user is team owner
  */
-async function canManageTeam(
+async function isTeamOwner(
   supabase: any,
   teamId: string,
   userId: string
-): Promise<{ canManage: boolean; role?: string }> {
+): Promise<boolean> {
   const { data } = await supabase
     .from('team_members')
     .select('role')
@@ -54,14 +54,12 @@ async function canManageTeam(
     .eq('user_id', userId)
     .single();
 
-  const role = data?.role;
-  const canManage = role === 'owner' || role === 'admin';
-  return { canManage, role };
+  return data?.role === 'owner';
 }
 
 /**
  * POST /api/v1/team/invite
- * Create a new invitation (team owners/admins only)
+ * Create a new invitation (team owners only)
  */
 export async function POST(request: NextRequest) {
   return withAuth(request, async (user, supabase) => {
@@ -83,11 +81,11 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check if requester can manage team
-      const { canManage, role: userRole } = await canManageTeam(supabase, body.team_id, user.id);
-      if (!canManage) {
+      // Check if requester is team owner
+      const isOwner = await isTeamOwner(supabase, body.team_id, user.id);
+      if (!isOwner) {
         return NextResponse.json(
-          { error: 'Only team owners and admins can invite members' },
+          { error: 'Only team owners can invite members' },
           { status: 403 }
         );
       }
@@ -153,14 +151,8 @@ export async function POST(request: NextRequest) {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-      // Admins can only invite members, not owners
-      let inviteRole = body.role || 'member';
-      if (userRole === 'admin' && inviteRole === 'owner') {
-        return NextResponse.json(
-          { error: 'Admins cannot invite new owners. Only owners can do that.' },
-          { status: 403 }
-        );
-      }
+      // Default role is member
+      const inviteRole = body.role || 'member';
 
       // Create invitation
       const { data: invitation, error: inviteError } = await supabase
@@ -217,7 +209,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/v1/team/invite
- * List pending invitations for a team (owners/admins only)
+ * List pending invitations for a team (owners only)
  */
 export async function GET(request: NextRequest) {
   return withAuth(request, async (user, supabase) => {
@@ -232,11 +224,11 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Check if requester can manage team
-      const { canManage } = await canManageTeam(supabase, teamId, user.id);
-      if (!canManage) {
+      // Check if requester is team owner
+      const isOwner = await isTeamOwner(supabase, teamId, user.id);
+      if (!isOwner) {
         return NextResponse.json(
-          { error: 'Only team owners and admins can view invitations' },
+          { error: 'Only team owners can view invitations' },
           { status: 403 }
         );
       }
@@ -340,11 +332,11 @@ export async function DELETE(request: NextRequest) {
         );
       }
 
-      // Check if requester can manage team
-      const { canManage } = await canManageTeam(supabase, invitation.team_id, user.id);
-      if (!canManage) {
+      // Check if requester is team owner
+      const isOwner = await isTeamOwner(supabase, invitation.team_id, user.id);
+      if (!isOwner) {
         return NextResponse.json(
-          { error: 'Only team owners and admins can revoke invitations' },
+          { error: 'Only team owners can revoke invitations' },
           { status: 403 }
         );
       }

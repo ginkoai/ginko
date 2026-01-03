@@ -382,7 +382,7 @@ export async function exampleTeamPermissions(
 
   // Team permissions
   const canViewTeam = true; // Any member can view
-  const canManageTeam = membership.role === 'owner' || membership.role === 'admin';
+  const canManageTeam = membership.role === 'owner';
 
   return { canViewTeam, canManageTeam };
 }

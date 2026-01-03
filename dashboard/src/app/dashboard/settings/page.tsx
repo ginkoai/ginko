@@ -196,7 +196,7 @@ export default function SettingsPage() {
               key={team.id}
               teamId={team.id}
               currentUserId={user?.id}
-              showInviteButton={team.role === 'owner' || team.role === 'admin'}
+              showInviteButton={team.role === 'owner'}
               className="mb-4"
             />
           ))}

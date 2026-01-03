@@ -15,7 +15,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { Crown, Shield, User } from 'lucide-react';
+import { Crown, User } from 'lucide-react';
 
 // =============================================================================
 // Types
@@ -23,7 +23,7 @@ import { Crown, Shield, User } from 'lucide-react';
 
 export interface TeamMember {
   user_id: string;
-  role: 'owner' | 'admin' | 'member';
+  role: 'owner' | 'member';
   joined_at: string;
   invited_by?: string;
   user: {
@@ -45,18 +45,12 @@ interface MemberCardProps {
 // Helpers
 // =============================================================================
 
-const roleConfig = {
+const roleConfig: Record<string, { label: string; icon: typeof Crown; variant: 'default' | 'outline'; className: string }> = {
   owner: {
     label: 'Owner',
     icon: Crown,
     variant: 'default' as const,
     className: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200',
-  },
-  admin: {
-    label: 'Admin',
-    icon: Shield,
-    variant: 'secondary' as const,
-    className: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   },
   member: {
     label: 'Member',
@@ -64,6 +58,14 @@ const roleConfig = {
     variant: 'outline' as const,
     className: '',
   },
+};
+
+// Fallback for any unknown roles (e.g., legacy 'admin')
+const defaultRoleConfig = {
+  label: 'Member',
+  icon: User,
+  variant: 'outline' as const,
+  className: '',
 };
 
 function getTimeSince(dateString: string): string {
@@ -98,7 +100,7 @@ function getInitials(name?: string, email?: string): string {
 // =============================================================================
 
 export function MemberCard({ member, isCurrentUser, className }: MemberCardProps) {
-  const config = roleConfig[member.role];
+  const config = roleConfig[member.role] || defaultRoleConfig;
   const RoleIcon = config.icon;
 
   const displayName = member.user?.full_name || member.user?.github_username || member.user?.email || 'Unknown';
