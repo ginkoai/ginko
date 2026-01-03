@@ -1,8 +1,9 @@
 ---
 epic_id: EPIC-006
-status: active
+status: complete
 created: 2025-12-16
-updated: 2025-12-16
+updated: 2026-01-03
+completed: 2026-01-03
 target: 2026-01 (when-ready)
 ---
 
@@ -77,7 +78,7 @@ Polish the Dashboard for User Acceptance Testing with C4-style graph navigation,
 |--------|------|----------|--------|
 | Sprint 1 | Foundation + Insights Polish | 5-6 days | Complete |
 | Sprint 2 | C4-Style Graph Navigation | 7-8 days | Complete |
-| Sprint 3 | Polish + UAT | 4-5 days | In Progress |
+| Sprint 3 | Polish + UAT | 4-5 days | Complete |
 
 ## Key Decisions
 

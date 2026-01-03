@@ -1,7 +1,7 @@
 /**
  * @fileType: documentation
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2025-12-31
  * @tags: knowledge-graph, dashboard, sync, editing, beta
  * @related: ADR-002-ai-readable-code-frontmatter.md, ginko-sync-command.md
  * @priority: high
@@ -12,12 +12,12 @@
 # Knowledge Editing Guide
 
 **Status:** Beta
-**Last Updated:** 2025-12-15
+**Last Updated:** 2025-12-31
 **Estimated Read Time:** 5 minutes
 
 ## Introduction
 
-Ginko provides a live dashboard for editing knowledge nodes (ADRs, Patterns, Tasks, Gotchas) with seamless synchronization to your git repository. This guide covers creating and editing nodes in the dashboard and syncing changes back to your local codebase.
+Ginko provides a live dashboard for editing knowledge nodes (ADRs, Patterns, Tasks, Gotchas, Sprints) with seamless synchronization to your git repository. This guide covers creating and editing nodes in the dashboard and syncing changes back to your local codebase.
 
 **Key Concepts:**
 - **Dashboard** - Live cloud-based editor for quick updates
@@ -552,6 +552,6 @@ This is a **beta feature**. Report issues or suggest improvements:
 
 ---
 
-**Last Updated:** 2025-12-15
+**Last Updated:** 2025-12-31
 **Version:** 1.0-beta
 **Contributors:** Chris Norton (chris@watchhill.ai)

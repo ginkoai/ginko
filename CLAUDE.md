@@ -8,6 +8,7 @@
 ```bash
 ginko start                    # Begin/resume session (< 2s startup)
 ginko log "description"        # Log insights (defensive logging)
+ginko sync                     # Pull dashboard edits to local git
 ginko handoff "summary"        # Optional session handoff
 ginko charter                  # Create project charter (AI-mediated)
 ginko epic                     # Create epic with sprints (AI-mediated)
@@ -23,6 +24,7 @@ When the user types a **single word** that matches a ginko command (`start`, `ha
 - User input: `start` → Execute: `ginko start`
 - User input: `handoff` → Execute: `ginko handoff`
 - User input: `status` → Execute: `ginko status`
+- User input: `sync` → Execute: `ginko sync`
 - User input: `log` → Ask for description, then execute
 - User input: `charter` → Execute: `ginko charter`, then guide conversation
 - User input: `epic` → Execute: `ginko epic`, then guide conversation
@@ -345,6 +347,29 @@ grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
 
 **"Show me ADRs about [topic]"**
 → Semantic search with `labels=ADR` filter OR: `grep -l -i "topic" docs/adr/*.md`
+
+---
+
+## Syncing Knowledge (ADR-054)
+
+Pull dashboard edits back to local git with `ginko sync`:
+
+```bash
+ginko sync                     # Pull all unsynced knowledge edits
+ginko sync --dry-run           # Preview changes without applying
+ginko sync --type ADR          # Sync only ADRs
+ginko sync --type Pattern      # Sync only Patterns
+ginko sync --force             # Overwrite local files with graph versions
+ginko sync --no-commit         # Sync files but don't auto-commit
+```
+
+**Supported node types:** ADR, PRD, Pattern, Gotcha, Charter, Sprint
+
+**Workflow:**
+1. Edit knowledge nodes in the dashboard (https://app.ginkoai.com)
+2. Run `ginko sync` to pull changes to local markdown files
+3. Changes are auto-committed with descriptive messages
+4. Local files stay in sync with the graph
 
 ---
 

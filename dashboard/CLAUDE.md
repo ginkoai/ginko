@@ -20,15 +20,45 @@ dashboard/src/
 │   ├── dashboard/
 │   │   ├── page.tsx           # Main consolidated dashboard
 │   │   └── settings/page.tsx  # User settings
-│   ├── auth/                  # Authentication pages  
+│   ├── auth/                  # Authentication pages
 │   └── api/                   # Proxy routes to MCP server
 ├── components/
 │   ├── dashboard/             # Dashboard-specific components
+│   ├── graph/                 # Graph exploration components
 │   ├── auth/                  # Authentication components
 │   └── ui/                    # Reusable UI components
 ├── lib/supabase/              # Supabase client configuration
 └── types/                     # TypeScript type definitions
 ```
+
+### C4-Style Graph Navigation
+
+The graph explorer uses a **C4-inspired drill-down pattern** for navigating project knowledge:
+
+```
+Project (Context) → Category (Container) → Node (Component)
+    │                    │                      │
+    ▼                    ▼                      ▼
+ Charter             ADR, Pattern,          Individual
+ + Metrics           Sprint, Task...        node details
+```
+
+**Navigation Flow:**
+1. **ProjectView** - Shows project charter, metrics, and category summary cards
+2. **CategoryView** - Lists all nodes of a specific type (e.g., all ADRs)
+3. **NodeView** - Shows full node details with related nodes
+
+**Key Components:**
+- `Breadcrumbs.tsx` - Tracks navigation path, enables back-navigation
+- `ProjectView.tsx` - Project-level summary with category cards
+- `CategoryView.tsx` - Paginated list of nodes by type
+- `NodeView.tsx` - Full node detail with relationships
+- `ViewTransition.tsx` - Animated transitions between views
+
+**URL Patterns:**
+- `/graph` - Project overview (root)
+- `/graph?category=ADR` - Category view
+- `/graph?node=adr_054` - Node detail view
 
 ## Development Patterns
 

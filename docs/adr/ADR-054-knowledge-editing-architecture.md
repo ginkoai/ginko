@@ -1,7 +1,7 @@
 ---
 type: decision
-status: proposed
-updated: 2025-12-15
+status: accepted
+updated: 2025-12-31
 tags: [knowledge-graph, editing, crud, sync, dashboard, git-integration]
 related: [ADR-041-graph-migration-write-dispatch.md, ADR-042-ai-assisted-knowledge-graph-quality.md, ADR-039-graph-based-context-discovery.md]
 priority: high
@@ -14,7 +14,7 @@ dependencies: [ADR-041, ADR-042]
 
 ## Status
 
-**Proposed** | 2025-12-15
+**Accepted** | 2025-12-31 (Sprint sync added)
 
 **Authors:** Chris Norton, Claude (AI)
 **Sprint:** EPIC-005 Sprint 4 - Market Readiness
@@ -103,6 +103,8 @@ We will implement a **bidirectional sync architecture** with:
 | Pattern | Yes | Name, description required | `docs/patterns/PATTERN-*.md` |
 | Gotcha | Yes | Name, severity required | `docs/gotchas/GOTCHA-*.md` |
 | Charter | Yes | Single file per project | `docs/PROJECT-CHARTER.md` |
+| Sprint | Yes | Status, progress tracked | `docs/sprints/SPRINT-*.md` |
+| Task | Yes (status only) | Status changes only | Embedded in Sprint file |
 | Event | No | Immutable after creation | N/A (JSONL) |
 | Session | No | System-generated | N/A |
 
@@ -111,7 +113,7 @@ We will implement a **bidirectional sync architecture** with:
 ```typescript
 interface NodeSyncStatus {
   nodeId: string;
-  nodeType: 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Charter';
+  nodeType: 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Charter' | 'Sprint';
 
   // Sync state
   synced: boolean;
@@ -229,7 +231,7 @@ Response: { node: Node, syncStatus: { synced: false, ... } }
 
 ```cypher
 // Add sync tracking to all knowledge nodes
-MATCH (n:ADR|PRD|Pattern|Gotcha|Charter)
+MATCH (n:ADR|PRD|Pattern|Gotcha|Charter|Sprint)
 SET n.synced = true,
     n.syncedAt = datetime(),
     n.editedAt = n.updatedAt,
