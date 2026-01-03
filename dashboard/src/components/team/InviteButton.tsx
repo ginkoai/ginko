@@ -89,12 +89,20 @@ export function InviteButton({ teamId, onInviteSent }: InviteButtonProps) {
       });
 
       const data = await response.json();
+      console.log('[InviteButton] API response:', { ok: response.ok, status: response.status, data });
 
       if (!response.ok) {
+        // Handle case where invitation already exists
+        if (response.status === 409 && data.existing_code) {
+          setInviteCode(data.existing_code);
+          onInviteSent?.();
+          return;
+        }
         throw new Error(data.error || 'Failed to send invitation');
       }
 
       const result: InviteResponse = data;
+      console.log('[InviteButton] Setting invite code:', result.invitation?.code);
       setInviteCode(result.invitation.code);
       onInviteSent?.();
     } catch (err) {

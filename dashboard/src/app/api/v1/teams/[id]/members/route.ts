@@ -227,6 +227,10 @@ export async function GET(
       // Transform response
       const formattedMembers = members?.map((m: any) => {
         const profile = profileMap.get(m.user_id);
+        // Construct GitHub avatar URL if username available
+        const avatarUrl = profile?.github_username
+          ? `https://github.com/${profile.github_username}.png`
+          : null;
         return {
           user_id: m.user_id,
           role: m.role,
@@ -237,6 +241,7 @@ export async function GET(
             email: profile.email,
             github_username: profile.github_username,
             full_name: profile.full_name,
+            avatar_url: avatarUrl,
           } : null,
         };
       }) || [];
