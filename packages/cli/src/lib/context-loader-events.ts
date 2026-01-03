@@ -878,7 +878,8 @@ async function getActiveSprint(projectId: string): Promise<Sprint | undefined> {
       const title = titleMatch ? titleMatch[1].trim() : 'Active Sprint';
 
       // Extract progress if available
-      const progressMatch = content.match(/\*\*Progress\*\*:\s*(\d+)%/);
+      // Handles both **Progress:** and **Progress**: formats
+      const progressMatch = content.match(/\*\*Progress:?\*\*:?\s*(\d+)%/);
       const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
 
       return {

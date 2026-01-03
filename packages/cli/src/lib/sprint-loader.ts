@@ -483,8 +483,9 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Match task headers: ### TASK-N: Title
-    const taskHeaderMatch = line.match(/^###\s+(TASK-\d+):\s*(.+?)(?:\s*\((.+?)\))?$/);
+    // Match task headers: ### TASK-N: Title OR ### e008_s02_t01: Title (ADR-052)
+    // Supports legacy (TASK-N), epic naming (eNNN_sNN_tNN), and adhoc (adhoc_YYMMDD_sNN_tNN)
+    const taskHeaderMatch = line.match(/^###\s+((?:TASK-\d+|e\d+_s\d+_t\d+|adhoc_\d+_s\d+_t\d+)):\s*(.+?)(?:\s*\((.+?)\))?$/i);
     if (taskHeaderMatch) {
       // Save previous task if exists
       if (parsingTask?.id && parsingTask?.title) {
@@ -516,15 +517,14 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
       continue;
     }
 
-    // Match task dependencies: **Depends:** TASK-1, TASK-2 (EPIC-004 Sprint 4)
+    // Match task dependencies: **Depends:** TASK-1, TASK-2 or t01, t02 (EPIC-004 Sprint 4, ADR-052)
     const dependsMatch = line.match(/\*\*Depends:\*\*\s*(.+)/i);
     if (dependsMatch && parsingTask) {
       const depsString = dependsMatch[1].trim();
-      // Parse comma-separated task IDs
+      // Parse comma-separated task IDs (supports TASK-N, t01, e008_s02_t01, or adhoc_* formats)
       const deps = depsString.split(/[,\s]+/)
         .map(d => d.trim())
-        .filter(d => /^TASK-\d+$/i.test(d))
-        .map(d => d.toUpperCase());
+        .filter(d => /^(?:TASK-\d+|t\d+|e\d+_s\d+_t\d+|adhoc_\d+_s\d+_t\d+)$/i.test(d));
       if (deps.length > 0) {
         parsingTask.dependsOn = deps;
       }
