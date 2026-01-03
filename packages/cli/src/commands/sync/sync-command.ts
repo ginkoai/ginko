@@ -36,6 +36,12 @@ import {
   syncSprintFile,
   updateCurrentSprintFile,
 } from './sprint-syncer.js';
+import {
+  getTeamSyncStatus,
+  updateLastSyncTimestamp,
+  displayStalenessWarning,
+  displayTeamInfo,
+} from './team-sync.js';
 import type {
   SyncOptions,
   UnsyncedNode,
@@ -44,6 +50,7 @@ import type {
   ConflictResolution,
   SyncApiResponse,
   SprintSyncResult,
+  TeamSyncOptions,
 } from './types.js';
 
 const API_BASE = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
@@ -301,7 +308,7 @@ async function syncSprints(
 /**
  * Main sync command implementation
  */
-export async function syncCommand(options: SyncOptions): Promise<SyncResult> {
+export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult> {
   const result: SyncResult = {
     synced: [],
     skipped: [],
@@ -326,6 +333,24 @@ export async function syncCommand(options: SyncOptions): Promise<SyncResult> {
     console.error(chalk.red('❌ Not authenticated.'));
     console.error(chalk.dim('   Run `ginko login` to authenticate.'));
     return result;
+  }
+
+  // Check team membership and staleness (EPIC-008)
+  const stalenessThreshold = options.stalenessThresholdDays ?? 3;
+  let teamStatus = null;
+
+  if (!options.skipMembershipCheck) {
+    teamStatus = await getTeamSyncStatus(graphId, token, stalenessThreshold);
+
+    // Display team info if member
+    if (teamStatus.isMember) {
+      displayTeamInfo(teamStatus);
+    }
+
+    // Show staleness warning if applicable
+    if (teamStatus.isMember && teamStatus.staleness.isStale) {
+      displayStalenessWarning(teamStatus);
+    }
   }
 
   // Get git root directory (not cwd, which might be a subdirectory)
@@ -361,8 +386,16 @@ export async function syncCommand(options: SyncOptions): Promise<SyncResult> {
       }
     }
 
-    // Summary
+    // Update team sync timestamp if we synced anything (EPIC-008)
     const totalUpdated = sprintResults.reduce((sum, r) => sum + r.tasksUpdated, 0);
+    if (totalUpdated > 0 && teamStatus?.isMember) {
+      const updated = await updateLastSyncTimestamp(graphId, token);
+      if (updated) {
+        console.log(chalk.dim('✓ Team sync timestamp updated'));
+      }
+    }
+
+    // Summary
     console.log(chalk.bold('\n📊 Summary:'));
     console.log(`  Sprints processed: ${sprintResults.length}`);
     console.log(`  Tasks updated: ${totalUpdated}`);
@@ -504,6 +537,14 @@ export async function syncCommand(options: SyncOptions): Promise<SyncResult> {
     } else {
       console.log(chalk.yellow(`\n⚠ Synced ${syncedFiles.length} file(s) but commit failed.`));
       console.log(chalk.dim('   You can commit manually with: git add . && git commit'));
+    }
+  }
+
+  // Update team sync timestamp if we synced anything (EPIC-008)
+  if (result.synced.length > 0 && teamStatus?.isMember) {
+    const updated = await updateLastSyncTimestamp(graphId, token);
+    if (updated) {
+      console.log(chalk.dim('✓ Team sync timestamp updated'));
     }
   }
 

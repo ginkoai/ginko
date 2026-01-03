@@ -104,3 +104,43 @@ export interface SprintSyncResult {
   changes: string[];
   error: string | null;
 }
+
+// Team sync types (EPIC-008)
+
+export interface TeamMember {
+  user_id: string;
+  role: 'owner' | 'admin' | 'member';
+  joined_at: string;
+  last_sync_at: string | null;
+  user: {
+    id: string;
+    email: string;
+    github_username?: string;
+    full_name?: string;
+  } | null;
+}
+
+export interface TeamMembership {
+  team_id: string;
+  team_name: string;
+  role: 'owner' | 'admin' | 'member';
+  joined_at: string;
+  last_sync_at: string | null;
+}
+
+export interface TeamSyncStatus {
+  isMember: boolean;
+  membership: TeamMembership | null;
+  staleness: {
+    isStale: boolean;
+    lastSyncAt: string | null;
+    daysSinceSync: number;
+    thresholdDays: number;
+  };
+}
+
+export interface TeamSyncOptions extends SyncOptions {
+  teamId?: string;
+  stalenessThresholdDays?: number;
+  skipMembershipCheck?: boolean;
+}
