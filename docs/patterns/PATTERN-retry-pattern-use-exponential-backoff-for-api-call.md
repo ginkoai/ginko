@@ -1,9 +1,9 @@
 ---
 type: pattern
 status: draft
-updated: 2025-12-31
+updated: 2026-01-03
 synced-from: dashboard
-synced-at: 2025-12-31T23:53:15.014Z
+synced-at: 2026-01-03T15:33:57.336Z
 ---
 
 # Retry Pattern: Use exponential backoff for API calls

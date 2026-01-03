@@ -1,9 +1,9 @@
 ---
 type: pattern
 status: draft
-updated: 2025-12-31
+updated: 2026-01-03
 synced-from: dashboard
-synced-at: 2025-12-31T23:53:14.383Z
+synced-at: 2026-01-03T15:33:56.370Z
 ---
 
 # Output Formatter Pattern: Keep CLI output scannable and minimal
