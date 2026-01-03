@@ -827,10 +827,23 @@
       "relevance": "critical",
       "created": "2025-12-31T18:36:57.530Z",
       "sessionId": "session-chris-at-watchhill-ai-1767206217467"
+    },
+    {
+      "filename": "gotcha-fixed-ginko-sync-command-1-api-response-transforma.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2025-12-31T23:32:08.846Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767223928767"
     }
   ],
-  "lastUpdated": "2025-12-31T18:36:57.544Z",
-  "totalModules": 61,
+  "lastUpdated": "2025-12-31T23:32:08.850Z",
+  "totalModules": 62,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

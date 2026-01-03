@@ -1,12 +1,12 @@
 ---
-session_id: session-2025-12-31T21-44-18-426Z
-started: 2025-12-31T21:44:18.426Z
+session_id: session-2026-01-03T13-29-47-254Z
+started: 2026-01-03T13:29:47.254Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2025-12-31T21-44-18-426Z
+# Session Log: session-2026-01-03T13-29-47-254Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,21 +36,3 @@ flow_state: hot
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
-
-### 17:39 - [insight]
-# [INSIGHT] 17:39
-
-Known issue: Score ring SVG gradient direction not following arc correctly - linear gradient on circular stroke behaves unexpectedly with transform rotation. Progress bar gradients working correctly. Will revisit later.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-- dashboard/src/components/insights/InsightCategoryTabs.tsx
-- dashboard/src/components/insights/InsightsOverview.tsx
-
-**Impact:** low
-**Timestamp:** 2025-12-31T22:39:08.055Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/components/insights/InsightCategoryTabs.tsx, dashboard/src/components/insights/InsightsOverview.tsx
-Impact: low
