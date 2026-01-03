@@ -1,6 +1,6 @@
 {
   "name": "@ginkoai/cli",
-  "version": "2.0.0-beta.6",
+  "version": "2.0.0-beta.7",
   "description": "Git-native session management and cloud context for AI-mediated development. AI Collaboration for Vibe Tribes.",
   "main": "dist/index.js",
   "bin": {
