@@ -15,7 +15,14 @@ import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { KeyIcon, UserIcon, BoltIcon } from '@heroicons/react/24/outline'
+import { KeyIcon, UserIcon, BoltIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { TeamMemberList } from '@/components/team'
+
+interface Team {
+  id: string;
+  name: string;
+  role: string;
+}
 
 interface UserProfile {
   api_key_hash?: string
@@ -31,6 +38,7 @@ export default function SettingsPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
@@ -48,6 +56,22 @@ export default function SettingsPage() {
             .single()
 
           setProfile(profile)
+
+          // Fetch user's teams
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.access_token) {
+            try {
+              const teamsRes = await fetch('/api/v1/teams', {
+                headers: { Authorization: `Bearer ${session.access_token}` }
+              })
+              if (teamsRes.ok) {
+                const teamsData = await teamsRes.json()
+                setTeams(teamsData.teams || [])
+              }
+            } catch (err) {
+              console.error('Failed to fetch teams:', err)
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading user data:', error)
@@ -154,6 +178,30 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Team Members */}
+      {teams.length > 0 && (
+        <div id="team" className="scroll-mt-20">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <UsersIcon className="h-5 w-5 text-primary" />
+              Team
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Manage your team members and invite collaborators
+            </p>
+          </div>
+          {teams.map((team) => (
+            <TeamMemberList
+              key={team.id}
+              teamId={team.id}
+              currentUserId={user?.id}
+              showInviteButton={team.role === 'owner' || team.role === 'admin'}
+              className="mb-4"
+            />
+          ))}
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="bg-card rounded-lg border border-border shadow-sm">
