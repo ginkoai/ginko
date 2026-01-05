@@ -5,7 +5,14 @@ created: 2026-01-03
 updated: 2026-01-05
 completed: 2026-01-05
 current_sprint: none
-adr: TBD
+adr: ADR-057
+# Velocity Metrics (ADR-057)
+traditional_estimate: 6-7 weeks
+actual_delivery: 3 days
+acceleration_factor: 15
+complexity: high
+greenfield: false
+work_mode: think-and-build
 ---
 
 # EPIC-008: Team Collaboration

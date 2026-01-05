@@ -39,6 +39,17 @@ This document maintains the official registry of all Architecture Decision Recor
 | [ADR-044](ADR-044-neo4j-auradb-migration.md) | Migrate to Neo4j AuraDB Free Tier for Production Deployment | Accepted | 2025-11-05 | infrastructure, database, saas, cost-optimization |
 | [ADR-045](ADR-045-voyage-ai-embedding-provider.md) | Voyage AI as Vector Embedding Provider | Proposed | 2025-11-07 | embeddings, vector-search, voyage-ai, semantic-search |
 | [ADR-046](ADR-046-command-patterns-reflection-vs-utility.md) | Command Patterns: Reflection vs. Utility | Proposed | 2025-11-18 | architecture, cli, command-patterns, ai-ux, reflection, utility |
+| [ADR-047](ADR-047-strategic-context-surfacing.md) | Strategic Context Surfacing | Accepted | 2025-11-24 | context, surfacing, strategic |
+| [ADR-048](ADR-048-dynamic-adaptivity-mode-sensing.md) | Dynamic Adaptivity and Mode Sensing | Accepted | 2025-11-24 | adaptivity, work-modes, sensing |
+| [ADR-049](ADR-049-natural-language-project-queries.md) | Natural Language Project Queries | Accepted | 2025-11-25 | queries, natural-language, graph |
+| [ADR-050](ADR-050-blog-infrastructure-static-markdown.md) | Blog Infrastructure with Static Markdown | Accepted | 2025-12-03 | blog, markdown, static |
+| [ADR-051](ADR-051-ai-to-ai-collaboration-architecture.md) | AI-to-AI Collaboration Architecture | Accepted | 2025-12-05 | ai-collaboration, multi-agent, architecture |
+| [ADR-052](ADR-052-unified-entity-naming-convention.md) | Unified Entity Naming Convention | Accepted | 2025-12-09 | naming, entities, convention |
+| [ADR-053](ADR-053-coaching-insights-engine.md) | Coaching Insights Engine | Accepted | 2025-12-15 | insights, coaching, analytics |
+| [ADR-054](ADR-054-knowledge-editing-architecture.md) | Knowledge Editing Architecture | Accepted | 2025-12-31 | knowledge, editing, sync |
+| [ADR-055](ADR-055-cross-platform-ai-instructions.md) | Cross-Platform AI Instructions | Accepted | 2025-12-19 | ai-instructions, cross-platform |
+| [ADR-056](ADR-056-roadmap-as-epic-view.md) | Roadmap as Epic View | Proposed | 2026-01-03 | roadmap, epic, planning |
+| [ADR-057](ADR-057-human-ai-velocity-estimation.md) | Human+AI Velocity Estimation | Accepted | 2026-01-05 | velocity, estimation, human-ai, collaboration |
 
 ## ADR Status Definitions
 
@@ -127,8 +138,8 @@ ADRs are never deleted, only deprecated or superseded. This maintains a complete
 
 ---
 
-**Last Updated:** 2025-11-07
-**Next Available Number:** ADR-046
+**Last Updated:** 2026-01-05
+**Next Available Number:** ADR-058
 **Maintainer:** Architecture Team
 - [ADR-025: Context Preservation System Architecture](./ADR-025-context-preservation-system-architecture.md)
 
