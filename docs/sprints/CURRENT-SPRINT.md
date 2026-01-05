@@ -201,7 +201,14 @@ Verify:
 
 ## Next Steps
 
-After Sprint 4 completion:
+**Immediate** (next session):
+1. e008_s04_t02: Stripe Per-Seat Product Configuration (2h)
+   - Create "Ginko Team" product in Stripe
+   - Configure per-seat monthly billing
+   - Test in Stripe test mode
+   - Add price IDs to environment
+
+**After Sprint 4 completion:**
 - EPIC-008 complete
 - Team collaboration features ready for launch
 - Move to EPIC-007 or next priority
