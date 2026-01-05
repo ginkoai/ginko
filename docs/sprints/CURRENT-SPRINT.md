@@ -5,7 +5,7 @@
 **Sprint Goal**: Enable owners to view team member insights and optimize the onboarding flow to hit 10-minute target
 **Duration**: 1 week (2026-02-03 to 2026-02-07)
 **Type**: Polish sprint
-**Progress:** 83% (5/6 tasks complete)
+**Progress:** 100% (6/6 tasks complete)
 
 **Success Criteria:**
 - [x] Insights page has member filter for project owners
@@ -131,7 +131,7 @@ Document:
 ---
 
 ### e008_s03_t06: End-to-End Testing (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Full flow testing from invite to productive team member
@@ -150,6 +150,14 @@ Test scenarios:
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-05: End-to-End Testing (e008_s03_t06)
+- Created `test/e2e/team-onboarding.test.ts` - full invite→join→sync→start flow
+- Created `test/e2e/team-collaboration.test.ts` - concurrent edits, insights, staleness
+- Tests skip gracefully without API credentials (like live-graph-api.test.ts)
+- Covers: invite validation, join flow, sync progress, staleness warnings
+- Covers: concurrent node edits, owner insights access, member restrictions
+- Files: packages/cli/test/e2e/team-onboarding.test.ts, team-collaboration.test.ts
 
 ### 2026-01-05: Team Features Documentation (e008_s03_t05)
 - Created comprehensive team collaboration guide at `docs/guides/team-collaboration.md`
