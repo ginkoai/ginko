@@ -1,24 +1,25 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-03
- * @tags: [teams, members, rest-api, epic-008, authorization, oauth-fallback]
- * @related: [../route.ts, [userId]/route.ts]
+ * @updated: 2026-01-05
+ * @tags: [teams, members, rest-api, epic-008, authorization, oauth-fallback, billing]
+ * @related: [../route.ts, [userId]/route.ts, billing/seats/sync/route.ts]
  * @priority: high
  * @complexity: medium
- * @dependencies: [next/server, supabase]
+ * @dependencies: [next/server, supabase, stripe]
  */
 
 /**
  * GET /api/v1/teams/[id]/members - List team members
  * POST /api/v1/teams/[id]/members - Add team member (owners only)
  *
- * EPIC-008: Team Collaboration Sprint 1
+ * EPIC-008: Team Collaboration Sprint 1 & Sprint 4 (Seat Sync)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth/middleware';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { syncTeamSeats } from '@/lib/billing/seat-sync';
 
 interface AddTeamMemberRequest {
   user_id: string;
@@ -135,6 +136,19 @@ export async function POST(
         );
       }
 
+      // Sync seat count with Stripe after member added (EPIC-008 Sprint 4)
+      const seatSyncResult = await syncTeamSeats(supabase, teamId, {
+        prorate: true,
+        triggeredBy: user.id,
+      });
+
+      if (!seatSyncResult.success && !seatSyncResult.skipped) {
+        console.warn('[Team Members API] Seat sync warning:', seatSyncResult.error);
+        // Don't fail the request - member was added successfully
+      } else if (seatSyncResult.success && !seatSyncResult.skipped) {
+        console.log(`[Team Members API] Seat sync: ${seatSyncResult.previousSeats} → ${seatSyncResult.newSeats}`);
+      }
+
       return NextResponse.json({
         success: true,
         member: {
@@ -144,6 +158,11 @@ export async function POST(
             email: targetUser.email,
             github_username: targetUser.github_username,
           },
+        },
+        billing: seatSyncResult.skipped ? undefined : {
+          previousSeats: seatSyncResult.previousSeats,
+          newSeats: seatSyncResult.newSeats,
+          prorated: seatSyncResult.prorated,
         },
       }, { status: 201 });
 

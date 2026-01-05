@@ -1,22 +1,24 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-07
- * @tags: [teams, members, rest-api, task-022, authorization]
- * @related: [../route.ts, ../../route.ts]
+ * @updated: 2026-01-05
+ * @tags: [teams, members, rest-api, task-022, authorization, billing]
+ * @related: [../route.ts, ../../route.ts, billing/seats/sync/route.ts]
  * @priority: high
  * @complexity: medium
- * @dependencies: [next/server, supabase]
+ * @dependencies: [next/server, supabase, stripe]
  */
 
 /**
  * DELETE /api/v1/teams/[id]/members/[userId] - Remove team member
  *
  * TASK-022: Project Management API
+ * EPIC-008 Sprint 4: Seat Count Synchronization
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth/middleware';
+import { syncTeamSeats } from '@/lib/billing/seat-sync';
 
 /**
  * Helper: Check if user is team owner
@@ -123,9 +125,29 @@ export async function DELETE(
         );
       }
 
+      // Sync seat count with Stripe after member removed (EPIC-008 Sprint 4)
+      // Note: For seat removal, we don't prorate by default (Stripe best practice)
+      // Seat reduction takes effect at the end of the billing period
+      const seatSyncResult = await syncTeamSeats(supabase, teamId, {
+        prorate: false, // Seat removal effective at period end
+        triggeredBy: user.id,
+      });
+
+      if (!seatSyncResult.success && !seatSyncResult.skipped) {
+        console.warn('[Team Members API] Seat sync warning:', seatSyncResult.error);
+        // Don't fail the request - member was removed successfully
+      } else if (seatSyncResult.success && !seatSyncResult.skipped) {
+        console.log(`[Team Members API] Seat sync: ${seatSyncResult.previousSeats} → ${seatSyncResult.newSeats}`);
+      }
+
       return NextResponse.json({
         success: true,
         removedUserId: targetUserId,
+        billing: seatSyncResult.skipped ? undefined : {
+          previousSeats: seatSyncResult.previousSeats,
+          newSeats: seatSyncResult.newSeats,
+          effectiveAtPeriodEnd: true,
+        },
       });
 
     } catch (error: any) {

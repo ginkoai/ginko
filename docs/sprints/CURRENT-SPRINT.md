@@ -5,7 +5,7 @@
 **Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
 **Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
 **Type**: Infrastructure + Launch sprint
-**Progress:** 25% (2/8 tasks complete)
+**Progress:** 37.5% (3/8 tasks complete)
 
 **Success Criteria:**
 - [ ] Per-seat monthly billing operational via Stripe
@@ -61,7 +61,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ---
 
 ### e008_s04_t03: Seat Count Synchronization (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
@@ -74,8 +74,13 @@ Follow: ADR-005 (Stripe Payment Integration)
 - Sync seat count on startup for consistency
 
 **Files:**
-- `packages/mcp-server/src/billing-manager.ts` (add seat sync)
-- `dashboard/src/app/api/v1/team/members/route.ts` (trigger billing update)
+- `dashboard/src/lib/stripe/client.ts` (new - Stripe client utility)
+- `dashboard/src/lib/billing/seat-sync.ts` (new - seat sync helper)
+- `dashboard/src/app/api/v1/billing/seats/sync/route.ts` (new - sync API)
+- `dashboard/src/app/api/v1/billing/seats/reconcile/route.ts` (new - reconciliation API)
+- `dashboard/src/app/api/v1/teams/[id]/members/route.ts` (updated - add member sync)
+- `dashboard/src/app/api/v1/teams/[id]/members/[userId]/route.ts` (updated - remove member sync)
+- `dashboard/src/app/api/v1/team/join/route.ts` (updated - join via invite sync)
 
 ---
 
@@ -180,6 +185,32 @@ Verify:
 
 ## Accomplishments This Sprint
 
+### 2026-01-05: Seat Count Synchronization (e008_s04_t03)
+- Implemented automatic Stripe seat sync when team members change
+- Created Stripe client utility (`dashboard/src/lib/stripe/client.ts`)
+- Created seat sync helper (`dashboard/src/lib/billing/seat-sync.ts`) with:
+  - `syncTeamSeats()` - Sync team seat count with Stripe subscription
+  - `checkSeatSyncNeeded()` - Check if team needs seat sync
+- Created seat sync API (`/api/v1/billing/seats/sync`):
+  - POST: Trigger seat sync for a team
+  - GET: Get current seat allocation status
+- Created reconciliation API (`/api/v1/billing/seats/reconcile`):
+  - POST: Reconcile seats for one or more teams
+  - GET: Dry-run to preview what would be synced
+- Integrated sync triggers into team member routes:
+  - POST /teams/[id]/members - Sync after member added (prorated)
+  - DELETE /teams/[id]/members/[userId] - Sync after member removed (end of period)
+  - POST /team/join - Sync after member joins via invitation (prorated)
+- Proration strategy: Enable for additions (immediate charge), disable for removals (Stripe best practice)
+- Files changed:
+  - `dashboard/src/lib/stripe/client.ts` (new)
+  - `dashboard/src/lib/billing/seat-sync.ts` (new)
+  - `dashboard/src/app/api/v1/billing/seats/sync/route.ts` (new)
+  - `dashboard/src/app/api/v1/billing/seats/reconcile/route.ts` (new)
+  - `dashboard/src/app/api/v1/teams/[id]/members/route.ts` (updated)
+  - `dashboard/src/app/api/v1/teams/[id]/members/[userId]/route.ts` (updated)
+  - `dashboard/src/app/api/v1/team/join/route.ts` (updated)
+
 ### 2026-01-05: Extended Billing Schema for Seats (e008_s04_t01)
 - Added 'team' tier to PlanTier type with per-seat billing model
 - Extended BillingSubscription interface with seatCount, seatLimit, pricePerSeat fields
@@ -202,11 +233,16 @@ Verify:
 ## Next Steps
 
 **Immediate** (next session):
-1. e008_s04_t02: Stripe Per-Seat Product Configuration (2h)
-   - Create "Ginko Team" product in Stripe
-   - Configure per-seat monthly billing
-   - Test in Stripe test mode
-   - Add price IDs to environment
+1. e008_s04_t04: Dashboard Billing Overview (6h)
+   - Show seat usage and billing status in dashboard
+   - Current seat count vs. plan limit
+   - Next billing date and amount
+   - Link to Stripe customer portal
+
+2. e008_s04_t05: Upgrade/Downgrade Flows (6h)
+   - Add seats: immediate billing (prorated)
+   - Remove seats: effective at period end
+   - Clear confirmation dialogs
 
 **After Sprint 4 completion:**
 - EPIC-008 complete

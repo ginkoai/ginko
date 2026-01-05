@@ -1,23 +1,24 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-03
- * @tags: [teams, join, invitation, rest-api, epic-008]
- * @related: [../invite/route.ts, ../../teams/route.ts]
+ * @updated: 2026-01-05
+ * @tags: [teams, join, invitation, rest-api, epic-008, billing]
+ * @related: [../invite/route.ts, ../../teams/route.ts, billing/seats/sync/route.ts]
  * @priority: high
  * @complexity: medium
- * @dependencies: [next/server, supabase]
+ * @dependencies: [next/server, supabase, stripe]
  */
 
 /**
  * POST /api/v1/team/join - Accept team invitation via code
  * GET /api/v1/team/join - Validate invitation code (preview before joining)
  *
- * EPIC-008: Team Collaboration Sprint 1
+ * EPIC-008: Team Collaboration Sprint 1 & Sprint 4 (Seat Sync)
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { withAuth } from '@/lib/auth/middleware';
+import { syncTeamSeats } from '@/lib/billing/seat-sync';
 
 interface JoinTeamRequest {
   code: string;
@@ -248,6 +249,19 @@ export async function POST(request: NextRequest) {
         // Don't fail - membership was already created
       }
 
+      // Sync seat count with Stripe after member joined (EPIC-008 Sprint 4)
+      const seatSyncResult = await syncTeamSeats(supabase, invitation.team_id, {
+        prorate: true, // New member addition is prorated
+        triggeredBy: user.id,
+      });
+
+      if (!seatSyncResult.success && !seatSyncResult.skipped) {
+        console.warn('[Team Join API] Seat sync warning:', seatSyncResult.error);
+        // Don't fail the request - member was added successfully
+      } else if (seatSyncResult.success && !seatSyncResult.skipped) {
+        console.log(`[Team Join API] Seat sync: ${seatSyncResult.previousSeats} → ${seatSyncResult.newSeats}`);
+      }
+
       return NextResponse.json({
         success: true,
         message: `Successfully joined team: ${invitation.teams.name}`,
@@ -258,6 +272,11 @@ export async function POST(request: NextRequest) {
           joined_at: member.created_at,
         },
         email_matched: isEmailMatch,
+        billing: seatSyncResult.skipped ? undefined : {
+          previousSeats: seatSyncResult.previousSeats,
+          newSeats: seatSyncResult.newSeats,
+          prorated: seatSyncResult.prorated,
+        },
       }, { status: 201 });
 
     } catch (error: any) {
