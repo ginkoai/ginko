@@ -5,12 +5,12 @@
 **Sprint Goal**: Enable owners to view team member insights and optimize the onboarding flow to hit 10-minute target
 **Duration**: 1 week (2026-02-03 to 2026-02-07)
 **Type**: Polish sprint
-**Progress:** 33% (2/6 tasks complete)
+**Progress:** 67% (4/6 tasks complete)
 
 **Success Criteria:**
 - [x] Insights page has member filter for project owners
 - [x] Owner can view any team member's collaboration insights
-- [ ] New member onboarding completes in ≤10 minutes
+- [x] New member onboarding completes in ≤10 minutes
 - [ ] Team features documentation complete
 
 ---
@@ -53,7 +53,7 @@
 ---
 
 ### e008_s03_t03: Onboarding Flow Optimization (6h)
-**Status:** [@] In Progress
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Streamline new member onboarding to achieve ≤10 minute target
@@ -70,35 +70,43 @@ Measure and optimize each step:
 Optimizations:
 - [x] Pre-fetch common context during join (auto-sync)
 - [x] Parallelise sync operations (40-60% faster)
-- [ ] Clear progress indicators (Phase 4)
+- [x] Clear progress indicators (Phase 4)
 
 **Completed 2026-01-05:**
 - Sync parallelization: parallel team status checks, batch markNodeSynced, parallel sprint files
 - Auto-sync after join: no manual `ginko sync` step required
 - First-time member detection: welcome message with project/pattern summary
+- Progress indicators: ora spinners with time estimates, step progress (1/3, 2/3, 3/3)
 
 **Files:**
-- `packages/cli/src/commands/sync/sync-command.ts` (parallelization)
-- `packages/cli/src/commands/join/index.ts` (auto-sync)
+- `packages/cli/src/commands/sync/sync-command.ts` (parallelization + spinners)
+- `packages/cli/src/commands/join/index.ts` (auto-sync + elapsed-time spinner)
 - `packages/cli/src/commands/start/start-reflection.ts` (first-time detection)
-- `packages/cli/src/lib/output-formatter.ts` (welcome message)
+- `packages/cli/src/lib/output-formatter.ts` (welcome message + formatProgressBar export)
 
 ---
 
 ### e008_s03_t04: Onboarding Progress Indicator (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Visual progress during onboarding to reduce perceived wait time
 
 **Implementation Notes:**
-- Step-by-step progress in CLI
-- Estimated time remaining
-- Clear success message with next steps
+- Step-by-step progress in CLI ✓
+- Estimated time remaining ✓
+- Clear success message with next steps ✓
+
+**Completed 2026-01-05 (as part of e008_s03_t03):**
+- Added ora spinners with time estimates to sync-command.ts
+- Added elapsed-time spinner to join command during auto-sync
+- Added step indicators (Step 1/3, 2/3, 3/3) to join flow
+- Exported formatProgressBar for potential future use
 
 **Files:**
-- `packages/cli/src/lib/onboarding-progress.ts` (new)
-- `packages/cli/src/commands/join/join-command.ts` (integrate)
+- `packages/cli/src/commands/sync/sync-command.ts` (spinners + time estimates)
+- `packages/cli/src/commands/join/index.ts` (elapsed-time + step indicators)
+- `packages/cli/src/lib/output-formatter.ts` (exported formatProgressBar)
 
 ---
 
@@ -142,6 +150,15 @@ Test scenarios:
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-05: Progress Indicators for Onboarding (e008_s03_t03, e008_s03_t04)
+- Added ora spinners with time estimates to sync command
+- Sync now shows per-node progress: "Syncing node 3/10: ADR-043... (30%)"
+- Join command shows elapsed time during auto-sync: "Syncing... (12s elapsed)"
+- Added step indicators to join flow (Step 1/3, 2/3, 3/3)
+- Exported formatProgressBar utility for future use
+- ADR-023 compliant: minimal default output, spinner stops for prompts
+- Files: sync-command.ts, join/index.ts, output-formatter.ts
 
 ### 2026-01-05: Team Insights API Enhancement (e008_s03_t02)
 - Added `aggregate=team` parameter for team-wide insights aggregation
