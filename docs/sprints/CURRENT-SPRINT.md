@@ -5,7 +5,7 @@
 **Sprint Goal**: Enable owners to view team member insights and optimize the onboarding flow to hit 10-minute target
 **Duration**: 1 week (2026-02-03 to 2026-02-07)
 **Type**: Polish sprint
-**Progress:** 17% (1/6 tasks complete)
+**Progress:** 33% (2/6 tasks complete)
 
 **Success Criteria:**
 - [x] Insights page has member filter for project owners
@@ -37,7 +37,7 @@
 ---
 
 ### e008_s03_t02: Team Insights API Enhancement (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Extend insights API to support cross-member queries for owners
@@ -48,8 +48,7 @@
 - Aggregate team-wide insights option
 
 **Files:**
-- `dashboard/src/app/api/v1/insights/route.ts` (update)
-- `dashboard/src/app/api/v1/insights/sync/route.ts` (update)
+- `dashboard/src/app/api/v1/insights/sync/route.ts` (updated)
 
 ---
 
@@ -136,6 +135,14 @@ Test scenarios:
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-05: Team Insights API Enhancement (e008_s03_t02)
+- Added `aggregate=team` parameter for team-wide insights aggregation
+- Returns team average scores, category averages, severity counts
+- Lists all team members with their latest insight scores
+- Permission check: only team owners can access aggregate view
+- Builds on existing `memberEmail` filter from e008_s03_t01
+- Files: insights/sync/route.ts (updated with handleTeamAggregateInsights function)
 
 ### 2026-01-05: Insights Page Member Filter (e008_s03_t01)
 - Created MemberFilter component with team member dropdown
