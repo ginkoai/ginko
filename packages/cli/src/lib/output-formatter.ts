@@ -453,7 +453,7 @@ function getFlowStateLabel(score: number): string {
 /**
  * Format a progress bar
  */
-function formatProgressBar(progress: number, width: number = 20): string {
+export function formatProgressBar(progress: number, width: number = 20): string {
   const filled = Math.round((progress / 100) * width);
   const empty = width - filled;
   return chalk.green('█'.repeat(filled)) + chalk.dim('░'.repeat(empty));

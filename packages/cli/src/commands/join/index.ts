@@ -107,10 +107,16 @@ async function acceptInvitation(code: string): Promise<void> {
       console.log(chalk.yellow('  Note: Invitation was sent to a different email.'));
     }
 
-    // Auto-sync team context (e008_s03_t03 onboarding optimization)
-    console.log('');
-    console.log(chalk.cyan('🔄 Syncing team context...'));
-    console.log('');
+    // Step 3: Auto-sync team context with elapsed-time indicator (e008_s03_t03)
+    console.log(chalk.dim('\nStep 3/3: Syncing team context...'));
+    const syncSpinner = ora('Syncing team context... (this may take 10-30s)').start();
+    const startTime = Date.now();
+
+    // Update spinner with elapsed time every second
+    const updateInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      syncSpinner.text = `Syncing team context... (${elapsed}s elapsed)`;
+    }, 1000);
 
     try {
       await syncCommand({
@@ -118,11 +124,11 @@ async function acceptInvitation(code: string): Promise<void> {
         force: false,
         dryRun: false,
       });
-      console.log('');
-      console.log(chalk.green('✓ Team context synced successfully'));
+      clearInterval(updateInterval);
+      syncSpinner.succeed('Team context synced');
     } catch (syncError: any) {
-      console.log('');
-      console.log(chalk.yellow('⚠ Could not auto-sync team context'));
+      clearInterval(updateInterval);
+      syncSpinner.warn('Could not auto-sync team context');
       console.log(chalk.dim(`  ${syncError.message || 'Unknown error'}`));
       console.log(chalk.dim('  You can sync manually with: ginko sync'));
     }
@@ -164,10 +170,11 @@ async function interactiveJoin(): Promise<void> {
 }
 
 /**
- * Main join flow
+ * Main join flow with step indicators (e008_s03_t03)
  */
 async function joinTeam(code: string): Promise<void> {
-  // First validate and preview
+  // Step 1: Validate invitation
+  console.log(chalk.dim('\nStep 1/3: Validating invitation...'));
   const preview = await previewInvitation(code);
   if (!preview) {
     process.exit(1);
@@ -209,8 +216,10 @@ async function joinTeam(code: string): Promise<void> {
     return;
   }
 
-  // Accept
+  // Step 2: Join team
+  console.log(chalk.dim('\nStep 2/3: Joining team...'));
   await acceptInvitation(code);
+  // Note: Step 3 (syncing) is handled inside acceptInvitation
 }
 
 /**

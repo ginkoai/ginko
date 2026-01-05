@@ -24,6 +24,7 @@
  */
 
 import chalk from 'chalk';
+import ora, { type Ora } from 'ora';
 import prompts from 'prompts';
 import { getConfig, getApiToken } from '../graph/config.js';
 import {
@@ -101,6 +102,16 @@ function transformApiNode(raw: RawApiNode): UnsyncedNode {
     gitHash: raw.syncStatus?.gitHash || null,
     slug: (props.slug as string) || undefined,
   };
+}
+
+/**
+ * Estimate sync time based on node count (e008_s03_t03)
+ */
+function estimateSyncTime(count: number): string {
+  if (count <= 3) return '<5s';
+  if (count <= 10) return '5-15s';
+  if (count <= 25) return '15-30s';
+  return '>30s';
 }
 
 /**
@@ -236,16 +247,16 @@ async function syncSprints(
   projectRoot: string,
   options: SyncOptions
 ): Promise<SprintSyncResult[]> {
-  console.log(chalk.dim('📋 Finding sprint files...'));
+  const sprintSpinner = ora('Finding sprint files...').start();
 
   const sprintFiles = await findSprintFiles(projectRoot);
 
   if (sprintFiles.length === 0) {
-    console.log(chalk.yellow('No sprint files found in docs/sprints/'));
+    sprintSpinner.warn('No sprint files found in docs/sprints/');
     return [];
   }
 
-  console.log(chalk.cyan(`Found ${sprintFiles.length} sprint file(s):\n`));
+  sprintSpinner.succeed(`Found ${sprintFiles.length} sprint file(s)`);
 
   for (const sf of sprintFiles) {
     console.log(`  📋 ${sf.sprintId}: ${sf.path.split('/').pop()}`);
@@ -274,12 +285,14 @@ async function syncSprints(
 
   console.log('');
 
-  // Optimization: Process sprint files in parallel
-  console.log(chalk.dim(`📡 Syncing ${sprintFiles.length} sprint(s) in parallel...`));
+  // Optimization: Process sprint files in parallel with progress indicator
+  const syncSpinner = ora(`Syncing ${sprintFiles.length} sprint(s) in parallel... (est. 2-5s)`).start();
 
   const results = await Promise.all(
     sprintFiles.map((sprintFile) => syncSprintFile(sprintFile, graphId, token, API_BASE))
   );
+
+  syncSpinner.succeed(`Processed ${sprintFiles.length} sprint(s)`);
 
   // Display results
   for (let i = 0; i < results.length; i++) {
@@ -330,22 +343,27 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
 
   console.log(chalk.bold.cyan('🔄 Sync: Dashboard → Git\n'));
 
+  // Initialize spinner for progress indication (e008_s03_t03)
+  const spinner = ora('Checking authentication...').start();
+
   // Get config and auth
   const config = await getConfig();
   const graphId = config?.graphId;
 
   if (!graphId) {
-    console.error(chalk.red('❌ No graph ID found.'));
+    spinner.fail('No graph ID found');
     console.error(chalk.dim('   Run `ginko graph init` first.'));
     return result;
   }
 
   const token = await getApiToken();
   if (!token) {
-    console.error(chalk.red('❌ Not authenticated.'));
+    spinner.fail('Not authenticated');
     console.error(chalk.dim('   Run `ginko login` to authenticate.'));
     return result;
   }
+
+  spinner.succeed('Authenticated');
 
   // Check team membership and staleness (EPIC-008)
   // Optimization: Fetch team status and changes in parallel when possible
@@ -354,6 +372,8 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
   let teamChangeSummary = null;
 
   if (!options.skipMembershipCheck) {
+    spinner.start('Fetching team status...');
+
     // Start both fetches in parallel - team changes will use null for lastSyncAt initially
     // which returns all unsynced changes (safe fallback for first sync)
     const [teamStatusResult, teamChangesResult] = await Promise.all([
@@ -365,6 +385,7 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
 
     // Display team info if member
     if (teamStatus.isMember) {
+      spinner.stop();
       displayTeamInfo(teamStatus);
 
       // Show staleness warning if applicable
@@ -377,6 +398,8 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
       if (teamChangeSummary.totalChanges > 0) {
         displayTeamChangeReport(teamChangeSummary);
       }
+    } else {
+      spinner.succeed('Team status loaded');
     }
   }
 
@@ -443,22 +466,23 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
   }
 
   // Fetch unsynced nodes (knowledge nodes only)
-  console.log(chalk.dim('📡 Fetching unsynced nodes from dashboard...'));
+  spinner.start('Fetching unsynced nodes from dashboard...');
 
   let nodes: UnsyncedNode[];
   try {
     nodes = await fetchUnsyncedNodes(graphId, token, options.type);
   } catch (error) {
-    console.error(chalk.red('❌ Failed to fetch unsynced nodes:'), error);
+    spinner.fail('Failed to fetch unsynced nodes');
+    console.error(chalk.red(`   ${error}`));
     return result;
   }
 
   if (nodes.length === 0) {
-    console.log(chalk.green('✓ All nodes are synced. Nothing to do.'));
+    spinner.succeed('All nodes are synced. Nothing to do.');
     return result;
   }
 
-  console.log(chalk.cyan(`Found ${nodes.length} unsynced node(s):\n`));
+  spinner.succeed(`Found ${nodes.length} unsynced node(s)`);
 
   // Show preview
   for (const node of nodes) {
@@ -509,14 +533,21 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
 
   console.log('');
 
-  // Process each node
+  // Process each node with progress indicator (e008_s03_t03)
   // Optimization: Collect synced nodes and batch markNodeSynced calls at the end
   const syncedFiles: string[] = [];
   const nodesToMarkSynced: Array<{ id: string; hash: string }> = [];
+  const totalNodes = nodes.length;
+  const timeEstimate = estimateSyncTime(totalNodes);
 
-  for (const node of nodes) {
+  spinner.start(`Syncing ${totalNodes} node(s)... (est. ${timeEstimate})`);
+
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
     const filePath = getFilePath(projectRoot, node);
-    console.log(chalk.dim(`Processing: ${node.title}...`));
+    const progress = Math.round(((i + 1) / totalNodes) * 100);
+    const shortTitle = node.title.length > 25 ? node.title.slice(0, 25) + '...' : node.title;
+    spinner.text = `Syncing node ${i + 1}/${totalNodes}: ${shortTitle} (${progress}%)`;
 
     try {
       const syncResult = await syncNode(node, projectRoot, { force: options.force });
@@ -529,9 +560,9 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
           syncedFiles.push(syncResult.filePath);
           result.synced.push(node.id);
           nodesToMarkSynced.push({ id: node.id, hash: syncResult.hash });
-          console.log(chalk.green(`  ✓ Force synced: ${filePath}`));
         } else {
-          // Interactive conflict resolution
+          // Interactive conflict resolution - stop spinner for prompts
+          spinner.stop();
           const resolution = await resolveConflict(syncResult.conflict);
           syncResult.conflict.resolution = resolution;
           result.conflicts.push(syncResult.conflict);
@@ -551,43 +582,52 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
             result.skipped.push(node.id);
             console.log(chalk.yellow(`  ○ Skipped: ${filePath}`));
           }
+          // Resume spinner for remaining nodes
+          if (i < nodes.length - 1) {
+            spinner.start(`Syncing node ${i + 2}/${totalNodes}...`);
+          }
         }
       } else if (syncResult.success) {
         syncedFiles.push(syncResult.filePath);
         result.synced.push(node.id);
         nodesToMarkSynced.push({ id: node.id, hash: syncResult.hash });
-        console.log(chalk.green(`  ✓ Synced: ${filePath}`));
       }
     } catch (error) {
       result.errors.push({ nodeId: node.id, error: String(error) });
-      console.error(chalk.red(`  ✗ Failed: ${node.id} - ${error}`));
     }
+  }
+
+  // Show sync completion
+  if (result.errors.length > 0) {
+    spinner.warn(`Synced ${result.synced.length}/${totalNodes} nodes (${result.errors.length} errors)`);
+  } else {
+    spinner.succeed(`Synced ${result.synced.length} node(s)`);
   }
 
   // Batch mark nodes as synced in API (parallel calls)
   if (nodesToMarkSynced.length > 0) {
-    console.log(chalk.dim(`\n📡 Marking ${nodesToMarkSynced.length} node(s) as synced...`));
+    spinner.start(`Marking ${nodesToMarkSynced.length} node(s) as synced...`);
     const markResults = await Promise.allSettled(
       nodesToMarkSynced.map(({ id, hash }) => markNodeSynced(id, hash, graphId, token))
     );
 
     const failures = markResults.filter((r) => r.status === 'rejected');
     if (failures.length > 0) {
-      console.warn(chalk.yellow(`  ⚠ ${failures.length} node(s) could not be marked as synced in API`));
+      spinner.warn(`Marked synced (${failures.length} API errors)`);
+    } else {
+      spinner.succeed('Marked nodes as synced');
     }
   }
 
-  console.log('');
-
   // Commit changes
   if (syncedFiles.length > 0) {
-    console.log(chalk.dim('📝 Committing changes...'));
+    spinner.start('Committing changes to git...');
     const committed = await commitSyncedFiles(syncedFiles, projectRoot);
 
     if (committed) {
-      console.log(chalk.green(`\n✓ Synced ${syncedFiles.length} file(s) and committed to git.`));
+      spinner.succeed(`Committed ${syncedFiles.length} file(s) to git`);
     } else {
-      console.log(chalk.yellow(`\n⚠ Synced ${syncedFiles.length} file(s) but commit failed.`));
+      spinner.warn('Commit failed');
       console.log(chalk.dim('   You can commit manually with: git add . && git commit'));
     }
   }
