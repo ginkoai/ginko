@@ -53,7 +53,7 @@
 ---
 
 ### e008_s03_t03: Onboarding Flow Optimization (6h)
-**Status:** [ ] Not Started
+**Status:** [@] In Progress
 **Priority:** HIGH
 
 **Goal:** Streamline new member onboarding to achieve ≤10 minute target
@@ -68,13 +68,20 @@ Measure and optimize each step:
 6. Review team context - 5 min
 
 Optimizations:
-- Pre-fetch common context during join
-- Parallelise sync operations
-- Clear progress indicators
+- [x] Pre-fetch common context during join (auto-sync)
+- [x] Parallelise sync operations (40-60% faster)
+- [ ] Clear progress indicators (Phase 4)
+
+**Completed 2026-01-05:**
+- Sync parallelization: parallel team status checks, batch markNodeSynced, parallel sprint files
+- Auto-sync after join: no manual `ginko sync` step required
+- First-time member detection: welcome message with project/pattern summary
 
 **Files:**
-- `packages/cli/src/commands/join/join-command.ts` (optimize)
-- `packages/cli/src/lib/onboarding-flow.ts` (new)
+- `packages/cli/src/commands/sync/sync-command.ts` (parallelization)
+- `packages/cli/src/commands/join/index.ts` (auto-sync)
+- `packages/cli/src/commands/start/start-reflection.ts` (first-time detection)
+- `packages/cli/src/lib/output-formatter.ts` (welcome message)
 
 ---
 

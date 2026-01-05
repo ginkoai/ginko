@@ -1,8 +1,8 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-01-13
- * @tags: [start, reflection, session, initialization, context]
+ * @updated: 2026-01-05
+ * @tags: [start, reflection, session, initialization, context, onboarding-optimization]
  * @related: [../../core/reflection-pattern.ts, ../handoff/handoff-reflection.ts]
  * @priority: critical
  * @complexity: high
@@ -409,6 +409,11 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Use event-based synthesis if available (ADR-043), otherwise fall back to session log synthesis
       const activeSynthesis = eventSynthesis || synthesis;
 
+      // Detect first-time member (e008_s03_t03 onboarding optimization)
+      // First-time = no previous session log AND no/few events from this user
+      const myEventsCount = eventContext?.myEvents?.length || 0;
+      const isFirstTimeMember = !hasLog && myEventsCount < 3;
+
       // 9. Load initial context using ActiveContextManager (legacy compatibility)
       const sessionData = {
         userSlug: context.userSlug || 'unknown',
@@ -430,7 +435,7 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // 11. Build AI context for dual output system (TASK-11)
       // Now async due to graph API enrichment (EPIC-002 Sprint 3 completion)
-      const aiContext = await this.buildAIContext(context, activeSynthesis, strategyContext, eventContext, sprintChecklist);
+      const aiContext = await this.buildAIContext(context, activeSynthesis, strategyContext, eventContext, sprintChecklist, isFirstTimeMember);
 
       // Store AI context for MCP/external access
       await this.storeAIContext(aiContext, sessionDir);
@@ -1383,7 +1388,8 @@ Example output structure:
     synthesis: SynthesisOutput | undefined,
     strategyContext: StrategyContext | undefined,
     eventContext: LoadedContext | undefined,
-    sprintChecklist: any
+    sprintChecklist: any,
+    isFirstTimeMember: boolean = false
   ): Promise<AISessionContext> {
     const workMode = context.workMode || 'Think & Build';
 
@@ -1479,6 +1485,7 @@ Example output structure:
         flowScore: synthesis?.flowState?.score || 5,
         flowState: synthesis?.flowState?.energy || 'neutral',
         workMode: workMode,
+        isFirstTimeMember,
       },
       charter: eventContext?.strategicContext?.charter,
       teamActivity: eventContext?.strategicContext?.teamActivity ? {

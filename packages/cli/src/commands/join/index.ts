@@ -1,9 +1,9 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2026-01-03
- * @tags: [join, team, collaboration, epic-008]
- * @related: [../invite/index.ts, ../team/index.ts]
+ * @updated: 2026-01-05
+ * @tags: [join, team, collaboration, epic-008, onboarding-optimization]
+ * @related: [../invite/index.ts, ../team/index.ts, ../sync/sync-command.ts]
  * @priority: high
  * @complexity: medium
  * @dependencies: [commander, chalk, ora, prompts]
@@ -12,7 +12,8 @@
 /**
  * Join Command (EPIC-008 Sprint 1)
  *
- * CLI command for users to join a team via invitation code
+ * CLI command for users to join a team via invitation code.
+ * Automatically syncs team context after successful join (e008_s03_t03).
  */
 
 import { Command } from 'commander';
@@ -20,6 +21,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import prompts from 'prompts';
 import { api } from '../../utils/api-client.js';
+import { syncCommand } from '../sync/sync-command.js';
 
 interface InvitationPreview {
   valid: boolean;
@@ -105,9 +107,29 @@ async function acceptInvitation(code: string): Promise<void> {
       console.log(chalk.yellow('  Note: Invitation was sent to a different email.'));
     }
 
+    // Auto-sync team context (e008_s03_t03 onboarding optimization)
+    console.log('');
+    console.log(chalk.cyan('🔄 Syncing team context...'));
+    console.log('');
+
+    try {
+      await syncCommand({
+        skipMembershipCheck: true, // We just joined, skip membership check
+        force: false,
+        dryRun: false,
+      });
+      console.log('');
+      console.log(chalk.green('✓ Team context synced successfully'));
+    } catch (syncError: any) {
+      console.log('');
+      console.log(chalk.yellow('⚠ Could not auto-sync team context'));
+      console.log(chalk.dim(`  ${syncError.message || 'Unknown error'}`));
+      console.log(chalk.dim('  You can sync manually with: ginko sync'));
+    }
+
     console.log('');
     console.log(chalk.dim('Next steps:'));
-    console.log(chalk.green(`  ginko sync                 ${chalk.dim('# Pull team context')}`));
+    console.log(chalk.green(`  ginko start                ${chalk.dim('# Begin development session')}`));
     console.log(chalk.green(`  ginko teams list-members   ${chalk.dim('# See your teammates')}`));
 
   } catch (error: any) {
