@@ -271,38 +271,40 @@ Activate these reflexes naturally during work (not mechanical checklists):
 
 ### Core Reflexes
 
-**1. "Why Am I Doing This?" ⏰**
+**1. "Proactive Logging" 📝 (ADR-034)**
+- **Triggers:** After fixes, features, decisions, insights, git ops, achievements
+- **Minimum:** 3+ events per session (at least 1 per 20 min of active work)
+- **Before commits:** Always log what's being committed and why
+- Use `ginko log` with context-rich descriptions
+- **Quality standard:** Write for fresh AI with zero context (WHAT + WHY + HOW)
+
+**2. "Why Am I Doing This?" ⏰**
 - **Triggers:** Every 30 min, before major edits/commits
 - Trace current work back to its purpose
 
-**2. "Have We Done This Before?" 🔍**
+**3. "Have We Done This Before?" 🔍**
 - **Triggers:** Before implementing new functionality
 - Recall similar patterns from context
 
-**3. "Something Feels Off" 🤔**
+**4. "Something Feels Off" 🤔**
 - **Triggers:** Confidence < 60%, velocity slower than expected
 - Identify impediments and seek clarification
 
-**4. "Update My Understanding" 💡**
+**5. "Update My Understanding" 💡**
 - **Triggers:** After solving problems or discovering patterns
 - Note learnings for future reference
 
-**5. "Is This Worth It?" 💰**
+**6. "Is This Worth It?" 💰**
 - **Triggers:** Before significant implementation
 - Question: Is complexity worth the value delivered?
 
-**6. "User Impact Check" 👤**
+**7. "User Impact Check" 👤**
 - **Triggers:** After each implementation step
 - Question: How does this help achieve the user's goal?
 
-**7. "Health Monitor" 🏥**
+**8. "Health Monitor" 🏥**
 - **Triggers:** Every 15-30 min, before commits, after changes
 - Validate tests pass, builds work, nothing broken
-
-**8. "Defensive Logging" 📝 (ADR-033)**
-- **Triggers:** After fixes, features, decisions, insights, git ops, achievements
-- Use `ginko log` with context-rich descriptions
-- **Quality standard:** Write for fresh AI with zero context (WHAT + WHY + HOW)
 
 **9. "Track This Work" 📊 (ADR-052)**
 - **Triggers:** Work begins outside current sprint scope, bug fixes emerge, system maintenance needed
@@ -615,7 +617,38 @@ Log after significant events:
 5. **Git ops** - Commits, merges, branch changes
 6. **Achievements** - Milestones reached, tests passing
 
-**Frequency:** 5-10 entries per session (Think & Build mode)
+**Frequency Targets:**
+- **Minimum:** 3 events per session (non-negotiable baseline)
+- **Target:** 5-10 events per session (Think & Build mode)
+- **Hack & Ship:** 2-3 events minimum
+- **Deep Work/Full Planning:** 8-15 events
+
+**Session Health Check:** If ending session with < 3 logged events, log a summary event capturing what was worked on, key decisions, and next steps.
+
+### Logging Checkpoints (Mandatory)
+
+These checkpoints ensure consistent logging volume:
+
+**Session Start (within first 15 min):**
+- Log initial context: what task you're starting, approach planned
+- Example: `ginko log "Starting e008_s04_t02: Stripe product configuration. Will create per-seat subscription product." --category=feature`
+
+**Before Every Git Commit:**
+- Log what's being committed and why (captures intent, not just diff)
+- This is the most important checkpoint - never skip it
+- Example: `ginko log "Implementing seat-based billing. Added seat_count tracking, prorated upgrade support." --category=feature --impact=high`
+
+**After Task Completion:**
+- Log completion with key decisions and learnings
+- Update sprint file in same commit
+
+**Every 30 Minutes (Active Work):**
+- Checkpoint: "What have I done that should be logged?"
+- If nothing logged yet, log current progress or blockers
+
+**On Blockers/Discoveries:**
+- Log immediately when hitting blockers or discovering gotchas
+- These insights are most valuable when fresh
 
 ### Quality Standard: "Fresh Session Test"
 
@@ -634,9 +667,10 @@ ginko log "Fixed startup issue" --category=fix
 
 ### Integration with Reflexes
 
-Logging integrates with the "Defensive Logging" reflex:
-- Works silently (don't announce unless relevant)
-- Triggers automatically after significant events
+Logging integrates with the "Proactive Logging" reflex (#1):
+- Log proactively after significant events (don't wait for "perfect" moment)
+- Brief confirmation after logging: "Logged: [category] - [one-line summary]"
+- Prioritize pre-commit logging (most important checkpoint)
 - Captures context when quality is optimal
 
 **Full guide:** [ADR-033 Implementation Guide](docs/adr/ADR-033-implementation-guide.md)
