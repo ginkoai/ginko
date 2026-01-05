@@ -5,13 +5,13 @@
 **Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
 **Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
 **Type**: Infrastructure + Launch sprint
-**Progress:** 50% (4/8 tasks complete)
+**Progress:** 75% (6/8 tasks complete)
 
 **Success Criteria:**
 - [ ] Per-seat monthly billing operational via Stripe
 - [x] Seat count updates automatically on member add/remove
 - [x] Dashboard shows seat usage and billing status
-- [ ] Upgrade/downgrade flows work correctly
+- [x] Upgrade/downgrade flows work correctly
 - [ ] Launch checklist complete
 
 ---
@@ -109,7 +109,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ---
 
 ### e008_s04_t05: Upgrade/Downgrade Flows (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
@@ -129,7 +129,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ---
 
 ### e008_s04_t06: Billing Webhook Handlers (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
@@ -188,6 +188,40 @@ Verify:
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-05: Billing Webhook Handlers (e008_s04_t06)
+- Created Stripe webhook endpoint (`/api/webhooks/stripe`)
+- Implemented signature verification using STRIPE_WEBHOOK_SECRET
+- Handles 5 event types:
+  - `customer.subscription.updated` - seat changes, plan changes, status updates
+  - `customer.subscription.deleted` - downgrades org to free tier
+  - `invoice.payment_failed` - records failure, tracks attempt count
+  - `invoice.payment_succeeded` - clears failure status
+  - `checkout.session.completed` - links new subscriptions to orgs
+- Updates organization records with subscription status, seat count, payment status
+- Logs billing events for audit trail
+- Files created:
+  - `dashboard/src/app/api/webhooks/stripe/route.ts` (new)
+
+### 2026-01-05: Upgrade/Downgrade Flows (e008_s04_t05)
+- Created seat management API (`/api/v1/billing/seats`) with POST and GET endpoints
+- POST: Update seat count with proper proration (add=immediate, remove=period_end)
+- GET: Get current seat allocation, limits, and pricing info
+- Created ManageSeats UI component with:
+  - Add/remove seat buttons with quantity selectors
+  - Modal dialogs showing billing impact before confirmation
+  - Success/error states with clear messaging
+  - Prevents reducing below current member count
+- Integrated into billing page for team owners
+- Stripe proration strategy:
+  - Adding seats: immediate prorated charge
+  - Removing seats: effective at billing period end (no immediate credit)
+- Files created:
+  - `dashboard/src/app/api/v1/billing/seats/route.ts` (new)
+  - `dashboard/src/components/billing/ManageSeats.tsx` (new)
+- Files updated:
+  - `dashboard/src/components/billing/index.ts` (added export)
+  - `dashboard/src/app/dashboard/billing/page.tsx` (integrated ManageSeats)
 
 ### 2026-01-05: Seat Count Synchronization (e008_s04_t03)
 - Implemented automatic Stripe seat sync when team members change

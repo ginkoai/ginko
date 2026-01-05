@@ -16,7 +16,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { SeatUsageCard, BillingStatusCard } from '@/components/billing';
+import { SeatUsageCard, BillingStatusCard, ManageSeats } from '@/components/billing';
 import {
   CreditCardIcon,
   ArrowLeftIcon,
@@ -61,6 +61,7 @@ export default function BillingPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [teamId, setTeamId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string>('member');
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const supabase = createClient();
 
@@ -71,6 +72,8 @@ export default function BillingPage() {
         setError('Not authenticated');
         return;
       }
+
+      setAccessToken(session.access_token);
 
       const res = await fetch('/api/v1/billing/overview', {
         headers: { Authorization: `Bearer ${session.access_token}` },
@@ -278,6 +281,28 @@ export default function BillingPage() {
           portalLoading={portalLoading}
         />
       </div>
+
+      {/* Manage Seats */}
+      {isOwner && overview.subscription.status !== 'none' && teamId && accessToken && (
+        <div className="bg-card rounded-lg border border-border p-6">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Manage Seats</h3>
+          <p className="text-muted-foreground mb-4">
+            Add or remove seats from your subscription. Adding seats charges you immediately (prorated).
+            Removing seats takes effect at the end of your billing period.
+          </p>
+          <ManageSeats
+            teamId={teamId}
+            currentMembers={overview.seats.current}
+            allocatedSeats={overview.seats.allocated}
+            maxSeats={overview.seats.max}
+            pricePerSeat={15}
+            interval={overview.subscription.interval || 'month'}
+            canModify={overview.subscription.status === 'active' || overview.subscription.status === 'trialing'}
+            accessToken={accessToken}
+            onUpdate={() => fetchBillingOverview()}
+          />
+        </div>
+      )}
 
       {/* Pricing info */}
       <div className="bg-card rounded-lg border border-border p-6">

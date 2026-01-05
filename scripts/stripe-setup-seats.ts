@@ -145,8 +145,8 @@ async function createTeamProduct(): Promise<void> {
       perSeat: 'true',
       maxSeats: '50',
       createdBy: 'stripe-setup-seats.ts',
+      features: TEAM_PRICING.features.join(', '),
     },
-    features: TEAM_PRICING.features.map(name => ({ name })),
   });
 
   console.log(`✅ Product created: ${product.id}\n`);

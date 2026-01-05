@@ -13,3 +13,4 @@
 
 export { SeatUsageCard } from './SeatUsageCard';
 export { BillingStatusCard } from './BillingStatusCard';
+export { ManageSeats } from './ManageSeats';
