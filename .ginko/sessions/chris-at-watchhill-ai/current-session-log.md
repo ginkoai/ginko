@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-05T16-10-37-434Z
-started: 2026-01-05T16:10:37.434Z
+session_id: session-2026-01-05T18-37-31-400Z
+started: 2026-01-05T18:37:31.400Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-05T16-10-37-434Z
+# Session Log: session-2026-01-05T18-37-31-400Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,16 +37,56 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 11:16 - [achievement]
-# [ACHIEVEMENT] 11:16
+### 13:54 - [insight]
+# [INSIGHT] 13:54
 
-Completed e008_s03_t02: Team Insights API Enhancement. Added aggregate=team parameter to GET /api/v1/insights/sync for team-wide insights. Returns team average scores, category averages, severity counts, and per-member insight summaries. Only team owners can access aggregate view. Built on existing memberEmail filter.
+Session insights: (1) Sprint 3 was actually 100% complete but sprint file not updated - discovered by cross-referencing git commits with sprint markdown. Always verify sprint status against git history. (2) Sprint 4 tasks created via graph API but ginko assign command is the preferred method - updated CLAUDE.md and ai-instructions-template.ts to document ginko graph CLI commands instead of curl. (3) Graph node creation requires {graphId, label, data: {id, ...properties}} format.
 
 **Files:**
-- dashboard/src/app/api/v1/insights/sync/route.ts
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- CLAUDE.md
+- docs/epics/EPIC-008-team-collaboration.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-05T18:54:49.697Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, CLAUDE.md, docs/epics/EPIC-008-team-collaboration.md
+Impact: medium
+
+### 13:55 - [decision]
+# [DECISION] 13:55
+
+Decision: Use ginko CLI commands (ginko graph query, ginko assign, ginko sync) instead of raw curl/API calls for graph operations. CLI handles auth, graph ID, error handling automatically. Updated CLAUDE.md and ai-instructions-template.ts to document this pattern for new projects via ginko init.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- CLAUDE.md
+- docs/epics/EPIC-008-team-collaboration.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-05T18:55:04.567Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, CLAUDE.md, docs/epics/EPIC-008-team-collaboration.md
+Impact: medium
+
+### 13:55 - [achievement]
+# [ACHIEVEMENT] 13:55
+
+Achievement: Epic 008 Sprint 3 confirmed 100% complete (6/6 tasks). Updated sprint file, epic file, and CURRENT-SPRINT.md. Sprint 4 (Billing & Seats) now active with 8 tasks created and assigned. Epic 008 is 75% complete - only billing sprint remains.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- CLAUDE.md
+- docs/epics/EPIC-008-team-collaboration.md
 
 **Impact:** high
-**Timestamp:** 2026-01-05T16:16:25.433Z
+**Timestamp:** 2026-01-05T18:55:14.820Z
 
-Files: dashboard/src/app/api/v1/insights/sync/route.ts
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, CLAUDE.md, docs/epics/EPIC-008-team-collaboration.md
 Impact: high

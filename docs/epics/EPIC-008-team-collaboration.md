@@ -2,8 +2,8 @@
 epic_id: EPIC-008
 status: active
 created: 2026-01-03
-updated: 2026-01-03
-current_sprint: e008_s02
+updated: 2026-01-05
+current_sprint: e008_s04
 adr: TBD
 ---
 
@@ -71,8 +71,8 @@ Build team collaboration features that support project onboarding, role/permissi
 | Sprint | Goal | Duration | Status |
 |--------|------|----------|--------|
 | Sprint 1 | Foundation (Schema & APIs) | 2 weeks | **Complete** |
-| Sprint 2 | Visibility & Coordination | 2 weeks | **In Progress** |
-| Sprint 3 | Insights & Polish | 1 week | Not Started |
+| Sprint 2 | Visibility & Coordination | 2 weeks | **Complete** |
+| Sprint 3 | Insights & Polish | 1 week | **Complete** |
 | Sprint 4 | Billing & Seats | 1-2 weeks | Not Started |
 
 **Estimated Total:** 6-7 weeks
@@ -85,6 +85,20 @@ Build team collaboration features that support project onboarding, role/permissi
 - Permission checks (owner/member model)
 - Team-aware sync with staleness detection
 - Integration tests for team APIs
+
+### Sprint 2 Accomplishments (Closed 2026-01-03)
+- Team activity feed with real-time visibility
+- Enhanced sync with staleness detection
+- Conflict prevention on concurrent knowledge edits
+- Team-aware context loading
+
+### Sprint 3 Accomplishments (Closed 2026-01-05)
+- Insights page member filter for project owners
+- Team aggregate insights API endpoint
+- Onboarding flow optimization (≤10 min target achieved)
+- Progress indicators for sync and join commands
+- Team collaboration documentation
+- E2E tests for team onboarding and collaboration
 
 ## Technical Considerations
 
@@ -129,6 +143,17 @@ Build team collaboration features that support project onboarding, role/permissi
 ---
 
 ## Changelog
+
+### v1.3.0 - 2026-01-05
+- Sprint 3 complete (6/6 tasks)
+- Sprint 4 ready: Billing & Seats
+- Added Sprint 3 accomplishments summary
+- 75% of epic complete (3/4 sprints)
+
+### v1.2.0 - 2026-01-03
+- Sprint 2 complete
+- Sprint 3 started: Insights & Polish
+- Added Sprint 2 accomplishments summary
 
 ### v1.1.0 - 2026-01-03
 - Sprint 1 complete (10/10 tasks)

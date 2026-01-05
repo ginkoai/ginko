@@ -21,6 +21,7 @@
 ### e008_s04_t01: Extend Billing Schema for Seats (4h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Update billing schema to support per-seat model
 
@@ -41,6 +42,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ### e008_s04_t02: Stripe Per-Seat Product Configuration (2h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Configure Stripe products for per-seat pricing
 
@@ -59,6 +61,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ### e008_s04_t03: Seat Count Synchronization (6h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Automatically update Stripe seat count when members change
 
@@ -77,6 +80,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ### e008_s04_t04: Dashboard Billing Overview (6h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Show seat usage and billing status in dashboard
 
@@ -96,6 +100,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ### e008_s04_t05: Upgrade/Downgrade Flows (6h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Enable teams to adjust seat count and plan tier
 
@@ -115,6 +120,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ### e008_s04_t06: Billing Webhook Handlers (4h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Handle Stripe webhooks for seat-related events
 
@@ -132,6 +138,7 @@ Extend existing webhook handler for:
 ### e008_s04_t07: Free Tier / Trial Configuration (3h)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Configure free tier limits and trial period for teams
 
@@ -150,6 +157,7 @@ Extend existing webhook handler for:
 ### e008_s04_t08: Launch Checklist & Final Testing (4h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Complete pre-launch validation for team features
 

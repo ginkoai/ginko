@@ -321,34 +321,36 @@ Activate these reflexes naturally during work (not mechanical checklists):
 
 ## Answering Project Questions (EPIC-003)
 
-When users ask factual questions about the project, query available data sources directly.
+When users ask factual questions about the project, use ginko CLI commands to query the knowledge graph.
 
-### Graph API - Requires `GINKO_BEARER_TOKEN` and `GINKO_GRAPH_ID`
+### Graph Commands (Preferred)
 
-**Setup credentials:**
-1. Run `ginko login` to authenticate (stores token in ~/.ginko/auth.json)
-2. Run `ginko graph init` to create graph (stores ID in .ginko/graph/config.json)
-3. Export for shell use: `export GINKO_BEARER_TOKEN=$(cat ~/.ginko/auth.json | jq -r .api_key)`
-4. Export graph ID: `export GINKO_GRAPH_ID=$(cat .ginko/graph/config.json | jq -r .graphId)`
+**Setup:** Run `ginko login` and `ginko graph init` once to authenticate and initialize.
 
 **Semantic search** - finds content similar to query:
 ```bash
-curl -X POST https://app.ginkoai.com/api/v1/graph/query \
-  -H "Authorization: Bearer $GINKO_BEARER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"graphId": "'"$GINKO_GRAPH_ID"'", "query": "YOUR_SEARCH_TERM", "limit": 5}'
+ginko graph query "authentication patterns"
+ginko graph query "error handling" --limit 10
 ```
 
-**List nodes by type** (ADR, PRD, Pattern, Gotcha, Event, Sprint, Task):
+**Explore document connections:**
 ```bash
-curl "https://app.ginkoai.com/api/v1/graph/nodes?graphId=$GINKO_GRAPH_ID&labels=ADR&limit=10" \
-  -H "Authorization: Bearer $GINKO_BEARER_TOKEN"
+ginko graph explore ADR-039          # View document and its connections
+ginko graph explore e008_s04_t01     # Explore task relationships
 ```
 
-**Filter by property** (e.g., events by user):
+**Check graph health and statistics:**
 ```bash
-curl "https://app.ginkoai.com/api/v1/graph/nodes?graphId=$GINKO_GRAPH_ID&labels=Event&user_id=USER_EMAIL&limit=20" \
-  -H "Authorization: Bearer $GINKO_BEARER_TOKEN"
+ginko graph status                   # Node counts, relationships, health
+ginko graph health                   # API reliability metrics
+```
+
+**Task and sprint management:**
+```bash
+ginko assign e008_s04_t01 user@example.com           # Assign single task
+ginko assign --sprint e008_s04 --all user@example.com # Assign all tasks in sprint
+ginko sync                                            # Pull dashboard changes to local
+ginko sync --type ADR                                 # Sync only ADRs
 ```
 
 ### Local Files (Fallback when graph unavailable)
@@ -372,13 +374,13 @@ grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
 ```
 
 **"How do we handle X?" / "What's our approach to X?"**
-→ Semantic search: `{"query": "X"}` OR local: `grep -l -i "X" docs/adr/*.md`
+→ `ginko graph query "X"` OR local: `grep -l -i "X" docs/adr/*.md`
 
 **"What is [person] working on?"**
-→ Query events by user_id OR: `grep -i "person" .ginko/sessions/*/current-session-log.md`
+→ `ginko graph query "person activity"` OR: `grep -i "person" .ginko/sessions/*/current-session-log.md`
 
 **"Show me ADRs about [topic]"**
-→ Semantic search with `labels=ADR` filter OR: `grep -l -i "topic" docs/adr/*.md`
+→ `ginko graph query "topic" --type ADR` OR: `grep -l -i "topic" docs/adr/*.md`
 
 ---
 
