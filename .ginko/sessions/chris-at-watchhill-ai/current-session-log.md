@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-05T18-37-31-400Z
-started: 2026-01-05T18:37:31.400Z
+session_id: session-2026-01-05T19-40-33-622Z
+started: 2026-01-05T19:40:33.622Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-05T18-37-31-400Z
+# Session Log: session-2026-01-05T19-40-33-622Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,56 +37,20 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 13:54 - [insight]
-# [INSIGHT] 13:54
+### 14:46 - [achievement]
+# [ACHIEVEMENT] 14:46
 
-Session insights: (1) Sprint 3 was actually 100% complete but sprint file not updated - discovered by cross-referencing git commits with sprint markdown. Always verify sprint status against git history. (2) Sprint 4 tasks created via graph API but ginko assign command is the preferred method - updated CLAUDE.md and ai-instructions-template.ts to document ginko graph CLI commands instead of curl. (3) Graph node creation requires {graphId, label, data: {id, ...properties}} format.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- CLAUDE.md
-- docs/epics/EPIC-008-team-collaboration.md
-
-**Impact:** medium
-**Timestamp:** 2026-01-05T18:54:49.697Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, CLAUDE.md, docs/epics/EPIC-008-team-collaboration.md
-Impact: medium
-
-### 13:55 - [decision]
-# [DECISION] 13:55
-
-Decision: Use ginko CLI commands (ginko graph query, ginko assign, ginko sync) instead of raw curl/API calls for graph operations. CLI handles auth, graph ID, error handling automatically. Updated CLAUDE.md and ai-instructions-template.ts to document this pattern for new projects via ginko init.
+Completed e008_s04_t01: Extended billing schema for per-seat billing. Added 'team' tier to PlanTier with /seat/month pricing. Implemented seat management methods in BillingManager (getSeatAllocation, canAddSeats, updateSeatCount, syncSeatCount, getSeatUsageSummary). Created Neo4j schema 013-billing-seats.cypher for SeatAllocation and BillingEvent tracking. Extended entitlements-manager.ts with team tier limits (50 seats, 25 projects). Build passes.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- CLAUDE.md
-- docs/epics/EPIC-008-team-collaboration.md
-
-**Impact:** medium
-**Timestamp:** 2026-01-05T18:55:04.567Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, CLAUDE.md, docs/epics/EPIC-008-team-collaboration.md
-Impact: medium
-
-### 13:55 - [achievement]
-# [ACHIEVEMENT] 13:55
-
-Achievement: Epic 008 Sprint 3 confirmed 100% complete (6/6 tasks). Updated sprint file, epic file, and CURRENT-SPRINT.md. Sprint 4 (Billing & Seats) now active with 8 tasks created and assigned. Epic 008 is 75% complete - only billing sprint remains.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- CLAUDE.md
-- docs/epics/EPIC-008-team-collaboration.md
+- docs/sprints/CURRENT-SPRINT.md
+- packages/mcp-server/src/auth-manager.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-05T18:55:14.820Z
+**Timestamp:** 2026-01-05T19:46:31.464Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, CLAUDE.md, docs/epics/EPIC-008-team-collaboration.md
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/CURRENT-SPRINT.md, packages/mcp-server/src/auth-manager.ts
 Impact: high

@@ -37,6 +37,10 @@ export interface BillingSubscription {
   trialEnd?: Date;
   cancelAtPeriodEnd: boolean;
   metadata: Record<string, string>;
+  // Seat-based billing fields (EPIC-008 Sprint 4)
+  seatCount?: number;        // Current number of seats
+  seatLimit?: number;        // Max seats for plan (null = unlimited)
+  pricePerSeat?: number;     // Price per seat in cents
 }
 
 export interface PlanPricing {
@@ -49,6 +53,23 @@ export interface PlanPricing {
   interval: 'month' | 'year';
   trialPeriodDays?: number;
   features: string[];
+  // Seat-based pricing (EPIC-008 Sprint 4)
+  perSeat?: boolean;          // If true, amount is per seat
+  includedSeats?: number;     // Base seats included in plan
+  maxSeats?: number;          // Max seats allowed (null = unlimited)
+}
+
+/**
+ * Team seat allocation tracking (EPIC-008 Sprint 4)
+ * Tracks how many seats a team has allocated vs. their limit
+ */
+export interface TeamSeatAllocation {
+  teamId: string;
+  organizationId: string;
+  currentSeats: number;       // Active members
+  allocatedSeats: number;     // Paid seats in subscription
+  maxSeats: number | null;    // Plan limit (null = unlimited)
+  lastSyncedAt: Date;         // Last sync with Stripe
 }
 
 export class BillingError extends Error {
@@ -161,6 +182,52 @@ export class BillingManager {
         ]
       }
     ],
+    // Team tier - per-seat pricing (EPIC-008 Sprint 4)
+    team: [
+      {
+        planTier: 'team',
+        name: 'Ginko Team Monthly',
+        description: 'Team collaboration with per-seat billing',
+        priceId: process.env.STRIPE_TEAM_MONTHLY_PRICE_ID || 'price_team_monthly',
+        amount: 1500, // $15.00 per seat
+        currency: 'usd',
+        interval: 'month',
+        trialPeriodDays: 14,
+        perSeat: true,
+        includedSeats: 1,    // First seat included in base price
+        maxSeats: 50,        // Max 50 seats per team
+        features: [
+          'Per-seat pricing ($15/seat/month)',
+          'Team collaboration',
+          'Shared knowledge graph',
+          'Role-based permissions',
+          'Team analytics',
+          'Priority support'
+        ]
+      },
+      {
+        planTier: 'team',
+        name: 'Ginko Team Yearly',
+        description: 'Team collaboration with per-seat billing (save 17%)',
+        priceId: process.env.STRIPE_TEAM_YEARLY_PRICE_ID || 'price_team_yearly',
+        amount: 15000, // $150.00 per seat/year (save 17%)
+        currency: 'usd',
+        interval: 'year',
+        trialPeriodDays: 14,
+        perSeat: true,
+        includedSeats: 1,
+        maxSeats: 50,
+        features: [
+          'Per-seat pricing ($150/seat/year)',
+          'Team collaboration',
+          'Shared knowledge graph',
+          'Role-based permissions',
+          'Team analytics',
+          'Priority support',
+          '17% savings vs monthly'
+        ]
+      }
+    ],
     enterprise: [
       {
         planTier: 'enterprise',
@@ -170,6 +237,9 @@ export class BillingManager {
         amount: 2900, // $29.00
         currency: 'usd',
         interval: 'month',
+        perSeat: true,
+        includedSeats: 5,    // 5 seats included in base
+        maxSeats: undefined, // Unlimited
         features: [
           'Unlimited projects and sessions',
           'Advanced team collaboration',
@@ -187,10 +257,13 @@ export class BillingManager {
         amount: 29000, // $290.00 (save 17%)
         currency: 'usd',
         interval: 'year',
+        perSeat: true,
+        includedSeats: 5,
+        maxSeats: undefined, // Unlimited
         features: [
           'Unlimited projects and sessions',
           'Advanced team collaboration',
-          'SSO integration', 
+          'SSO integration',
           'Custom integrations',
           'Priority support',
           'White label options',
@@ -731,17 +804,25 @@ export class BillingManager {
    * Format Stripe subscription for API response
    */
   private formatSubscription(subscription: Stripe.Subscription, organizationId: string): BillingSubscription {
+    const planTier = subscription.metadata.planTier as PlanTier || 'free';
+    const pricing = this.PLAN_PRICING[planTier]?.[0];
+    const seatCount = subscription.items.data[0]?.quantity || 1;
+
     return {
       id: subscription.id,
       customerId: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
       stripeSubscriptionId: subscription.id,
-      planTier: subscription.metadata.planTier as PlanTier || 'free',
+      planTier,
       status: subscription.status,
       currentPeriodStart: new Date(subscription.current_period_start * 1000),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
       trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
-      metadata: subscription.metadata
+      metadata: subscription.metadata,
+      // Seat info (EPIC-008 Sprint 4)
+      seatCount,
+      seatLimit: pricing?.maxSeats ?? undefined,
+      pricePerSeat: pricing?.perSeat ? pricing.amount : undefined
     };
   }
 
@@ -772,8 +853,11 @@ export class BillingManager {
 
     // Create Pro plan products and prices
     await this.createProductAndPrices('pro', 'Ginko Pro', 'Professional AI coding context management with team collaboration');
-    
-    // Create Enterprise plan products and prices  
+
+    // Create Team plan products and prices (EPIC-008 Sprint 4 - per-seat billing)
+    await this.createProductAndPrices('team', 'Ginko Team', 'Team collaboration with per-seat billing');
+
+    // Create Enterprise plan products and prices
     await this.createProductAndPrices('enterprise', 'Ginko Enterprise', 'Enterprise AI coding context management with unlimited usage and priority support');
 
     console.log('[BILLING] Stripe products and prices setup complete');
@@ -808,6 +892,267 @@ export class BillingManager {
 
       console.log(`[BILLING] Created price ${price.id} for ${planTier} ${config.interval}: $${(config.amount / 100).toFixed(2)}/${config.interval}`);
     }
+  }
+
+  // ============================================================================
+  // Seat Management Methods (EPIC-008 Sprint 4)
+  // ============================================================================
+
+  /**
+   * Get seat allocation for a team
+   * Returns current seat usage and limits
+   */
+  async getSeatAllocation(teamId: string): Promise<TeamSeatAllocation | null> {
+    try {
+      // Get team's organization and subscription info
+      const result = await this.db.query(`
+        SELECT
+          t.id as team_id,
+          o.id as organization_id,
+          o.stripe_subscription_id,
+          o.plan_tier,
+          COUNT(m.id) as current_seats
+        FROM teams t
+        JOIN organizations o ON t.organization_id = o.id
+        LEFT JOIN team_members m ON m.team_id = t.id AND m.status = 'active'
+        WHERE t.id = $1
+        GROUP BY t.id, o.id, o.stripe_subscription_id, o.plan_tier
+      `, [teamId]);
+
+      if (!result.rows[0]) {
+        return null;
+      }
+
+      const row = result.rows[0];
+      const planTier = row.plan_tier as PlanTier;
+      const pricing = this.PLAN_PRICING[planTier]?.[0];
+
+      // Get allocated seats from Stripe subscription
+      let allocatedSeats = 1; // Default for free tier
+      if (row.stripe_subscription_id) {
+        try {
+          const subscription = await this.stripe.subscriptions.retrieve(row.stripe_subscription_id);
+          allocatedSeats = subscription.items.data[0]?.quantity || 1;
+        } catch (e) {
+          console.warn(`[BILLING] Could not retrieve subscription for seat count: ${e}`);
+        }
+      }
+
+      return {
+        teamId: row.team_id,
+        organizationId: row.organization_id,
+        currentSeats: parseInt(row.current_seats) || 0,
+        allocatedSeats,
+        maxSeats: pricing?.maxSeats ?? null,
+        lastSyncedAt: new Date()
+      };
+    } catch (error) {
+      console.error('[BILLING] Error getting seat allocation:', error);
+      throw new BillingError(
+        `Failed to get seat allocation: ${error instanceof Error ? error.message : String(error)}`,
+        'SEAT_ALLOCATION_ERROR'
+      );
+    }
+  }
+
+  /**
+   * Check if team can add more seats
+   * Returns true if within limits, false otherwise
+   */
+  async canAddSeats(teamId: string, additionalSeats: number = 1): Promise<{ allowed: boolean; reason?: string }> {
+    const allocation = await this.getSeatAllocation(teamId);
+
+    if (!allocation) {
+      return { allowed: false, reason: 'Team not found' };
+    }
+
+    // Check if within allocated seats
+    if (allocation.currentSeats + additionalSeats <= allocation.allocatedSeats) {
+      return { allowed: true };
+    }
+
+    // Check if can expand allocation (within plan max)
+    if (allocation.maxSeats !== null) {
+      if (allocation.currentSeats + additionalSeats > allocation.maxSeats) {
+        return {
+          allowed: false,
+          reason: `Exceeds plan limit of ${allocation.maxSeats} seats. Upgrade to Enterprise for unlimited seats.`
+        };
+      }
+    }
+
+    // Need to expand subscription - check if org has payment method
+    const org = await this.db.query(`
+      SELECT stripe_customer_id FROM organizations WHERE id = $1
+    `, [allocation.organizationId]);
+
+    if (!org.rows[0]?.stripe_customer_id) {
+      return {
+        allowed: false,
+        reason: 'Billing not configured. Add payment method to expand seats.'
+      };
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Update seat count for a subscription
+   * Automatically adjusts Stripe subscription quantity
+   */
+  async updateSeatCount(
+    organizationId: string,
+    newSeatCount: number,
+    options: { prorate?: boolean } = { prorate: true }
+  ): Promise<BillingSubscription> {
+    try {
+      // Get current subscription
+      const org = await this.db.query(`
+        SELECT stripe_subscription_id, plan_tier FROM organizations WHERE id = $1
+      `, [organizationId]);
+
+      if (!org.rows[0]?.stripe_subscription_id) {
+        throw new BillingError('No active subscription found', 'SUBSCRIPTION_NOT_FOUND');
+      }
+
+      const planTier = org.rows[0].plan_tier as PlanTier;
+      const pricing = this.PLAN_PRICING[planTier]?.[0];
+
+      // Validate seat count against plan limits
+      if (pricing?.maxSeats && newSeatCount > pricing.maxSeats) {
+        throw new BillingError(
+          `Seat count ${newSeatCount} exceeds plan limit of ${pricing.maxSeats}`,
+          'SEAT_LIMIT_EXCEEDED'
+        );
+      }
+
+      if (newSeatCount < 1) {
+        throw new BillingError('Seat count must be at least 1', 'INVALID_SEAT_COUNT');
+      }
+
+      // Update Stripe subscription quantity
+      const subscription = await this.stripe.subscriptions.retrieve(org.rows[0].stripe_subscription_id);
+      const updatedSubscription = await this.stripe.subscriptions.update(subscription.id, {
+        items: [{
+          id: subscription.items.data[0].id,
+          quantity: newSeatCount
+        }],
+        proration_behavior: options.prorate ? 'create_prorations' : 'none',
+        metadata: {
+          ...subscription.metadata,
+          seatCount: String(newSeatCount),
+          lastSeatUpdate: new Date().toISOString()
+        }
+      });
+
+      // Track seat update
+      await this.usageTracker.track(organizationId, UsageEventType.API_REQUEST, {
+        metadata: {
+          action: 'seat_count_updated',
+          previous_seats: subscription.items.data[0]?.quantity || 1,
+          new_seats: newSeatCount,
+          prorated: options.prorate
+        }
+      });
+
+      console.log(`[BILLING] Updated seat count for org ${organizationId}: ${subscription.items.data[0]?.quantity || 1} → ${newSeatCount}`);
+
+      return this.formatSubscription(updatedSubscription, organizationId);
+    } catch (error) {
+      if (error instanceof BillingError) throw error;
+      if (error instanceof Stripe.errors.StripeError) {
+        throw new BillingError(
+          `Failed to update seat count: ${error.message}`,
+          'SEAT_UPDATE_FAILED',
+          error
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Sync seat count with actual team member count
+   * Call this when members are added/removed to ensure billing accuracy
+   */
+  async syncSeatCount(teamId: string): Promise<{ synced: boolean; adjustment?: number }> {
+    const allocation = await this.getSeatAllocation(teamId);
+
+    if (!allocation) {
+      return { synced: false };
+    }
+
+    // If current seats exceed allocated, need to expand
+    if (allocation.currentSeats > allocation.allocatedSeats) {
+      const adjustment = allocation.currentSeats - allocation.allocatedSeats;
+
+      // Check if expansion is allowed
+      const canAdd = await this.canAddSeats(teamId, adjustment);
+      if (!canAdd.allowed) {
+        console.warn(`[BILLING] Cannot sync seats for team ${teamId}: ${canAdd.reason}`);
+        return { synced: false };
+      }
+
+      await this.updateSeatCount(allocation.organizationId, allocation.currentSeats);
+      console.log(`[BILLING] Synced seat count for team ${teamId}: expanded by ${adjustment} seats`);
+      return { synced: true, adjustment };
+    }
+
+    return { synced: true, adjustment: 0 };
+  }
+
+  /**
+   * Get seat usage summary for billing display
+   */
+  async getSeatUsageSummary(organizationId: string): Promise<{
+    used: number;
+    allocated: number;
+    limit: number | null;
+    pricePerSeat: number;
+    nextBillingAmount: number;
+  }> {
+    const org = await this.db.query(`
+      SELECT plan_tier, stripe_subscription_id FROM organizations WHERE id = $1
+    `, [organizationId]);
+
+    if (!org.rows[0]) {
+      throw new BillingError('Organization not found', 'ORG_NOT_FOUND');
+    }
+
+    const planTier = org.rows[0].plan_tier as PlanTier;
+    const pricing = this.PLAN_PRICING[planTier]?.[0];
+
+    // Count active members across all teams in org
+    const members = await this.db.query(`
+      SELECT COUNT(*) as count
+      FROM team_members m
+      JOIN teams t ON m.team_id = t.id
+      WHERE t.organization_id = $1 AND m.status = 'active'
+    `, [organizationId]);
+
+    const used = parseInt(members.rows[0]?.count) || 1;
+    let allocated = 1;
+
+    // Get allocated from Stripe
+    if (org.rows[0].stripe_subscription_id) {
+      try {
+        const subscription = await this.stripe.subscriptions.retrieve(org.rows[0].stripe_subscription_id);
+        allocated = subscription.items.data[0]?.quantity || 1;
+      } catch (e) {
+        console.warn('[BILLING] Could not retrieve subscription for usage summary');
+      }
+    }
+
+    const pricePerSeat = pricing?.amount || 0;
+    const nextBillingAmount = allocated * pricePerSeat;
+
+    return {
+      used,
+      allocated,
+      limit: pricing?.maxSeats ?? null,
+      pricePerSeat,
+      nextBillingAmount
+    };
   }
 }
 

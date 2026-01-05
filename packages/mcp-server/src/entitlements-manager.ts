@@ -156,6 +156,32 @@ export const PLAN_CONFIGURATIONS: Record<PlanTier, PlanLimits> = {
       gitWebhooks: 100
     }
   },
+  // Team tier - per-seat billing (EPIC-008 Sprint 4)
+  team: {
+    maxProjects: 25,
+    maxTeamMembers: 50, // Per-seat pricing up to 50 members
+    maxSessionsPerMonth: 5000,
+    maxContextCacheSize: 5000,
+    maxBestPractices: 100,
+    features: new Set([
+      FeatureFlag.BASIC_CONTEXT,
+      FeatureFlag.LOCAL_SESSIONS,
+      FeatureFlag.TEAM_COLLABORATION,
+      FeatureFlag.REAL_TIME_SYNC,
+      FeatureFlag.SESSION_HANDOFF,
+      FeatureFlag.GIT_INTEGRATION,
+      FeatureFlag.WEBHOOK_PROCESSING,
+      FeatureFlag.BEST_PRACTICES_MGMT,
+      FeatureFlag.USAGE_ANALYTICS,
+      FeatureFlag.TEAM_INSIGHTS,
+      FeatureFlag.PRIORITY_SUPPORT
+    ]),
+    rateLimit: {
+      contextQueries: 500,
+      sessionCreation: 100,
+      gitWebhooks: 250
+    }
+  },
   enterprise: {
     maxProjects: -1,
     maxTeamMembers: -1,

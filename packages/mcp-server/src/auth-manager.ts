@@ -28,7 +28,7 @@ export interface AuthenticatedUser {
   lastActive: Date;
 }
 
-export type PlanTier = 'free' | 'pro' | 'enterprise';
+export type PlanTier = 'free' | 'pro' | 'team' | 'enterprise';
 export type PlanStatus = 'active' | 'past_due' | 'canceled' | 'trialing';
 export type UserRole = 'owner' | 'admin' | 'member' | 'viewer';
 

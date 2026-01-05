@@ -5,7 +5,7 @@
 **Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
 **Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
 **Type**: Infrastructure + Launch sprint
-**Progress:** 0% (0/8 tasks complete)
+**Progress:** 12.5% (1/8 tasks complete)
 
 **Success Criteria:**
 - [ ] Per-seat monthly billing operational via Stripe
@@ -19,7 +19,7 @@
 ## Sprint Tasks
 
 ### e008_s04_t01: Extend Billing Schema for Seats (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
@@ -29,11 +29,13 @@
 Extend existing ADR-005 Stripe integration:
 - Add seat count to subscription metadata
 - Track per-team seat allocation
-- Define pricing: $X/seat/month
+- Define pricing: $15/seat/month (Team tier)
 
 **Files:**
-- `packages/mcp-server/src/billing-manager.ts` (extend)
-- `src/graph/schema/XXX-billing-seats.cypher` (new)
+- `packages/mcp-server/src/billing-manager.ts` (extended)
+- `packages/mcp-server/src/auth-manager.ts` (added 'team' to PlanTier)
+- `packages/mcp-server/src/entitlements-manager.ts` (added team tier limits)
+- `src/graph/schema/013-billing-seats.cypher` (new)
 
 Follow: ADR-005 (Stripe Payment Integration)
 
@@ -178,7 +180,24 @@ Verify:
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2026-01-05: Extended Billing Schema for Seats (e008_s04_t01)
+- Added 'team' tier to PlanTier type with per-seat billing model
+- Extended BillingSubscription interface with seatCount, seatLimit, pricePerSeat fields
+- Added TeamSeatAllocation interface for tracking seat usage
+- Implemented seat management methods in BillingManager:
+  - `getSeatAllocation(teamId)` - Get current seat allocation for a team
+  - `canAddSeats(teamId, count)` - Check if team can add more seats
+  - `updateSeatCount(orgId, count)` - Update Stripe subscription quantity
+  - `syncSeatCount(teamId)` - Sync seat count with actual team members
+  - `getSeatUsageSummary(orgId)` - Get billing display summary
+- Team tier pricing: $15/seat/month ($150/seat/year)
+- Added team tier entitlements with 50 max seats, 25 projects, team insights
+- Created Neo4j schema (013-billing-seats.cypher) for SeatAllocation and BillingEvent nodes
+- Files changed:
+  - `packages/mcp-server/src/billing-manager.ts`
+  - `packages/mcp-server/src/auth-manager.ts`
+  - `packages/mcp-server/src/entitlements-manager.ts`
+  - `src/graph/schema/013-billing-seats.cypher` (new)
 
 ## Next Steps
 
