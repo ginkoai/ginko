@@ -1,8 +1,8 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2026-01-03
- * @tags: [sync, cloud-to-local, git, ADR-054, EPIC-008]
+ * @updated: 2026-01-05
+ * @tags: [sync, cloud-to-local, git, ADR-054, EPIC-008, onboarding-optimization]
  * @related: [index.ts, node-syncer.ts, types.ts, team-sync.ts, ../../lib/team-sync-reporter.ts]
  * @priority: critical
  * @complexity: high
@@ -274,13 +274,18 @@ async function syncSprints(
 
   console.log('');
 
-  const results: SprintSyncResult[] = [];
+  // Optimization: Process sprint files in parallel
+  console.log(chalk.dim(`📡 Syncing ${sprintFiles.length} sprint(s) in parallel...`));
 
-  for (const sprintFile of sprintFiles) {
-    console.log(chalk.dim(`Syncing: ${sprintFile.sprintId}...`));
+  const results = await Promise.all(
+    sprintFiles.map((sprintFile) => syncSprintFile(sprintFile, graphId, token, API_BASE))
+  );
 
-    const result = await syncSprintFile(sprintFile, graphId, token, API_BASE);
-    results.push(result);
+  // Display results
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+    const sprintFile = sprintFiles[i];
+    console.log(chalk.dim(`\n${sprintFile.sprintId}:`));
 
     if (result.error) {
       console.log(chalk.red(`  ✗ Error: ${result.error}`));
@@ -343,31 +348,35 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
   }
 
   // Check team membership and staleness (EPIC-008)
+  // Optimization: Fetch team status and changes in parallel when possible
   const stalenessThreshold = options.stalenessThresholdDays ?? 3;
   let teamStatus = null;
+  let teamChangeSummary = null;
 
   if (!options.skipMembershipCheck) {
-    teamStatus = await getTeamSyncStatus(graphId, token, stalenessThreshold);
+    // Start both fetches in parallel - team changes will use null for lastSyncAt initially
+    // which returns all unsynced changes (safe fallback for first sync)
+    const [teamStatusResult, teamChangesResult] = await Promise.all([
+      getTeamSyncStatus(graphId, token, stalenessThreshold),
+      getTeamChangesSinceLast(graphId, token, null), // Fetch all unsynced changes
+    ]);
+
+    teamStatus = teamStatusResult;
 
     // Display team info if member
     if (teamStatus.isMember) {
       displayTeamInfo(teamStatus);
-    }
 
-    // Show staleness warning if applicable
-    if (teamStatus.isMember && teamStatus.staleness.isStale) {
-      displayStalenessWarning(teamStatus);
-    }
-  }
+      // Show staleness warning if applicable
+      if (teamStatus.staleness.isStale) {
+        displayStalenessWarning(teamStatus);
+      }
 
-  // Fetch and display team changes (EPIC-008 Sprint 2)
-  let teamChangeSummary = null;
-  if (teamStatus?.isMember) {
-    const lastSyncAt = teamStatus.staleness.lastSyncAt;
-    teamChangeSummary = await getTeamChangesSinceLast(graphId, token, lastSyncAt);
-
-    if (teamChangeSummary.totalChanges > 0) {
-      displayTeamChangeReport(teamChangeSummary);
+      // Use the pre-fetched team changes
+      teamChangeSummary = teamChangesResult;
+      if (teamChangeSummary.totalChanges > 0) {
+        displayTeamChangeReport(teamChangeSummary);
+      }
     }
   }
 
@@ -501,7 +510,9 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
   console.log('');
 
   // Process each node
+  // Optimization: Collect synced nodes and batch markNodeSynced calls at the end
   const syncedFiles: string[] = [];
+  const nodesToMarkSynced: Array<{ id: string; hash: string }> = [];
 
   for (const node of nodes) {
     const filePath = getFilePath(projectRoot, node);
@@ -517,6 +528,7 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
           await applyResolution(syncResult.conflict, 'use-graph', projectRoot);
           syncedFiles.push(syncResult.filePath);
           result.synced.push(node.id);
+          nodesToMarkSynced.push({ id: node.id, hash: syncResult.hash });
           console.log(chalk.green(`  ✓ Force synced: ${filePath}`));
         } else {
           // Interactive conflict resolution
@@ -529,6 +541,10 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
             if (applied.applied) {
               syncedFiles.push(filePath);
               result.synced.push(node.id);
+              // Only mark as synced if we used graph version
+              if (resolution === 'use-graph') {
+                nodesToMarkSynced.push({ id: node.id, hash: syncResult.hash });
+              }
               console.log(chalk.green(`  ✓ Resolved: ${filePath}`));
             }
           } else {
@@ -539,18 +555,25 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
       } else if (syncResult.success) {
         syncedFiles.push(syncResult.filePath);
         result.synced.push(node.id);
+        nodesToMarkSynced.push({ id: node.id, hash: syncResult.hash });
         console.log(chalk.green(`  ✓ Synced: ${filePath}`));
-
-        // Mark as synced in API
-        try {
-          await markNodeSynced(node.id, syncResult.hash, graphId, token);
-        } catch (error) {
-          console.warn(chalk.yellow(`  ⚠ Could not mark as synced in API: ${error}`));
-        }
       }
     } catch (error) {
       result.errors.push({ nodeId: node.id, error: String(error) });
       console.error(chalk.red(`  ✗ Failed: ${node.id} - ${error}`));
+    }
+  }
+
+  // Batch mark nodes as synced in API (parallel calls)
+  if (nodesToMarkSynced.length > 0) {
+    console.log(chalk.dim(`\n📡 Marking ${nodesToMarkSynced.length} node(s) as synced...`));
+    const markResults = await Promise.allSettled(
+      nodesToMarkSynced.map(({ id, hash }) => markNodeSynced(id, hash, graphId, token))
+    );
+
+    const failures = markResults.filter((r) => r.status === 'rejected');
+    if (failures.length > 0) {
+      console.warn(chalk.yellow(`  ⚠ ${failures.length} node(s) could not be marked as synced in API`));
     }
   }
 

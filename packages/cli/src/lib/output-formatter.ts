@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-11-24
- * @tags: [output, formatting, human-ux, ai-ux, task-11, dual-output]
+ * @updated: 2026-01-05
+ * @tags: [output, formatting, human-ux, ai-ux, task-11, dual-output, onboarding-optimization]
  * @related: [start-reflection.ts, context-loader-events.ts]
  * @priority: high
  * @complexity: medium
@@ -45,6 +45,8 @@ export interface AISessionContext {
     flowScore: number;
     flowState: string;
     workMode: string;
+    /** True if this is a first-time team member (no prior session history) */
+    isFirstTimeMember?: boolean;
   };
   /** Project charter (mission, goals, success criteria) */
   charter?: {
@@ -203,6 +205,38 @@ export function formatHumanOutput(
 ): string {
   const lines: string[] = [];
   const { minimal = false } = config;
+
+  // First-time member welcome (e008_s03_t03 onboarding optimization)
+  if (context.session.isFirstTimeMember) {
+    lines.push(chalk.cyan('👋 Welcome to the team!'));
+    lines.push('');
+
+    // Show team context summary
+    if (context.charter) {
+      lines.push(chalk.white('Project: ') + chalk.dim(truncate(context.charter.purpose, 60)));
+    }
+
+    // Show patterns/ADRs available
+    const patternCount = context.patterns?.length || 0;
+    if (patternCount > 0) {
+      lines.push(chalk.white('Team knowledge: ') + chalk.dim(`${patternCount} patterns loaded`));
+    }
+
+    lines.push('');
+    lines.push(chalk.dim('Tip: Run `ginko start --team` to see recent team activity'));
+    lines.push('');
+
+    // Still show sprint context for first-time members
+    if (context.sprint) {
+      const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
+      lines.push(chalk.white('Sprint: ') + chalk.cyan(context.sprint.name || 'Active Sprint') + ' ' + chalk.dim(`${progress}%`));
+    }
+
+    // Branch info
+    lines.push(chalk.white('Branch: ') + chalk.cyan(context.git.branch));
+
+    return lines.join('\n');
+  }
 
   // Line 1: Ready | Flow State | Work Mode
   const flowState = getFlowStateLabel(context.session.flowScore);
