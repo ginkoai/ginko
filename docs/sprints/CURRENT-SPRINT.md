@@ -5,7 +5,7 @@
 **Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
 **Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
 **Type**: Infrastructure + Launch sprint
-**Progress:** 75% (6/8 tasks complete)
+**Progress:** 88% (7/8 tasks complete)
 
 **Success Criteria:**
 - [ ] Per-seat monthly billing operational via Stripe
@@ -147,7 +147,7 @@ Extend existing webhook handler for:
 ---
 
 ### e008_s04_t07: Free Tier / Trial Configuration (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assigned:** chris@watchhill.ai
 
@@ -157,11 +157,13 @@ Extend existing webhook handler for:
 - Free tier: 2 seats max (owner + 1)
 - Trial: 14 days with full features
 - Clear upgrade prompts when limits hit
-- Grace period handling
+- Grace period handling (3 days after trial)
 
 **Files:**
-- `packages/mcp-server/src/billing-manager.ts` (add tier logic)
-- `dashboard/src/lib/subscription-limits.ts` (new)
+- `packages/mcp-server/src/billing-manager.ts` (added trial/grace period methods, gracePeriodDays config)
+- `packages/mcp-server/src/entitlements-manager.ts` (updated free tier to 2 seats)
+- `dashboard/src/lib/subscription-limits.ts` (new - tier limits, trial/grace helpers)
+- `dashboard/src/components/billing/UpgradePrompt.tsx` (new - upgrade prompt component)
 
 ---
 
@@ -188,6 +190,31 @@ Verify:
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-05: Free Tier / Trial Configuration (e008_s04_t07)
+- Updated free tier to allow 2 seats (owner + 1 collaborator) in entitlements-manager.ts
+- Added grace period support (3 days after trial ends):
+  - Added `gracePeriodDays` to PlanPricing interface
+  - Configured 3-day grace period for team tier pricing
+- Added trial/grace period methods to BillingManager:
+  - `isTrialActive()` - Check if organization is in trial
+  - `isInGracePeriod()` - Check if in grace period after trial
+  - `getSubscriptionStatus()` - Get complete trial/subscription status with upgrade urgency
+- Created `dashboard/src/lib/subscription-limits.ts` (new):
+  - Tier constants with limits (free: 2 seats, pro: 5, team: 50, enterprise: unlimited)
+  - `getSubscriptionLimits()` - Get limits for a tier
+  - `isTrialActive()` / `isInGracePeriod()` - Trial status helpers
+  - `getEffectiveTier()` - Get effective tier during trial (free users get team features)
+  - `canAddTeamMember()` / `canAddProject()` - Limit validation
+  - `getUpgradeReason()` - Human-readable upgrade reasons
+  - `getTrialDaysRemaining()` / `getGraceDaysRemaining()` - Days remaining helpers
+- Created `dashboard/src/components/billing/UpgradePrompt.tsx` (new):
+  - Props: reason, currentValue, limitValue, resourceName, variant, onUpgrade, onDismiss
+  - Two variants: 'warning' (dismissible) and 'blocking' (must upgrade)
+  - Visual progress bar with color-coded usage (amber at limit, red over)
+  - Clear messaging about limits and upgrade path
+  - Uses Shadcn/UI Card, Button, Badge components
+- Updated billing component barrel export with UpgradePrompt
 
 ### 2026-01-05: Billing Webhook Handlers (e008_s04_t06)
 - Created Stripe webhook endpoint (`/api/webhooks/stripe`)

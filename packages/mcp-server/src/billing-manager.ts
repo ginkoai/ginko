@@ -52,6 +52,7 @@ export interface PlanPricing {
   currency: string;
   interval: 'month' | 'year';
   trialPeriodDays?: number;
+  gracePeriodDays?: number;   // Days after trial ends before full downgrade (EPIC-008 Sprint 4 Task 7)
   features: string[];
   // Seat-based pricing (EPIC-008 Sprint 4)
   perSeat?: boolean;          // If true, amount is per seat
@@ -193,6 +194,7 @@ export class BillingManager {
         currency: 'usd',
         interval: 'month',
         trialPeriodDays: 14,
+        gracePeriodDays: 3,  // 3-day grace period after trial (EPIC-008 Sprint 4 Task 7)
         perSeat: true,
         includedSeats: 1,    // First seat included in base price
         maxSeats: 50,        // Max 50 seats per team
@@ -214,6 +216,7 @@ export class BillingManager {
         currency: 'usd',
         interval: 'year',
         trialPeriodDays: 14,
+        gracePeriodDays: 3,  // 3-day grace period after trial (EPIC-008 Sprint 4 Task 7)
         perSeat: true,
         includedSeats: 1,
         maxSeats: 50,
@@ -892,6 +895,132 @@ export class BillingManager {
 
       console.log(`[BILLING] Created price ${price.id} for ${planTier} ${config.interval}: $${(config.amount / 100).toFixed(2)}/${config.interval}`);
     }
+  }
+
+  // ============================================================================
+  // Trial & Grace Period Methods (EPIC-008 Sprint 4 Task 7)
+  // ============================================================================
+
+  /**
+   * Check if organization is currently in trial period
+   */
+  async isTrialActive(organizationId: string): Promise<{ active: boolean; daysRemaining?: number; endsAt?: Date }> {
+    const org = await this.db.query(`
+      SELECT trial_ends_at, plan_status FROM organizations WHERE id = $1
+    `, [organizationId]);
+
+    if (!org.rows[0]?.trial_ends_at) {
+      return { active: false };
+    }
+
+    const trialEnd = new Date(org.rows[0].trial_ends_at);
+    const now = new Date();
+
+    if (trialEnd > now && org.rows[0].plan_status === 'trialing') {
+      const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return { active: true, daysRemaining, endsAt: trialEnd };
+    }
+
+    return { active: false, endsAt: trialEnd };
+  }
+
+  /**
+   * Check if organization is in grace period after trial ended
+   * Grace period allows limited access for 3 days after trial to convert
+   */
+  async isInGracePeriod(organizationId: string): Promise<{ inGrace: boolean; daysRemaining?: number; endsAt?: Date }> {
+    const org = await this.db.query(`
+      SELECT trial_ends_at, plan_status, plan_tier FROM organizations WHERE id = $1
+    `, [organizationId]);
+
+    if (!org.rows[0]?.trial_ends_at) {
+      return { inGrace: false };
+    }
+
+    const trialEnd = new Date(org.rows[0].trial_ends_at);
+    const now = new Date();
+    const planTier = org.rows[0].plan_tier as PlanTier;
+
+    // Get grace period days from pricing config (default 3)
+    const pricing = this.PLAN_PRICING[planTier]?.[0];
+    const gracePeriodDays = pricing?.gracePeriodDays || 3;
+
+    const graceEnd = new Date(trialEnd);
+    graceEnd.setDate(graceEnd.getDate() + gracePeriodDays);
+
+    // In grace period if trial ended but grace hasn't
+    if (trialEnd <= now && graceEnd > now && org.rows[0].plan_status !== 'active') {
+      const daysRemaining = Math.ceil((graceEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return { inGrace: true, daysRemaining, endsAt: graceEnd };
+    }
+
+    return { inGrace: false };
+  }
+
+  /**
+   * Get complete trial/subscription status for an organization
+   * Used by dashboard to show appropriate upgrade prompts
+   */
+  async getSubscriptionStatus(organizationId: string): Promise<{
+    tier: PlanTier;
+    status: string;
+    trialActive: boolean;
+    trialDaysRemaining?: number;
+    trialEndsAt?: Date;
+    inGracePeriod: boolean;
+    graceDaysRemaining?: number;
+    graceEndsAt?: Date;
+    shouldShowUpgradePrompt: boolean;
+    upgradeUrgency: 'none' | 'low' | 'medium' | 'high' | 'critical';
+  }> {
+    const org = await this.db.query(`
+      SELECT plan_tier, plan_status, trial_ends_at FROM organizations WHERE id = $1
+    `, [organizationId]);
+
+    if (!org.rows[0]) {
+      throw new BillingError('Organization not found', 'ORG_NOT_FOUND');
+    }
+
+    const tier = org.rows[0].plan_tier as PlanTier;
+    const status = org.rows[0].plan_status;
+
+    const trial = await this.isTrialActive(organizationId);
+    const grace = await this.isInGracePeriod(organizationId);
+
+    // Determine upgrade urgency
+    let shouldShowUpgradePrompt = false;
+    let upgradeUrgency: 'none' | 'low' | 'medium' | 'high' | 'critical' = 'none';
+
+    if (tier === 'free') {
+      // Free tier always shows low-priority upgrade prompt
+      shouldShowUpgradePrompt = true;
+      upgradeUrgency = 'low';
+    } else if (trial.active) {
+      shouldShowUpgradePrompt = true;
+      if (trial.daysRemaining && trial.daysRemaining <= 3) {
+        upgradeUrgency = 'high';
+      } else if (trial.daysRemaining && trial.daysRemaining <= 7) {
+        upgradeUrgency = 'medium';
+      } else {
+        upgradeUrgency = 'low';
+      }
+    } else if (grace.inGrace) {
+      shouldShowUpgradePrompt = true;
+      upgradeUrgency = 'critical';
+    }
+
+    return {
+      tier,
+      status,
+      trialActive: trial.active,
+      trialDaysRemaining: trial.daysRemaining,
+      trialEndsAt: trial.endsAt,
+      inGracePeriod: grace.inGrace,
+      graceDaysRemaining: grace.daysRemaining,
+      graceEndsAt: grace.endsAt,
+      shouldShowUpgradePrompt,
+      upgradeUrgency
+    };
   }
 
   // ============================================================================

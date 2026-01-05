@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-05T21-26-38-239Z
-started: 2026-01-05T21:26:38.239Z
+session_id: session-2026-01-05T21-59-53-383Z
+started: 2026-01-05T21:59:53.383Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-05T21-26-38-239Z
+# Session Log: session-2026-01-05T21-59-53-383Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,15 +14,15 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 16:51 - [feature]
-Completed e008_s04_t05: Upgrade/Downgrade Flows. Created seat management API (/api/v1/billing/seats) with POST for updating seat count and GET for current allocation. Built ManageSeats component with add/remove seat modals showing billing impact, confirmation dialogs, and proper proration handling (add=immediate charge, remove=period_end). Integrated into billing page for team owners. Also added Stripe env vars to Vercel and fixed stripe-setup-seats.ts features parameter issue.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/dashboard/billing/page.tsx, dashboard/src/components/billing/index.ts
-Impact: high
+### 17:00 - [feature]
+Starting e008_s04_t07: Free Tier / Trial Configuration. Will configure free tier limits and trial period setup.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
 
 
-### 16:55 - [feature]
-Completed e008_s04_t06: Billing Webhook Handlers. Created /api/webhooks/stripe endpoint with signature verification. Handles customer.subscription.updated (seat/plan changes), customer.subscription.deleted (downgrade to free), invoice.payment_failed (track failures), invoice.payment_succeeded (clear failures), checkout.session.completed (link new subs). Updates org records and logs billing events for audit.
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/dashboard/billing/page.tsx
+### 17:11 - [feature]
+Completed e008_s04_t07: Free Tier / Trial Configuration. Updated free tier to 2 seats. Added grace period (3 days). Created subscription-limits.ts with tier constants and trial helpers. Created UpgradePrompt component with warning/blocking variants.
+Files: packages/mcp-server/src/billing-manager.ts, packages/mcp-server/src/entitlements-manager.ts, dashboard/src/lib/subscription-limits.ts, dashboard/src/components/billing/UpgradePrompt.tsx
 Impact: high
 
 

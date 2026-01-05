@@ -118,7 +118,7 @@ export class RateLimitExceededError extends EntitlementError {
 export const PLAN_CONFIGURATIONS: Record<PlanTier, PlanLimits> = {
   free: {
     maxProjects: 1,
-    maxTeamMembers: 1,
+    maxTeamMembers: 2,  // Owner + 1 collaborator (EPIC-008 Sprint 4 Task 7)
     maxSessionsPerMonth: 50,
     maxContextCacheSize: 100,
     maxBestPractices: 10,

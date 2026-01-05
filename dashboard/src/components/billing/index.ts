@@ -14,3 +14,5 @@
 export { SeatUsageCard } from './SeatUsageCard';
 export { BillingStatusCard } from './BillingStatusCard';
 export { ManageSeats } from './ManageSeats';
+export { UpgradePrompt } from './UpgradePrompt';
+export type { UpgradePromptProps } from './UpgradePrompt';
