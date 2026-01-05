@@ -926,10 +926,35 @@
       "relevance": "critical",
       "created": "2026-01-05T20:43:43.701Z",
       "sessionId": "session-chris-at-watchhill-ai-1767645823656"
+    },
+    {
+      "filename": "pattern-completed-e008s04t05-upgradedowngrade-flows.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "vercel",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-05T21:51:55.974Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767649915935"
+    },
+    {
+      "filename": "pattern-completed-e008s04t06-billing-webhook-handlers.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-05T21:55:31.003Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767650130967"
     }
   ],
-  "lastUpdated": "2026-01-05T20:43:43.703Z",
-  "totalModules": 69,
+  "lastUpdated": "2026-01-05T21:55:31.004Z",
+  "totalModules": 71,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
