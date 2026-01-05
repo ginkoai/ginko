@@ -5,13 +5,13 @@
 **Sprint Goal**: Enable owners to view team member insights and optimize the onboarding flow to hit 10-minute target
 **Duration**: 1 week (2026-02-03 to 2026-02-07)
 **Type**: Polish sprint
-**Progress:** 67% (4/6 tasks complete)
+**Progress:** 83% (5/6 tasks complete)
 
 **Success Criteria:**
 - [x] Insights page has member filter for project owners
 - [x] Owner can view any team member's collaboration insights
 - [x] New member onboarding completes in ≤10 minutes
-- [ ] Team features documentation complete
+- [x] Team features documentation complete
 
 ---
 
@@ -111,7 +111,7 @@ Optimizations:
 ---
 
 ### e008_s03_t05: Team Features Documentation (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** User-facing documentation for team collaboration features
@@ -150,6 +150,14 @@ Test scenarios:
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-05: Team Features Documentation (e008_s03_t05)
+- Created comprehensive team collaboration guide at `docs/guides/team-collaboration.md`
+- Documents invite/join/teams/sync commands with examples
+- Covers roles/permissions, staleness warnings, workflow examples
+- Added troubleshooting section for common issues
+- Updated CLI README with Team Collaboration section
+- Files: docs/guides/team-collaboration.md (new), packages/cli/README.md (updated)
 
 ### 2026-01-05: Progress Indicators for Onboarding (e008_s03_t03, e008_s03_t04)
 - Added ora spinners with time estimates to sync command

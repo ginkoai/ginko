@@ -99,6 +99,33 @@ Enable multiple AI agents to collaborate on complex projects.
 
 See [Multi-Agent Orchestration Guide](../../docs/guides/MULTI-AGENT-ORCHESTRATION.md) for details.
 
+### Team Collaboration (EPIC-008)
+Enable teams to share knowledge while keeping sessions private.
+
+- `ginko invite` - Invite collaborators to your team
+  - `<email>` - Invite by email address
+  - `--role <role>` - Assign role: owner, admin, member
+  - `--list` - List pending invitations
+  - `--revoke <code>` - Cancel an invitation
+- `ginko join` - Join a team using an invitation code
+  - `<code>` - Accept invitation
+  - `--yes` - Skip confirmation prompt
+- `ginko teams` - Manage teams
+  - `create <name>` - Create a new team
+  - `list` - List your teams
+  - `add-member <team> <user>` - Add member by GitHub username
+  - `remove-member <team> <user>` - Remove a team member
+  - `list-members <team>` - List team members
+  - `add-to-project <team> <project>` - Grant team access
+  - `remove-from-project <team> <project>` - Revoke access
+- `ginko sync` - Pull dashboard edits to local git
+  - `--dry-run` - Preview what would be synced
+  - `--force` - Overwrite local files
+  - `--type <type>` - Sync only: ADR, PRD, Pattern, Gotcha, Charter, Sprint
+  - `--no-commit` - Skip auto-commit
+
+See [Team Collaboration Guide](../../docs/guides/team-collaboration.md) for details.
+
 ## Features
 
 ### Privacy First
