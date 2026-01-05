@@ -36,3 +36,19 @@ flow_state: hot
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 10:37 - [achievement]
+# [ACHIEVEMENT] 10:37
+
+Completed e008_s03_t01: Insights Page Member Filter. Created MemberFilter component that allows team owners to view any member's insights via dropdown selector. Implemented: (1) MemberFilter.tsx - fetches teams/members, shows dropdown for owners only, (2) page-client.tsx - integrated filter with URL persistence for sharing (?memberId=&memberEmail=), (3) insights/sync API - added memberEmail parameter with permission check (owners can query team members). Non-owners see only their own insights.
+
+**Files:**
+- dashboard/src/components/insights/MemberFilter.tsx
+- dashboard/src/app/dashboard/insights/page-client.tsx
+- dashboard/src/app/api/v1/insights/sync/route.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-05T15:37:19.547Z
+
+Files: dashboard/src/components/insights/MemberFilter.tsx, dashboard/src/app/dashboard/insights/page-client.tsx, dashboard/src/app/api/v1/insights/sync/route.ts
+Impact: high

@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-12-15
- * @tags: [insights, coaching, sync, supabase, task-11]
+ * @updated: 2026-01-05
+ * @tags: [insights, coaching, sync, supabase, task-11, member-filter, epic-008]
  * @related: [../../lib/auth/middleware.ts, types.ts]
  * @priority: high
  * @complexity: medium
@@ -260,6 +260,7 @@ export async function POST(request: NextRequest) {
  * Optional query params:
  * - projectId: Filter by project
  * - limit: Number of runs to return (default 1)
+ * - memberEmail: Query insights for a specific team member (owners only)
  *
  * Also calculates trend scores for 1-day and 7-day periods from historical data.
  */
@@ -270,9 +271,63 @@ export async function GET(request: NextRequest) {
       const projectId = searchParams.get('projectId');
       const limit = parseInt(searchParams.get('limit') || '1', 10);
       const days = searchParams.get('days');
+      const memberEmail = searchParams.get('memberEmail');
 
       // Use service role client to bypass RLS - we've already authenticated via withAuth
       const supabase = createServiceRoleClient();
+
+      // Determine which user's insights to query
+      let targetUserEmail = user.email;
+
+      // If memberEmail is specified, verify requester is an owner of a shared team
+      if (memberEmail && memberEmail !== user.email) {
+        // Check if current user is an owner of any team that includes the target member
+        const { data: ownerTeams } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id)
+          .eq('role', 'owner');
+
+        if (!ownerTeams || ownerTeams.length === 0) {
+          return NextResponse.json(
+            { error: 'Only team owners can view other members\' insights' },
+            { status: 403 }
+          );
+        }
+
+        // Verify target member is in one of the owner's teams
+        const teamIds = ownerTeams.map((t: any) => t.team_id);
+
+        // Get target user's ID from their email
+        const { data: targetProfile } = await supabase
+          .from('user_profiles')
+          .select('id')
+          .eq('email', memberEmail)
+          .single();
+
+        if (!targetProfile) {
+          return NextResponse.json(
+            { error: 'Member not found' },
+            { status: 404 }
+          );
+        }
+
+        const { data: memberCheck } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', targetProfile.id)
+          .in('team_id', teamIds)
+          .limit(1);
+
+        if (!memberCheck || memberCheck.length === 0) {
+          return NextResponse.json(
+            { error: 'You can only view insights for members of your teams' },
+            { status: 403 }
+          );
+        }
+
+        targetUserEmail = memberEmail;
+      }
 
       let query = supabase
         .from('insight_runs')
@@ -280,7 +335,7 @@ export async function GET(request: NextRequest) {
           *,
           insights (*)
         `)
-        .eq('user_id', user.email)
+        .eq('user_id', targetUserEmail)
         .eq('status', 'completed')
         .order('run_at', { ascending: false })
         .limit(Math.min(limit, 10));
@@ -315,7 +370,7 @@ export async function GET(request: NextRequest) {
       // Calculate trend scores from historical data
       if (runs && runs.length > 0) {
         const latestRun = runs[0];
-        const trendScores = await calculateTrendScores(supabase, user.email, latestRun.project_id);
+        const trendScores = await calculateTrendScores(supabase, targetUserEmail, latestRun.project_id);
 
         // Add trendScores to metadata
         if (latestRun.metadata) {

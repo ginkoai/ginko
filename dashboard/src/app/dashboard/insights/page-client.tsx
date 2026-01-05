@@ -1,17 +1,19 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
- * @tags: [insights, coaching, dashboard, client]
- * @related: [page.tsx, InsightsOverview.tsx]
+ * @updated: 2026-01-05
+ * @tags: [insights, coaching, dashboard, client, member-filter, epic-008]
+ * @related: [page.tsx, InsightsOverview.tsx, MemberFilter.tsx]
  * @priority: high
  * @complexity: medium
- * @dependencies: [react, heroicons]
+ * @dependencies: [react, heroicons, next/navigation]
  */
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { InsightsOverview, TimescalePeriod } from '@/components/insights/InsightsOverview'
+import { MemberFilter } from '@/components/insights/MemberFilter'
 import { DashboardCoachingReport } from '@/lib/insights/types'
 import {
   ArrowPathIcon,
@@ -204,13 +206,44 @@ const SAMPLE_REPORT: DashboardCoachingReport = {
 }
 
 export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProps) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
   const [report, setReport] = useState<DashboardCoachingReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [useDemo, setUseDemo] = useState(false)
   const [selectedPeriod, setSelectedPeriod] = useState<TimescalePeriod>(30)
 
-  const loadInsights = useCallback(async (period: TimescalePeriod = selectedPeriod) => {
+  // Member filter state - null means current user
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(
+    searchParams.get('memberId')
+  )
+  const [selectedMemberEmail, setSelectedMemberEmail] = useState<string | null>(
+    searchParams.get('memberEmail')
+  )
+
+  // Update URL when member selection changes
+  const handleMemberChange = useCallback((memberId: string | null, memberEmail: string | null) => {
+    setSelectedMemberId(memberId)
+    setSelectedMemberEmail(memberEmail)
+
+    // Update URL for sharing
+    const params = new URLSearchParams(searchParams.toString())
+    if (memberId && memberId !== userId) {
+      params.set('memberId', memberId)
+      if (memberEmail) {
+        params.set('memberEmail', memberEmail)
+      }
+    } else {
+      params.delete('memberId')
+      params.delete('memberEmail')
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+  }, [searchParams, pathname, router, userId])
+
+  const loadInsights = useCallback(async (period: TimescalePeriod = selectedPeriod, memberEmail?: string | null) => {
     setLoading(true)
     setError(null)
 
@@ -234,7 +267,16 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
       }
 
       // Fetch from Supabase via API with period filter
-      const response = await fetch(`/api/v1/insights/sync?limit=10&days=${period}`)
+      // Use provided memberEmail or fall back to state/current user
+      const targetEmail = memberEmail !== undefined ? memberEmail : selectedMemberEmail
+      const queryParams = new URLSearchParams({
+        limit: '10',
+        days: String(period)
+      })
+      if (targetEmail && targetEmail !== userEmail) {
+        queryParams.set('memberEmail', targetEmail)
+      }
+      const response = await fetch(`/api/v1/insights/sync?${queryParams.toString()}`)
 
       if (response.ok) {
         const data = await response.json()
@@ -307,17 +349,22 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
     } finally {
       setLoading(false)
     }
-  }, [userId, useDemo, selectedPeriod])
+  }, [userId, userEmail, useDemo, selectedPeriod, selectedMemberEmail])
 
   // Handle period change
   const handlePeriodChange = useCallback((period: TimescalePeriod) => {
     setSelectedPeriod(period)
-    loadInsights(period)
-  }, [loadInsights])
+    loadInsights(period, selectedMemberEmail)
+  }, [loadInsights, selectedMemberEmail])
+
+  // Reload when member changes
+  useEffect(() => {
+    loadInsights(selectedPeriod, selectedMemberEmail)
+  }, [selectedMemberEmail]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadInsights()
-  }, [loadInsights])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-6">
@@ -330,6 +377,13 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Member Filter - only visible to team owners */}
+          <MemberFilter
+            currentUserId={userId}
+            currentUserEmail={userEmail}
+            selectedMemberId={selectedMemberId}
+            onMemberChange={handleMemberChange}
+          />
           <button
             onClick={() => setUseDemo(!useDemo)}
             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors font-mono text-sm"
@@ -338,7 +392,7 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
             {useDemo ? 'Hide Demo' : 'Show Demo'}
           </button>
           <button
-            onClick={loadInsights}
+            onClick={() => loadInsights()}
             disabled={loading}
             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-mono text-sm"
           >

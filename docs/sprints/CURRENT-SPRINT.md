@@ -5,11 +5,11 @@
 **Sprint Goal**: Enable owners to view team member insights and optimize the onboarding flow to hit 10-minute target
 **Duration**: 1 week (2026-02-03 to 2026-02-07)
 **Type**: Polish sprint
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 17% (1/6 tasks complete)
 
 **Success Criteria:**
-- [ ] Insights page has member filter for project owners
-- [ ] Owner can view any team member's collaboration insights
+- [x] Insights page has member filter for project owners
+- [x] Owner can view any team member's collaboration insights
 - [ ] New member onboarding completes in ≤10 minutes
 - [ ] Team features documentation complete
 
@@ -18,7 +18,7 @@
 ## Sprint Tasks
 
 ### e008_s03_t01: Insights Page Member Filter (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Add member dropdown filter to Insights page for project owners
@@ -30,8 +30,9 @@
 - Persist selection in URL for sharing
 
 **Files:**
-- `dashboard/src/app/insights/page.tsx` (update)
+- `dashboard/src/app/dashboard/insights/page-client.tsx` (updated)
 - `dashboard/src/components/insights/MemberFilter.tsx` (new)
+- `dashboard/src/app/api/v1/insights/sync/route.ts` (updated)
 
 ---
 
@@ -136,7 +137,13 @@ Test scenarios:
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2026-01-05: Insights Page Member Filter (e008_s03_t01)
+- Created MemberFilter component with team member dropdown
+- Owners can select any team member to view their insights
+- Non-owners only see their own insights (filter hidden)
+- URL persistence for sharing (`?memberId=xxx&memberEmail=xxx`)
+- API permission check: only owners can query other members' insights
+- Files: MemberFilter.tsx (new), page-client.tsx (updated), insights/sync/route.ts (updated)
 
 ## Next Steps
 
