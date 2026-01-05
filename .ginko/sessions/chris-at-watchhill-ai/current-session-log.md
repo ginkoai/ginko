@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-05T19-40-33-622Z
-started: 2026-01-05T19:40:33.622Z
+session_id: session-2026-01-05T20-25-53-884Z
+started: 2026-01-05T20:25:53.884Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-05T19-40-33-622Z
+# Session Log: session-2026-01-05T20-25-53-884Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,21 +36,3 @@ flow_state: hot
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
-
-### 14:46 - [achievement]
-# [ACHIEVEMENT] 14:46
-
-Completed e008_s04_t01: Extended billing schema for per-seat billing. Added 'team' tier to PlanTier with /seat/month pricing. Implemented seat management methods in BillingManager (getSeatAllocation, canAddSeats, updateSeatCount, syncSeatCount, getSeatUsageSummary). Created Neo4j schema 013-billing-seats.cypher for SeatAllocation and BillingEvent tracking. Extended entitlements-manager.ts with team tier limits (50 seats, 25 projects). Build passes.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- docs/sprints/CURRENT-SPRINT.md
-- packages/mcp-server/src/auth-manager.ts
-
-**Impact:** high
-**Timestamp:** 2026-01-05T19:46:31.464Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/sprints/CURRENT-SPRINT.md, packages/mcp-server/src/auth-manager.ts
-Impact: high
