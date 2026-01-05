@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-05T15-04-17-319Z
-started: 2026-01-05T15:04:17.319Z
+session_id: session-2026-01-05T16-10-37-434Z
+started: 2026-01-05T16:10:37.434Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-05T15-04-17-319Z
+# Session Log: session-2026-01-05T16-10-37-434Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,18 +37,16 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 10:37 - [achievement]
-# [ACHIEVEMENT] 10:37
+### 11:16 - [achievement]
+# [ACHIEVEMENT] 11:16
 
-Completed e008_s03_t01: Insights Page Member Filter. Created MemberFilter component that allows team owners to view any member's insights via dropdown selector. Implemented: (1) MemberFilter.tsx - fetches teams/members, shows dropdown for owners only, (2) page-client.tsx - integrated filter with URL persistence for sharing (?memberId=&memberEmail=), (3) insights/sync API - added memberEmail parameter with permission check (owners can query team members). Non-owners see only their own insights.
+Completed e008_s03_t02: Team Insights API Enhancement. Added aggregate=team parameter to GET /api/v1/insights/sync for team-wide insights. Returns team average scores, category averages, severity counts, and per-member insight summaries. Only team owners can access aggregate view. Built on existing memberEmail filter.
 
 **Files:**
-- dashboard/src/components/insights/MemberFilter.tsx
-- dashboard/src/app/dashboard/insights/page-client.tsx
 - dashboard/src/app/api/v1/insights/sync/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-05T15:37:19.547Z
+**Timestamp:** 2026-01-05T16:16:25.433Z
 
-Files: dashboard/src/components/insights/MemberFilter.tsx, dashboard/src/app/dashboard/insights/page-client.tsx, dashboard/src/app/api/v1/insights/sync/route.ts
+Files: dashboard/src/app/api/v1/insights/sync/route.ts
 Impact: high

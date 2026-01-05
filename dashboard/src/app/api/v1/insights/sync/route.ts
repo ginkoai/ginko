@@ -2,7 +2,7 @@
  * @fileType: api-route
  * @status: current
  * @updated: 2026-01-05
- * @tags: [insights, coaching, sync, supabase, task-11, member-filter, epic-008]
+ * @tags: [insights, coaching, sync, supabase, task-11, member-filter, team-aggregate, epic-008]
  * @related: [../../lib/auth/middleware.ts, types.ts]
  * @priority: high
  * @complexity: medium
@@ -261,8 +261,10 @@ export async function POST(request: NextRequest) {
  * - projectId: Filter by project
  * - limit: Number of runs to return (default 1)
  * - memberEmail: Query insights for a specific team member (owners only)
+ * - aggregate: 'team' to get aggregated insights for all team members (owners only)
+ * - days: Filter by period days (1, 7, or 30)
  *
- * Also calculates trend scores for 1-day and 7-day periods from historical data.
+ * Also calculates trend scores for 1-day, 7-day, and 30-day periods from historical data.
  */
 export async function GET(request: NextRequest) {
   return withAuth(request, async (user: AuthenticatedUser, _supabase: any) => {
@@ -272,9 +274,15 @@ export async function GET(request: NextRequest) {
       const limit = parseInt(searchParams.get('limit') || '1', 10);
       const days = searchParams.get('days');
       const memberEmail = searchParams.get('memberEmail');
+      const aggregate = searchParams.get('aggregate');
 
       // Use service role client to bypass RLS - we've already authenticated via withAuth
       const supabase = createServiceRoleClient();
+
+      // Handle aggregate=team request (owners only)
+      if (aggregate === 'team') {
+        return await handleTeamAggregateInsights(supabase, user, projectId, days);
+      }
 
       // Determine which user's insights to query
       let targetUserEmail = user.email;
@@ -490,4 +498,195 @@ async function calculateTrendScores(
   }
 
   return result;
+}
+
+/**
+ * Handle aggregate team insights request.
+ * Returns combined insights for all team members the owner has access to.
+ */
+async function handleTeamAggregateInsights(
+  supabase: any,
+  user: AuthenticatedUser,
+  projectId: string | null,
+  days: string | null
+): Promise<NextResponse> {
+  // Step 1: Verify user is a team owner
+  const { data: ownerTeams } = await supabase
+    .from('team_members')
+    .select('team_id')
+    .eq('user_id', user.id)
+    .eq('role', 'owner');
+
+  if (!ownerTeams || ownerTeams.length === 0) {
+    return NextResponse.json(
+      { error: 'Only team owners can view aggregate team insights' },
+      { status: 403 }
+    );
+  }
+
+  const teamIds = ownerTeams.map((t: any) => t.team_id);
+
+  // Step 2: Get all team members from owner's teams
+  const { data: teamMembers } = await supabase
+    .from('team_members')
+    .select(`
+      user_id,
+      role,
+      user_profiles!inner (
+        email,
+        full_name
+      )
+    `)
+    .in('team_id', teamIds);
+
+  if (!teamMembers || teamMembers.length === 0) {
+    return NextResponse.json({
+      aggregate: {
+        memberCount: 0,
+        averageScore: null,
+        categoryAverages: {},
+        totalInsights: { info: 0, suggestion: 0, warning: 0, critical: 0 },
+      },
+      members: [],
+    });
+  }
+
+  // Deduplicate members (might be in multiple teams)
+  const uniqueMembers = new Map<string, { email: string; name: string; role: string }>();
+  for (const tm of teamMembers) {
+    const profile = tm.user_profiles as any;
+    if (profile?.email && !uniqueMembers.has(profile.email)) {
+      uniqueMembers.set(profile.email, {
+        email: profile.email,
+        name: profile.full_name || profile.email,
+        role: tm.role,
+      });
+    }
+  }
+
+  const memberEmails = Array.from(uniqueMembers.keys());
+
+  // Step 3: Query latest insights for each member
+  let insightQuery = supabase
+    .from('insight_runs')
+    .select(`
+      id,
+      user_id,
+      project_id,
+      overall_score,
+      summary,
+      run_at,
+      metadata,
+      insights (
+        category,
+        severity,
+        title,
+        score_impact
+      )
+    `)
+    .in('user_id', memberEmails)
+    .eq('status', 'completed')
+    .order('run_at', { ascending: false });
+
+  if (projectId) {
+    insightQuery = insightQuery.eq('project_id', projectId);
+  }
+
+  const { data: allRuns, error } = await insightQuery;
+
+  if (error) {
+    console.error('[Insights Sync] Team aggregate error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch team insights', message: error.message },
+      { status: 500 }
+    );
+  }
+
+  // Filter by period days if specified
+  let runs = allRuns || [];
+  if (days) {
+    const targetDays = parseInt(days, 10);
+    runs = runs.filter((run: any) =>
+      run.metadata?.periodDays === targetDays
+    );
+  }
+
+  // Step 4: Get latest run per member
+  const latestRunByMember = new Map<string, any>();
+  for (const run of runs) {
+    if (!latestRunByMember.has(run.user_id)) {
+      latestRunByMember.set(run.user_id, run);
+    }
+  }
+
+  // Step 5: Calculate aggregates
+  const memberInsights: any[] = [];
+  let totalScore = 0;
+  let membersWithScores = 0;
+  const categoryTotals: Record<string, { sum: number; count: number }> = {};
+  const severityCounts = { info: 0, suggestion: 0, warning: 0, critical: 0 };
+
+  for (const [email, memberInfo] of Array.from(uniqueMembers.entries())) {
+    const latestRun = latestRunByMember.get(email);
+
+    const memberData: any = {
+      email,
+      name: memberInfo.name,
+      role: memberInfo.role,
+      hasInsights: !!latestRun,
+    };
+
+    if (latestRun) {
+      memberData.overallScore = latestRun.overall_score;
+      memberData.lastRunAt = latestRun.run_at;
+      memberData.summary = latestRun.summary;
+      memberData.insightCount = latestRun.insights?.length || 0;
+
+      // Add to totals
+      totalScore += latestRun.overall_score;
+      membersWithScores++;
+
+      // Category scores from metadata
+      const categoryScores = latestRun.metadata?.categoryScores || [];
+      for (const cs of categoryScores) {
+        if (!categoryTotals[cs.category]) {
+          categoryTotals[cs.category] = { sum: 0, count: 0 };
+        }
+        categoryTotals[cs.category].sum += cs.score;
+        categoryTotals[cs.category].count++;
+      }
+
+      // Severity counts
+      for (const insight of (latestRun.insights || [])) {
+        if (insight.severity in severityCounts) {
+          severityCounts[insight.severity as keyof typeof severityCounts]++;
+        }
+      }
+    }
+
+    memberInsights.push(memberData);
+  }
+
+  // Calculate averages
+  const categoryAverages: Record<string, number> = {};
+  for (const [category, totals] of Object.entries(categoryTotals)) {
+    categoryAverages[category] = Math.round(totals.sum / totals.count);
+  }
+
+  return NextResponse.json({
+    aggregate: {
+      memberCount: uniqueMembers.size,
+      membersWithData: membersWithScores,
+      averageScore: membersWithScores > 0 ? Math.round(totalScore / membersWithScores) : null,
+      categoryAverages,
+      totalInsights: severityCounts,
+    },
+    members: memberInsights.sort((a, b) => {
+      // Sort by score descending, members without data at end
+      if (!a.hasInsights && !b.hasInsights) return 0;
+      if (!a.hasInsights) return 1;
+      if (!b.hasInsights) return -1;
+      return (b.overallScore || 0) - (a.overallScore || 0);
+    }),
+  });
 }

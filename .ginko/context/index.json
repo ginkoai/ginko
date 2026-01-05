@@ -890,10 +890,22 @@
       "relevance": "critical",
       "created": "2026-01-04T04:12:31.300Z",
       "sessionId": "session-user-at-example-com-1767499951267"
+    },
+    {
+      "filename": "decision-session-handoff-completed-e008s03t01-insights-page.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-05T15:52:34.791Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767628354767"
     }
   ],
-  "lastUpdated": "2026-01-04T04:12:31.300Z",
-  "totalModules": 66,
+  "lastUpdated": "2026-01-05T15:52:34.792Z",
+  "totalModules": 67,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
