@@ -864,10 +864,36 @@
       "relevance": "critical",
       "created": "2026-01-03T16:14:20.370Z",
       "sessionId": "session-chris-at-watchhill-ai-1767456859972"
+    },
+    {
+      "filename": "decision-created-adr056-roadmap-as-epic-view.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-04T00:02:38.194Z",
+      "sessionId": "session-user-at-example-com-1767484958171"
+    },
+    {
+      "filename": "pattern-created-epic009-product-roadmap-visualization.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli",
+        "performance"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-04T04:12:31.300Z",
+      "sessionId": "session-user-at-example-com-1767499951267"
     }
   ],
-  "lastUpdated": "2026-01-03T16:14:20.371Z",
-  "totalModules": 64,
+  "lastUpdated": "2026-01-04T04:12:31.300Z",
+  "totalModules": 66,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
