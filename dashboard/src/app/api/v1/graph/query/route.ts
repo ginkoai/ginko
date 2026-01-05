@@ -39,22 +39,30 @@ interface QueryRequest {
   labels?: string[];
 }
 
+// CLI-expected format for QueryResult
 interface QueryResult {
-  id: string;
-  label: string;
-  title?: string;
-  content?: string;
-  summary?: string;
-  score: number;
-  properties: Record<string, any>;
+  document: {
+    id: string;
+    type: string;
+    title: string;
+    summary: string;
+    tags: string[];
+    filePath: string;
+  };
+  similarity: number;
+  connections: number;
+  matchContext: string;
 }
 
+// CLI-expected format for QueryResponse
 interface QueryResponse {
   results: QueryResult[];
-  query: string;
-  totalCount: number;
-  graphId: string;
-  performanceMs: number;
+  totalResults: number;
+  queryTime: number;
+  embedding: {
+    model: string;
+    dimensions: number;
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -220,32 +228,42 @@ export async function POST(request: NextRequest) {
           const node = record.get('node');
           const score = record.get('score');
           const nodeLabels = record.get('nodeLabels') as string[];
+          const nodeType = nodeLabels.find(l => l !== 'Node') || 'Unknown';
+
+          // Parse tags from node properties (may be string or array)
+          let tags: string[] = [];
+          if (node.properties.tags) {
+            tags = Array.isArray(node.properties.tags)
+              ? node.properties.tags
+              : String(node.properties.tags).split(',').map((t: string) => t.trim());
+          }
 
           return {
-            id: node.properties.id,
-            label: nodeLabels.find(l => l !== 'Node') || 'Unknown',
-            title: node.properties.title || node.properties.name,
-            content: node.properties.content?.substring(0, 500),
-            summary: node.properties.summary || node.properties.description,
-            score: parseFloat(score.toFixed(4)),
-            properties: {
-              ...node.properties,
-              // Remove large fields from properties
-              content: undefined,
-              embedding: undefined,
+            document: {
+              id: node.properties.id || '',
+              type: nodeType,
+              title: node.properties.title || node.properties.name || '',
+              summary: node.properties.summary || node.properties.description || '',
+              tags,
+              filePath: node.properties.filePath || '',
             },
+            similarity: parseFloat(score.toFixed(4)),
+            connections: 0, // TODO: Could query for relationship count
+            matchContext: node.properties.content?.substring(0, 200) || '',
           };
         });
 
       const response: QueryResponse = {
         results,
-        query,
-        totalCount: results.length,
-        graphId,
-        performanceMs: Date.now() - startTime,
+        totalResults: results.length,
+        queryTime: Date.now() - startTime,
+        embedding: {
+          model: 'voyage-3.5',
+          dimensions: 1024,
+        },
       };
 
-      console.log('[Graph Query API] Returning', results.length, 'results in', response.performanceMs, 'ms');
+      console.log('[Graph Query API] Returning', results.length, 'results in', response.queryTime, 'ms');
       return NextResponse.json(response);
     } finally {
       await session.close();

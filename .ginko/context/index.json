@@ -902,10 +902,23 @@
       "relevance": "critical",
       "created": "2026-01-05T15:52:34.791Z",
       "sessionId": "session-chris-at-watchhill-ai-1767628354767"
+    },
+    {
+      "filename": "pattern-enabled-semantic-search-for-ginko-graph-query.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-05T19:29:36.413Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767641376379"
     }
   ],
-  "lastUpdated": "2026-01-05T15:52:34.792Z",
-  "totalModules": 67,
+  "lastUpdated": "2026-01-05T19:29:36.416Z",
+  "totalModules": 68,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
