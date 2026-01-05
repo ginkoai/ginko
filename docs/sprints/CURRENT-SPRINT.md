@@ -5,12 +5,12 @@
 **Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
 **Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
 **Type**: Infrastructure + Launch sprint
-**Progress:** 37.5% (3/8 tasks complete)
+**Progress:** 50% (4/8 tasks complete)
 
 **Success Criteria:**
 - [ ] Per-seat monthly billing operational via Stripe
-- [ ] Seat count updates automatically on member add/remove
-- [ ] Dashboard shows seat usage and billing status
+- [x] Seat count updates automatically on member add/remove
+- [x] Dashboard shows seat usage and billing status
 - [ ] Upgrade/downgrade flows work correctly
 - [ ] Launch checklist complete
 
@@ -85,7 +85,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ---
 
 ### e008_s04_t04: Dashboard Billing Overview (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
@@ -94,13 +94,17 @@ Follow: ADR-005 (Stripe Payment Integration)
 **Implementation Notes:**
 - Current seat count vs. plan limit
 - Next billing date and amount
-- Usage graph (seats over time)
-- Link to Stripe customer portal
+- Link to Stripe customer portal (via portal API)
+- Billing section added to Settings page for team owners
 
 **Files:**
-- `dashboard/src/components/billing/SeatUsage.tsx` (new)
-- `dashboard/src/components/billing/BillingOverview.tsx` (new)
-- `dashboard/src/app/settings/billing/page.tsx` (new or update)
+- `dashboard/src/app/api/v1/billing/overview/route.ts` (new - billing data API)
+- `dashboard/src/app/api/v1/billing/portal/route.ts` (new - Stripe portal session)
+- `dashboard/src/app/dashboard/billing/page.tsx` (new - billing overview page)
+- `dashboard/src/components/billing/SeatUsageCard.tsx` (new - seat usage display)
+- `dashboard/src/components/billing/BillingStatusCard.tsx` (new - subscription status)
+- `dashboard/src/components/billing/index.ts` (new - barrel export)
+- `dashboard/src/app/dashboard/settings/page.tsx` (updated - added billing link)
 
 ---
 

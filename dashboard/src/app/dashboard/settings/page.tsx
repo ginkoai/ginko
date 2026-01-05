@@ -15,7 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { KeyIcon, UserIcon, BoltIcon, UsersIcon } from '@heroicons/react/24/outline'
+import { KeyIcon, UserIcon, BoltIcon, UsersIcon, CreditCardIcon } from '@heroicons/react/24/outline'
 import { TeamMemberList } from '@/components/team'
 
 interface Team {
@@ -178,6 +178,43 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Billing Section */}
+      {teams.some(t => t.role === 'owner') && (
+        <div className="bg-card rounded-lg border border-border shadow-sm">
+          <div className="p-6 border-b border-border">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <CreditCardIcon className="h-5 w-5 text-primary" />
+              Billing & Subscription
+            </h2>
+            <p className="text-muted-foreground mt-1">
+              Manage your team&apos;s subscription, seats, and payment methods
+            </p>
+          </div>
+          <div className="p-6">
+            <div className="text-center py-8">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <CreditCardIcon className="h-8 w-8 text-primary" />
+                </div>
+              </div>
+              <h3 className="font-medium text-foreground mb-2">Team Billing</h3>
+              <p className="text-muted-foreground mb-6">
+                View seat usage, subscription status, and manage payments
+              </p>
+              <div className="space-x-3">
+                <button
+                  onClick={() => router.push('/dashboard/billing')}
+                  className="inline-flex items-center px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                >
+                  <CreditCardIcon className="h-4 w-4 mr-2" />
+                  View Billing
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Team Members */}
       {teams.length > 0 && (
