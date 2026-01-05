@@ -5,7 +5,7 @@
 **Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
 **Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
 **Type**: Infrastructure + Launch sprint
-**Progress:** 12.5% (1/8 tasks complete)
+**Progress:** 25% (2/8 tasks complete)
 
 **Success Criteria:**
 - [ ] Per-seat monthly billing operational via Stripe
@@ -42,7 +42,7 @@ Follow: ADR-005 (Stripe Payment Integration)
 ---
 
 ### e008_s04_t02: Stripe Per-Seat Product Configuration (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
