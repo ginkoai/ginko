@@ -1,340 +1,147 @@
-# SPRINT: Team Collaboration Sprint 2 - Visibility & Coordination
+# SPRINT: Team Collaboration Sprint 3 - Insights & Polish
 
 ## Sprint Overview
 
-**Sprint Goal**: Enable team visibility (who's working on what) and prevent conflicts on concurrent edits
-**Duration**: 2 weeks (2026-01-03 to 2026-01-17)
-**Type**: Feature sprint
-**Progress:** 100% (8/8 tasks complete)
+**Sprint Goal**: Enable owners to view team member insights and optimize the onboarding flow to hit 10-minute target
+**Duration**: 1 week (2026-02-03 to 2026-02-07)
+**Type**: Polish sprint
+**Progress:** 0% (0/6 tasks complete)
 
 **Success Criteria:**
-- [x] Team activity feed shows real-time member activity
-- [x] Dashboard displays who's working on what
-- [x] Staleness detection warns members with outdated context
-- [x] Zero conflicts on concurrent knowledge edits (lock-based prevention)
+- [ ] Insights page has member filter for project owners
+- [ ] Owner can view any team member's collaboration insights
+- [ ] New member onboarding completes in ≤10 minutes
+- [ ] Team features documentation complete
 
 ---
 
 ## Sprint Tasks
 
-### e008_s02_t01: Team Activity Feed API (6h)
-**Status:** [x] Complete
+### e008_s03_t01: Insights Page Member Filter (4h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
 
-**Goal:** API endpoint to retrieve team member activity stream
+**Goal:** Add member dropdown filter to Insights page for project owners
 
 **Implementation Notes:**
-```typescript
-// GET /api/v1/team/activity?team_id=...&limit=50&since=...
-interface ActivityItem {
-  id: string;
-  member: { user_id: string; email: string; avatar_url?: string };
-  action: 'synced' | 'edited' | 'created' | 'logged';
-  target_type: 'ADR' | 'Pattern' | 'Sprint' | 'Event';
-  target_id: string;
-  target_title?: string;
-  timestamp: string;
-}
-```
-- Use `withAuth` from `/dashboard/src/lib/auth/middleware.ts`
-- Query Neo4j for Events by graph_id
-- Support filtering: `member_id`, `category`, `since`, `limit/offset`
-- Return pagination info (`hasMore`, `count`)
+- Dropdown showing all team members (owner sees all, member sees self only)
+- Default: current user
+- Filter updates all insights metrics and charts
+- Persist selection in URL for sharing
 
 **Files:**
-- `dashboard/src/app/api/v1/team/activity/route.ts` (new)
+- `dashboard/src/app/insights/page.tsx` (update)
+- `dashboard/src/components/insights/MemberFilter.tsx` (new)
 
 ---
 
-### e008_s02_t02: Team Activity Feed Component (8h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Depends:** t01
-
-**Goal:** Dashboard component showing team activity stream
-
-**Implementation Notes:**
-```typescript
-interface TeamActivityFeedProps {
-  teamId: string;
-  graphId: string;
-  refreshInterval?: number;  // default 30000ms
-  maxItems?: number;
-}
-```
-- Polling with setInterval (30s default)
-- Group by time: Today, Yesterday, This Week
-- Filter controls: member dropdown, action type chips
-- Use Avatar, Badge components from ui/
-
-**Files:**
-- `dashboard/src/components/team/TeamActivityFeed.tsx` (new)
-- `dashboard/src/components/team/ActivityItem.tsx` (new)
-
----
-
-### e008_s02_t03: "Who's Working On What" Dashboard View (6h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Depends:** t01
-
-**Goal:** Visual display of current team member assignments and activity
-
-**Implementation Notes:**
-```typescript
-interface MemberStatus {
-  member: TeamMember;
-  status: 'active' | 'idle' | 'offline';  // <5min, <1h, >1h
-  currentTask?: { id: string; title: string };
-  lastActivity?: string;
-}
-```
-- Grid layout: `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`
-- Status indicators: green (active), yellow (idle), gray (offline)
-- Click member to expand recent activity
-
-**Files:**
-- `dashboard/src/components/team/TeamWorkboard.tsx` (new)
-- `dashboard/src/components/team/MemberActivity.tsx` (new)
-
----
-
-### e008_s02_t04: Staleness Detection System (6h)
-**Status:** [x] Complete
+### e008_s03_t02: Team Insights API Enhancement (4h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
 
-**Goal:** Detect and warn when member's local context is stale
+**Goal:** Extend insights API to support cross-member queries for owners
 
 **Implementation Notes:**
-```typescript
-interface StalenessResult {
-  isStale: boolean;
-  severity: 'none' | 'warning' | 'critical';
-  daysSinceSync: number;
-  changedSinceSync: { adrs: number; patterns: number; total: number };
-  message: string;
-}
-```
-- Thresholds: warning=1 day, critical=7 days
-- CLI: Show warning on `ginko start` if stale
-- Dashboard: Banner with dismiss option
-- Build on existing `team-sync.ts` logic
+- Add `memberId` parameter to insights endpoints
+- Permission check: only owners can query other members
+- Aggregate team-wide insights option
 
 **Files:**
-- `packages/cli/src/lib/staleness-detector.ts` (new)
-- `packages/cli/src/commands/start/start-reflection.ts` (update)
-- `dashboard/src/components/team/StalenessWarning.tsx` (new)
+- `dashboard/src/app/api/v1/insights/route.ts` (update)
+- `dashboard/src/app/api/v1/insights/sync/route.ts` (update)
 
 ---
 
-### e008_s02_t05: Conflict Prevention - Edit Locking (8h)
-**Status:** [x] Complete
+### e008_s03_t03: Onboarding Flow Optimization (6h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
 
-**Goal:** Prevent conflicts by locking knowledge nodes during edit
+**Goal:** Streamline new member onboarding to achieve ≤10 minute target
 
 **Implementation Notes:**
-```typescript
-interface EditLock {
-  nodeId: string;
-  userId: string;
-  userEmail: string;
-  acquiredAt: string;
-  expiresAt: string;  // 15 min auto-expire
-}
+Measure and optimize each step:
+1. Receive invite (email) - 0 min
+2. Click link, authenticate - 1 min
+3. `ginko join <code>` - 1 min
+4. Initial sync - 2 min target
+5. `ginko start` - first context load - 1 min
+6. Review team context - 5 min
 
-interface LockResult {
-  success: boolean;
-  lock?: EditLock;
-  heldBy?: { userId: string; email: string; since: string };
-}
-```
-- Store in Supabase `node_locks` table (needs migration)
-- Auto-expire after 15 minutes
-- NodeEditor: acquire on mount, release on unmount/save
-- Show "Editing by X" badge if locked
-
-**Migration:**
-```sql
-CREATE TABLE node_locks (
-  node_id TEXT NOT NULL,
-  graph_id TEXT NOT NULL,
-  user_id UUID NOT NULL,
-  user_email TEXT NOT NULL,
-  acquired_at TIMESTAMPTZ DEFAULT NOW(),
-  expires_at TIMESTAMPTZ NOT NULL,
-  PRIMARY KEY (node_id, graph_id)
-);
-```
+Optimizations:
+- Pre-fetch common context during join
+- Parallelise sync operations
+- Clear progress indicators
 
 **Files:**
-- `dashboard/src/lib/edit-lock-manager.ts` (new)
-- `dashboard/src/app/api/v1/graph/lock/route.ts` (new)
-- `dashboard/src/components/graph/NodeEditor.tsx` (update)
-- `dashboard/supabase/migrations/20260103_node_locks.sql` (new)
+- `packages/cli/src/commands/join/join-command.ts` (optimize)
+- `packages/cli/src/lib/onboarding-flow.ts` (new)
 
 ---
 
-### e008_s02_t06: Conflict Prevention - Merge Strategy (6h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Depends:** t05
-
-**Goal:** Handle edge cases where locks fail and concurrent edits occur
-
-**Implementation Notes:**
-```typescript
-interface ConflictInfo {
-  nodeId: string;
-  localVersion: { content: string; editedBy: string; hash: string };
-  remoteVersion: { content: string; editedBy: string; hash: string };
-}
-
-interface ConflictResolverProps {
-  conflict: ConflictInfo;
-  onResolve: (resolution: 'use-local' | 'use-remote' | 'manual') => void;
-}
-```
-- Side-by-side diff view
-- Options: "Keep Mine", "Keep Theirs", "Manual Edit"
-- Modal triggered on version mismatch during save
-
-**Files:**
-- `dashboard/src/lib/merge-resolver.ts` (new)
-- `dashboard/src/components/graph/ConflictResolver.tsx` (new)
-
----
-
-### e008_s02_t07: Enhanced Sync with Team Awareness (4h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Depends:** t04
-
-**Goal:** Make `ginko sync` team-aware with improved feedback
-
-**Implementation Notes:**
-```typescript
-interface TeamChangeSummary {
-  byMember: Map<string, { email: string; changes: { type: string; count: number }[] }>;
-  totalChanges: number;
-}
-```
-- Show team changes before sync: "3 ADRs updated by chris@, 1 Pattern by dev1@"
-- Add `--preview` flag for dry run
-- Integrate staleness warnings
-
-**Files:**
-- `packages/cli/src/lib/team-sync-reporter.ts` (new)
-- `packages/cli/src/commands/sync/sync-command.ts` (update)
-
----
-
-### e008_s02_t08: Full Dashboard Member Management UI (6h)
-**Status:** [x] Complete
+### e008_s03_t04: Onboarding Progress Indicator (3h)
+**Status:** [ ] Not Started
 **Priority:** MEDIUM
 
-**Goal:** Complete CRUD interface for team members in dashboard
+**Goal:** Visual progress during onboarding to reduce perceived wait time
 
 **Implementation Notes:**
-- InviteModal: Standalone invite form extracted from InviteButton
-- MemberDetailView: Slide-over with activity history, role change, remove action
-- PendingInvitations: List with revoke buttons, expiry countdown
-- Uses existing APIs: `/api/v1/team/invite`, `/api/v1/teams/[id]/members`
+- Step-by-step progress in CLI
+- Estimated time remaining
+- Clear success message with next steps
 
 **Files:**
-- `dashboard/src/components/team/InviteModal.tsx` (new)
-- `dashboard/src/components/team/MemberDetailView.tsx` (new)
-- `dashboard/src/components/team/PendingInvitations.tsx` (new)
+- `packages/cli/src/lib/onboarding-progress.ts` (new)
+- `packages/cli/src/commands/join/join-command.ts` (integrate)
 
 ---
 
-## Execution Plan
+### e008_s03_t05: Team Features Documentation (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
 
-**Wave 1 (Parallel - No Dependencies):**
-- t01: Team Activity Feed API
-- t04: Staleness Detection System
-- t05: Edit Locking API + Migration
-- t08: Member Management UI
+**Goal:** User-facing documentation for team collaboration features
 
-**Wave 2 (After Wave 1):**
-- t02: Activity Feed Component (after t01)
-- t03: Workboard Component (after t01)
-- t06: Merge Strategy (after t05)
+**Implementation Notes:**
+Document:
+- How to invite team members
+- How to join as a new member
+- Understanding team activity
+- Managing permissions
+- Sync and staleness
 
-**Wave 3 (After Wave 2):**
-- t07: Enhanced Sync (after t04)
+**Files:**
+- `docs/guides/team-collaboration.md` (new)
+- `packages/cli/README.md` (update team commands section)
+
+---
+
+### e008_s03_t06: End-to-End Testing (4h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Full flow testing from invite to productive team member
+
+**Implementation Notes:**
+Test scenarios:
+1. Owner invites member → member joins → member syncs → member starts session
+2. Two members edit same node → lock prevents conflict
+3. Owner views member insights
+4. Stale member gets warning on start
+
+**Files:**
+- `packages/cli/test/e2e/team-onboarding.test.ts` (new)
+- `packages/cli/test/e2e/team-collaboration.test.ts` (new)
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-03: Sprint 2 Complete - All 8 Tasks Done
-
-**Wave 1 (Parallel):**
-- **t01**: Team Activity Feed API - `GET /api/v1/team/activity` with filtering, pagination, member enrichment
-- **t04**: Staleness Detection - CLI + Dashboard warning system with configurable thresholds
-- **t05**: Edit Locking - `node_locks` table, API, EditLockManager, NodeEditor integration
-- **t08**: Member Management UI - InviteModal, MemberDetailView, PendingInvitations components
-
-**Wave 2 (Parallel):**
-- **t02**: Activity Feed Component - TeamActivityFeed with polling, time grouping, filters
-- **t03**: Team Workboard - "Who's Working On What" view with status indicators (active/idle/offline)
-- **t06**: Merge Strategy - ConflictResolver modal with side-by-side diff, three resolution options
-
-**Wave 3:**
-- **t07**: Enhanced Sync - `--preview` flag, team change summary before sync
-
-**Files Created (17 new files):**
-- `dashboard/src/app/api/v1/team/activity/route.ts`
-- `dashboard/src/app/api/v1/graph/lock/route.ts`
-- `dashboard/src/lib/edit-lock-manager.ts`
-- `dashboard/src/lib/merge-resolver.ts`
-- `dashboard/src/components/team/TeamActivityFeed.tsx`
-- `dashboard/src/components/team/ActivityItem.tsx`
-- `dashboard/src/components/team/TeamWorkboard.tsx`
-- `dashboard/src/components/team/MemberActivity.tsx`
-- `dashboard/src/components/team/StalenessWarning.tsx`
-- `dashboard/src/components/team/InviteModal.tsx`
-- `dashboard/src/components/team/MemberDetailView.tsx`
-- `dashboard/src/components/team/PendingInvitations.tsx`
-- `dashboard/src/components/graph/ConflictResolver.tsx`
-- `dashboard/supabase/migrations/20260103_node_locks.sql`
-- `packages/cli/src/lib/staleness-detector.ts`
-- `packages/cli/src/lib/team-sync-reporter.ts`
-
-**Files Modified:**
-- `packages/cli/src/commands/start/start-reflection.ts` - staleness check integration
-- `packages/cli/src/commands/sync/sync-command.ts` - team change summary, --preview flag
-- `dashboard/src/components/graph/NodeEditor.tsx` - edit locking integration
-
-### 2026-01-03: UAT Validation & CLI Publish
-
-**CLI Published:**
-- `@ginkoai/cli@2.0.0-beta.5` - Team features, staleness detection, name lookup
-- `@ginkoai/cli@2.0.0-beta.6` - Auto-sync instructions in `ginko init` template
-
-**UAT Results (All Pass):**
-1. ✅ Staleness detection on `ginko start`
-2. ✅ Team list with member count
-3. ✅ List members by team name (not UUID)
-4. ✅ Member profile display (username/email)
-5. ✅ Invalid team name error handling
-6. ✅ Sync dry-run preview
-
-**Cross-Machine Validation:**
-- Team member (xtophr) started session on separate workstation
-- `ginko start` auto-synced from graph
-- Team sprint visible: "Team Collaboration Sprint 2"
-
-**Docs Updated:**
-- `CLAUDE.md` - Added AUTO-SYNC behavior for staleness warnings
-- `ai-instructions-template.ts` - Template for `ginko init` includes auto-sync
+[To be filled as work progresses]
 
 ## Next Steps
 
-After Sprint 2 completion:
-- Sprint 3: Insights member filter, onboarding optimization
-- Sprint 4: Billing and seat management
+After Sprint 3 completion:
+- Sprint 4: Billing and seat management for launch
 
 ## Blockers
 
@@ -345,6 +152,6 @@ After Sprint 2 completion:
 ## Sprint Metadata
 
 **Epic:** EPIC-008 (Team Collaboration)
-**Sprint ID:** e008_s02
-**Started:** 2026-01-03
+**Sprint ID:** e008_s03
+**Created:** 2026-01-03
 **Participants:** Chris Norton, Claude
