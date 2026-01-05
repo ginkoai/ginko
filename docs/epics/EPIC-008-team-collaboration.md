@@ -1,9 +1,10 @@
 ---
 epic_id: EPIC-008
-status: active
+status: complete
 created: 2026-01-03
 updated: 2026-01-05
-current_sprint: e008_s04
+completed: 2026-01-05
+current_sprint: none
 adr: TBD
 ---
 
@@ -19,13 +20,13 @@ Build team collaboration features that support project onboarding, role/permissi
 
 ## Success Criteria
 
-- [ ] Project owners can invite new members from dashboard or CLI (`ginko invite user@domain.com`)
-- [ ] New team member productive in ≤10 minutes from invite (assumes git proficiency)
-- [ ] Project owners can manage members via dashboard and CLI (invite, change permissions, suspend, remove)
-- [ ] Zero conflicts on knowledge merge edits
-- [ ] Team can see who is working on what (real-time visibility)
-- [ ] Project owners can view Insights for all team members (member pulldown filter)
-- [ ] Per-seat monthly billing via Stripe
+- [x] Project owners can invite new members from dashboard or CLI (`ginko invite user@domain.com`)
+- [x] New team member productive in ≤10 minutes from invite (assumes git proficiency)
+- [x] Project owners can manage members via dashboard and CLI (invite, change permissions, suspend, remove)
+- [x] Zero conflicts on knowledge merge edits
+- [x] Team can see who is working on what (real-time visibility)
+- [x] Project owners can view Insights for all team members (member pulldown filter)
+- [x] Per-seat monthly billing via Stripe
 
 ## Scope
 
@@ -73,9 +74,10 @@ Build team collaboration features that support project onboarding, role/permissi
 | Sprint 1 | Foundation (Schema & APIs) | 2 weeks | **Complete** |
 | Sprint 2 | Visibility & Coordination | 2 weeks | **Complete** |
 | Sprint 3 | Insights & Polish | 1 week | **Complete** |
-| Sprint 4 | Billing & Seats | 1-2 weeks | Not Started |
+| Sprint 4 | Billing & Seats | 1-2 weeks | **Complete** |
 
 **Estimated Total:** 6-7 weeks
+**Actual:** ~3 days (accelerated delivery)
 
 ### Sprint 1 Accomplishments (Closed 2026-01-03)
 - Graph schema for teams, memberships, and roles
@@ -99,6 +101,16 @@ Build team collaboration features that support project onboarding, role/permissi
 - Progress indicators for sync and join commands
 - Team collaboration documentation
 - E2E tests for team onboarding and collaboration
+
+### Sprint 4 Accomplishments (Closed 2026-01-05)
+- Extended billing schema for per-seat model (BillingManager, EntitlementsManager)
+- Stripe per-seat product configuration ($15/seat/month)
+- Automatic seat count synchronization on member add/remove
+- Dashboard billing overview page with seat usage display
+- Upgrade/downgrade flows with proper proration
+- Stripe webhook handlers (subscription updates, payment failures)
+- Free tier (2 seats) and trial configuration (14 days + 3-day grace)
+- Launch checklist and security audit (`docs/launch/EPIC-008-launch-checklist.md`)
 
 ## Technical Considerations
 
@@ -143,6 +155,14 @@ Build team collaboration features that support project onboarding, role/permissi
 ---
 
 ## Changelog
+
+### v2.0.0 - 2026-01-05 (EPIC COMPLETE)
+- Sprint 4 complete (8/8 tasks)
+- All success criteria met
+- Epic marked complete
+- Added Sprint 4 accomplishments summary
+- Launch checklist created and verified
+- Deployed to production
 
 ### v1.3.0 - 2026-01-05
 - Sprint 3 complete (6/6 tasks)
