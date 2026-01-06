@@ -25,6 +25,11 @@ Drafted blog post: Why Our 6-Week Estimate Took 3 Days. Adapts ADR-057 insights 
 Impact: medium
 
 
+### 18:04 - [achievement]
+Published blog post: 'Why Our 6-Week Estimate Took 3 Days' to www.ginkoai.com. Post adapts ADR-057 insights into content marketing narrative. Deployed via Vercel to production.
+Impact: medium
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
