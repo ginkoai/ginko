@@ -15,7 +15,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-007](EPIC-007-cross-platform-ai-instructions.md) | Cross-Platform AI Instructions | Planned | `EPIC-007-cross-platform-ai-instructions.md` |
 | [EPIC-008](EPIC-008-team-collaboration.md) | Team Collaboration | Complete | `EPIC-008-team-collaboration.md` |
 | [EPIC-009](EPIC-009-product-roadmap.md) | Product Roadmap Visualization | Active | `EPIC-009-product-roadmap.md` |
-| [EPIC-010](EPIC-010-web-collaboration-gui.md) | Web Collaboration GUI | Proposed | `EPIC-010-web-collaboration-gui.md` |
+| [EPIC-010](EPIC-010-mvp-marketing-strategy.md) | MVP Marketing Strategy | Active | `EPIC-010-mvp-marketing-strategy.md` |
 | [EPIC-011](EPIC-011-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish & Advanced Features | Proposed | `EPIC-011-graph-explorer-v2.md` |
 
 ## Status Summary
@@ -28,6 +28,33 @@ This document maintains the official registry of all Epics to ensure unique numb
 | Proposed | 2 | 010, 011 |
 | Planned | 1 | 007 |
 | Ready to Execute | 1 | 001 |
+
+### EPIC-010: MVP Marketing Strategy
+**Goal:** Drive ginko MVP adoption through data-driven, multi-channel marketing that positions the product as the essential context management tool for AI-assisted development. Build a content-first funnel leveraging blog posts as the foundation for social engagement, video content, and community building.
+
+**Sprints:**
+1. Analytics Foundation (GA4, PostHog, UTM tracking, event taxonomy)
+2. Landing Page Optimization (conversion best practices, A/B testing, social proof)
+3. Content & Multi-Channel Funnel (blog strategy, Reddit, X.com, LinkedIn, YouTube)
+4. Launch, Community & Iteration (MVP launch, Discord setup, metric reviews)
+
+**Key Features:**
+- Blog as content hub (posts → social threads → videos → discussions)
+- Analytics infrastructure from day one (data-driven iteration)
+- Multi-platform organic presence (Reddit, X.com, LinkedIn, YouTube, Discord)
+- Authentic developer engagement (no marketing fluff)
+- A/B testing framework for continuous optimization
+
+**Success Criteria:**
+- Landing page conversion rate >3%
+- 200+ organic visitors/week
+- 25+ CLI installs from tracked campaigns
+- Discord community with 25+ active members
+- Active presence on 3+ platforms
+
+**Status:** Active, planning complete 2026-01-06
+
+---
 
 ## Epic Naming Convention
 
@@ -57,3 +84,4 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 *Last updated: 2026-01-07*
 *Generated during Sprint e008_s05 (Data Integrity Cleanup)*
+*Added EPIC-010: MVP Marketing Strategy*
