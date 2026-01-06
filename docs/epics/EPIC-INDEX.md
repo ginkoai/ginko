@@ -10,6 +10,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-002](EPIC-002-ai-native-sprint-graphs.md) | AI-Native Sprint Graphs | Proposed | 4 sprints (8-12 weeks) | Critical | 0% (Vision defined) |
 | [EPIC-005](EPIC-005-market-readiness.md) | Market Readiness | Complete | 2 sprints (~3 weeks) | High | 100% |
 | [EPIC-006](EPIC-006-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish | Proposed | 2-3 sprints (~4-6 weeks) | Medium | 0% (Backlog defined) |
+| [EPIC-009](EPIC-009-product-roadmap.md) | Product Roadmap Visualization | Active | 4 sprints (~5 weeks) | High | 0% (Planning complete) |
 
 ## Epic Descriptions
 
@@ -80,6 +81,25 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 ---
 
+### EPIC-009: Product Roadmap Visualization
+**Goal:** Enable strategic visibility into committed work through a query-based roadmap view over Epic nodes. Roadmaps are a lens, not an entity—they answer "What work have we committed to?" by surfacing Epic nodes with temporal and commitment metadata.
+
+**Sprints:**
+1. Schema & Data Migration (Epic node extensions, changelog infrastructure)
+2. CLI & API (ginko roadmap command, query endpoints)
+3. Roadmap Canvas (Dashboard visual editor, filters)
+4. History & Polish (Change tracking, public export)
+
+**Key Features:**
+- Clear distinction between committed and exploratory work
+- Quarter-based temporal planning (Q1-2026 format)
+- Visual canvas for roadmap editing in dashboard
+- Changelog tracks all date/status changes
+
+**Status:** Active, planning complete 2026-01-03
+
+---
+
 ## Epic Naming Convention
 
 - **EPIC-XXX**: Sequential numbering starting from 001
@@ -99,4 +119,4 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 ---
 
-*Last updated: 2025-11-21*
+*Last updated: 2026-01-06*
