@@ -1,17 +1,17 @@
 {
   "day1": {
     "intervalMs": 86400000,
-    "lastRun": "2026-01-06T15:12:35.073Z",
+    "lastRun": "2026-01-07T16:21:28.844Z",
     "lastScore": 0
   },
   "day7": {
     "intervalMs": 86400000,
-    "lastRun": "2026-01-06T15:12:36.820Z",
+    "lastRun": "2026-01-07T16:21:30.839Z",
     "lastScore": 0
   },
   "day30": {
     "intervalMs": 604800000,
-    "lastRun": "2025-12-30T19:40:10.829Z",
+    "lastRun": "2026-01-07T16:21:34.319Z",
     "lastScore": 0
   }
 }

@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-06T15-12-29-834Z
-started: 2026-01-06T15:12:29.834Z
+session_id: session-2026-01-07T16-21-23-675Z
+started: 2026-01-07T16:21:23.675Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-06T15-12-29-834Z
+# Session Log: session-2026-01-07T16-21-23-675Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,15 +14,9 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 11:19 - [feature]
-Implemented device code flow for ginko login (like GitHub CLI). Created: Supabase migration for device_auth_requests table, 3 API endpoints (/api/auth/device/init, authorize, status), /auth/device page UI, updated CLI login command. Flow: CLI generates code -> user enters in browser -> CLI receives API key. Replaces broken in-memory session storage approach.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/app/auth/callback/route.ts, packages/cli/src/commands/login.ts
-Impact: high
-
-
-### 11:18 - [achievement]
-Session handoff: Completed team onboarding UAT. Fixed device code flow login, team member graph access for sprint sync, and join command UX. All fixes deployed and verified with tester Reese successfully syncing EPIC-010 with 4 sprints.
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+### 12:01 - [feature]
+Implemented ADR-058 entity ID conflict resolution. Added first-claim-wins strategy with rename suggestion for team epic sync. CLI now checks for ID conflicts before sync and prompts user to rename (e.g., EPIC-010 → EPIC-011), skip, or cancel. Created new API endpoints: /api/v1/epic/check (conflict detection), /api/v1/epic/ids (ID listing). Updated epic sync to track createdBy/updatedBy. Deployed to production.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/app/api/v1/epic/sync/route.ts, package-lock.json
 Impact: high
 
 

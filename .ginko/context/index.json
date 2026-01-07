@@ -999,10 +999,23 @@
       "relevance": "critical",
       "created": "2026-01-06T16:19:53.503Z",
       "sessionId": "session-chris-at-watchhill-ai-1767716393433"
+    },
+    {
+      "filename": "pattern-implemented-adr058-entity-id-conflict-resolution.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-07T17:01:12.176Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767805272138"
     }
   ],
-  "lastUpdated": "2026-01-06T16:19:53.504Z",
-  "totalModules": 75,
+  "lastUpdated": "2026-01-07T17:01:12.176Z",
+  "totalModules": 76,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
