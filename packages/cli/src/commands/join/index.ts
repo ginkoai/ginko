@@ -20,8 +20,40 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import prompts from 'prompts';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import { api } from '../../utils/api-client.js';
 import { syncCommand } from '../sync/sync-command.js';
+
+/**
+ * Check if current directory is a project directory (has .git)
+ */
+function isProjectDirectory(): boolean {
+  const gitDir = join(process.cwd(), '.git');
+  return existsSync(gitDir);
+}
+
+/**
+ * Show error when not in a project directory
+ */
+function showNotInProjectError(code?: string): void {
+  console.log('');
+  console.log(chalk.red('✗ Not in a project directory'));
+  console.log('');
+  console.log(chalk.dim('  To join a team, first clone the project repository:'));
+  console.log('');
+  console.log(chalk.cyan('    git clone <repo-url>'));
+  console.log(chalk.cyan('    cd <project-name>'));
+  console.log('');
+  if (code) {
+    console.log(chalk.dim('  Then run:'));
+    console.log(chalk.cyan(`    ginko join ${code}`));
+  } else {
+    console.log(chalk.dim('  Then run:'));
+    console.log(chalk.cyan('    ginko join <invitation-code>'));
+  }
+  console.log('');
+}
 
 interface InvitationPreview {
   valid: boolean;
@@ -249,6 +281,12 @@ ${chalk.gray('Example:')}
     .argument('[code]', 'Invitation code')
     .option('-y, --yes', 'Skip confirmation prompt')
     .action(async (code, options) => {
+      // Check if we're in a project directory first
+      if (!isProjectDirectory()) {
+        showNotInProjectError(code);
+        process.exit(1);
+      }
+
       if (code) {
         if (options.yes) {
           // Skip preview confirmation

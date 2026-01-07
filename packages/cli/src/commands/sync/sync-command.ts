@@ -346,9 +346,19 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
   // Initialize spinner for progress indication (e008_s03_t03)
   const spinner = ora('Checking authentication...').start();
 
-  // Get config and auth
-  const config = await getConfig();
-  const graphId = config?.graphId;
+  // Get config and auth - wrap in try/catch to ensure spinner is stopped on error
+  let config: Awaited<ReturnType<typeof getConfig>>;
+  let graphId: string | undefined;
+  let token: string | null;
+
+  try {
+    config = await getConfig();
+    graphId = config?.graphId;
+  } catch (error) {
+    spinner.fail('Ginko not initialized');
+    console.error(chalk.dim('   Run `ginko init` first.'));
+    throw error; // Re-throw so caller knows sync failed
+  }
 
   if (!graphId) {
     spinner.fail('No graph ID found');
@@ -356,7 +366,13 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
     return result;
   }
 
-  const token = await getApiToken();
+  try {
+    token = await getApiToken();
+  } catch (error) {
+    spinner.fail('Failed to get authentication');
+    throw error;
+  }
+
   if (!token) {
     spinner.fail('Not authenticated');
     console.error(chalk.dim('   Run `ginko login` to authenticate.'));

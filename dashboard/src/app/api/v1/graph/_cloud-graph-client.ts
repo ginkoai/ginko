@@ -152,6 +152,11 @@ export class CloudGraphClient {
    * Create client from Bearer token
    * Resolves userId via Supabase auth (gk_ API keys or OAuth JWTs)
    * Returns consistent Supabase UUID regardless of auth method
+   *
+   * For team collaboration (EPIC-008):
+   * - If user is the graph owner, uses their userId directly
+   * - If user is a team member, resolves to the graph owner's userId
+   *   (so team members can write to the shared graph)
    */
   static async fromBearerToken(
     token: string,
@@ -170,8 +175,71 @@ export class CloudGraphClient {
       throw new Error(`Authentication failed: ${result.error}`);
     }
 
+    const authenticatedUserId = result.userId;
+    let effectiveUserId = authenticatedUserId;
+
+    // If graphId provided, check if user is owner or team member
+    if (graphId) {
+      // First, try to get the graph owner's userId from the Graph node
+      const graphOwnerResult = await runQuery<{ userId: string }>(
+        `MATCH (g:Graph {graphId: $graphId})
+         RETURN g.userId as userId
+         LIMIT 1`,
+        { graphId }
+      );
+
+      if (graphOwnerResult.length > 0) {
+        const graphOwnerId = graphOwnerResult[0].userId;
+
+        // If authenticated user is the owner, use their userId
+        if (graphOwnerId === authenticatedUserId) {
+          console.log('[fromBearerToken] User is graph owner');
+          effectiveUserId = authenticatedUserId;
+        } else {
+          // User is not the owner - check team membership
+          console.log('[fromBearerToken] Checking team membership for user:', authenticatedUserId);
+
+          const { createServiceRoleClient } = await import('@/lib/supabase/server');
+          const supabase = createServiceRoleClient();
+
+          // Find if user is a member of a team associated with this graph
+          const { data: team } = await supabase
+            .from('teams')
+            .select('id, name')
+            .eq('graph_id', graphId)
+            .single();
+
+          if (team) {
+            // Check if user is a team member
+            const { data: membership } = await supabase
+              .from('team_members')
+              .select('role')
+              .eq('team_id', team.id)
+              .eq('user_id', authenticatedUserId)
+              .single();
+
+            if (membership) {
+              // User is a team member - use the graph owner's userId
+              console.log('[fromBearerToken] User is team member, using graph owner userId');
+              effectiveUserId = graphOwnerId;
+            } else {
+              console.log('[fromBearerToken] User is not a team member');
+              throw new Error(`User ${authenticatedUserId} does not have access to graph ${graphId} (not owner or team member)`);
+            }
+          } else {
+            console.log('[fromBearerToken] No team found for graph, checking if user is owner');
+            throw new Error(`User ${authenticatedUserId} does not have access to graph ${graphId} (no team membership)`);
+          }
+        }
+      } else {
+        // Graph doesn't exist yet - this is likely a new graph creation
+        console.log('[fromBearerToken] Graph not found, using authenticated user as owner');
+        effectiveUserId = authenticatedUserId;
+      }
+    }
+
     const context: GraphContext = {
-      userId: result.userId,  // Supabase UUID
+      userId: effectiveUserId,
       graphId: graphId || '',
     };
 
@@ -180,10 +248,10 @@ export class CloudGraphClient {
     // Verify graph access if graphId provided
     if (graphId) {
       const hasAccess = await client.verifyAccess();
-      console.log('[fromBearerToken] verifyAccess result:', hasAccess, 'for user:', result.userId, 'graph:', graphId);
+      console.log('[fromBearerToken] verifyAccess result:', hasAccess, 'for effectiveUser:', effectiveUserId, 'graph:', graphId);
       if (!hasAccess) {
         // Include debug info in error for troubleshooting
-        throw new Error(`User ${result.userId} does not have access to graph ${graphId} (method: ${result.method}, hasAccess: ${hasAccess})`);
+        throw new Error(`User ${authenticatedUserId} does not have access to graph ${graphId} (effectiveUser: ${effectiveUserId}, hasAccess: ${hasAccess})`);
       }
     }
 

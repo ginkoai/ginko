@@ -63,8 +63,10 @@ export async function GET(request: NextRequest) {
           return response
         }
 
-        // Normal web authentication - redirect to dashboard
-        return NextResponse.redirect(`${origin}/dashboard`)
+        // Normal web authentication - redirect to dashboard or custom next URL
+        const nextUrl = searchParams.get('next')
+        const redirectUrl = nextUrl && nextUrl.startsWith('/') ? `${origin}${nextUrl}` : `${origin}/dashboard`
+        return NextResponse.redirect(redirectUrl)
       }
     } catch (err) {
       // Silent error handling - redirect to login or CLI error

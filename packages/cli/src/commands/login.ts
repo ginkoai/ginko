@@ -1,15 +1,14 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-11-04
- * @tags: [cli, auth, oauth, login, github, production]
- * @related: [logout.ts, auth-storage.ts, api/auth/cli/session/route.ts]
+ * @updated: 2026-01-06
+ * @tags: [cli, auth, device-flow, login, github, production]
+ * @related: [logout.ts, auth-storage.ts, api/auth/device/*]
  * @priority: critical
- * @complexity: high
- * @dependencies: [open, chalk, ora, crypto]
+ * @complexity: medium
+ * @dependencies: [open, chalk, ora]
  */
 
-import { randomUUID } from 'crypto';
 import open from 'open';
 import chalk from 'chalk';
 import ora, { type Ora } from 'ora';
@@ -24,16 +23,34 @@ interface LoginOptions {
   force?: boolean;
 }
 
+interface DeviceInitResponse {
+  device_id: string;
+  user_code: string;
+  expires_in: number;
+  verification_uri: string;
+}
+
+interface DeviceStatusResponse {
+  status: 'pending' | 'authorized' | 'expired' | 'denied';
+  message?: string;
+  api_key?: string;
+  user?: {
+    id: string;
+    email?: string;
+    github_username?: string;
+  };
+}
+
 /**
- * Login command - Authenticate CLI with GitHub via Supabase OAuth
+ * Login command - Authenticate CLI with Device Code Flow
  *
- * Production OAuth Flow:
- * 1. Generate unique session_id
- * 2. Open browser to dashboard authorize page
- * 3. Dashboard handles OAuth and stores session
- * 4. CLI polls dashboard for session tokens
- * 5. Generate long-lived API key from session
- * 6. Save API key locally
+ * Device Code Flow (like GitHub CLI):
+ * 1. CLI requests device code from API
+ * 2. Display code to user
+ * 3. Open browser to verification page
+ * 4. User logs in (if needed) and enters code
+ * 5. CLI polls for authorization
+ * 6. Receive API key when authorized
  */
 export async function loginCommand(options: LoginOptions = {}): Promise<void> {
   // Check if already authenticated
@@ -48,42 +65,67 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
 
   console.log(chalk.cyan('🔐 Authenticating Ginko CLI\n'));
 
-  const spinner = ora('Starting authentication flow...').start();
+  const spinner = ora('Initializing device authentication...').start();
 
   try {
-    // Generate unique session ID for this login attempt
-    const sessionId = randomUUID();
-
     const apiUrl = process.env.GINKO_API_URL || 'https://app.ginkoai.com';
-    const authorizeUrl = `${apiUrl}/auth/cli/authorize?session_id=${sessionId}`;
 
-    spinner.succeed('Session initialized');
-    spinner.start('Opening browser for authentication...');
+    // Step 1: Request device code
+    const initResponse = await fetch(`${apiUrl}/api/auth/device/init`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-    // Open browser to dashboard authorize page
-    await open(authorizeUrl);
+    if (!initResponse.ok) {
+      const errorData = await initResponse.json().catch(() => ({ error: 'Failed to initialize' })) as { error: string };
+      throw new Error(errorData.error || 'Failed to initialize device authentication');
+    }
 
+    const deviceData = await initResponse.json() as DeviceInitResponse;
+
+    spinner.succeed('Device code generated');
+
+    // Step 2: Display code to user
+    console.log('\n' + chalk.bold('  Enter this code in your browser:\n'));
+    console.log(chalk.bgWhite.black.bold(`    ${deviceData.user_code}    `));
+    console.log();
+
+    // Step 3: Open browser
+    spinner.start('Opening browser...');
+    await open(deviceData.verification_uri);
     spinner.succeed('Browser opened');
-    spinner.start('Waiting for authentication...');
-    spinner.text = 'Complete authentication in your browser...';
 
-    // Poll dashboard for session tokens
-    const oauthSession = await pollForSession(sessionId, apiUrl, spinner);
+    console.log(chalk.dim(`\n  Verification URL: ${deviceData.verification_uri}`));
+    console.log();
 
-    spinner.text = 'Generating API key...';
+    // Step 4: Poll for authorization
+    spinner.start('Waiting for authorization...');
 
-    // Generate long-lived API key
-    const apiKeySession = await generateApiKey(oauthSession.access_token, apiUrl, oauthSession.user);
+    const authResult = await pollForAuthorization(
+      deviceData.device_id,
+      apiUrl,
+      deviceData.expires_in,
+      spinner
+    );
 
-    // Save API key session locally
-    await saveAuthSession(apiKeySession);
+    // Step 5: Save credentials
+    const session: AuthSession = {
+      api_key: authResult.api_key!,
+      user: {
+        id: authResult.user!.id,
+        email: authResult.user!.email || '',
+        github_username: authResult.user!.github_username
+      }
+    };
+
+    await saveAuthSession(session);
 
     spinner.succeed(chalk.green('Authentication successful!'));
 
     console.log(chalk.green('\n✓ Successfully authenticated'));
-    console.log(chalk.dim(`  User: ${apiKeySession.user.email || apiKeySession.user.github_username}`));
-    if (apiKeySession.user.github_username) {
-      console.log(chalk.dim(`  GitHub: @${apiKeySession.user.github_username}`));
+    console.log(chalk.dim(`  User: ${session.user.email || session.user.github_username}`));
+    if (session.user.github_username) {
+      console.log(chalk.dim(`  GitHub: @${session.user.github_username}`));
     }
     console.log(chalk.dim('  Your credentials are stored in ~/.ginko/auth.json'));
 
@@ -97,12 +139,12 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     spinner.fail('Authentication failed');
 
     if (error instanceof Error) {
-      if (error.message.includes('timeout')) {
+      if (error.message.includes('timeout') || error.message.includes('expired')) {
         console.error(chalk.red('\n✗ Authentication timed out'));
-        console.error(chalk.dim('  Please try again and complete authentication within 5 minutes'));
-      } else if (error.message.includes('User denied')) {
-        console.error(chalk.red('\n✗ Authentication was cancelled'));
-        console.error(chalk.dim('  You cancelled the authentication request'));
+        console.error(chalk.dim('  Please try again and complete authentication within 10 minutes'));
+      } else if (error.message.includes('denied')) {
+        console.error(chalk.red('\n✗ Authentication was denied'));
+        console.error(chalk.dim('  You or someone else denied the authorization request'));
       } else {
         console.error(chalk.red(`\n✗ ${error.message}`));
       }
@@ -115,33 +157,16 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
 }
 
 /**
- * OAuth session returned from dashboard (temporary tokens)
+ * Poll for device authorization status
  */
-interface OAuthSession {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
-  user: {
-    id: string;
-    email: string;
-    github_username?: string;
-    github_id?: string;
-    full_name?: string;
-  };
-}
-
-/**
- * Poll dashboard API for session tokens
- *
- * Polls every 2 seconds for up to 5 minutes
- */
-async function pollForSession(
-  sessionId: string,
+async function pollForAuthorization(
+  deviceId: string,
   apiUrl: string,
+  expiresIn: number,
   spinner: Ora
-): Promise<OAuthSession> {
+): Promise<DeviceStatusResponse> {
   const pollInterval = 2000; // 2 seconds
-  const maxAttempts = 150; // 5 minutes total (150 * 2s = 300s)
+  const maxAttempts = Math.floor((expiresIn * 1000) / pollInterval);
   let attempts = 0;
 
   while (attempts < maxAttempts) {
@@ -149,43 +174,38 @@ async function pollForSession(
 
     try {
       const response = await fetch(
-        `${apiUrl}/api/auth/cli/session?session_id=${sessionId}`
+        `${apiUrl}/api/auth/device/status?device_id=${deviceId}`
       );
 
-      if (response.status === 200) {
-        const data = await response.json() as OAuthSession;
-        return data;
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error('Device request not found. Please start over.');
+        }
+        throw new Error('Failed to check authorization status');
       }
 
-      if (response.status === 404) {
-        // Session not ready yet, continue polling
-        const timeRemaining = Math.floor((maxAttempts - attempts) * pollInterval / 1000);
-        spinner.text = `Waiting for authentication... (${timeRemaining}s remaining)`;
-        await sleep(pollInterval);
-        continue;
+      const data = await response.json() as DeviceStatusResponse;
+
+      switch (data.status) {
+        case 'authorized':
+          return data;
+
+        case 'pending':
+          const timeRemaining = Math.floor((maxAttempts - attempts) * pollInterval / 1000);
+          spinner.text = `Waiting for authorization... (${timeRemaining}s remaining)`;
+          await sleep(pollInterval);
+          continue;
+
+        case 'expired':
+          throw new Error('Authorization code expired. Please try again.');
+
+        case 'denied':
+          throw new Error('Authorization was denied.');
+
+        default:
+          await sleep(pollInterval);
+          continue;
       }
-
-      if (response.status === 410) {
-        // Session expired or denied
-        const error = await response.json().catch(() => ({ error: 'Session expired' })) as { error: string };
-        throw new Error(error.error || 'Session expired');
-      }
-
-      // Other error - log details for debugging
-      const errorBody = await response.text();
-      console.error(`\nDebug: HTTP ${response.status} from ${apiUrl}/api/auth/cli/session`);
-      console.error(`Response: ${errorBody}`);
-
-      let errorMessage = 'Failed to retrieve session';
-      try {
-        const errorJson = JSON.parse(errorBody) as { error: string };
-        errorMessage = errorJson.error || errorMessage;
-      } catch {
-        // Not JSON, use status text
-        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      }
-
-      throw new Error(errorMessage);
 
     } catch (error) {
       if (error instanceof Error && error.message.includes('fetch')) {
@@ -198,46 +218,6 @@ async function pollForSession(
   }
 
   throw new Error('Authentication timeout - please try again');
-}
-
-/**
- * Generate long-lived API key from OAuth session
- */
-async function generateApiKey(
-  accessToken: string,
-  apiUrl: string,
-  user: OAuthSession['user']
-): Promise<AuthSession> {
-  const url = `${apiUrl}/api/generate-api-key`;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-
-    let errorMessage = 'Failed to generate API key';
-    try {
-      const errorJson = JSON.parse(errorBody) as { error: string };
-      errorMessage = errorJson.error || errorMessage;
-    } catch {
-      errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-    }
-
-    throw new Error(errorMessage);
-  }
-
-  const data = await response.json() as { api_key: string };
-
-  return {
-    api_key: data.api_key,
-    user,
-  };
 }
 
 /**
