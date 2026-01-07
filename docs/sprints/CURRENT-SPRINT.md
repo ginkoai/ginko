@@ -5,7 +5,7 @@
 **Sprint Goal**: Resolve all epic ID conflicts, implement proper author tracking, and prevent future collisions
 **Duration**: 1-2 days (2026-01-07 to 2026-01-09)
 **Type**: Cleanup + Hardening sprint
-**Progress:** 62% (5/8 tasks complete)
+**Progress:** 75% (6/8 tasks complete)
 
 **Success Criteria:**
 - [ ] No duplicate epic IDs in local files or graph
@@ -22,10 +22,10 @@
 During team collaboration testing (EPIC-008), we discovered data integrity issues:
 - Duplicate epic IDs (EPIC-006 has two different epics)
 - Missing local files for graph entities (EPIC-010)
-- Orphan entities with malformed IDs (`epic_ginko_1763746656116`)
+- ~~Orphan entities with malformed IDs (`epic_ginko_1763746656116`)~~ **RESOLVED**
 - ADR-058 conflict resolution not fully implemented (createdBy, suggestedId broken)
 
-**Graph state:** 11 epics (EPIC-001 through EPIC-010 + 1 orphan)
+**Graph state:** 11 epics (EPIC-001 through EPIC-011, orphan entity deleted)
 **Local state:** 9 files (with 1 duplicate ID)
 
 ---
@@ -87,23 +87,18 @@ During team collaboration testing (EPIC-008), we discovered data integrity issue
 
 ---
 
-### e008_s05_t04: Clean Orphan Entity (15m)
-**Status:** [ ] Blocked (needs backend)
+### e008_s05_t04: Clean Orphan Entity (15m) ✓
+**Status:** [x] Complete
 **Priority:** MEDIUM
-**Assigned:** (requires backend access)
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Remove malformed orphan epic from graph
 
-**Current State:**
-- Entity ID: `epic_ginko_1763746656116`
-- Created: 2025-11-21
-- No title, no content
-- Likely created by timestamp-based ID generation bug
-
-**Action:**
-- Delete from graph via Neo4j or dashboard admin
-- No public delete API available for epics
-- Document root cause in ADR-058 implementation notes
+**Resolution (2026-01-07):**
+- Deleted `epic_ginko_1763746656116` via DELETE /api/v1/graph/nodes endpoint
+- Root cause: timestamp-based ID generation bug created malformed entity on 2025-11-21
+- Generic node delete API works for epics (no epic-specific delete needed)
+- Updated EPIC-INDEX to document cleanup
 
 ---
 
@@ -207,13 +202,13 @@ Files:
 **T7: Updated EPIC-INDEX**
 - Regenerated index with all 11 epics (001-011)
 - Added status summary table
-- Documented cleanup notes (renumbering, orphan pending deletion)
+- Documented cleanup notes (renumbering, orphan deleted 2026-01-07)
 - Added lifecycle definitions
 
-**Blocked: T4 (Clean Orphan Entity)**
-- No public delete API for epics
-- Entity `epic_ginko_1763746656116` still in graph
-- Requires backend/Neo4j access to delete
+**Resolved: T4 (Clean Orphan Entity)** ✓
+- Used generic DELETE /api/v1/graph/nodes endpoint
+- Entity `epic_ginko_1763746656116` successfully deleted (2026-01-07)
+- Root cause documented: timestamp-based ID generation bug
 
 ### 2026-01-07: CLI Duplicate Detection (T8)
 

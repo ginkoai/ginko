@@ -40,9 +40,11 @@ This sprint cleans up the accumulated technical debt and hardens the system agai
 - [ ] Create `EPIC-010-web-collaboration-gui.md` from graph data
 - [ ] Identify author (xtophr) and document ownership
 
-### T4: Clean Orphan Entity
-- [ ] Delete `epic_ginko_1763746656116` from graph
-- [ ] Document root cause (timestamp-based ID generation bug)
+### T4: Clean Orphan Entity ✓
+- [x] Delete `epic_ginko_1763746656116` from graph
+- [x] Document root cause (timestamp-based ID generation bug)
+
+**Completed 2026-01-07:** Used DELETE /api/v1/graph/nodes endpoint to remove orphan entity created by timestamp-based ID generation bug on 2025-11-21.
 
 ### T5: Implement createdBy Tracking (Backend)
 - [ ] Add `createdBy` field to Epic creation mutation

@@ -51,7 +51,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 - EPIC-011 was renumbered from EPIC-006 on 2026-01-07 to resolve ID conflict
 - EPIC-010 created by xtophr, synced from graph on 2026-01-07
-- Graph contains orphan entity `epic_ginko_1763746656116` pending cleanup
+- Orphan entity `epic_ginko_1763746656116` deleted on 2026-01-07 (timestamp-based ID bug)
 
 ---
 
