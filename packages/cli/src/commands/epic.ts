@@ -13,6 +13,7 @@ import chalk from 'chalk';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { existsSync } from 'fs';
+import prompts from 'prompts';
 
 // ============================================================================
 // Types
@@ -265,6 +266,7 @@ async function viewEpics(projectRoot: string): Promise<void> {
 
 /**
  * Sync epic and sprints to graph database
+ * Includes conflict detection per ADR-058
  */
 async function syncEpicToGraph(projectRoot: string): Promise<void> {
   console.log(chalk.blue('\n📡 Syncing epic to graph...\n'));
@@ -317,9 +319,71 @@ async function syncEpicToGraph(projectRoot: string): Promise<void> {
     const { GraphApiClient } = await import('./graph/api-client.js');
     const client = new GraphApiClient();
 
+    // Get current user for conflict detection
+    const { getAccessToken } = await import('../utils/auth-storage.js');
+    const token = await getAccessToken();
+    let currentUser = 'unknown';
+    if (token) {
+      try {
+        // Decode JWT to get user email (simple base64 decode of payload)
+        const payload = token.split('.')[1];
+        const decoded = JSON.parse(Buffer.from(payload, 'base64').toString());
+        currentUser = decoded.email || decoded.sub || 'unknown';
+      } catch {
+        // Ignore decode errors
+      }
+    }
+
     for (const file of epicFiles) {
       const content = await fs.readFile(path.join(epicsDir, file), 'utf-8');
-      const epicData = parseEpicContent(content);
+      let epicData = parseEpicContent(content);
+      const originalId = epicData.id;
+
+      console.log(chalk.dim(`  Checking ${epicData.id}...`));
+
+      // Check for ID conflict (ADR-058)
+      const conflict = await client.checkEpicConflict(graphId, epicData.id);
+
+      if (conflict && conflict.createdBy !== currentUser) {
+        // ID conflict detected! Another user owns this ID
+        console.log(chalk.yellow(`\n⚠️  ID Conflict: ${epicData.id} already exists`));
+        console.log(chalk.dim(`   Created by: ${conflict.createdBy}${conflict.createdAt ? ` on ${conflict.createdAt.split('T')[0]}` : ''}`));
+        console.log(chalk.dim(`   Title: "${conflict.title || 'Untitled'}"`));
+        console.log(chalk.dim(`\nYour version: "${epicData.title}"\n`));
+
+        // Find next available ID
+        const suggestedId = conflict.suggestedId || await findNextAvailableEpicId(client, graphId, epicData.id);
+
+        const { action } = await prompts({
+          type: 'select',
+          name: 'action',
+          message: 'How would you like to resolve this conflict?',
+          choices: [
+            { title: `Rename to ${suggestedId} (recommended)`, value: 'rename' },
+            { title: 'Skip this epic', value: 'skip' },
+            { title: 'Cancel sync', value: 'cancel' },
+          ],
+        });
+
+        if (action === 'cancel') {
+          console.log(chalk.dim('\nSync cancelled.'));
+          return;
+        }
+
+        if (action === 'skip') {
+          console.log(chalk.yellow(`  ○ Skipped ${epicData.id}`));
+          continue;
+        }
+
+        if (action === 'rename') {
+          // Update epic ID
+          const oldId = epicData.id;
+          epicData = { ...epicData, id: suggestedId };
+
+          console.log(chalk.green(`  ✓ Renamed ${oldId} → ${suggestedId}`));
+          console.log(chalk.dim(`    Note: Update your local file docs/epics/${file} with the new ID\n`));
+        }
+      }
 
       console.log(chalk.dim(`  Syncing ${epicData.id}...`));
 
@@ -329,7 +393,8 @@ async function syncEpicToGraph(projectRoot: string): Promise<void> {
       console.log(chalk.green(`  ✓ ${epicData.id}: ${epicData.title}`));
 
       // Find and sync associated sprints
-      const epicPrefix = epicData.id.toLowerCase().replace('epic-', 'epic');
+      // Use original ID for finding files (user hasn't renamed local files yet)
+      const epicPrefix = originalId.toLowerCase().replace('epic-', 'epic');
       const sprintFiles = sprintFilesList.filter(f =>
         f.startsWith('SPRINT-') &&
         f.toLowerCase().includes(epicPrefix)
@@ -356,6 +421,48 @@ async function syncEpicToGraph(projectRoot: string): Promise<void> {
   } catch (error: any) {
     console.error(chalk.red(`\n❌ Sync failed: ${error.message}`));
     console.log(chalk.dim('   Check graph connection and authentication\n'));
+  }
+}
+
+/**
+ * Find next available Epic ID (ADR-058)
+ * E.g., if EPIC-010 is taken, suggest EPIC-011
+ */
+async function findNextAvailableEpicId(
+  client: { getEpicIds: (graphId: string) => Promise<string[]> },
+  graphId: string,
+  conflictId: string
+): Promise<string> {
+  try {
+    // Get all existing epic IDs
+    const existingIds = await client.getEpicIds(graphId);
+
+    // Parse conflict ID to get the number part
+    const match = conflictId.match(/EPIC-(\d+)/i);
+    if (!match) {
+      // Fallback: just append "-new"
+      return `${conflictId}-new`;
+    }
+
+    // Find max epic number
+    let maxNum = parseInt(match[1], 10);
+
+    for (const id of existingIds) {
+      const numMatch = id.match(/EPIC-(\d+)/i);
+      if (numMatch) {
+        const num = parseInt(numMatch[1], 10);
+        if (num > maxNum) {
+          maxNum = num;
+        }
+      }
+    }
+
+    // Suggest next number with proper padding
+    const nextNum = maxNum + 1;
+    return `EPIC-${nextNum.toString().padStart(3, '0')}`;
+  } catch {
+    // Fallback on error
+    return `${conflictId}-new`;
   }
 }
 

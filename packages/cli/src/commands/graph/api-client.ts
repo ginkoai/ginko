@@ -478,6 +478,56 @@ export class GraphApiClient {
   }
 
   /**
+   * Check if an Epic ID already exists in the graph (ADR-058)
+   * Used for first-claim-wins conflict detection
+   *
+   * @param graphId - Graph namespace identifier
+   * @param epicId - Epic ID to check (e.g., "EPIC-010" or "e010")
+   * @returns Conflict info if ID exists, null if available
+   */
+  async checkEpicConflict(graphId: string, epicId: string): Promise<EpicConflictCheck | null> {
+    try {
+      const response = await this.request<EpicConflictCheckResponse>(
+        'GET',
+        `/api/v1/epic/check?graphId=${encodeURIComponent(graphId)}&id=${encodeURIComponent(epicId)}`
+      );
+
+      if (response.exists) {
+        return {
+          exists: true,
+          createdBy: response.createdBy || 'unknown',
+          createdAt: response.createdAt,
+          title: response.title,
+          suggestedId: response.suggestedId,
+        };
+      }
+
+      return null;
+    } catch (error: any) {
+      // If endpoint doesn't exist yet (404), treat as no conflict
+      if (error.message?.includes('404')) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get all Epic IDs in a graph (for finding next available ID)
+   */
+  async getEpicIds(graphId: string): Promise<string[]> {
+    try {
+      const response = await this.request<{ ids: string[] }>(
+        'GET',
+        `/api/v1/epic/ids?graphId=${encodeURIComponent(graphId)}`
+      );
+      return response.ids || [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Sync an epic to the graph database
    * Creates Epic node with relationships to sprints
    */
@@ -707,6 +757,28 @@ export interface EpicSyncResponse {
   };
   nodesCreated: number;
   relationshipsCreated: number;
+}
+
+/**
+ * Epic ID conflict check response (ADR-058)
+ */
+export interface EpicConflictCheckResponse {
+  exists: boolean;
+  createdBy?: string;
+  createdAt?: string;
+  title?: string;
+  suggestedId?: string;
+}
+
+/**
+ * Epic ID conflict info for client-side handling
+ */
+export interface EpicConflictCheck {
+  exists: boolean;
+  createdBy: string;
+  createdAt?: string;
+  title?: string;
+  suggestedId?: string;
 }
 
 export interface SprintSyncResponse {

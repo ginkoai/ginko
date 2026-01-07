@@ -1,12 +1,12 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-25
- * @tags: [epic, graph-sync, planning]
- * @related: [../../sprint/sync/route.ts, ../../../graph/_cloud-graph-client.ts]
+ * @updated: 2026-01-07
+ * @tags: [epic, graph-sync, planning, ADR-058]
+ * @related: [../../sprint/sync/route.ts, ../../../graph/_cloud-graph-client.ts, ../check/route.ts]
  * @priority: high
  * @complexity: medium
- * @dependencies: [neo4j-driver]
+ * @dependencies: [neo4j-driver, supabase]
  */
 
 /**
@@ -34,10 +34,13 @@
  * - epic: { id, title, status }
  * - nodesCreated: number
  * - relationshipsCreated: number
+ *
+ * ADR-058: Stores createdBy on first sync for conflict detection
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '@/app/api/v1/graph/_neo4j';
+import { createClient } from '@supabase/supabase-js';
 
 interface EpicSyncRequest {
   graphId: string;
@@ -63,6 +66,12 @@ interface EpicSyncResponse {
   relationshipsCreated: number;
 }
 
+// Initialize Supabase admin client for auth validation
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
 export async function POST(request: NextRequest) {
   try {
     // Extract Bearer token for authentication
@@ -72,6 +81,18 @@ export async function POST(request: NextRequest) {
         { error: 'Missing or invalid authorization header' },
         { status: 401 }
       );
+    }
+
+    // Get user from token (ADR-058: track createdBy)
+    const token = authHeader.substring(7);
+    let userEmail = 'unknown';
+    try {
+      const { data: { user } } = await supabaseAdmin.auth.getUser(token);
+      if (user?.email) {
+        userEmail = user.email;
+      }
+    } catch {
+      // Continue with 'unknown' if user lookup fails
     }
 
     // Verify Neo4j connection
@@ -94,8 +115,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Sync epic to graph
-    const result = await syncEpicToGraph(body);
+    // Sync epic to graph (pass user for createdBy tracking)
+    const result = await syncEpicToGraph(body, userEmail);
 
     return NextResponse.json(result);
 
@@ -123,16 +144,19 @@ function toNumber(value: any): number {
 
 /**
  * Sync epic data to Neo4j graph
+ * ADR-058: Tracks createdBy for conflict detection
  */
-async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse> {
+async function syncEpicToGraph(epic: EpicSyncRequest, userEmail: string): Promise<EpicSyncResponse> {
   let nodesCreated = 0;
   let relationshipsCreated = 0;
 
   // Create or update Epic node (scoped to graphId)
+  // ADR-058: Store createdBy on creation, updatedBy on all updates
   const epicQuery = `
     MERGE (e:Epic {id: $id, graphId: $graphId})
     ON CREATE SET
       e.createdAt = datetime(),
+      e.createdBy = $userEmail,
       e.nodesCreated = 1
     ON MATCH SET
       e.nodesCreated = 0
@@ -144,7 +168,8 @@ async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse>
       e.progress = $progress,
       e.inScope = $inScope,
       e.outOfScope = $outOfScope,
-      e.updatedAt = datetime()
+      e.updatedAt = datetime(),
+      e.updatedBy = $userEmail
     RETURN e.id as id, e.title as title, e.status as status, e.nodesCreated as created
   `;
 
@@ -158,6 +183,7 @@ async function syncEpicToGraph(epic: EpicSyncRequest): Promise<EpicSyncResponse>
     progress: epic.progress || 0,
     inScope: epic.inScope || [],
     outOfScope: epic.outOfScope || [],
+    userEmail,
   });
 
   if (epicResult.length > 0 && toNumber(epicResult[0].created) === 1) {
