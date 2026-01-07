@@ -5,7 +5,7 @@
 **Sprint Goal**: Resolve all epic ID conflicts, implement proper author tracking, and prevent future collisions
 **Duration**: 1-2 days (2026-01-07 to 2026-01-09)
 **Type**: Cleanup + Hardening sprint
-**Progress:** 50% (4/8 tasks complete)
+**Progress:** 62% (5/8 tasks complete)
 
 **Success Criteria:**
 - [ ] No duplicate epic IDs in local files or graph
@@ -165,20 +165,22 @@ Follow: ADR-058 (Entity ID Conflict Resolution)
 ---
 
 ### e008_s05_t08: Add Local Duplicate Detection (1h)
-**Status:** [ ] Pending
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assigned:** chris@watchhill.ai
 
 **Goal:** Prevent future duplicate IDs
 
-**Action:**
-- Add pre-sync validation in CLI
-- Scan local epic files for duplicate IDs
-- Warn before syncing if duplicates found
-- Reference ADR-058 in error message
+**Implementation:**
+- Added `detectLocalDuplicates()` function to epic.ts
+- Scans local epic files before sync
+- Extracts ID from frontmatter (`epic_id:`) or title (`# EPIC-NNN:`)
+- Shows clear warning with affected files and resolution instructions
+- Prompts user to confirm if proceeding with duplicates (defaults to No)
+- References ADR-058 in the guidance
 
 Files:
-- `packages/cli/src/commands/epic.ts` (update)
+- `packages/cli/src/commands/epic.ts` (updated)
 
 ---
 
@@ -212,6 +214,23 @@ Files:
 - No public delete API for epics
 - Entity `epic_ginko_1763746656116` still in graph
 - Requires backend/Neo4j access to delete
+
+### 2026-01-07: CLI Duplicate Detection (T8)
+
+**T8: Implemented Local Duplicate Detection**
+- Added `detectLocalDuplicates()` function to `packages/cli/src/commands/epic.ts`
+- Detection runs before sync, scans all `EPIC-NNN*.md` files
+- Extracts ID from:
+  - Frontmatter `epic_id:` field (preferred)
+  - Title `# EPIC-NNN:` pattern (fallback)
+  - Filename (last resort)
+- On duplicate found:
+  - Shows red warning banner with ADR-058 reference
+  - Lists all files sharing the same ID with their titles
+  - Provides resolution instructions
+  - Prompts for confirmation (defaults to No)
+- Updated global `ginko` via `npm link`
+- Tested with synthetic duplicate - warning displays correctly
 
 ---
 

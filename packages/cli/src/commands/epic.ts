@@ -1,12 +1,12 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-11-25
- * @tags: [epic, planning, sprint-creation, graph-sync]
- * @related: [charter.ts, ../templates/epic-template.md]
+ * @updated: 2026-01-07
+ * @tags: [epic, planning, sprint-creation, graph-sync, duplicate-detection]
+ * @related: [charter.ts, ../templates/epic-template.md, ADR-058]
  * @priority: high
  * @complexity: medium
- * @dependencies: [chalk, fs, path]
+ * @dependencies: [chalk, fs, path, prompts]
  */
 
 import chalk from 'chalk';
@@ -261,6 +261,57 @@ async function viewEpics(projectRoot: string): Promise<void> {
 }
 
 // ============================================================================
+// Local Duplicate Detection (ADR-058)
+// ============================================================================
+
+interface LocalEpicInfo {
+  file: string;
+  id: string;
+  title: string;
+}
+
+/**
+ * Detect duplicate epic IDs in local files before sync
+ * Returns map of duplicate IDs to their files
+ */
+async function detectLocalDuplicates(
+  epicsDir: string,
+  epicFiles: string[]
+): Promise<Map<string, LocalEpicInfo[]>> {
+  const epicById = new Map<string, LocalEpicInfo[]>();
+
+  for (const file of epicFiles) {
+    const content = await fs.readFile(path.join(epicsDir, file), 'utf-8');
+
+    // Extract epic ID from frontmatter or title
+    const frontmatterMatch = content.match(/^---[\s\S]*?epic_id:\s*(\S+)[\s\S]*?---/m);
+    const titleMatch = content.match(/^# (EPIC-\d+):/m);
+
+    const id = frontmatterMatch?.[1]?.toUpperCase() ||
+               titleMatch?.[1]?.toUpperCase() ||
+               file.match(/^(EPIC-\d+)/i)?.[1]?.toUpperCase() ||
+               'UNKNOWN';
+
+    const epicTitleMatch = content.match(/^# EPIC-\d+:\s*(.+)$/m);
+    const title = epicTitleMatch?.[1] || 'Untitled';
+
+    const existing = epicById.get(id) || [];
+    existing.push({ file, id, title });
+    epicById.set(id, existing);
+  }
+
+  // Filter to only duplicates (IDs with more than one file)
+  const duplicates = new Map<string, LocalEpicInfo[]>();
+  for (const [id, files] of epicById) {
+    if (files.length > 1) {
+      duplicates.set(id, files);
+    }
+  }
+
+  return duplicates;
+}
+
+// ============================================================================
 // Sync Epic to Graph
 // ============================================================================
 
@@ -310,6 +361,41 @@ async function syncEpicToGraph(projectRoot: string): Promise<void> {
     if (epicFiles.length === 0) {
       console.log(chalk.yellow('📋 No epics to sync'));
       return;
+    }
+
+    // ADR-058: Check for local duplicate IDs before sync
+    const duplicates = await detectLocalDuplicates(epicsDir, epicFiles);
+    if (duplicates.size > 0) {
+      console.log(chalk.red('🚨 Duplicate epic IDs detected!\n'));
+      console.log(chalk.dim('   Per ADR-058, each epic must have a unique ID.\n'));
+
+      for (const [id, files] of duplicates) {
+        console.log(chalk.yellow(`   ${id}:`));
+        for (const info of files) {
+          console.log(chalk.dim(`     - ${info.file}`));
+          console.log(chalk.dim(`       "${info.title}"`));
+        }
+        console.log('');
+      }
+
+      console.log(chalk.dim('   To resolve:'));
+      console.log(chalk.dim('   1. Rename one of the duplicate epics to a new ID'));
+      console.log(chalk.dim('   2. Update the epic_id in frontmatter and the # title'));
+      console.log(chalk.dim('   3. Run `ginko epic --sync` again\n'));
+
+      const { proceed } = await prompts({
+        type: 'confirm',
+        name: 'proceed',
+        message: 'Continue sync anyway? (duplicates will cause overwrites)',
+        initial: false,
+      });
+
+      if (!proceed) {
+        console.log(chalk.dim('\nSync cancelled. Resolve duplicates first.\n'));
+        return;
+      }
+
+      console.log(chalk.yellow('\n⚠️  Proceeding with duplicates - last file wins\n'));
     }
 
     // Get sprint files for association

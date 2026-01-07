@@ -48,3 +48,17 @@ Impact: high
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 18:33 - [feature]
+# [FEATURE] 18:33
+
+Implemented T8: CLI duplicate detection for epic sync. Added detectLocalDuplicates() function to epic.ts that scans local epic files before sync, extracts IDs from frontmatter/title/filename, and warns if duplicates found. Shows clear ADR-058-referenced guidance and prompts for confirmation before proceeding. Tested and verified working. Linked local build to global ginko.
+
+**Files:**
+- packages/cli/src/commands/epic.ts
+
+**Impact:** medium
+**Timestamp:** 2026-01-07T23:33:08.411Z
+
+Files: packages/cli/src/commands/epic.ts
+Impact: medium
