@@ -1,80 +1,102 @@
 ---
-handoff_id: handoff-2025-12-30-insights-fixes
-session_id: session-2025-12-30T19-40-02-108Z
-created: 2025-12-30T20:02:00.000Z
+handoff_id: handoff-2026-01-07-adr058-conflict-resolution
+session_id: session-2026-01-07-conflict-resolution
+created: 2026-01-07T17:10:00.000Z
 user: chris@watchhill.ai
 branch: main
 model: claude-opus-4-5-20251101
 provider: anthropic
 ---
 
-# Session Handoff: Insights Subcomponents UAT Fixes
+# Session Handoff: ADR-058 Entity ID Conflict Resolution
 
 ## Summary
-Fixed all Insights subcomponents based on UAT feedback. Cold start detection, evidence display, and principles have been addressed. Changes committed, ready to deploy.
+
+Implemented first-claim-wins conflict resolution for team epic sync (ADR-058). When two team members independently create epics with the same ID, the first to sync claims the ID. Subsequent syncs detect the conflict and prompt to rename. Deployed to production and published CLI v2.0.2.
 
 ## Completed This Session
 
-### 1. Cold Start Ratio Detection (Data Accuracy)
-- **Problem**: 100% cold start rate despite user always running handoff
-- **Root cause**: Flow state only detected from session log text patterns, ignored handoffs
-- **Solution**:
-  - Sessions with 2+ events now classified as "warm"
-  - Post-processing propagates handoff state from previous session
-  - Added detection for multiple flow state patterns
+### 1. ADR-058: Entity ID Conflict Resolution
+- **Problem**: Silent data loss when two team members create same Epic ID (xtophr and Reese both created EPIC-010)
+- **Solution**: First-claim-wins with rename suggestion
+- **Approach**:
+  - Check if ID exists in graph before sync
+  - Compare createdBy with current user
+  - If conflict, prompt: rename to next ID, skip, or cancel
 
-### 2. Evidence Display Improvements
-- Evidence items now include timestamps from session `startedAt` dates
-- Descriptions enriched with context: event counts, handoff status, duration
-- Example: `"Cold start session (3 events, no handoff)"` instead of just `"Cold start session"`
+### 2. New API Endpoints
+- `GET /api/v1/epic/check` - Conflict detection (returns exists, createdBy, suggestedId)
+- `GET /api/v1/epic/ids` - List all epic IDs in graph
 
-### 3. Truncated Commit Evidence
-- Expanded commit message truncation from 40 to **80 characters**
-- Format: `"1234 lines changed: Full commit message here..."`
+### 3. CLI Updates
+- `ginko epic --sync` now checks for conflicts
+- Interactive prompt with rename suggestion
+- Tracks createdBy/updatedBy on epic sync
 
-### 4. Silent Sessions vs Low Event Logging Clarification
-- **Silent sessions** (anti-patterns): Sessions with **zero** events - total context loss
-- **Low event logging** (quality): Events per session **average** below target
-- Descriptions now explicitly distinguish these metrics
+### 4. Deployment
+- Dashboard deployed to https://app.ginkoai.com
+- CLI v2.0.2 published to npm
 
-### 5. Principles for ADR Awareness & Pattern Library
-Added to `PrinciplePreviewModal.tsx`:
-- "Architecture Decision Records" (ADR) - source: Michael Nygard/Thoughtworks
-- "Pattern Documentation" - source: Gang of Four/DDD
-- "Atomic Commits", "Session Handoff", `ginko log` keyword mapping
+## Files Created
+- `docs/adr/ADR-058-entity-id-conflict-resolution.md`
+- `dashboard/src/app/api/v1/epic/check/route.ts`
+- `dashboard/src/app/api/v1/epic/ids/route.ts`
 
-## Files Changed
-- `packages/cli/src/lib/insights/data-collector.ts` - Flow state detection, handoff propagation
-- `packages/cli/src/lib/insights/analyzers/efficiency.ts` - Cold start evidence
-- `packages/cli/src/lib/insights/analyzers/anti-patterns.ts` - Silent session evidence
-- `packages/cli/src/lib/insights/analyzers/patterns.ts` - ADR/pattern recommendations
-- `packages/cli/src/lib/insights/analyzers/quality.ts` - Commit evidence, low logging clarity
-- `dashboard/src/components/insights/PrinciplePreviewModal.tsx` - 5 new principles
+## Files Modified
+- `packages/cli/src/commands/epic.ts` - Conflict detection logic
+- `packages/cli/src/commands/graph/api-client.ts` - checkEpicConflict(), getEpicIds()
+- `dashboard/src/app/api/v1/epic/sync/route.ts` - Stores createdBy/updatedBy
+- `packages/cli/package.json` - Bumped to v2.0.2
 
-## Commit
+## Commits
 ```
-60de63e fix(insights): Improve data accuracy and evidence display based on UAT
+b0effb1 feat(ADR-058): Entity ID conflict resolution for team epic sync
+c7ba917 chore: Update session context for ADR-058 handoff
 ```
 
-## Next Session: Deploy
-1. Run `git push` to push changes to remote
-2. Run `vercel --prod --yes` from monorepo root to deploy dashboard
-3. Test Insights page at https://app.ginkoai.com/dashboard/insights
-4. Verify:
-   - Cold start ratio reflects actual handoff usage
-   - Evidence items show dates and context
-   - Principles appear on ADR Awareness and Pattern Library insights
+## User Experience
 
-## Sprint Status
-**Sprint:** UX Polish Sprint 3 - Polish & UAT
-**Progress:** 50% (still 3/6 tasks) - This was a UAT bug fix iteration
+When a user syncs an epic with a conflicting ID:
+```
+⚠️  ID Conflict: EPIC-010 already exists
+   Created by: reese@example.com on 2026-01-06
+   Title: "Analytics Dashboard"
+
+Your version: "Performance Optimization"
+
+? How would you like to resolve this conflict?
+❯ Rename to EPIC-011 (recommended)
+  Skip this epic
+  Cancel sync
+```
+
+## Next Session
+
+### Resolve xtophr's EPIC-010 Conflict
+Have xtophr run:
+```bash
+npm update -g @ginkoai/cli
+ginko epic --sync
+```
+They'll get the conflict prompt and can rename to EPIC-011.
+
+### Start EPIC-009 Sprint 1
+- **Sprint**: Schema & Data Migration for Product Roadmap
+- **First task**: e009_s01_t01 - Define Epic Roadmap Schema (4h)
+- **Progress**: 0% (0/5 tasks)
+
+## Key Decisions Made
+1. **First-claim-wins** over locking or user-prefixed IDs
+2. **Rename suggestion** auto-calculates next available ID
+3. **createdBy tracking** stored on first sync only
 
 ## Branch State
 - **Branch**: main
-- **Status**: Clean (all changes committed)
-- **Ahead of remote**: Yes (needs `git push`)
+- **Status**: Clean (all changes committed and pushed)
+- **Production**: Deployed and verified
 
 ## Technical Notes
-- Dashboard has pre-existing type errors (not from this session)
-- CLI type-checks clean
-- No secrets or API keys in changes
+- Pre-existing TS errors in dashboard (not from this session)
+- CLI builds and type-checks clean
+- No secrets in commits
+- No database migrations required
