@@ -1012,10 +1012,35 @@
       "relevance": "critical",
       "created": "2026-01-07T17:01:12.176Z",
       "sessionId": "session-chris-at-watchhill-ai-1767805272138"
+    },
+    {
+      "filename": "pattern-created-sprint-e008s05-data-integrity-adr058-harde.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-07T21:50:39.285Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767822639246"
+    },
+    {
+      "filename": "gotcha-completed-local-data-cleanup-48-tasks.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-07T22:12:09.225Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767823929180"
     }
   ],
-  "lastUpdated": "2026-01-07T17:01:12.176Z",
-  "totalModules": 76,
+  "lastUpdated": "2026-01-07T22:12:09.226Z",
+  "totalModules": 78,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

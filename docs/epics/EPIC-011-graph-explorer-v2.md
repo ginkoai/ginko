@@ -1,9 +1,20 @@
-# EPIC-006: Graph Explorer v2 - UX Polish & Advanced Features
+---
+epic_id: EPIC-011
+status: proposed
+created: 2025-12-11
+updated: 2026-01-07
+tags: [graph-explorer, ux, dashboard, visualization]
+---
+
+# EPIC-011: Graph Explorer v2 - UX Polish & Advanced Features
 
 **Status:** Proposed
 **Priority:** Medium
 **Estimated Duration:** 2-3 sprints (4-6 weeks)
 **Prerequisite:** EPIC-005 Sprint 2 complete
+
+> **Note:** Renumbered from EPIC-006 on 2026-01-07 to resolve duplicate ID conflict.
+> Original EPIC-006 is "UX Polish and UAT" (complete).
 
 ---
 
@@ -161,3 +172,4 @@ These items emerged from EPIC-005 Sprint 2 polish but weren't in scope:
 
 *Created: 2025-12-11 during EPIC-005 Sprint 2 TASK-8*
 *Author: Chris Norton, Claude Code*
+*Renumbered: 2026-01-07 (was EPIC-006, conflicted with UX Polish epic)*

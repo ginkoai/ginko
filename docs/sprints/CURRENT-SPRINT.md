@@ -1,347 +1,232 @@
-# SPRINT: Team Collaboration Sprint 4 - Billing & Seats
+# SPRINT: Data Integrity & ADR-058 Hardening
 
 ## Sprint Overview
 
-**Sprint Goal**: Implement per-seat monthly billing via Stripe and prepare team features for launch
-**Duration**: 1-2 weeks (2026-02-10 to 2026-02-21)
-**Type**: Infrastructure + Launch sprint
-**Progress:** 100% (8/8 tasks complete)
+**Sprint Goal**: Resolve all epic ID conflicts, implement proper author tracking, and prevent future collisions
+**Duration**: 1-2 days (2026-01-07 to 2026-01-09)
+**Type**: Cleanup + Hardening sprint
+**Progress:** 50% (4/8 tasks complete)
 
 **Success Criteria:**
-- [x] Per-seat monthly billing operational via Stripe
-- [x] Seat count updates automatically on member add/remove
-- [x] Dashboard shows seat usage and billing status
-- [x] Upgrade/downgrade flows work correctly
-- [x] Launch checklist complete
+- [ ] No duplicate epic IDs in local files or graph
+- [ ] All graph epics have corresponding local files
+- [ ] `createdBy` populated for all epics
+- [ ] `suggestedId` returns sequential format (EPIC-NNN)
+- [ ] EPIC-INDEX reflects actual state
+- [ ] CLI warns on local duplicate IDs before sync
+
+---
+
+## Context
+
+During team collaboration testing (EPIC-008), we discovered data integrity issues:
+- Duplicate epic IDs (EPIC-006 has two different epics)
+- Missing local files for graph entities (EPIC-010)
+- Orphan entities with malformed IDs (`epic_ginko_1763746656116`)
+- ADR-058 conflict resolution not fully implemented (createdBy, suggestedId broken)
+
+**Graph state:** 11 epics (EPIC-001 through EPIC-010 + 1 orphan)
+**Local state:** 9 files (with 1 duplicate ID)
 
 ---
 
 ## Sprint Tasks
 
-### e008_s04_t01: Extend Billing Schema for Seats (4h)
+### e008_s05_t01: Resolve EPIC-006 Duplicate (30m)
 **Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
-**Goal:** Update billing schema to support per-seat model
+**Goal:** Eliminate duplicate EPIC-006 files
 
-**Implementation Notes:**
-Extend existing ADR-005 Stripe integration:
-- Add seat count to subscription metadata
-- Track per-team seat allocation
-- Define pricing: $15/seat/month (Team tier)
+**Current State:**
+- `EPIC-006-ux-polish-uat.md` - "UX Polish and UAT" (Complete, proper frontmatter)
+- `EPIC-006-graph-explorer-v2.md` - "Graph Explorer v2" (Proposed, no frontmatter)
 
-**Files:**
-- `packages/mcp-server/src/billing-manager.ts` (extended)
-- `packages/mcp-server/src/auth-manager.ts` (added 'team' to PlanTier)
-- `packages/mcp-server/src/entitlements-manager.ts` (added team tier limits)
-- `src/graph/schema/013-billing-seats.cypher` (new)
-
-Follow: ADR-005 (Stripe Payment Integration)
+**Action:**
+- Keep `EPIC-006-ux-polish-uat.md` as canonical EPIC-006
+- Rename `EPIC-006-graph-explorer-v2.md` to `EPIC-011-graph-explorer-v2.md`
+- Update epic_id frontmatter to EPIC-011
+- Sync renamed epic to graph
 
 ---
 
-### e008_s04_t02: Stripe Per-Seat Product Configuration (2h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Configure Stripe products for per-seat pricing
-
-**Implementation Notes:**
-- Create new Stripe product: "Ginko Team"
-- Pricing: per-seat, monthly billing
-- Configure metered billing or quantity-based
-- Test in Stripe test mode first
-
-**Files:**
-- `scripts/stripe-setup-seats.ts` (new)
-- `.env.example` (add seat product IDs)
-
----
-
-### e008_s04_t03: Seat Count Synchronization (6h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Automatically update Stripe seat count when members change
-
-**Implementation Notes:**
-- Hook into member add/remove events
-- Update Stripe subscription quantity
-- Handle proration for mid-cycle changes
-- Sync seat count on startup for consistency
-
-**Files:**
-- `dashboard/src/lib/stripe/client.ts` (new - Stripe client utility)
-- `dashboard/src/lib/billing/seat-sync.ts` (new - seat sync helper)
-- `dashboard/src/app/api/v1/billing/seats/sync/route.ts` (new - sync API)
-- `dashboard/src/app/api/v1/billing/seats/reconcile/route.ts` (new - reconciliation API)
-- `dashboard/src/app/api/v1/teams/[id]/members/route.ts` (updated - add member sync)
-- `dashboard/src/app/api/v1/teams/[id]/members/[userId]/route.ts` (updated - remove member sync)
-- `dashboard/src/app/api/v1/team/join/route.ts` (updated - join via invite sync)
-
----
-
-### e008_s04_t04: Dashboard Billing Overview (6h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Show seat usage and billing status in dashboard
-
-**Implementation Notes:**
-- Current seat count vs. plan limit
-- Next billing date and amount
-- Link to Stripe customer portal (via portal API)
-- Billing section added to Settings page for team owners
-
-**Files:**
-- `dashboard/src/app/api/v1/billing/overview/route.ts` (new - billing data API)
-- `dashboard/src/app/api/v1/billing/portal/route.ts` (new - Stripe portal session)
-- `dashboard/src/app/dashboard/billing/page.tsx` (new - billing overview page)
-- `dashboard/src/components/billing/SeatUsageCard.tsx` (new - seat usage display)
-- `dashboard/src/components/billing/BillingStatusCard.tsx` (new - subscription status)
-- `dashboard/src/components/billing/index.ts` (new - barrel export)
-- `dashboard/src/app/dashboard/settings/page.tsx` (updated - added billing link)
-
----
-
-### e008_s04_t05: Upgrade/Downgrade Flows (6h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Enable teams to adjust seat count and plan tier
-
-**Implementation Notes:**
-- Add seats: immediate billing (prorated)
-- Remove seats: effective at period end
-- Plan upgrade: immediate
-- Plan downgrade: effective at period end
-- Clear confirmation dialogs
-
-**Files:**
-- `dashboard/src/components/billing/ManageSeats.tsx` (new)
-- `dashboard/src/app/api/v1/billing/seats/route.ts` (new)
-
----
-
-### e008_s04_t06: Billing Webhook Handlers (4h)
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Handle Stripe webhooks for seat-related events
-
-**Implementation Notes:**
-Extend existing webhook handler for:
-- `customer.subscription.updated` - seat count changes
-- `invoice.payment_failed` - handle payment issues
-- `customer.subscription.deleted` - team downgrade
-
-**Files:**
-- `dashboard/src/app/api/webhooks/stripe/route.ts` (update)
-
----
-
-### e008_s04_t07: Free Tier / Trial Configuration (3h)
+### e008_s05_t02: Fix EPIC-009 ID Format (15m)
 **Status:** [x] Complete
 **Priority:** MEDIUM
 **Assigned:** chris@watchhill.ai
 
-**Goal:** Configure free tier limits and trial period for teams
+**Goal:** Fix inconsistent ID format
 
-**Implementation Notes:**
-- Free tier: 2 seats max (owner + 1)
-- Trial: 14 days with full features
-- Clear upgrade prompts when limits hit
-- Grace period handling (3 days after trial)
+**Current State:**
+- Local file has `epic_id: e009` (lowercase)
+- Graph has `EPIC-009` (uppercase)
 
-**Files:**
-- `packages/mcp-server/src/billing-manager.ts` (added trial/grace period methods, gracePeriodDays config)
-- `packages/mcp-server/src/entitlements-manager.ts` (updated free tier to 2 seats)
-- `dashboard/src/lib/subscription-limits.ts` (new - tier limits, trial/grace helpers)
-- `dashboard/src/components/billing/UpgradePrompt.tsx` (new - upgrade prompt component)
+**Action:**
+- Update frontmatter to `epic_id: EPIC-009`
+- Verify graph node consistency
 
 ---
 
-### e008_s04_t08: Launch Checklist & Final Testing (4h)
+### e008_s05_t03: Pull EPIC-010 to Local (30m)
 **Status:** [x] Complete
 **Priority:** HIGH
 **Assigned:** chris@watchhill.ai
 
-**Goal:** Complete pre-launch validation for team features
+**Goal:** Create local file for graph-only epic
 
-**Implementation Notes:**
-Verify:
-- [x] Full invite → join → collaborate flow works
-- [x] Billing correctly charges for seats
-- [x] Proration works for mid-cycle changes
-- [x] Webhooks fire and process correctly
-- [x] Error handling for payment failures
-- [x] Documentation complete
-- [x] No security issues (permission checks)
+**Current State:**
+- Exists in graph: "Web Collaboration GUI" (created 2026-01-06)
+- No local file
+- Created by: xtophr (attributed as "unknown" due to bug)
 
-**Files:**
-- `docs/launch/EPIC-008-launch-checklist.md` (new)
+**Action:**
+- Query graph for full EPIC-010 content
+- Create `EPIC-010-web-collaboration-gui.md`
+- Add proper frontmatter
+
+---
+
+### e008_s05_t04: Clean Orphan Entity (15m)
+**Status:** [ ] Blocked (needs backend)
+**Priority:** MEDIUM
+**Assigned:** (requires backend access)
+
+**Goal:** Remove malformed orphan epic from graph
+
+**Current State:**
+- Entity ID: `epic_ginko_1763746656116`
+- Created: 2025-11-21
+- No title, no content
+- Likely created by timestamp-based ID generation bug
+
+**Action:**
+- Delete from graph via Neo4j or dashboard admin
+- No public delete API available for epics
+- Document root cause in ADR-058 implementation notes
+
+---
+
+### e008_s05_t05: Implement createdBy Tracking (2h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**Assigned:** (requires backend)
+
+**Goal:** Track entity authorship for conflict detection
+
+**Current State:**
+- All entities return `createdBy: "unknown"`
+- ADR-058 conflict check can't distinguish authors
+
+**Action:**
+- Add `createdBy` field to Epic creation mutation
+- Backfill existing epics (default to graph owner)
+- Update `/api/v1/epic/check` to return actual author
+
+Follow: ADR-058 (Entity ID Conflict Resolution)
+
+---
+
+### e008_s05_t06: Fix suggestedId Generation (1h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**Assigned:** (requires backend)
+
+**Goal:** Return sequential IDs instead of timestamps
+
+**Current State:**
+- API returns `suggestedId: "EPIC-1763746656117"` (timestamp)
+- Should return `suggestedId: "EPIC-011"` (sequential)
+
+**Action:**
+- Query all existing epic IDs
+- Parse to find max numeric suffix
+- Return `EPIC-{max+1}` format (zero-padded to 3 digits)
+- Add unit tests
+
+---
+
+### e008_s05_t07: Update EPIC-INDEX (30m)
+**Status:** [x] Complete
+**Priority:** MEDIUM
+**Assigned:** chris@watchhill.ai
+
+**Goal:** Synchronize index with actual state
+
+**Current State:**
+- Index shows: 001, 002, 005, 006, 009
+- Reality: 001-011 (after renaming)
+
+**Action:**
+- Regenerate index from local files
+- Include lifecycle status for each epic
+- Add last-updated timestamp
+
+---
+
+### e008_s05_t08: Add Local Duplicate Detection (1h)
+**Status:** [ ] Pending
+**Priority:** MEDIUM
+**Assigned:** chris@watchhill.ai
+
+**Goal:** Prevent future duplicate IDs
+
+**Action:**
+- Add pre-sync validation in CLI
+- Scan local epic files for duplicate IDs
+- Warn before syncing if duplicates found
+- Reference ADR-058 in error message
+
+Files:
+- `packages/cli/src/commands/epic.ts` (update)
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-05: Launch Checklist & Final Testing (e008_s04_t08)
-- Comprehensive code review of all EPIC-008 team collaboration features
-- Verified complete invite → join → collaborate flow:
-  - Invite creation, validation, expiration, and acceptance
-  - Member management with proper ownership checks
-  - Seat sync integration at all entry points
-- Verified billing implementation:
-  - Stripe quantity updates on member changes
-  - Proration strategy: immediate for adds, period-end for removes
-  - Webhook handlers for 5 event types
-  - Payment failure tracking with attempt counts
-- Security audit passed:
-  - All routes require authentication (withAuth middleware)
-  - Owner-only operations properly gated
-  - Input validation on all endpoints
-  - Webhook signature verification
-- Created launch checklist document at `docs/launch/EPIC-008-launch-checklist.md`
-- Sprint complete: 100% (8/8 tasks) - Ready for launch
+### 2026-01-07: Local Data Cleanup (T1, T2, T3, T7)
 
-### 2026-01-05: Free Tier / Trial Configuration (e008_s04_t07)
-- Updated free tier to allow 2 seats (owner + 1 collaborator) in entitlements-manager.ts
-- Added grace period support (3 days after trial ends):
-  - Added `gracePeriodDays` to PlanPricing interface
-  - Configured 3-day grace period for team tier pricing
-- Added trial/grace period methods to BillingManager:
-  - `isTrialActive()` - Check if organization is in trial
-  - `isInGracePeriod()` - Check if in grace period after trial
-  - `getSubscriptionStatus()` - Get complete trial/subscription status with upgrade urgency
-- Created `dashboard/src/lib/subscription-limits.ts` (new):
-  - Tier constants with limits (free: 2 seats, pro: 5, team: 50, enterprise: unlimited)
-  - `getSubscriptionLimits()` - Get limits for a tier
-  - `isTrialActive()` / `isInGracePeriod()` - Trial status helpers
-  - `getEffectiveTier()` - Get effective tier during trial (free users get team features)
-  - `canAddTeamMember()` / `canAddProject()` - Limit validation
-  - `getUpgradeReason()` - Human-readable upgrade reasons
-  - `getTrialDaysRemaining()` / `getGraceDaysRemaining()` - Days remaining helpers
-- Created `dashboard/src/components/billing/UpgradePrompt.tsx` (new):
-  - Props: reason, currentValue, limitValue, resourceName, variant, onUpgrade, onDismiss
-  - Two variants: 'warning' (dismissible) and 'blocking' (must upgrade)
-  - Visual progress bar with color-coded usage (amber at limit, red over)
-  - Clear messaging about limits and upgrade path
-  - Uses Shadcn/UI Card, Button, Badge components
-- Updated billing component barrel export with UpgradePrompt
+**T1: Resolved EPIC-006 Duplicate**
+- Kept `EPIC-006-ux-polish-uat.md` as canonical EPIC-006 ("UX Polish and UAT", Complete)
+- Renamed `EPIC-006-graph-explorer-v2.md` to `EPIC-011-graph-explorer-v2.md`
+- Added proper frontmatter with `epic_id: EPIC-011`
+- Added note documenting the renumbering
 
-### 2026-01-05: Billing Webhook Handlers (e008_s04_t06)
-- Created Stripe webhook endpoint (`/api/webhooks/stripe`)
-- Implemented signature verification using STRIPE_WEBHOOK_SECRET
-- Handles 5 event types:
-  - `customer.subscription.updated` - seat changes, plan changes, status updates
-  - `customer.subscription.deleted` - downgrades org to free tier
-  - `invoice.payment_failed` - records failure, tracks attempt count
-  - `invoice.payment_succeeded` - clears failure status
-  - `checkout.session.completed` - links new subscriptions to orgs
-- Updates organization records with subscription status, seat count, payment status
-- Logs billing events for audit trail
-- Files created:
-  - `dashboard/src/app/api/webhooks/stripe/route.ts` (new)
+**T2: Fixed EPIC-009 ID Format**
+- Updated frontmatter from `epic_id: e009` to `epic_id: EPIC-009`
+- Ensures consistent uppercase format across all epics
 
-### 2026-01-05: Upgrade/Downgrade Flows (e008_s04_t05)
-- Created seat management API (`/api/v1/billing/seats`) with POST and GET endpoints
-- POST: Update seat count with proper proration (add=immediate, remove=period_end)
-- GET: Get current seat allocation, limits, and pricing info
-- Created ManageSeats UI component with:
-  - Add/remove seat buttons with quantity selectors
-  - Modal dialogs showing billing impact before confirmation
-  - Success/error states with clear messaging
-  - Prevents reducing below current member count
-- Integrated into billing page for team owners
-- Stripe proration strategy:
-  - Adding seats: immediate prorated charge
-  - Removing seats: effective at billing period end (no immediate credit)
-- Files created:
-  - `dashboard/src/app/api/v1/billing/seats/route.ts` (new)
-  - `dashboard/src/components/billing/ManageSeats.tsx` (new)
-- Files updated:
-  - `dashboard/src/components/billing/index.ts` (added export)
-  - `dashboard/src/app/dashboard/billing/page.tsx` (integrated ManageSeats)
+**T3: Created EPIC-010 Local File**
+- Created `EPIC-010-web-collaboration-gui.md` from graph metadata
+- Title: "Web Collaboration GUI", created by xtophr on 2026-01-06
+- Stub file - full content to be added by original author
+- Note: Graph API doesn't expose full Epic content, only metadata
 
-### 2026-01-05: Seat Count Synchronization (e008_s04_t03)
-- Implemented automatic Stripe seat sync when team members change
-- Created Stripe client utility (`dashboard/src/lib/stripe/client.ts`)
-- Created seat sync helper (`dashboard/src/lib/billing/seat-sync.ts`) with:
-  - `syncTeamSeats()` - Sync team seat count with Stripe subscription
-  - `checkSeatSyncNeeded()` - Check if team needs seat sync
-- Created seat sync API (`/api/v1/billing/seats/sync`):
-  - POST: Trigger seat sync for a team
-  - GET: Get current seat allocation status
-- Created reconciliation API (`/api/v1/billing/seats/reconcile`):
-  - POST: Reconcile seats for one or more teams
-  - GET: Dry-run to preview what would be synced
-- Integrated sync triggers into team member routes:
-  - POST /teams/[id]/members - Sync after member added (prorated)
-  - DELETE /teams/[id]/members/[userId] - Sync after member removed (end of period)
-  - POST /team/join - Sync after member joins via invitation (prorated)
-- Proration strategy: Enable for additions (immediate charge), disable for removals (Stripe best practice)
-- Files changed:
-  - `dashboard/src/lib/stripe/client.ts` (new)
-  - `dashboard/src/lib/billing/seat-sync.ts` (new)
-  - `dashboard/src/app/api/v1/billing/seats/sync/route.ts` (new)
-  - `dashboard/src/app/api/v1/billing/seats/reconcile/route.ts` (new)
-  - `dashboard/src/app/api/v1/teams/[id]/members/route.ts` (updated)
-  - `dashboard/src/app/api/v1/teams/[id]/members/[userId]/route.ts` (updated)
-  - `dashboard/src/app/api/v1/team/join/route.ts` (updated)
+**T7: Updated EPIC-INDEX**
+- Regenerated index with all 11 epics (001-011)
+- Added status summary table
+- Documented cleanup notes (renumbering, orphan pending deletion)
+- Added lifecycle definitions
 
-### 2026-01-05: Extended Billing Schema for Seats (e008_s04_t01)
-- Added 'team' tier to PlanTier type with per-seat billing model
-- Extended BillingSubscription interface with seatCount, seatLimit, pricePerSeat fields
-- Added TeamSeatAllocation interface for tracking seat usage
-- Implemented seat management methods in BillingManager:
-  - `getSeatAllocation(teamId)` - Get current seat allocation for a team
-  - `canAddSeats(teamId, count)` - Check if team can add more seats
-  - `updateSeatCount(orgId, count)` - Update Stripe subscription quantity
-  - `syncSeatCount(teamId)` - Sync seat count with actual team members
-  - `getSeatUsageSummary(orgId)` - Get billing display summary
-- Team tier pricing: $15/seat/month ($150/seat/year)
-- Added team tier entitlements with 50 max seats, 25 projects, team insights
-- Created Neo4j schema (013-billing-seats.cypher) for SeatAllocation and BillingEvent nodes
-- Files changed:
-  - `packages/mcp-server/src/billing-manager.ts`
-  - `packages/mcp-server/src/auth-manager.ts`
-  - `packages/mcp-server/src/entitlements-manager.ts`
-  - `src/graph/schema/013-billing-seats.cypher` (new)
+**Blocked: T4 (Clean Orphan Entity)**
+- No public delete API for epics
+- Entity `epic_ginko_1763746656116` still in graph
+- Requires backend/Neo4j access to delete
+
+---
 
 ## Next Steps
 
-**Immediate** (next session):
-1. e008_s04_t04: Dashboard Billing Overview (6h)
-   - Show seat usage and billing status in dashboard
-   - Current seat count vs. plan limit
-   - Next billing date and amount
-   - Link to Stripe customer portal
-
-2. e008_s04_t05: Upgrade/Downgrade Flows (6h)
-   - Add seats: immediate billing (prorated)
-   - Remove seats: effective at period end
-   - Clear confirmation dialogs
-
-**After Sprint 4 completion:**
-- EPIC-008 complete
-- Team collaboration features ready for launch
-- Move to EPIC-007 or next priority
-
-## Blockers
-
-[To be updated if blockers arise]
+After cleanup:
+1. Backend deployment for T5/T6
+2. Consider automation to keep EPIC-INDEX in sync
+3. Add similar duplicate detection for Sprints and Tasks
 
 ---
 
 ## Sprint Metadata
 
 **Epic:** EPIC-008 (Team Collaboration)
-**Sprint ID:** e008_s04
-**Created:** 2026-01-03
+**Sprint ID:** e008_s05
+**Created:** 2026-01-07
 **Participants:** Chris Norton, Claude

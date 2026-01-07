@@ -4,105 +4,34 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 ## Active Epics
 
-| Epic # | Title | Status | Duration | Priority | Progress |
-|--------|-------|--------|----------|----------|----------|
-| [EPIC-001](EPIC-001-strategic-context-and-dynamic-adaptivity.md) | Strategic Context & Dynamic Adaptivity | Ready to Execute | 4 sprints (~4 weeks) | High | 0% (Planning complete) |
-| [EPIC-002](EPIC-002-ai-native-sprint-graphs.md) | AI-Native Sprint Graphs | Proposed | 4 sprints (8-12 weeks) | Critical | 0% (Vision defined) |
-| [EPIC-005](EPIC-005-market-readiness.md) | Market Readiness | Complete | 2 sprints (~3 weeks) | High | 100% |
-| [EPIC-006](EPIC-006-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish | Proposed | 2-3 sprints (~4-6 weeks) | Medium | 0% (Backlog defined) |
-| [EPIC-009](EPIC-009-product-roadmap.md) | Product Roadmap Visualization | Active | 4 sprints (~5 weeks) | High | 0% (Planning complete) |
+| Epic # | Title | Status | File |
+|--------|-------|--------|------|
+| [EPIC-001](EPIC-001-strategic-context-and-dynamic-adaptivity.md) | Strategic Context & Dynamic Adaptivity | Ready to Execute | `EPIC-001-strategic-context-and-dynamic-adaptivity.md` |
+| [EPIC-002](EPIC-002-ai-native-sprint-graphs.md) | AI-Native Sprint Graphs | In Progress | `EPIC-002-ai-native-sprint-graphs.md` |
+| [EPIC-003](EPIC-003-marketing-launch.md) | Marketing & Launch Readiness | Active | `EPIC-003-marketing-launch.md` |
+| [EPIC-004](EPIC-004-ai-to-ai-collaboration.md) | AI-to-AI Collaboration | Complete | `EPIC-004-ai-to-ai-collaboration.md` |
+| [EPIC-005](EPIC-005-market-readiness.md) | Market Readiness (Beta 1) | Complete | `EPIC-005-market-readiness.md` |
+| [EPIC-006](EPIC-006-ux-polish-uat.md) | UX Polish and UAT | Complete | `EPIC-006-ux-polish-uat.md` |
+| [EPIC-007](EPIC-007-cross-platform-ai-instructions.md) | Cross-Platform AI Instructions | Planned | `EPIC-007-cross-platform-ai-instructions.md` |
+| [EPIC-008](EPIC-008-team-collaboration.md) | Team Collaboration | Complete | `EPIC-008-team-collaboration.md` |
+| [EPIC-009](EPIC-009-product-roadmap.md) | Product Roadmap Visualization | Active | `EPIC-009-product-roadmap.md` |
+| [EPIC-010](EPIC-010-web-collaboration-gui.md) | Web Collaboration GUI | Proposed | `EPIC-010-web-collaboration-gui.md` |
+| [EPIC-011](EPIC-011-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish & Advanced Features | Proposed | `EPIC-011-graph-explorer-v2.md` |
 
-## Epic Descriptions
+## Status Summary
 
-### EPIC-001: Strategic Context & Dynamic Adaptivity
-**Goal:** Improve AI partner readiness from 6.5/10 to 7-8/10 through strategic context surfacing (charter, team activity, patterns), dynamic adaptivity (maturity detection, mode recommendations), and intelligent knowledge capture (significance detection, ADR/PRD nudging).
-
-**Sprints:**
-1. Strategic Context Surfacing (charter + team + patterns)
-2. Dynamic Adaptivity (maturity detection + mode recommendations)
-3. Intelligent Knowledge Capture (significance detection + ADR/PRD nudging)
-4. Polish & Validation (performance + UX + comprehensive testing)
-
-**Status:** Planning complete, ready to execute after current sprint
-
----
-
-### EPIC-002: AI-Native Sprint Graphs
-**Goal:** Redefine project collaboration for AI-native development. Replace human-centric status tracking (Jira, Linear) with AI-centric cognitive scaffolding through semantic graph relationships (NEXT_TASK, MUST_FOLLOW, MODIFIES, AVOID_GOTCHA).
-
-**Key Insight:** *"Jira is for reporting to humans. Ginko is for working with AI."*
-
-**Quantified Impact:**
-- 5-7x faster session start (<3s vs 10-15 min)
-- 10-20x fewer tokens (500 vs 5,000-10,000)
-- 10x less rework (90% vs 50% decision accuracy)
-- 95% reduction in duplicate work
-- 300x faster onboarding (<3s vs 15-30 min)
-
-**Phases:**
-1. Core Infrastructure (NEXT_TASK, MUST_FOLLOW, MODIFIES, RECENT_ACTIVITY)
-2. Pattern & Constraint Library (APPLIES_PATTERN, AVOID_GOTCHA, taxonomy)
-3. Strategic Context & Dependencies (IMPLEMENTS → SOLVES, DEPENDS_ON, BLOCKED_BY)
-4. Validation & Market Launch (metrics, case studies, positioning)
-
-**Status:** Proposed, vision crystallized 2025-11-21
-
-**Strategic Positioning:** Core differentiator - fundamentally rethinks collaboration management for AI era
-
----
-
-### EPIC-005: Market Readiness
-**Goal:** Prepare ginko for market launch with professional marketing presence and graph visualization capabilities.
-
-**Sprints:**
-1. Marketing & Landing Page (complete)
-2. Graph Visualization (complete)
-
-**Status:** Complete (2025-12-11)
-
----
-
-### EPIC-006: Graph Explorer v2 - UX Polish & Advanced Features
-**Goal:** Transform the Graph Explorer from a technical data browser into an intuitive knowledge navigation tool that non-technical users can use effectively.
-
-**Sprints:**
-1. Relationship Visualization & Navigation
-2. Edit Capability & Node Management
-3. UX Refinement & Accessibility
-
-**Key Features:**
-- Visible relationship lines between nodes
-- In-place editing for project docs (ADR, Charter, Pattern, Gotcha)
-- Proper Epic → Sprint → Task hierarchy in tree view
-- Natural language search
-- Mobile-responsive design
-
-**Status:** Proposed, backlog defined 2025-12-11
-
----
-
-### EPIC-009: Product Roadmap Visualization
-**Goal:** Enable strategic visibility into committed work through a query-based roadmap view over Epic nodes. Roadmaps are a lens, not an entity—they answer "What work have we committed to?" by surfacing Epic nodes with temporal and commitment metadata.
-
-**Sprints:**
-1. Schema & Data Migration (Epic node extensions, changelog infrastructure)
-2. CLI & API (ginko roadmap command, query endpoints)
-3. Roadmap Canvas (Dashboard visual editor, filters)
-4. History & Polish (Change tracking, public export)
-
-**Key Features:**
-- Clear distinction between committed and exploratory work
-- Quarter-based temporal planning (Q1-2026 format)
-- Visual canvas for roadmap editing in dashboard
-- Changelog tracks all date/status changes
-
-**Status:** Active, planning complete 2026-01-03
-
----
+| Status | Count | Epics |
+|--------|-------|-------|
+| Complete | 4 | 004, 005, 006, 008 |
+| Active | 2 | 003, 009 |
+| In Progress | 1 | 002 |
+| Proposed | 2 | 010, 011 |
+| Planned | 1 | 007 |
+| Ready to Execute | 1 | 001 |
 
 ## Epic Naming Convention
 
-- **EPIC-XXX**: Sequential numbering starting from 001
+- **EPIC-XXX**: Sequential numbering starting from 001 (zero-padded to 3 digits)
 - **Title**: Clear, descriptive name (45 chars max recommended)
 - **Scope**: 2-6 sprints (4-12 weeks) typically
 - **Deliverables**: Concrete features or capabilities
@@ -111,12 +40,20 @@ This document maintains the official registry of all Epics to ensure unique numb
 ## Epic Lifecycle
 
 1. **Proposed** - Vision defined, not yet scheduled
-2. **Planning** - Breaking down into sprints and tasks
+2. **Planned** - Scoped and prioritized, awaiting resources
 3. **Ready to Execute** - Sprints planned, dependencies clear
 4. **In Progress** - Active development
-5. **Complete** - All sprints delivered, success criteria met
-6. **Archived** - Historical record
+5. **Active** - Ongoing work (less formal than In Progress)
+6. **Complete** - All sprints delivered, success criteria met
+7. **Archived** - Historical record
+
+## Notes
+
+- EPIC-011 was renumbered from EPIC-006 on 2026-01-07 to resolve ID conflict
+- EPIC-010 created by xtophr, synced from graph on 2026-01-07
+- Graph contains orphan entity `epic_ginko_1763746656116` pending cleanup
 
 ---
 
-*Last updated: 2026-01-06*
+*Last updated: 2026-01-07*
+*Generated during Sprint e008_s05 (Data Integrity Cleanup)*
