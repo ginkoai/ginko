@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-05T22-31-33-551Z
-started: 2026-01-05T22:31:33.551Z
+session_id: session-2026-01-06T15-12-29-834Z
+started: 2026-01-06T15:12:29.834Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-05T22-31-33-551Z
+# Session Log: session-2026-01-06T15-12-29-834Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,20 +14,16 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 17:45 - [decision]
-Created ADR-057: Human+AI Velocity Estimation. Documents the 15x acceleration observed in EPIC-008 (6-7 week estimate → 3 day delivery). Establishes framework for dual-track estimation: traditional estimates for external communication, complexity-based estimates for H+AI planning. Key insight: we're not doing scrum faster, we're doing something fundamentally different that eliminates 30-50% meeting overhead and enables real-time decision-making.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/adr/ADR-INDEX.md
+### 11:19 - [feature]
+Implemented device code flow for ginko login (like GitHub CLI). Created: Supabase migration for device_auth_requests table, 3 API endpoints (/api/auth/device/init, authorize, status), /auth/device page UI, updated CLI login command. Flow: CLI generates code -> user enters in browser -> CLI receives API key. Replaces broken in-memory session storage approach.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/app/auth/callback/route.ts, packages/cli/src/commands/login.ts
 Impact: high
 
 
-### 17:55 - [feature]
-Drafted blog post: Why Our 6-Week Estimate Took 3 Days. Adapts ADR-057 insights into narrative format for content marketing. Key themes: 15x acceleration isn't magic—it's eliminating coordination overhead, complexity-based estimation framework, dual-track metrics for stakeholder communication.
-Impact: medium
-
-
-### 18:04 - [achievement]
-Published blog post: 'Why Our 6-Week Estimate Took 3 Days' to www.ginkoai.com. Post adapts ADR-057 insights into content marketing narrative. Deployed via Vercel to production.
-Impact: medium
+### 11:18 - [achievement]
+Session handoff: Completed team onboarding UAT. Fixed device code flow login, team member graph access for sprint sync, and join command UX. All fixes deployed and verified with tester Reese successfully syncing EPIC-010 with 4 sprints.
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Impact: high
 
 
 ## Key Decisions
@@ -35,12 +31,6 @@ Impact: medium
 <!-- These entries also appear in Timeline for narrative coherence -->
 <!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
 <!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
-
-### 17:45 - [decision]
-Created ADR-057: Human+AI Velocity Estimation. Documents the 15x acceleration observed in EPIC-008 (6-7 week estimate → 3 day delivery). Establishes framework for dual-track estimation: traditional estimates for external communication, complexity-based estimates for H+AI planning. Key insight: we're not doing scrum faster, we're doing something fundamentally different that eliminates 30-50% meeting overhead and enables real-time decision-making.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/adr/ADR-INDEX.md
-Impact: high
-
 
 ## Insights
 <!-- Patterns, gotchas, learnings discovered -->
