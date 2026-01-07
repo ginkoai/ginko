@@ -5,15 +5,15 @@
 **Sprint Goal**: Resolve all epic ID conflicts, implement proper author tracking, and prevent future collisions
 **Duration**: 1-2 days (2026-01-07 to 2026-01-09)
 **Type**: Cleanup + Hardening sprint
-**Progress:** 75% (6/8 tasks complete)
+**Progress:** 100% (8/8 tasks complete)
 
 **Success Criteria:**
-- [ ] No duplicate epic IDs in local files or graph
-- [ ] All graph epics have corresponding local files
-- [ ] `createdBy` populated for all epics
-- [ ] `suggestedId` returns sequential format (EPIC-NNN)
-- [ ] EPIC-INDEX reflects actual state
-- [ ] CLI warns on local duplicate IDs before sync
+- [x] No duplicate epic IDs in local files or graph
+- [x] All graph epics have corresponding local files
+- [x] `createdBy` populated for all epics
+- [x] `suggestedId` returns sequential format (EPIC-NNN)
+- [x] EPIC-INDEX reflects actual state
+- [x] CLI warns on local duplicate IDs before sync
 
 ---
 
@@ -102,42 +102,35 @@ During team collaboration testing (EPIC-008), we discovered data integrity issue
 
 ---
 
-### e008_s05_t05: Implement createdBy Tracking (2h)
-**Status:** [ ] Pending
+### e008_s05_t05: Implement createdBy Tracking (2h) ✓
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** (requires backend)
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Track entity authorship for conflict detection
 
-**Current State:**
-- All entities return `createdBy: "unknown"`
-- ADR-058 conflict check can't distinguish authors
-
-**Action:**
-- Add `createdBy` field to Epic creation mutation
-- Backfill existing epics (default to graph owner)
-- Update `/api/v1/epic/check` to return actual author
+**Resolution (2026-01-07):**
+- Created `/api/v1/epic/backfill` endpoint for one-time backfill
+- Backfilled all 10 epics with `createdBy: chris@watchhill.ai`
+- `createdBy` already tracked on new epic creation (sync/route.ts)
+- Verified `/api/v1/epic/check` now returns actual author
 
 Follow: ADR-058 (Entity ID Conflict Resolution)
 
 ---
 
-### e008_s05_t06: Fix suggestedId Generation (1h)
-**Status:** [ ] Pending
+### e008_s05_t06: Fix suggestedId Generation (1h) ✓
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** (requires backend)
+**Assigned:** chris@watchhill.ai
 
 **Goal:** Return sequential IDs instead of timestamps
 
-**Current State:**
-- API returns `suggestedId: "EPIC-1763746656117"` (timestamp)
-- Should return `suggestedId: "EPIC-011"` (sequential)
-
-**Action:**
-- Query all existing epic IDs
-- Parse to find max numeric suffix
-- Return `EPIC-{max+1}` format (zero-padded to 3 digits)
-- Add unit tests
+**Resolution (2026-01-07):**
+- Root cause: Orphan entity `epic_ginko_1763746656116` was poisoning max calculation
+- Deleting orphan (T4) fixed the issue - no code changes needed
+- API now returns `suggestedId: "EPIC-011"` (correct sequential format)
+- Verified via API call after orphan deletion
 
 ---
 
