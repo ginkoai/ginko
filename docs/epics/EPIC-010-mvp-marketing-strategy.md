@@ -1,5 +1,5 @@
 ---
-epic_id: e010
+epic_id: EPIC-010
 status: active
 created: 2026-01-06
 updated: 2026-01-06
