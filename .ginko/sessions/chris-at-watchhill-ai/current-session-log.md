@@ -87,3 +87,74 @@ Sprint e008_s05 COMPLETE\! All 8 tasks done, all success criteria met. Data inte
 **Timestamp:** 2026-01-07T23:52:20.299Z
 
 Impact: high
+
+### 18:57 - [insight]
+# [INSIGHT] 18:57
+
+INSIGHT: Orphan entities with malformed IDs can poison ID calculations. The orphan epic_ginko_1763746656116 (timestamp ID) caused findNextAvailableId() to return EPIC-1763746656117 instead of EPIC-011. Always validate ID format before including in max calculations.
+
+**Impact:** medium
+**Timestamp:** 2026-01-07T23:57:47.776Z
+
+Impact: medium
+
+### 18:57 - [insight]
+# [INSIGHT] 18:57
+
+INSIGHT: Generic node delete API works for all entity types. DELETE /api/v1/graph/nodes/:id can remove Epic, Sprint, ADR, etc. No need for entity-specific delete endpoints. Uses DETACH DELETE to clean up relationships.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-07T23:57:55.110Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+### 18:58 - [insight]
+# [INSIGHT] 18:58
+
+PATTERN: Backfill endpoints for schema evolution. When adding required fields like createdBy, create a one-time /backfill endpoint to populate existing records. Pattern: MATCH nodes WHERE field IS NULL OR field = 'unknown' SET field = default.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-07T23:58:01.113Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+### 18:58 - [insight]
+# [INSIGHT] 18:58
+
+GOTCHA: Timestamp-based ID generation creates malformed entities. Using Date.now() for entity IDs (e.g., epic_ginko_1763746656116) breaks sequential ID patterns and poisons max calculations. Always use sequential IDs with proper format validation (EPIC-NNN, ADR-NNN).
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** high
+**Timestamp:** 2026-01-07T23:58:14.494Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: high
+
+### 18:58 - [insight]
+# [INSIGHT] 18:58
+
+INSIGHT: Data integrity issues compound. Single orphan entity (timestamp ID) caused multiple downstream problems: broken suggestedId, polluted graph queries, confusing conflict detection. Early cleanup prevents cascade failures.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** high
+**Timestamp:** 2026-01-07T23:58:29.209Z
+
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: high
