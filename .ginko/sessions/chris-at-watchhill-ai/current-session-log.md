@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-08T01-39-36-652Z
-started: 2026-01-08T01:39:36.652Z
+session_id: session-2026-01-08T17-45-27-256Z
+started: 2026-01-08T17:45:27.256Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-08T01-39-36-652Z
+# Session Log: session-2026-01-08T17-45-27-256Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,16 +14,10 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 12:05 - [insight]
-Investigation: EPIC-010 and EPIC-011 missing from graph explorer. Root cause: 1) CLI load command didn't include Epic/Sprint/Charter document types - FIXED by adding patterns to load.ts and types to api-client.ts. 2) The /api/v1/graph/documents POST endpoint for uploading documents doesn't exist in dashboard - this is why uploads fail. The existing 10 epics in the graph were loaded through a different mechanism. Need to create the upload API endpoint.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, packages/cli/src/commands/graph/api-client.ts, packages/cli/src/commands/graph/load.ts
+### 13:01 - [achievement]
+Closed Sprint e008_s05 (Data Integrity & ADR-058 Hardening). All 8 tasks verified complete. Fixed EPIC-010 frontmatter from e010 to EPIC-010 for ID consistency. Sprint audited and marked complete with detailed completion notes for each task.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, docs/epics/EPIC-010-mvp-marketing-strategy.md, docs/sprints/SPRINT-2026-01-e008-s05-data-integrity.md
 Impact: medium
-
-
-### 12:21 - [feature]
-Implemented graph document upload feature. Created POST /api/v1/graph/documents endpoint in dashboard that accepts batch document uploads, stores them in Neo4j with proper labels, and generates Voyage AI embeddings. Also added GET /api/v1/graph/jobs/:jobId for status polling. Fixed CLI to include Epic/Sprint/Charter document types. EPIC-010 and EPIC-011 now visible in graph explorer.
-Files: .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, packages/cli/src/commands/graph/api-client.ts
-Impact: high
 
 
 ## Key Decisions
@@ -37,12 +31,6 @@ Impact: high
 <!-- These entries also appear in Timeline for narrative coherence -->
 <!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
 <!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
-
-### 12:05 - [insight]
-Investigation: EPIC-010 and EPIC-011 missing from graph explorer. Root cause: 1) CLI load command didn't include Epic/Sprint/Charter document types - FIXED by adding patterns to load.ts and types to api-client.ts. 2) The /api/v1/graph/documents POST endpoint for uploading documents doesn't exist in dashboard - this is why uploads fail. The existing 10 epics in the graph were loaded through a different mechanism. Need to create the upload API endpoint.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, packages/cli/src/commands/graph/api-client.ts, packages/cli/src/commands/graph/load.ts
-Impact: medium
-
 
 ## Git Operations
 <!-- Commits, merges, branch changes -->
