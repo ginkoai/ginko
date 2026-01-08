@@ -31,7 +31,7 @@ export interface GraphInitResponse {
 
 export interface DocumentUpload {
   id: string;
-  type: 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Session' | 'ContextModule';
+  type: 'ADR' | 'PRD' | 'Epic' | 'Sprint' | 'Charter' | 'Pattern' | 'Gotcha' | 'Session' | 'ContextModule';
   title: string;
   content: string;
   filePath: string;

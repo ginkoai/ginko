@@ -79,6 +79,9 @@ function extractTitle(content: string): string {
 function getDocumentType(filePath: string): DocumentUpload['type'] {
   if (filePath.includes('/adr/')) return 'ADR';
   if (filePath.includes('/PRD/')) return 'PRD';
+  if (filePath.includes('/epics/')) return 'Epic';
+  if (filePath.includes('/sprints/')) return 'Sprint';
+  if (filePath.includes('PROJECT-CHARTER')) return 'Charter';
   if (filePath.includes('pattern')) return 'Pattern';
   if (filePath.includes('gotcha')) return 'Gotcha';
   if (filePath.includes('/sessions/')) return 'Session';
@@ -97,6 +100,9 @@ async function prepareDocuments(options: LoadOptions): Promise<DocumentUpload[]>
   if (!options.extendedOnly) {
     patterns.push('docs/adr/**/*.md');
     patterns.push('docs/PRD/**/*.md');
+    patterns.push('docs/epics/**/*.md');
+    patterns.push('docs/sprints/**/*.md');
+    patterns.push('docs/PROJECT-CHARTER.md');
   }
 
   if (!options.docsOnly) {
@@ -109,7 +115,7 @@ async function prepareDocuments(options: LoadOptions): Promise<DocumentUpload[]>
   console.log(chalk.dim('Scanning for documents...'));
 
   for (const pattern of patterns) {
-    const files = await globAsync(pattern, { ignore: ['**/node_modules/**', '**/.git/**'] });
+    const files = await globAsync(pattern, { ignore: ['**/node_modules/**', '**/.git/**', '**/*INDEX*', '**/*TEMPLATE*'] });
 
     for (const filePath of files) {
       try {
