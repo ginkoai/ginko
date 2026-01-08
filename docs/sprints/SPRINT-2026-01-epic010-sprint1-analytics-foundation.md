@@ -6,21 +6,24 @@
 
 **Duration**: 1 week (2026-01-06 to 2026-01-13)
 **Type**: Infrastructure sprint
-**Progress:** 0% (0/8 tasks complete)
+**Progress:** 13% (1/8 tasks complete)
 
-**Success Criteria:**
-- [ ] GA4 and PostHog installed and tracking events
-- [ ] Key events defined and firing correctly (8+ event types)
+**Strategic Decision (2026-01-07):** Deferring PostHog implementation (TASK-2, TASK-6) to focus on marketing analytics first. Using MVP Fast Track approach to prioritize landing page optimization.
+
+**Success Criteria (MVP Fast Track):**
+- [x] GA4 installed and tracking page views
+- [ ] Key marketing events defined (landing page, blog, UTM)
 - [ ] UTM parameter schema documented
-- [ ] Basic analytics dashboard viewable
-- [ ] Data latency < 2 hours verified
+- [ ] Landing page CTA clicks tracked
+- [ ] Blog engagement tracked (read time, scroll depth)
+- ~~PostHog setup~~ (deferred to separate sprint)
 
 ---
 
 ## Sprint Tasks
 
 ### TASK-1: Set up Google Analytics 4 (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (2026-01-07)
 **Priority:** HIGH
 
 **Goal:** Install and configure GA4 for web traffic and user journey tracking
@@ -43,13 +46,22 @@
 - Enhanced measurement events visible in DebugView
 - Real-time reports show activity within 2 hours
 
+**Completion Notes:**
+- ✓ GA4 property created (Measurement ID: G-6733RPZ8RN)
+- ✓ gtag.js installed on 12 pages (5 marketing + 7 blog)
+- ✓ Enhanced measurement enabled
+- ✓ Deployed to production at ginkoai.com
+- ⏳ Pending: Real-time testing in GA4 console
+
 ---
 
 ### TASK-2: Set up PostHog for product analytics (4h)
-**Status:** [ ] Not Started
-**Priority:** HIGH
+**Status:** [Z] Deferred (moved to separate sprint)
+**Priority:** MEDIUM (downgraded)
 
 **Goal:** Install PostHog for event-based product analytics and session tracking
+
+**Note:** Deferred to focus on marketing analytics first. Will be addressed in a separate product analytics sprint after MVP launch.
 
 **Implementation Notes:**
 - Create PostHog project (cloud or self-hosted decision)
@@ -75,32 +87,31 @@ Avoid: 💡 pii-tracking-gotcha (don't capture sensitive data)
 
 ---
 
-### TASK-3: Define key event taxonomy (2h)
+### TASK-3: Define key event taxonomy - Marketing Events Only (1h)
 **Status:** [ ] Not Started
 **Priority:** HIGH
 
-**Goal:** Create standardized event naming and properties schema
+**Goal:** Create standardized event naming and properties schema for marketing analytics (GA4)
+
+**Note:** Scoped to marketing events only. Product events (CLI, dashboard) deferred to PostHog sprint.
 
 **Implementation Notes:**
 Define events for:
-1. **Landing Page**
+1. **Landing Page** (GA4)
    - `page_view` (path, referrer, utm_*)
    - `cta_click` (cta_location, cta_text)
    - `install_initiated` (platform, install_method)
+   - `github_link_click` (link_location)
+   - `docs_link_click` (link_location)
 
-2. **Blog**
+2. **Blog** (GA4)
    - `blog_view` (post_slug, post_title)
    - `blog_read_time` (seconds, scroll_depth_percent)
    - `blog_cta_click` (cta_type, destination)
+   - `blog_share` (platform, post_slug)
 
-3. **Product**
-   - `cli_install` (platform, version)
-   - `first_session` (session_id, user_id)
-   - `session_logged` (session_id, event_count)
-   - `dashboard_signup` (user_id, signup_method)
-
-4. **Community**
-   - `discord_join` (user_id, referrer)
+3. ~~**Product Events**~~ (deferred to PostHog sprint)
+4. ~~**Community Events**~~ (deferred to PostHog sprint)
 
 **Deliverable:**
 - Event schema document in `docs/analytics/EVENT-TAXONOMY.md`
@@ -108,9 +119,11 @@ Define events for:
 - Event firing checklist
 
 **Acceptance Criteria:**
-- All 8+ event types documented with properties
+- Landing page events (5 types) documented with properties
+- Blog events (4 types) documented with properties
 - Naming follows snake_case convention
 - Properties include UTM parameters where applicable
+- Event taxonomy document created in `docs/analytics/EVENT-TAXONOMY.md`
 
 ---
 
@@ -180,10 +193,12 @@ Apply: event-tracking-pattern
 ---
 
 ### TASK-6: Install PostHog tracking on dashboard (3h)
-**Status:** [ ] Not Started
-**Priority:** MEDIUM
+**Status:** [Z] Deferred (blocked by TASK-2)
+**Priority:** LOW (downgraded)
 
 **Goal:** Instrument dashboard with product event tracking
+
+**Note:** Deferred pending PostHog setup (TASK-2). Will be addressed in product analytics sprint.
 
 **Implementation Notes:**
 Events to track:
@@ -288,7 +303,15 @@ Apply: product-analytics-pattern
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2026-01-07: GA4 Setup Complete (TASK-1)
+- Created GA4 property with measurement ID G-6733RPZ8RN
+- Installed gtag.js tracking on 12 pages:
+  - 5 marketing pages (index, get-started, developers, how-it-works, teams)
+  - 7 blog pages (blog index + 6 blog posts)
+- Enabled enhanced measurement (scroll tracking, outbound clicks, file downloads)
+- Deployed to production at https://ginkoai.com
+- Verified tracking code live on production
+- **Strategic Decision:** Deferred PostHog implementation to focus on marketing analytics first (Option B: MVP Fast Track approach)
 
 ---
 
