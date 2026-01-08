@@ -1082,10 +1082,22 @@
       "relevance": "critical",
       "created": "2026-01-08T01:00:12.920Z",
       "sessionId": "session-chris-at-watchhill-ai-1767834012863"
+    },
+    {
+      "filename": "gotcha-fixed-all-64-dependabot-vulnerabilities-down-to-0.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-08T01:17:39.636Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767835059560"
     }
   ],
-  "lastUpdated": "2026-01-08T01:00:12.921Z",
-  "totalModules": 82,
+  "lastUpdated": "2026-01-08T01:17:39.640Z",
+  "totalModules": 83,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

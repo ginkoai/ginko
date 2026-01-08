@@ -293,7 +293,7 @@ export class BillingManager {
       } as any;
     } else {
       this.stripe = new Stripe(secretKey, {
-        apiVersion: '2023-10-16', // Use supported API version
+        apiVersion: '2025-12-15.clover', // Use latest API version
         typescript: true
       });
     }
@@ -809,7 +809,8 @@ export class BillingManager {
   private formatSubscription(subscription: Stripe.Subscription, organizationId: string): BillingSubscription {
     const planTier = subscription.metadata.planTier as PlanTier || 'free';
     const pricing = this.PLAN_PRICING[planTier]?.[0];
-    const seatCount = subscription.items.data[0]?.quantity || 1;
+    const firstItem = subscription.items.data[0];
+    const seatCount = firstItem?.quantity || 1;
 
     return {
       id: subscription.id,
@@ -817,8 +818,8 @@ export class BillingManager {
       stripeSubscriptionId: subscription.id,
       planTier,
       status: subscription.status,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: new Date(firstItem.current_period_start * 1000),
+      currentPeriodEnd: new Date(firstItem.current_period_end * 1000),
       trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : undefined,
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       metadata: subscription.metadata,
