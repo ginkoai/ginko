@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-08T01-12-16-992Z
-started: 2026-01-08T01:12:16.992Z
+session_id: session-2026-01-08T01-22-28-794Z
+started: 2026-01-08T01:22:28.794Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-08T01-12-16-992Z
+# Session Log: session-2026-01-08T01-22-28-794Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,20 +37,17 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 20:17 - [fix]
-# [FIX] 20:17
+### 20:30 - [decision]
+# [DECISION] 20:30
 
-Fixed all 64 Dependabot vulnerabilities down to 0. Key changes: (1) Updated stripe 14.21→20.1.2, fixed breaking API changes in billing-manager.ts (apiVersion and subscription period properties moved to items). (2) npm audit fix resolved axios, glob, js-yaml. Verified build passes.
+Created ad-hoc task ADHOC-250107-test-debt to track 84 failing tests discovered during security audit. Categories: performance benchmarks (env thresholds), missing CLI flags (--quick, --concise), reference parser mismatches, TypeScript errors in tests, E2E setup issues. Core functionality verified working.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- package-lock.json
-- packages/mcp-server/package.json
-- packages/mcp-server/src/billing-manager.ts
 
-**Impact:** high
-**Timestamp:** 2026-01-08T01:17:36.059Z
+**Impact:** medium
+**Timestamp:** 2026-01-08T01:30:24.845Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, package-lock.json, packages/mcp-server/package.json, packages/mcp-server/src/billing-manager.ts
-Impact: high
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
