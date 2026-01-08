@@ -17,6 +17,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-009](EPIC-009-product-roadmap.md) | Product Roadmap Visualization | Active | `EPIC-009-product-roadmap.md` |
 | [EPIC-010](EPIC-010-mvp-marketing-strategy.md) | MVP Marketing Strategy | Active | `EPIC-010-mvp-marketing-strategy.md` |
 | [EPIC-011](EPIC-011-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish & Advanced Features | Proposed | `EPIC-011-graph-explorer-v2.md` |
+| [EPIC-012](EPIC-012-web-collaboration-gui.md) | Web Collaboration GUI | Proposed | `EPIC-012-web-collaboration-gui.md` |
 
 ## Status Summary
 
@@ -25,7 +26,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 | Complete | 4 | 004, 005, 006, 008 |
 | Active | 2 | 003, 009 |
 | In Progress | 1 | 002 |
-| Proposed | 2 | 010, 011 |
+| Proposed | 3 | 010, 011, 012 |
 | Planned | 1 | 007 |
 | Ready to Execute | 1 | 001 |
 
@@ -76,8 +77,9 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 ## Notes
 
+- EPIC-012 was renumbered from EPIC-010 on 2026-01-07 to resolve ID conflict with MVP Marketing Strategy
 - EPIC-011 was renumbered from EPIC-006 on 2026-01-07 to resolve ID conflict
-- EPIC-010 created by xtophr, synced from graph on 2026-01-07
+- EPIC-010 (MVP Marketing Strategy) created by xtophr, synced from graph on 2026-01-07
 - Orphan entity `epic_ginko_1763746656116` deleted on 2026-01-07 (timestamp-based ID bug)
 
 ---

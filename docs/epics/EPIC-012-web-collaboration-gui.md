@@ -1,5 +1,5 @@
 ---
-epic_id: EPIC-010
+epic_id: EPIC-012
 status: proposed
 created: 2026-01-06
 updated: 2026-01-07
@@ -7,7 +7,7 @@ created_by: xtophr
 tags: [web, collaboration, gui, dashboard]
 ---
 
-# EPIC-010: Web Collaboration GUI
+# EPIC-012: Web Collaboration GUI
 
 **Status:** Proposed
 **Created:** 2026-01-06

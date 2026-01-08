@@ -41,7 +41,7 @@ N/A
 ## Related Files
 
 - `docs/epics/EPIC-011-graph-explorer-v2.md`
-- `docs/epics/EPIC-010-web-collaboration-gui.md`
+- `docs/epics/EPIC-012-web-collaboration-gui.md` (renumbered from EPIC-010)
 - `docs/epics/EPIC-009-product-roadmap.md`
 - `docs/epics/EPIC-INDEX.md`
 

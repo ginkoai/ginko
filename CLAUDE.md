@@ -245,6 +245,41 @@ AI: ✓ Team context updated. Ready to work.
 [Task(explore pattern X), Task(explore pattern Y), Task(explore pattern Z)]
 ```
 
+### Branch Strategy (Team Development)
+
+**For teams up to 10 members**, use branches to prevent merge conflicts on shared files:
+
+| File Type | Branch Required? | Rationale |
+|-----------|------------------|-----------|
+| Code (`packages/*`, `src/*`) | ✅ Always | Prevents conflicts, enables review |
+| Shared docs (ADRs, sprints, PRDs) | ✅ Always | Multiple editors likely |
+| Shared context (`.ginko/context/*`) | ✅ Always | Team knowledge, high conflict risk |
+| Session files (`.ginko/sessions/{user}/*`) | ❌ No | Already user-isolated |
+| Trivial fixes (typos, single-line) | ⚡ Judgment | Direct OK if obvious and safe |
+
+**Workflow:**
+```bash
+# Start feature work
+git checkout -b {user}/{epic-or-feature}  # e.g., chris/e012-web-gui
+
+# Regular commits on branch
+git add . && git commit -m "Description"
+
+# When ready, push and create PR
+git push -u origin HEAD
+gh pr create --title "Feature: description" --body "..."
+
+# After review, merge via GitHub (squash or merge commit)
+```
+
+**PR Guidelines:**
+- Keep PRs focused (one feature/fix per PR)
+- Request review from active team members
+- Resolve conflicts before merging
+- Delete branch after merge
+
+**Exception:** During solo sessions with no other active team members, direct-to-main is acceptable for low-risk changes. When in doubt, branch.
+
 ---
 
 ### Context Loading

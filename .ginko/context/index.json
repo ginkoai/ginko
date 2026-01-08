@@ -1059,10 +1059,33 @@
       "relevance": "critical",
       "created": "2026-01-07T23:58:32.442Z",
       "sessionId": "session-chris-at-watchhill-ai-1767830312385"
+    },
+    {
+      "filename": "decision-session-handoff-sprint-e008s05-data-integrity-comp.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-08T00:42:02.519Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767832922449"
+    },
+    {
+      "filename": "decision-team-friction-points-resolution-1-renamed-epic010w.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-08T01:00:12.920Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767834012863"
     }
   ],
-  "lastUpdated": "2026-01-07T23:58:32.443Z",
-  "totalModules": 80,
+  "lastUpdated": "2026-01-08T01:00:12.921Z",
+  "totalModules": 82,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
