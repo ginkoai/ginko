@@ -1094,10 +1094,23 @@
       "relevance": "critical",
       "created": "2026-01-08T01:17:39.636Z",
       "sessionId": "session-chris-at-watchhill-ai-1767835059560"
+    },
+    {
+      "filename": "pattern-implemented-graph-document-upload-feature.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-08T17:21:37.628Z",
+      "sessionId": "session-chris-at-watchhill-ai-1767892897596"
     }
   ],
-  "lastUpdated": "2026-01-08T01:17:39.640Z",
-  "totalModules": 83,
+  "lastUpdated": "2026-01-08T17:21:37.628Z",
+  "totalModules": 84,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
