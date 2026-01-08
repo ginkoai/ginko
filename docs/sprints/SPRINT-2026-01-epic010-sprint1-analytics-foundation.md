@@ -6,13 +6,13 @@
 
 **Duration**: 1 week (2026-01-06 to 2026-01-13)
 **Type**: Infrastructure sprint
-**Progress:** 13% (1/8 tasks complete)
+**Progress:** 25% (2/8 tasks complete)
 
 **Strategic Decision (2026-01-07):** Deferring PostHog implementation (TASK-2, TASK-6) to focus on marketing analytics first. Using MVP Fast Track approach to prioritize landing page optimization.
 
 **Success Criteria (MVP Fast Track):**
 - [x] GA4 installed and tracking page views
-- [ ] Key marketing events defined (landing page, blog, UTM)
+- [x] Key marketing events defined (landing page, blog, UTM)
 - [ ] UTM parameter schema documented
 - [ ] Landing page CTA clicks tracked
 - [ ] Blog engagement tracked (read time, scroll depth)
@@ -88,7 +88,7 @@ Avoid: 💡 pii-tracking-gotcha (don't capture sensitive data)
 ---
 
 ### TASK-3: Define key event taxonomy - Marketing Events Only (1h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (2026-01-08)
 **Priority:** HIGH
 
 **Goal:** Create standardized event naming and properties schema for marketing analytics (GA4)
@@ -124,6 +124,16 @@ Define events for:
 - Naming follows snake_case convention
 - Properties include UTM parameters where applicable
 - Event taxonomy document created in `docs/analytics/EVENT-TAXONOMY.md`
+
+**Completion Notes:**
+- ✓ Created comprehensive EVENT-TAXONOMY.md (9 events documented)
+- ✓ Landing page events: page_view, cta_click, install_initiated, github_link_click, docs_link_click
+- ✓ Blog events: blog_view, blog_read_time, blog_cta_click, blog_share
+- ✓ All events include property schemas with types, descriptions, and examples
+- ✓ Implementation examples provided for each custom event
+- ✓ Property naming conventions and standards documented
+- ✓ Event firing checklist created
+- ✓ Privacy considerations and GDPR compliance noted
 
 ---
 
@@ -312,6 +322,18 @@ Apply: product-analytics-pattern
 - Deployed to production at https://ginkoai.com
 - Verified tracking code live on production
 - **Strategic Decision:** Deferred PostHog implementation to focus on marketing analytics first (Option B: MVP Fast Track approach)
+
+### 2026-01-08: Event Taxonomy Defined (TASK-3)
+- Created comprehensive EVENT-TAXONOMY.md documentation
+- Defined 9 marketing events:
+  - **Landing page (5):** page_view, cta_click, install_initiated, github_link_click, docs_link_click
+  - **Blog (4):** blog_view, blog_read_time, blog_cta_click, blog_share
+- Documented all event properties with types, descriptions, and examples
+- Established snake_case naming conventions
+- Created event firing checklist
+- Included implementation examples for gtag.js
+- Documented privacy and GDPR compliance considerations
+- Ready for implementation in TASK-5 and TASK-7
 
 ---
 
