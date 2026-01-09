@@ -42,10 +42,10 @@
                 <a href="teams.html" class="nav-link">Teams</a>
                 <a href="how-it-works.html" class="nav-link">How It Works</a>
                 <a href="blog/" class="nav-link">Blog</a>
-                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+                <a href="https://docs.ginko.ai" class="nav-link" data-track-docs data-link-location="nav">Docs</a>
             </div>
             <div class="nav-actions">
-                <a href="get-started.html" class="btn-primary">Get Started</a>
+                <a href="get-started.html" class="btn-primary" data-track-cta data-cta-location="nav">Get Started</a>
                 <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
                     <span></span>
                     <span></span>
@@ -73,7 +73,7 @@
                     <div class="corner-bracket top-right"></div>
                     <span class="terminal-prompt">$</span>
                     <span class="terminal-command">npm install -g @ginkoai/cli</span>
-                    <button class="copy-btn" aria-label="Copy to clipboard">
+                    <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="hero">
                         <span class="copy-icon">⧉</span>
                         <span class="copy-success">✓</span>
                     </button>
@@ -81,8 +81,8 @@
                     <div class="corner-bracket bottom-right"></div>
                 </div>
                 <div class="hero-cta">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started</a>
-                    <a href="https://docs.ginko.ai" class="btn-secondary-large">View Docs</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large" data-track-cta data-cta-location="hero">Get Started</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large" data-track-docs data-link-location="hero">View Docs</a>
                 </div>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
@@ -320,7 +320,7 @@
                         <li><span class="feature-check">✓</span> Git integration</li>
                         <li><span class="feature-check">✓</span> Community support</li>
                     </ul>
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-outline">Get Started</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-outline" data-track-cta data-cta-location="pricing-free">Get Started</a>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
                 </div>
@@ -342,7 +342,7 @@
                         <li><span class="feature-check">✓</span> Team analytics</li>
                         <li><span class="feature-check">✓</span> Email support</li>
                     </ul>
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary">Start Pro Trial</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary" data-track-cta data-cta-location="pricing-pro">Start Pro Trial</a>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
                 </div>
@@ -383,14 +383,14 @@
                 <div class="terminal-inline terminal-inline-cta terminal-copyable" data-copy="npm install -g @ginkoai/cli">
                     <span class="terminal-prompt">$</span>
                     <span class="terminal-command">npm install -g @ginkoai/cli</span>
-                    <button class="copy-btn" aria-label="Copy to clipboard">
+                    <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="final-cta">
                         <span class="copy-icon">⧉</span>
                         <span class="copy-success">✓</span>
                     </button>
                 </div>
                 <div class="cta-buttons">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started Free</a>
-                    <a href="https://docs.ginko.ai" class="btn-secondary-large">Read the Docs</a>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large" data-track-cta data-cta-location="final-cta">Get Started Free</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large" data-track-docs data-link-location="final-cta">Read the Docs</a>
                 </div>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
@@ -418,8 +418,8 @@
                     <ul>
                         <li><a href="developers.html">For Developers</a></li>
                         <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="https://docs.ginko.ai">Documentation</a></li>
-                        <li><a href="https://github.com/ginkoai">GitHub</a></li>
+                        <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                        <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
                     </ul>
                 </div>
 
@@ -436,9 +436,9 @@
                 <div class="footer-section">
                     <h4>Resources</h4>
                     <ul>
-                        <li><a href="https://docs.ginko.ai">Getting Started</a></li>
-                        <li><a href="https://docs.ginko.ai/api">API Reference</a></li>
-                        <li><a href="https://github.com/ginkoai/examples">Examples</a></li>
+                        <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                        <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                        <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
                         <li><a href="mailto:chris@watchhill.ai">Support</a></li>
                     </ul>
                 </div>
@@ -475,5 +475,6 @@
     <div id="toast" class="toast">Copied!</div>
 
     <script src="script.js"></script>
+    <script src="js/analytics.js"></script>
 </body>
 </html>
