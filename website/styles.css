@@ -2706,3 +2706,65 @@ pre {
         font-size: 0.65rem;
     }
 }
+
+/* ============================================================================
+   HERO MEDIA PLACEHOLDER
+   For A/B testing - placeholder for video/image/demo
+   ============================================================================ */
+
+.hero-media {
+    margin: var(--space-8) auto;
+    max-width: 720px;
+}
+
+.hero-media-placeholder {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--color-terminal-bg);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    color: var(--color-text-tertiary);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+}
+
+.hero-media-placeholder::before {
+    content: '';
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--color-border-strong);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.hero-media-placeholder::after {
+    content: 'Product demo coming soon';
+}
+
+.hero-media-placeholder .play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    width: 0;
+    height: 0;
+    border-left: 16px solid var(--color-border-strong);
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+    .hero-media-placeholder {
+        aspect-ratio: 4 / 3;
+    }
+}

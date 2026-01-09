@@ -55,19 +55,25 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero Section - A/B Tested -->
     <main id="main">
     <section id="home" class="hero">
         <div class="container">
             <div class="hero-content">
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
-                <h1 class="hero-title">
-                    The AI Collaboration Platform.
+                <h1 class="hero-title" data-hero-title>
+                    Stop re-explaining your codebase to AI.
                 </h1>
-                <p class="hero-subtitle">
-                    Where humans and AI ship together. Back in flow in 30 seconds.
+                <p class="hero-subtitle" data-hero-subtitle>
+                    Ginko keeps context in the collaboration graph. Resume in 30 seconds with your project, decisions, and patterns intact.
                 </p>
+                <!-- Media placeholder - replace with video/demo when ready -->
+                <div class="hero-media">
+                    <div class="hero-media-placeholder">
+                        <div class="play-icon"></div>
+                    </div>
+                </div>
                 <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
@@ -81,8 +87,8 @@
                     <div class="corner-bracket bottom-right"></div>
                 </div>
                 <div class="hero-cta">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large" data-track-cta data-cta-location="hero">Get Started</a>
-                    <a href="https://docs.ginko.ai" class="btn-secondary-large" data-track-docs data-link-location="hero">View Docs</a>
+                    <a href="get-started.html" class="btn-primary-large" data-track-cta data-cta-location="hero" data-hero-cta-primary>Install CLI</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large" data-track-docs data-link-location="hero" data-hero-cta-secondary>View Docs</a>
                 </div>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
@@ -476,5 +482,6 @@
 
     <script src="script.js"></script>
     <script src="js/analytics.js"></script>
+    <script src="js/hero-ab-test.js"></script>
 </body>
 </html>

@@ -55,25 +55,31 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero Section - A/B Tested -->
     <main id="main">
     <section class="hero">
         <div class="container">
             <div class="hero-content">
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
-                <h1 class="hero-title">
-                    Stay in flow.<br>Ship faster.
+                <h1 class="hero-title" data-hero-title>
+                    Stop re-explaining your codebase to AI.
                 </h1>
-                <p class="hero-subtitle">
-                    AI collaboration without context loss. Resume any session in under 30 seconds with full project context intact.
+                <p class="hero-subtitle" data-hero-subtitle>
+                    Ginko keeps context in the collaboration graph. Resume in 30 seconds with your project, decisions, and patterns intact.
                 </p>
+                <!-- Media placeholder - replace with video/demo when ready -->
+                <div class="hero-media">
+                    <div class="hero-media-placeholder">
+                        <div class="play-icon"></div>
+                    </div>
+                </div>
                 <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
                     <span class="terminal-prompt">$</span>
                     <span class="terminal-command">npm install -g @ginkoai/cli</span>
-                    <button class="copy-btn" aria-label="Copy to clipboard">
+                    <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="hero">
                         <span class="copy-icon">⧉</span>
                         <span class="copy-success">✓</span>
                     </button>
@@ -81,8 +87,8 @@
                     <div class="corner-bracket bottom-right"></div>
                 </div>
                 <div class="hero-cta">
-                    <a href="https://app.ginkoai.com/auth/signup" class="btn-primary-large">Get Started</a>
-                    <a href="https://docs.ginko.ai" class="btn-secondary-large">View Docs</a>
+                    <a href="get-started.html" class="btn-primary-large" data-track-cta data-cta-location="hero" data-hero-cta-primary>Install CLI</a>
+                    <a href="https://docs.ginko.ai" class="btn-secondary-large" data-track-docs data-link-location="hero" data-hero-cta-secondary>View Docs</a>
                 </div>
                 <div class="corner-bracket bottom-left"></div>
                 <div class="corner-bracket bottom-right"></div>
@@ -600,5 +606,6 @@
     <div id="toast" class="toast">Copied!</div>
 
     <script src="script.js"></script>
+    <script src="js/hero-ab-test.js"></script>
 </body>
 </html>
