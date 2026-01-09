@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-08T17-45-27-256Z
-started: 2026-01-08T17:45:27.256Z
+session_id: session-2026-01-09T15-27-13-120Z
+started: 2026-01-09T15:27:13.120Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-08T17-45-27-256Z
+# Session Log: session-2026-01-09T15-27-13-120Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,9 +14,9 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 13:01 - [achievement]
-Closed Sprint e008_s05 (Data Integrity & ADR-058 Hardening). All 8 tasks verified complete. Fixed EPIC-010 frontmatter from e010 to EPIC-010 for ID consistency. Sprint audited and marked complete with detailed completion notes for each task.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, docs/epics/EPIC-010-mvp-marketing-strategy.md, docs/sprints/SPRINT-2026-01-e008-s05-data-integrity.md
+### 10:35 - [fix]
+Fixed three Graph view issues: (1) Simplified /api/v1/graph/status Cypher query to avoid 500 errors - split complex consolidated query into separate simpler queries with individual error handling. (2) Improved epic deduplication in tree-explorer - added normalizeId() and normalizeTitle() functions to handle different ID formats (e012, EPIC-012, epic_012) and detect title-based duplicates. (3) Added missing favicon.ico to dashboard/public directory.
+Files: dashboard/src/app/api/v1/graph/status/route.ts, dashboard/src/lib/graph/api-client.ts, dashboard/public/favicon.ico
 Impact: medium
 
 

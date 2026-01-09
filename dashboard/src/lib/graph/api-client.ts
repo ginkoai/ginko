@@ -275,21 +275,66 @@ function getNodeProp(properties: Record<string, unknown>, key: string): string |
 }
 
 /**
+ * Normalize an ID to a canonical form for deduplication
+ * Handles: e012, EPIC-012, epic_012, Epic-12, etc. -> e012
+ */
+function normalizeId(id: string): string {
+  const lower = id.toLowerCase().trim();
+
+  // Extract numeric part from various formats
+  // Pattern: e{NNN}, epic-{NNN}, epic_{NNN}
+  const match = lower.match(/^(?:e|epic[-_]?)(\d+)/);
+  if (match) {
+    // Pad to 3 digits for consistency
+    return `e${match[1].padStart(3, '0')}`;
+  }
+
+  return lower;
+}
+
+/**
+ * Normalize a title by stripping common prefixes like "EPIC-012:" or "ADR-001:"
+ */
+function normalizeTitle(title: string): string {
+  // Remove prefixes like "EPIC-012:", "ADR-001:", etc.
+  return title
+    .replace(/^(?:EPIC|ADR|PRD|Sprint|Task)[-_]?\d+[:\s]+/i, '')
+    .trim()
+    .toLowerCase();
+}
+
+/**
  * Deduplicate nodes by a property key, keeping the first occurrence
- * Uses exact property value matching (case-sensitive) to avoid incorrect deduplication
+ * Uses normalized ID matching and title deduplication to handle various formats
  */
 function deduplicateByProperty<T extends GraphNode>(
   nodes: T[],
   propKey: string
 ): T[] {
-  const seen = new Set<string>();
+  const seenIds = new Set<string>();
+  const seenTitles = new Set<string>();
+
   return nodes.filter((node) => {
     const props = node.properties as Record<string, unknown>;
-    const key = (props[propKey] as string) || node.id;
-    if (seen.has(key)) {
+    const rawId = (props[propKey] as string) || node.id;
+    const normalizedId = normalizeId(rawId);
+    const title = (props['title'] as string) || '';
+    const normalizedTitleKey = normalizeTitle(title);
+
+    // Check both normalized ID and normalized title
+    if (seenIds.has(normalizedId)) {
       return false;
     }
-    seen.add(key);
+
+    // Also check for title duplicates (handles cases where epic_id differs but title is same)
+    if (normalizedTitleKey && seenTitles.has(normalizedTitleKey)) {
+      return false;
+    }
+
+    seenIds.add(normalizedId);
+    if (normalizedTitleKey) {
+      seenTitles.add(normalizedTitleKey);
+    }
     return true;
   });
 }
