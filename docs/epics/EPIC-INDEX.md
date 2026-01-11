@@ -6,8 +6,8 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 | Epic # | Title | Status | File |
 |--------|-------|--------|------|
-| [EPIC-001](EPIC-001-strategic-context-and-dynamic-adaptivity.md) | Strategic Context & Dynamic Adaptivity | Ready to Execute | `EPIC-001-strategic-context-and-dynamic-adaptivity.md` |
-| [EPIC-002](EPIC-002-ai-native-sprint-graphs.md) | AI-Native Sprint Graphs | In Progress | `EPIC-002-ai-native-sprint-graphs.md` |
+| [EPIC-001](EPIC-001-strategic-context-and-dynamic-adaptivity.md) | Strategic Context & Dynamic Adaptivity | Complete | `EPIC-001-strategic-context-and-dynamic-adaptivity.md` |
+| [EPIC-002](EPIC-002-ai-native-sprint-graphs.md) | AI-Native Sprint Graphs | Complete | `EPIC-002-ai-native-sprint-graphs.md` |
 | [EPIC-003](EPIC-003-marketing-launch.md) | Marketing & Launch Readiness | Active | `EPIC-003-marketing-launch.md` |
 | [EPIC-004](EPIC-004-ai-to-ai-collaboration.md) | AI-to-AI Collaboration | Complete | `EPIC-004-ai-to-ai-collaboration.md` |
 | [EPIC-005](EPIC-005-market-readiness.md) | Market Readiness (Beta 1) | Complete | `EPIC-005-market-readiness.md` |
@@ -24,12 +24,10 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 | Status | Count | Epics |
 |--------|-------|-------|
-| Complete | 4 | 004, 005, 006, 008 |
+| Complete | 6 | 001, 002, 004, 005, 006, 008 |
 | Active | 3 | 003, 009, 010 |
-| In Progress | 1 | 002 |
 | Proposed | 3 | 011, 012, 013 |
 | Planned | 1 | 007 |
-| Ready to Execute | 1 | 001 |
 
 ### EPIC-010: MVP Marketing Strategy
 **Goal:** Drive ginko MVP adoption through data-driven, multi-channel marketing that positions the product as the essential context management tool for AI-assisted development. Build a content-first funnel leveraging blog posts as the foundation for social engagement, video content, and community building.

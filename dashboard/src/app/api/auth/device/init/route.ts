@@ -72,11 +72,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Trim the URL to handle any trailing whitespace/newlines in env var
+    const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || 'https://app.ginkoai.com').trim()
+
     return NextResponse.json({
       device_id: deviceId,
       user_code: userCode,
       expires_in: 600, // 10 minutes in seconds
-      verification_uri: `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.ginkoai.com'}/auth/device`
+      verification_uri: `${baseUrl}/auth/device`
     })
 
   } catch (error) {

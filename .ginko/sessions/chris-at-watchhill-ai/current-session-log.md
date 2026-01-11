@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-09T15-39-58-860Z
-started: 2026-01-09T15:39:58.860Z
+session_id: session-2026-01-09T16-00-06-257Z
+started: 2026-01-09T16:00:06.257Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-09T15-39-58-860Z
+# Session Log: session-2026-01-09T16-00-06-257Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,30 +14,17 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 2026-01-09 10:25 - Graph View Bug Fixes
-**Issues Reported:**
-1. Console errors: 500 on `/api/v1/graph/status`
-2. Duplicate epics in nav tree (same epic appearing twice with different naming)
-3. Missing favicon (404)
+### 11:09 - [feature]
+Starting EPIC-009 Sprint 1: Schema & Data Migration. Goal: extend Epic schema with roadmap properties (commitment_status, roadmap_status, target quarters, changelog) per ADR-056. Updated EPIC-INDEX to mark EPIC-001 and EPIC-002 as complete.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/epics/EPIC-INDEX.md, docs/sprints/CURRENT-SPRINT.md
+Impact: medium
 
-**Root Causes & Fixes:**
 
-1. **Status API 500 Error** (`dashboard/src/app/api/v1/graph/status/route.ts`)
-   - Complex consolidated Cypher query was failing
-   - Split into two simpler queries with individual error handling
-   - Added `graph_id` (snake_case) support alongside `graphId`
+### 11:18 - [achievement]
+Completed EPIC-009 Sprint 1: Schema & Data Migration. All 5 tasks complete. Created roadmap types, quarter utilities, validation middleware, migration script, and changelog inference. Files: packages/shared/src/types/roadmap.ts, packages/shared/src/utils/quarter.ts, packages/shared/src/validation/epic-roadmap.ts, packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts, dashboard/src/app/api/v1/migrations/009-epic-roadmap/route.ts
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/lib/graph/types.ts, docs/epics/EPIC-INDEX.md
+Impact: high
 
-2. **Duplicate Epics** (`dashboard/src/lib/graph/api-client.ts`)
-   - Deduplication only checked exact `epic_id` matches
-   - Added `normalizeId()` to canonicalize IDs (e012, EPIC-012, epic_012 → e012)
-   - Added `normalizeTitle()` to strip prefixes like "EPIC-012:" from titles
-   - Now deduplicates by both normalized ID and normalized title
-
-3. **Missing Favicon**
-   - Created `dashboard/public/` directory
-   - Added favicon.ico (force-added past gitignore)
-
-**Deployed:** https://app.ginkoai.com (Vercel production)
 
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
@@ -56,32 +43,44 @@ flow_state: hot
 <!-- These entries also appear in Timeline for narrative coherence -->
 <!-- Log significant commits with: ginko log "Committed feature X" --category=git -->
 
-### Commit: facd1b5
-```
-fix: Resolve Graph view issues (status API, duplicates, favicon)
-
-- Simplify /api/v1/graph/status Cypher query to prevent 500 errors
-- Improve epic deduplication in tree-explorer to eliminate duplicates
-- Add missing favicon.ico to dashboard/public directory
-```
-
-## Handoff Summary
-
-**Session:** 2026-01-09 | **Model:** Claude Opus 4.5 | **Branch:** main (clean)
-
-### Completed
-- Fixed Graph view 500 error on status API
-- Fixed duplicate epics in nav tree
-- Added missing favicon
-- Deployed to production
-
-### Next Steps
-- Verify fixes in production (https://app.ginkoai.com/dashboard/graph)
-- Monitor for any remaining duplicate issues
-- Consider cleaning up duplicate Epic nodes in Neo4j database if they persist
-
 ## Gotchas
 <!-- Pitfalls, traps, and "lessons learned the hard way" -->
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 13:32 - [achievement]
+# [ACHIEVEMENT] 13:32
+
+EPIC-009 Sprint 1 complete: Fixed migration API authentication (gk_ API key validation with bcrypt), Neo4j Integer conversion for count results. All 5 tasks done: roadmap types, quarter utilities, validation middleware, migration command/API, changelog inference. Dry-run successful: 29 epics ready to migrate.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/api/auth/device/init/route.ts
+- dashboard/src/app/auth/callback/route.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-11T18:32:32.742Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/auth/device/init/route.ts, dashboard/src/app/auth/callback/route.ts
+Impact: high
+
+### 17:06 - [achievement]
+# [ACHIEVEMENT] 17:06
+
+EPIC-009 Sprint 2 complete: ginko roadmap CLI command with --all and --status flags. API endpoint GET /api/v1/graph/roadmap. Displays epics grouped by quarter with status icons. 12 epics visible in uncommitted backlog.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/api/auth/device/init/route.ts
+- dashboard/src/app/auth/callback/route.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-11T22:06:10.833Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/auth/device/init/route.ts, dashboard/src/app/auth/callback/route.ts
+Impact: high

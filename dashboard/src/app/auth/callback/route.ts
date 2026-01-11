@@ -64,9 +64,16 @@ export async function GET(request: NextRequest) {
         }
 
         // Normal web authentication - redirect to dashboard or custom next URL
-        const nextUrl = searchParams.get('next')
+        // Check query param first, then cookie, then default to dashboard
+        const nextUrl = searchParams.get('next') || cookieStore.get('auth_redirect')?.value
         const redirectUrl = nextUrl && nextUrl.startsWith('/') ? `${origin}${nextUrl}` : `${origin}/dashboard`
-        return NextResponse.redirect(redirectUrl)
+
+        // Clear the auth_redirect cookie if it was used
+        const response = NextResponse.redirect(redirectUrl)
+        if (cookieStore.get('auth_redirect')?.value) {
+          response.cookies.delete('auth_redirect')
+        }
+        return response
       }
     } catch (err) {
       // Silent error handling - redirect to login or CLI error

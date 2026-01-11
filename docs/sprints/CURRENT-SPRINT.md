@@ -1,239 +1,238 @@
-# SPRINT: Data Integrity & ADR-058 Hardening
+# SPRINT: Product Roadmap Sprint 1 - Schema & Data Migration
 
 ## Sprint Overview
 
-**Sprint Goal**: Resolve all epic ID conflicts, implement proper author tracking, and prevent future collisions
-**Duration**: 1-2 days (2026-01-07 to 2026-01-09)
-**Type**: Cleanup + Hardening sprint
-**Progress:** 100% (8/8 tasks complete)
+**Sprint Goal**: Extend Epic schema with roadmap properties and migrate existing data
+**Duration**: 1 week (2026-01-09 to 2026-01-15)
+**Type**: Infrastructure sprint
+**Progress:** 100% (5/5 tasks complete)
 
 **Success Criteria:**
-- [x] No duplicate epic IDs in local files or graph
-- [x] All graph epics have corresponding local files
-- [x] `createdBy` populated for all epics
-- [x] `suggestedId` returns sequential format (EPIC-NNN)
-- [x] EPIC-INDEX reflects actual state
-- [x] CLI warns on local duplicate IDs before sync
-
----
-
-## Context
-
-During team collaboration testing (EPIC-008), we discovered data integrity issues:
-- Duplicate epic IDs (EPIC-006 has two different epics)
-- Missing local files for graph entities (EPIC-010)
-- ~~Orphan entities with malformed IDs (`epic_ginko_1763746656116`)~~ **RESOLVED**
-- ADR-058 conflict resolution not fully implemented (createdBy, suggestedId broken)
-
-**Graph state:** 11 epics (EPIC-001 through EPIC-011, orphan entity deleted)
-**Local state:** 9 files (with 1 duplicate ID)
+- [x] Epic schema includes all roadmap properties (commitment_status, roadmap_status, target quarters, changelog)
+- [x] Validation rules enforced (no dates on uncommitted items)
+- [x] Existing Epics migrated with safe defaults
+- [x] Changelog entries created for any inferred historical changes
 
 ---
 
 ## Sprint Tasks
 
-### e008_s05_t01: Resolve EPIC-006 Duplicate (30m)
+### e009_s01_t01: Define Epic Roadmap Schema (4h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** chris@watchhill.ai
 
-**Goal:** Eliminate duplicate EPIC-006 files
+**Goal:** Define TypeScript interfaces and Neo4j schema for roadmap properties on Epic nodes
 
-**Current State:**
-- `EPIC-006-ux-polish-uat.md` - "UX Polish and UAT" (Complete, proper frontmatter)
-- `EPIC-006-graph-explorer-v2.md` - "Graph Explorer v2" (Proposed, no frontmatter)
+**Implementation Notes:**
+```typescript
+interface EpicRoadmapProperties {
+  commitment_status: 'uncommitted' | 'committed';
+  roadmap_status: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  target_start_quarter?: string;  // "Q1-2026"
+  target_end_quarter?: string;
+  roadmap_visible: boolean;
+  changelog: ChangelogEntry[];
+}
 
-**Action:**
-- Keep `EPIC-006-ux-polish-uat.md` as canonical EPIC-006
-- Rename `EPIC-006-graph-explorer-v2.md` to `EPIC-011-graph-explorer-v2.md`
-- Update epic_id frontmatter to EPIC-011
-- Sync renamed epic to graph
+interface ChangelogEntry {
+  timestamp: string;
+  field: string;
+  from: string | null;
+  to: string;
+  reason?: string;
+}
+```
 
----
+**Files:**
+- `packages/cli/src/types/graph.ts` (update)
+- `packages/shared/src/types/epic.ts` (new or update)
 
-### e008_s05_t02: Fix EPIC-009 ID Format (15m)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Fix inconsistent ID format
-
-**Current State:**
-- Local file has `epic_id: e009` (lowercase)
-- Graph has `EPIC-009` (uppercase)
-
-**Action:**
-- Update frontmatter to `epic_id: EPIC-009`
-- Verify graph node consistency
+Follow: ADR-056
 
 ---
 
-### e008_s05_t03: Pull EPIC-010 to Local (30m)
+### e009_s01_t02: Quarter Parsing Utilities (2h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** chris@watchhill.ai
+**Depends:** t01
 
-**Goal:** Create local file for graph-only epic
+**Goal:** Create utility functions for quarter format validation and comparison
 
-**Current State:**
-- Exists in graph: "Web Collaboration GUI" (created 2026-01-06)
-- No local file
-- Created by: xtophr (attributed as "unknown" due to bug)
+**Implementation Notes:**
+```typescript
+// Format: "Q{1-4}-{YYYY}"
+const QUARTER_REGEX = /^Q[1-4]-\d{4}$/;
 
-**Action:**
-- Query graph for full EPIC-010 content
-- Create `EPIC-010-web-collaboration-gui.md`
-- Add proper frontmatter
+function parseQuarter(q: string): { year: number; quarter: number };
+function formatQuarter(year: number, quarter: number): string;
+function compareQuarters(a: string, b: string): number;
+function getCurrentQuarter(): string;
+function addQuarters(q: string, n: number): string;
+```
 
----
-
-### e008_s05_t04: Clean Orphan Entity (15m) ✓
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Remove malformed orphan epic from graph
-
-**Resolution (2026-01-07):**
-- Deleted `epic_ginko_1763746656116` via DELETE /api/v1/graph/nodes endpoint
-- Root cause: timestamp-based ID generation bug created malformed entity on 2025-11-21
-- Generic node delete API works for epics (no epic-specific delete needed)
-- Updated EPIC-INDEX to document cleanup
+**Files:**
+- `packages/shared/src/utils/quarter.ts` (new)
+- `packages/shared/src/utils/quarter.test.ts` (new)
 
 ---
 
-### e008_s05_t05: Implement createdBy Tracking (2h) ✓
+### e009_s01_t03: Epic Validation Middleware (4h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** chris@watchhill.ai
+**Depends:** t01, t02
 
-**Goal:** Track entity authorship for conflict detection
+**Goal:** Implement validation rules for Epic roadmap properties
 
-**Resolution (2026-01-07):**
-- Created `/api/v1/epic/backfill` endpoint for one-time backfill
-- Backfilled all 10 epics with `createdBy: chris@watchhill.ai`
-- `createdBy` already tracked on new epic creation (sync/route.ts)
-- Verified `/api/v1/epic/check` now returns actual author
+**Implementation Notes:**
+```typescript
+// Rules:
+// 1. Uncommitted items cannot have dates
+// 2. Committed items should warn if > 2 years out
+// 3. start_quarter must be <= end_quarter
+// 4. Changelog is append-only (no deletions)
 
-Follow: ADR-058 (Entity ID Conflict Resolution)
+function validateEpicRoadmapProperties(epic: Epic): ValidationResult;
+```
+
+**Files:**
+- `packages/shared/src/validation/epic-roadmap.ts` (new)
+- `dashboard/src/lib/validation/epic.ts` (update)
+
+Follow: ADR-056
 
 ---
 
-### e008_s05_t06: Fix suggestedId Generation (1h) ✓
+### e009_s01_t04: Data Migration Script (4h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** chris@watchhill.ai
+**Depends:** t01
 
-**Goal:** Return sequential IDs instead of timestamps
+**Goal:** Migrate existing Epic nodes to include roadmap properties with safe defaults
 
-**Resolution (2026-01-07):**
-- Root cause: Orphan entity `epic_ginko_1763746656116` was poisoning max calculation
-- Deleting orphan (T4) fixed the issue - no code changes needed
-- API now returns `suggestedId: "EPIC-011"` (correct sequential format)
-- Verified via API call after orphan deletion
+**Implementation Notes:**
+```cypher
+// Add default properties to all Epics
+MATCH (e:Epic)
+WHERE e.commitment_status IS NULL
+SET e.commitment_status = 'uncommitted',
+    e.roadmap_status = 'not_started',
+    e.roadmap_visible = true,
+    e.changelog = []
+RETURN count(e) as migrated
+```
 
----
+- Create migration script that can be run via CLI
+- Log all migrations for audit trail
+- Support dry-run mode
 
-### e008_s05_t07: Update EPIC-INDEX (30m)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Synchronize index with actual state
-
-**Current State:**
-- Index shows: 001, 002, 005, 006, 009
-- Reality: 001-011 (after renaming)
-
-**Action:**
-- Regenerate index from local files
-- Include lifecycle status for each epic
-- Add last-updated timestamp
+**Files:**
+- `packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts` (new)
+- `packages/cli/src/commands/graph/migrate.ts` (update if exists)
 
 ---
 
-### e008_s05_t08: Add Local Duplicate Detection (1h)
+### e009_s01_t05: Changelog Auto-Population (2h)
 **Status:** [x] Complete
 **Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
+**Depends:** t04
 
-**Goal:** Prevent future duplicate IDs
+**Goal:** Infer historical changes from existing Epic data and populate changelog
 
-**Implementation:**
-- Added `detectLocalDuplicates()` function to epic.ts
-- Scans local epic files before sync
-- Extracts ID from frontmatter (`epic_id:`) or title (`# EPIC-NNN:`)
-- Shows clear warning with affected files and resolution instructions
-- Prompts user to confirm if proceeding with duplicates (defaults to No)
-- References ADR-058 in the guidance
+**Implementation Notes:**
+- Check Epic status field for completed Epics
+- If Epic has sprints with completion dates, infer timeline
+- Create initial changelog entry: "Migrated from legacy schema"
 
-Files:
-- `packages/cli/src/commands/epic.ts` (updated)
+```typescript
+function inferHistoricalChangelog(epic: Epic, sprints: Sprint[]): ChangelogEntry[];
+```
+
+**Files:**
+- `packages/cli/src/lib/roadmap/changelog-inference.ts` (new)
+
+---
+
+## Execution Plan
+
+**Day 1-2:**
+- t01: Define schema (parallel start)
+- t02: Quarter utilities (parallel start)
+
+**Day 3:**
+- t03: Validation middleware (after t01, t02)
+
+**Day 4-5:**
+- t04: Migration script
+- t05: Changelog inference
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-07: Local Data Cleanup (T1, T2, T3, T7)
+### 2026-01-09: Complete Schema & Infrastructure (T1-T5)
 
-**T1: Resolved EPIC-006 Duplicate**
-- Kept `EPIC-006-ux-polish-uat.md` as canonical EPIC-006 ("UX Polish and UAT", Complete)
-- Renamed `EPIC-006-graph-explorer-v2.md` to `EPIC-011-graph-explorer-v2.md`
-- Added proper frontmatter with `epic_id: EPIC-011`
-- Added note documenting the renumbering
+**T1: Epic Roadmap Schema**
+- Created `packages/shared/src/types/roadmap.ts` with full type definitions
+- Extended `dashboard/src/lib/graph/types.ts` EpicNode with roadmap properties
+- Types: CommitmentStatus, RoadmapStatus, ChangelogEntry, EpicRoadmapProperties
+- Exports integrated into shared package index
 
-**T2: Fixed EPIC-009 ID Format**
-- Updated frontmatter from `epic_id: e009` to `epic_id: EPIC-009`
-- Ensures consistent uppercase format across all epics
+**T2: Quarter Parsing Utilities**
+- Created `packages/shared/src/utils/quarter.ts` with comprehensive utilities
+- Functions: parseQuarter, formatQuarter, compareQuarters, getCurrentQuarter, addQuarters, quartersBetween
+- Additional helpers: getQuarterStartDate, getQuarterEndDate, isFarFuture
+- Test file created with full coverage
 
-**T3: Created EPIC-010 Local File**
-- Created `EPIC-010-web-collaboration-gui.md` from graph metadata
-- Title: "Web Collaboration GUI", created by xtophr on 2026-01-06
-- Stub file - full content to be added by original author
-- Note: Graph API doesn't expose full Epic content, only metadata
+**T3: Epic Validation Middleware**
+- Created `packages/shared/src/validation/epic-roadmap.ts`
+- Validates: uncommitted items can't have dates, quarter format, start <= end
+- Warnings: far future quarters (>2 years), missing end quarter
+- Helper functions: createChangelogEntry, detectRoadmapChanges, formatValidationResult
 
-**T7: Updated EPIC-INDEX**
-- Regenerated index with all 11 epics (001-011)
-- Added status summary table
-- Documented cleanup notes (renumbering, orphan deleted 2026-01-07)
-- Added lifecycle definitions
+**T4: Data Migration Script**
+- Created CLI migration: `packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts`
+- Created API endpoint: `dashboard/src/app/api/v1/migrations/009-epic-roadmap/route.ts`
+- Added `ginko graph migrate 009` command with --dry-run and --verbose options
+- Migration adds default roadmap properties and initializes changelog
 
-**Resolved: T4 (Clean Orphan Entity)** ✓
-- Used generic DELETE /api/v1/graph/nodes endpoint
-- Entity `epic_ginko_1763746656116` successfully deleted (2026-01-07)
-- Root cause documented: timestamp-based ID generation bug
+**T5: Changelog Auto-Population**
+- Created `packages/cli/src/lib/roadmap/changelog-inference.ts`
+- Infers roadmap_status from Epic status (complete→completed, active→in_progress)
+- Uses sprint dates for timeline inference
+- Helper functions: inferHistoricalChangelog, mergeChangelogs, summarizeChangelog, validateChangelog
 
-### 2026-01-07: CLI Duplicate Detection (T8)
+**Files Created:**
+- `packages/shared/src/types/roadmap.ts`
+- `packages/shared/src/types/index.ts`
+- `packages/shared/src/utils/quarter.ts`
+- `packages/shared/src/utils/__tests__/quarter.test.ts`
+- `packages/shared/src/validation/epic-roadmap.ts`
+- `packages/shared/src/validation/index.ts`
+- `packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts`
+- `packages/cli/src/lib/roadmap/changelog-inference.ts`
+- `dashboard/src/app/api/v1/migrations/009-epic-roadmap/route.ts`
 
-**T8: Implemented Local Duplicate Detection**
-- Added `detectLocalDuplicates()` function to `packages/cli/src/commands/epic.ts`
-- Detection runs before sync, scans all `EPIC-NNN*.md` files
-- Extracts ID from:
-  - Frontmatter `epic_id:` field (preferred)
-  - Title `# EPIC-NNN:` pattern (fallback)
-  - Filename (last resort)
-- On duplicate found:
-  - Shows red warning banner with ADR-058 reference
-  - Lists all files sharing the same ID with their titles
-  - Provides resolution instructions
-  - Prompts for confirmation (defaults to No)
-- Updated global `ginko` via `npm link`
-- Tested with synthetic duplicate - warning displays correctly
-
----
+**Files Updated:**
+- `packages/shared/src/index.ts` (exports)
+- `packages/shared/tsconfig.json` (exclude tests)
+- `packages/cli/src/commands/graph/index.ts` (migrate command)
+- `dashboard/src/lib/graph/types.ts` (EpicNode roadmap properties)
+- `docs/epics/EPIC-INDEX.md` (marked EPIC-001, EPIC-002 complete)
 
 ## Next Steps
 
-After cleanup:
-1. Backend deployment for T5/T6
-2. Consider automation to keep EPIC-INDEX in sync
-3. Add similar duplicate detection for Sprints and Tasks
+After Sprint 1:
+- Sprint 2: CLI `ginko roadmap` command and API endpoints
+
+## Blockers
+
+[To be updated if blockers arise]
 
 ---
 
 ## Sprint Metadata
 
-**Epic:** EPIC-008 (Team Collaboration)
-**Sprint ID:** e008_s05
-**Created:** 2026-01-07
+**Epic:** EPIC-009 (Product Roadmap)
+**Sprint ID:** e009_s01
+**Started:** 2026-01-09
 **Participants:** Chris Norton, Claude

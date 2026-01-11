@@ -1,9 +1,9 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-12-11
- * @tags: [graph, types, visualization, neo4j]
- * @related: [api-client.ts, hooks.ts]
+ * @updated: 2026-01-09
+ * @tags: [graph, types, visualization, neo4j, roadmap]
+ * @related: [api-client.ts, hooks.ts, ADR-056]
  * @priority: high
  * @complexity: low
  * @dependencies: []
@@ -54,12 +54,32 @@ export interface CharterNode extends BaseNodeProperties {
   success_criteria?: string[];
 }
 
-/** Epic node - large feature grouping */
+/** Epic node - large feature grouping with roadmap properties (ADR-056) */
 export interface EpicNode extends BaseNodeProperties {
   epic_id: string;
   title: string;
   description?: string;
   status: 'planning' | 'active' | 'complete' | 'on-hold';
+
+  // Roadmap properties (ADR-056)
+  /** Whether Epic is committed to roadmap: 'uncommitted' | 'committed' */
+  commitment_status?: 'uncommitted' | 'committed';
+  /** Roadmap execution status: 'not_started' | 'in_progress' | 'completed' | 'cancelled' */
+  roadmap_status?: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  /** Target start quarter (e.g., "Q1-2026") - only for committed items */
+  target_start_quarter?: string;
+  /** Target end quarter (e.g., "Q2-2026") - only for committed items */
+  target_end_quarter?: string;
+  /** Whether to show in public/external roadmap views */
+  roadmap_visible?: boolean;
+  /** Changelog of roadmap property changes (audit trail) */
+  changelog?: Array<{
+    timestamp: string;
+    field: string;
+    from: string | null;
+    to: string;
+    reason?: string;
+  }>;
 }
 
 /** Sprint node - time-boxed work period */

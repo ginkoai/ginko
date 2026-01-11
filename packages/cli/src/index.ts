@@ -71,6 +71,7 @@ import { createSyncCommand } from './commands/sync/index.js';
 import { assignCommand } from './commands/assign.js';
 import { inviteCommand } from './commands/invite/index.js';
 import { joinCommand } from './commands/join/index.js';
+import { roadmapCommand } from './commands/roadmap/index.js';
 
 const program = new Command();
 
@@ -558,6 +559,9 @@ program.addCommand(notificationsCommand());
 
 // Sync command: Pull dashboard edits to git (ADR-054, EPIC-005 Sprint 4)
 program.addCommand(createSyncCommand());
+
+// Roadmap view
+program.addCommand(roadmapCommand());
 
 // Universal Reflection Pattern command
 program
