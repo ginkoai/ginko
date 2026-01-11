@@ -1,0 +1,231 @@
+/**
+ * @fileType: component
+ * @status: current
+ * @updated: 2026-01-11
+ * @tags: [roadmap, canvas, now-next-later, ADR-056, priority]
+ * @related: [LaneSection.tsx, EpicCard.tsx, hooks.ts]
+ * @priority: high
+ * @complexity: medium
+ * @dependencies: [react, @tanstack/react-query, lucide-react]
+ */
+'use client';
+
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Filter, Settings, Loader2 } from 'lucide-react';
+import { LaneSection } from './LaneSection';
+import { Button } from '@/components/ui/button';
+import type { RoadmapLane, DecisionFactor } from '@/lib/graph/types';
+
+// =============================================================================
+// Types
+// =============================================================================
+
+export interface RoadmapEpic {
+  id: string;
+  title: string;
+  description?: string;
+  roadmap_lane: RoadmapLane;
+  roadmap_status: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  priority?: number;
+  decision_factors?: DecisionFactor[];
+  roadmap_visible: boolean;
+  tags?: string[];
+}
+
+interface LaneGroup {
+  lane: RoadmapLane;
+  label: string;
+  description: string;
+  epics: RoadmapEpic[];
+}
+
+interface RoadmapResponse {
+  epics: RoadmapEpic[];
+  lanes: { lane: RoadmapLane; label: string; epics: RoadmapEpic[] }[];
+  summary: {
+    total: number;
+    byLane: Record<RoadmapLane, number>;
+    byStatus: Record<string, number>;
+  };
+}
+
+interface RoadmapCanvasProps {
+  graphId: string;
+  onEpicSelect?: (epicId: string) => void;
+  onEpicMove?: (epicId: string, targetLane: RoadmapLane) => void;
+}
+
+// =============================================================================
+// Lane Configuration
+// =============================================================================
+
+const LANE_CONFIG: Record<RoadmapLane, { label: string; description: string }> = {
+  now: {
+    label: 'Now',
+    description: 'Ready for immediate implementation. Fully committed.',
+  },
+  next: {
+    label: 'Next',
+    description: 'Committed but may need enablers before starting.',
+  },
+  later: {
+    label: 'Later',
+    description: 'Proposed work with unresolved decision factors.',
+  },
+  done: {
+    label: 'Done',
+    description: 'Completed work.',
+  },
+  dropped: {
+    label: 'Dropped',
+    description: 'Cancelled or abandoned work.',
+  },
+};
+
+// =============================================================================
+// Data Fetching
+// =============================================================================
+
+async function fetchRoadmap(graphId: string, includeAll: boolean): Promise<RoadmapResponse> {
+  const params = new URLSearchParams({ graphId });
+  if (includeAll) {
+    params.set('all', 'true');
+  }
+
+  const response = await fetch(`/api/v1/graph/roadmap?${params}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch roadmap');
+  }
+  return response.json();
+}
+
+// =============================================================================
+// Component
+// =============================================================================
+
+export function RoadmapCanvas({ graphId, onEpicSelect, onEpicMove }: RoadmapCanvasProps) {
+  const [showAll, setShowAll] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['roadmap', graphId, showAll],
+    queryFn: () => fetchRoadmap(graphId, showAll),
+    staleTime: 30_000,
+  });
+
+  // Build lane groups with configuration
+  const laneGroups: LaneGroup[] = (showAll
+    ? (['now', 'next', 'later', 'done', 'dropped'] as RoadmapLane[])
+    : (['now', 'next', 'later'] as RoadmapLane[])
+  ).map((lane) => {
+    const laneData = data?.lanes.find((l) => l.lane === lane);
+    return {
+      lane,
+      label: LANE_CONFIG[lane].label,
+      description: LANE_CONFIG[lane].description,
+      epics: laneData?.epics || [],
+    };
+  });
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64 text-destructive">
+        Failed to load roadmap. Please try again.
+      </div>
+    );
+  }
+
+  // Calculate summary stats
+  const summary = data?.summary;
+  const committedCount = (summary?.byLane.now || 0) + (summary?.byLane.next || 0);
+  const laterCount = summary?.byLane.later || 0;
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        <div>
+          <h1 className="text-xl font-mono font-semibold">Roadmap</h1>
+          <p className="text-sm text-muted-foreground">
+            {committedCount} committed · {laterCount} proposed
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className={showFilters ? 'bg-secondary' : ''}
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Hide Done/Dropped' : 'Show All'}
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Settings className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter Panel (placeholder) */}
+      {showFilters && (
+        <div className="px-6 py-3 border-b border-border bg-secondary/30">
+          <p className="text-sm text-muted-foreground">
+            Filter controls coming in Task 5...
+          </p>
+        </div>
+      )}
+
+      {/* Canvas - Vertical Lane Stack */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto py-6 px-4 space-y-6">
+          {laneGroups.map((group) => (
+            <LaneSection
+              key={group.lane}
+              lane={group.lane}
+              label={group.label}
+              description={group.description}
+              epics={group.epics}
+              onEpicSelect={onEpicSelect}
+              onEpicMove={onEpicMove}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Footer Summary */}
+      {summary && (
+        <div className="px-6 py-3 border-t border-border bg-secondary/30 text-sm text-muted-foreground">
+          <span className="font-mono">
+            {summary.total} epics total
+            {summary.byStatus.in_progress > 0 && (
+              <> · {summary.byStatus.in_progress} in progress</>
+            )}
+            {summary.byStatus.completed > 0 && (
+              <> · {summary.byStatus.completed} completed</>
+            )}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default RoadmapCanvas;

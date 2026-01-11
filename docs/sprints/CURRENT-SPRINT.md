@@ -1,228 +1,384 @@
-# SPRINT: Product Roadmap Sprint 1 - Schema & Data Migration
+# SPRINT: Product Roadmap Sprint 3 - Roadmap Canvas
 
 ## Sprint Overview
 
-**Sprint Goal**: Extend Epic schema with roadmap properties and migrate existing data
-**Duration**: 1 week (2026-01-09 to 2026-01-15)
-**Type**: Infrastructure sprint
-**Progress:** 100% (5/5 tasks complete)
+**Sprint Goal**: Build vertical priority-based canvas for editing roadmap in the dashboard
+**Duration**: 2 weeks
+**Type**: Feature sprint
+**Progress:** 17% (1/6 tasks complete)
 
 **Success Criteria:**
-- [x] Epic schema includes all roadmap properties (commitment_status, roadmap_status, target quarters, changelog)
-- [x] Validation rules enforced (no dates on uncommitted items)
-- [x] Existing Epics migrated with safe defaults
-- [x] Changelog entries created for any inferred historical changes
+- [ ] Vertical canvas displays Epics in Now/Next/Later lanes (priority flows top-to-bottom)
+- [ ] Drag-and-drop with decision factor validation (Now requires cleared factors)
+- [ ] Click to edit Epic roadmap properties and decision factors
+- [ ] Filter controls for status, visibility, tags
+- [ ] Responsive design (works on tablet+)
+- [ ] Optimistic updates with error recovery
 
 ---
 
 ## Sprint Tasks
 
-### e009_s01_t01: Define Epic Roadmap Schema (4h)
+### e009_s03_t01: Canvas Layout Component (6h)
 **Status:** [x] Complete
 **Priority:** HIGH
 
-**Goal:** Define TypeScript interfaces and Neo4j schema for roadmap properties on Epic nodes
+**Goal:** Create vertical priority-based canvas with Now/Next/Later lanes
 
 **Implementation Notes:**
 ```typescript
-interface EpicRoadmapProperties {
-  commitment_status: 'uncommitted' | 'committed';
-  roadmap_status: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
-  target_start_quarter?: string;  // "Q1-2026"
-  target_end_quarter?: string;
-  roadmap_visible: boolean;
-  changelog: ChangelogEntry[];
+interface RoadmapCanvasProps {
+  projectId: string;
+  onEpicMove: (epicId: string, targetLane: 'now' | 'next' | 'later') => void;
+  onEpicSelect: (epicId: string) => void;
 }
 
-interface ChangelogEntry {
-  timestamp: string;
-  field: string;
-  from: string | null;
-  to: string;
-  reason?: string;
-}
+type RoadmapLane = 'now' | 'next' | 'later';
 ```
 
-**Files:**
-- `packages/cli/src/types/graph.ts` (update)
-- `packages/shared/src/types/epic.ts` (new or update)
+**Layout (Vertical - Priority flows top to bottom):**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ROADMAP                                    [Filters] [⚙️]  │
+├─────────────────────────────────────────────────────────────┤
+│  NOW  ────────────────────────────────────────────────────  │
+│  Ready for immediate implementation. Fully committed.       │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-009  Product Roadmap           ◐ in_progress   │    │
+│  │ Sprint 3 of 4 • roadmap, dashboard                  │    │
+│  └─────────────────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-003  Marketing Launch          ◐ in_progress   │    │
+│  └─────────────────────────────────────────────────────┘    │
+├─────────────────────────────────────────────────────────────┤
+│  NEXT  ───────────────────────────────────────────────────  │
+│  Committed but may need enablers before starting.           │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-010  MVP Marketing Strategy    ○ not_started   │    │
+│  └─────────────────────────────────────────────────────┘    │
+├─────────────────────────────────────────────────────────────┤
+│  LATER  ──────────────────────────────────────────────────  │
+│  Proposed work with unresolved decision factors.            │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-011  Graph Explorer v2         ○ not_started   │    │
+│  │ ⚠️ planning • architecture                          │    │
+│  └─────────────────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-012  Web Collaboration GUI     ○ not_started   │    │
+│  │ ⚠️ planning • design • dependencies                 │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
 
-Follow: ADR-056
+**Design:**
+- Vertical scroll (natural direction)
+- Lane headers with descriptions
+- Drag up = higher priority, drag down = lower priority
+- Later items show decision factor tags prominently
+
+**Files:**
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (new)
+- `dashboard/src/components/roadmap/LaneSection.tsx` (new)
 
 ---
 
-### e009_s01_t02: Quarter Parsing Utilities (2h)
-**Status:** [x] Complete
+### e009_s03_t02: Epic Card Component (4h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
-**Depends:** t01
 
-**Goal:** Create utility functions for quarter format validation and comparison
+**Goal:** Draggable Epic card with status and decision factor display
 
 **Implementation Notes:**
 ```typescript
-// Format: "Q{1-4}-{YYYY}"
-const QUARTER_REGEX = /^Q[1-4]-\d{4}$/;
+interface EpicCardProps {
+  epic: Epic;
+  lane: 'now' | 'next' | 'later';
+  isDragging?: boolean;
+  onEdit: () => void;
+}
+```
 
-function parseQuarter(q: string): { year: number; quarter: number };
-function formatQuarter(year: number, quarter: number): string;
-function compareQuarters(a: string, b: string): number;
-function getCurrentQuarter(): string;
-function addQuarters(q: string, n: number): string;
+**Card Content:**
+- Epic ID + title
+- Status icon: ○ not_started, ◐ in_progress, ● completed, ✗ cancelled
+- Sprint progress (if applicable): "Sprint 3 of 4"
+- Tags (max 3)
+- **Decision factors** (Later lane only): warning icon + factor tags
+- Drag handle
+
+**Visual States:**
+- Default: white background, subtle border
+- Dragging: elevated shadow, slight opacity
+- In Progress: accent left border
+- Completed: muted colors, checkmark overlay
+- **Has decision factors**: warning badge, factor chips visible
+
+**Decision Factor Display (Later items):**
+```
+┌─────────────────────────────────────────────────────────┐
+│ EPIC-012  Web Collaboration GUI        ○ not_started   │
+│ ⚠️ planning • design • dependencies                    │
+└─────────────────────────────────────────────────────────┘
 ```
 
 **Files:**
-- `packages/shared/src/utils/quarter.ts` (new)
-- `packages/shared/src/utils/quarter.test.ts` (new)
+- `dashboard/src/components/roadmap/EpicCard.tsx` (new)
+- `dashboard/src/components/roadmap/DecisionFactorChips.tsx` (new)
 
 ---
 
-### e009_s01_t03: Epic Validation Middleware (4h)
-**Status:** [x] Complete
+### e009_s03_t03: Drag-and-Drop with Decision Factor Validation (6h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
 **Depends:** t01, t02
 
-**Goal:** Implement validation rules for Epic roadmap properties
+**Goal:** Enable drag-and-drop between lanes with decision factor validation
+
+**Lane Transition Rules:**
+
+| From | To | Allowed? | Behavior |
+|------|-----|----------|----------|
+| Later | Next | ✅ Yes | Commits work (decision factors may remain) |
+| Later | Now | ⚠️ Conditional | Only if `decision_factors` is empty |
+| Next | Now | ⚠️ Conditional | Only if `decision_factors` is empty |
+| Next | Later | ✅ Yes | Uncommits work, prompts for decision factors |
+| Now | Next | ✅ Yes | Deprioritizes (stays committed) |
+| Now | Later | ✅ Yes | Uncommits, prompts for decision factors |
+
+**Key Rule:** Work cannot enter "Now" until all decision factors are cleared.
 
 **Implementation Notes:**
 ```typescript
-// Rules:
-// 1. Uncommitted items cannot have dates
-// 2. Committed items should warn if > 2 years out
-// 3. start_quarter must be <= end_quarter
-// 4. Changelog is append-only (no deletions)
+function canMoveTo(epic: Epic, targetLane: RoadmapLane): boolean {
+  if (targetLane === 'now') {
+    // Now requires all decision factors cleared
+    return !epic.decision_factors || epic.decision_factors.length === 0;
+  }
+  return true; // All other transitions allowed
+}
 
-function validateEpicRoadmapProperties(epic: Epic): ValidationResult;
+function handleDragEnd(event: DragEndEvent) {
+  const { active, over } = event;
+  if (!over) return;
+
+  const epic = getEpic(active.id as string);
+  const targetLane = over.id as RoadmapLane;
+
+  if (!canMoveTo(epic, targetLane)) {
+    // Show validation error
+    toast.error('Clear all decision factors before moving to Now');
+    return;
+  }
+
+  // Moving to Later: prompt for decision factors if none exist
+  if (targetLane === 'later' && (!epic.decision_factors || epic.decision_factors.length === 0)) {
+    openDecisionFactorModal(epic, targetLane);
+    return;
+  }
+
+  updateEpicLane(epic.id, targetLane);
+}
 ```
 
-**Files:**
-- `packages/shared/src/validation/epic-roadmap.ts` (new)
-- `dashboard/src/lib/validation/epic.ts` (update)
+**Visual Feedback:**
+- Invalid drop target: red overlay, cursor shows "not allowed"
+- Valid drop target: green highlight
+- Blocked by decision factors: show tooltip explaining why
 
-Follow: ADR-056
+**Files:**
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (update)
+- `dashboard/src/hooks/useRoadmapDnd.ts` (new)
+- `dashboard/src/lib/roadmap/lane-rules.ts` (new)
 
 ---
 
-### e009_s01_t04: Data Migration Script (4h)
-**Status:** [x] Complete
+### e009_s03_t04: Epic Edit Modal with Decision Factors (4h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
+**Depends:** t02
+
+**Goal:** Modal for editing Epic roadmap properties including decision factors
+
+**Implementation Notes:**
+```typescript
+interface EpicEditModalProps {
+  epic: Epic;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (updates: EpicRoadmapUpdate) => void;
+}
+
+interface EpicRoadmapUpdate {
+  roadmap_lane?: 'now' | 'next' | 'later';
+  roadmap_status?: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  decision_factors?: string[];
+  roadmap_visible?: boolean;
+  changelog_reason?: string;
+}
+```
+
+**Fields:**
+- **Lane selector**: Now / Next / Later (with validation)
+- **Status**: not_started, in_progress, completed, cancelled
+- **Decision factors** (multi-select chips):
+  - planning, value, feasibility, advisability
+  - architecture, design, risks, market-fit, dependencies
+- **Visibility toggle**: Public / Internal
+- **Change reason** (optional): For changelog entry
+- **Tags editor**
+
+**Validation:**
+- Cannot select "Now" lane if decision factors exist
+- Moving to "Later" prompts for at least one decision factor
+- Shows warning if clearing factors while in Later
+
+**Decision Factor Selector:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Decision Factors                                            │
+│ What's blocking this work from being committed?             │
+│                                                             │
+│ [x] planning      [ ] feasibility    [ ] architecture       │
+│ [x] design        [ ] value          [ ] risks              │
+│ [ ] dependencies  [ ] market-fit     [ ] advisability       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Files:**
+- `dashboard/src/components/roadmap/EpicEditModal.tsx` (new)
+- `dashboard/src/components/roadmap/DecisionFactorSelector.tsx` (new)
+
+---
+
+### e009_s03_t05: Filter Controls (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
 **Depends:** t01
 
-**Goal:** Migrate existing Epic nodes to include roadmap properties with safe defaults
+**Goal:** Filter roadmap view by lane, status, decision factors, visibility, and tags
 
 **Implementation Notes:**
-```cypher
-// Add default properties to all Epics
-MATCH (e:Epic)
-WHERE e.commitment_status IS NULL
-SET e.commitment_status = 'uncommitted',
-    e.roadmap_status = 'not_started',
-    e.roadmap_visible = true,
-    e.changelog = []
-RETURN count(e) as migrated
+```typescript
+interface RoadmapFilters {
+  lanes: ('now' | 'next' | 'later')[];
+  roadmap_status: ('not_started' | 'in_progress' | 'completed' | 'cancelled')[];
+  decision_factors: string[];  // Filter by specific blockers
+  show_internal: boolean;
+  tags: string[];
+}
 ```
 
-- Create migration script that can be run via CLI
-- Log all migrations for audit trail
-- Support dry-run mode
+**UI:**
+- Lane toggles: Now / Next / Later (all on by default)
+- Status chips: not_started, in_progress, completed, cancelled
+- Decision factor filter: "Show items blocked by: [planning] [architecture] ..."
+- Toggle for "Show internal items"
+- Tag filter with autocomplete
+- "Clear filters" button
+- Persist filters in URL params
+
+**Useful Filter Presets:**
+- "Ready to start": Now lane only
+- "Committed work": Now + Next lanes
+- "Needs planning": Later lane + `planning` factor
+- "Blocked": Any items with decision factors
 
 **Files:**
-- `packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts` (new)
-- `packages/cli/src/commands/graph/migrate.ts` (update if exists)
+- `dashboard/src/components/roadmap/RoadmapFilters.tsx` (new)
+- `dashboard/src/hooks/useRoadmapFilters.ts` (new)
 
 ---
 
-### e009_s01_t05: Changelog Auto-Population (2h)
-**Status:** [x] Complete
+### e009_s03_t06: Optimistic Updates & Error Handling (3h)
+**Status:** [ ] Not Started
 **Priority:** MEDIUM
-**Depends:** t04
+**Depends:** t03, t04
 
-**Goal:** Infer historical changes from existing Epic data and populate changelog
+**Goal:** Smooth UX with optimistic updates and graceful error recovery
 
 **Implementation Notes:**
-- Check Epic status field for completed Epics
-- If Epic has sprints with completion dates, infer timeline
-- Create initial changelog entry: "Migrated from legacy schema"
+- Update UI immediately on drag/edit
+- Revert on API error with toast notification
+- Queue updates if rapid changes
+- Handle concurrent edit conflicts (show conflict resolution)
 
 ```typescript
-function inferHistoricalChangelog(epic: Epic, sprints: Sprint[]): ChangelogEntry[];
+const { mutate, isPending, error } = useMutation({
+  mutationFn: updateEpicRoadmap,
+  onMutate: async (updates) => {
+    // Optimistically update cache
+    await queryClient.cancelQueries(['roadmap']);
+    const previous = queryClient.getQueryData(['roadmap']);
+    queryClient.setQueryData(['roadmap'], optimisticUpdate(updates));
+    return { previous };
+  },
+  onError: (err, updates, context) => {
+    // Rollback on error
+    queryClient.setQueryData(['roadmap'], context?.previous);
+    toast.error('Failed to update roadmap');
+  },
+});
 ```
 
 **Files:**
-- `packages/cli/src/lib/roadmap/changelog-inference.ts` (new)
+- `dashboard/src/hooks/useRoadmapMutations.ts` (new)
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (update)
 
 ---
 
 ## Execution Plan
 
-**Day 1-2:**
-- t01: Define schema (parallel start)
-- t02: Quarter utilities (parallel start)
+**Phase 1: Core Components**
+- t01: Vertical canvas layout with Now/Next/Later lanes
+- t02: Epic card with decision factor display
 
-**Day 3:**
-- t03: Validation middleware (after t01, t02)
+**Phase 2: Interactions**
+- t03: Drag-and-drop with lane validation rules
+- t04: Edit modal with decision factor management
 
-**Day 4-5:**
-- t04: Migration script
-- t05: Changelog inference
+**Phase 3: Polish**
+- t05: Filter controls
+- t06: Optimistic updates and error handling
+- Integration testing
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-09: Complete Schema & Infrastructure (T1-T5)
+### 2026-01-11: T1 Canvas Layout Component
 
-**T1: Epic Roadmap Schema**
-- Created `packages/shared/src/types/roadmap.ts` with full type definitions
-- Extended `dashboard/src/lib/graph/types.ts` EpicNode with roadmap properties
-- Types: CommitmentStatus, RoadmapStatus, ChangelogEntry, EpicRoadmapProperties
-- Exports integrated into shared package index
+**Components Created:**
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` - Main canvas with vertical lane stack
+  - Header with title, stats, filter toggle, show/hide done/dropped
+  - Fetches from `/api/v1/graph/roadmap` API
+  - Renders lanes in Now → Next → Later order
+- `dashboard/src/components/roadmap/LaneSection.tsx` - Collapsible lane sections
+  - Color-coded borders (green/blue/gray/green/red)
+  - Lane headers with descriptions and epic counts
+  - Expandable/collapsible
+- `dashboard/src/components/roadmap/EpicCard.tsx` - Epic cards with status
+  - Status icons: ○ not_started, ◐ in_progress, ● completed, ✗ cancelled
+  - Decision factor chips for Later items (with warning icon)
+  - Drag handle placeholder (for T3)
+  - Tags display
 
-**T2: Quarter Parsing Utilities**
-- Created `packages/shared/src/utils/quarter.ts` with comprehensive utilities
-- Functions: parseQuarter, formatQuarter, compareQuarters, getCurrentQuarter, addQuarters, quartersBetween
-- Additional helpers: getQuarterStartDate, getQuarterEndDate, isFarFuture
-- Test file created with full coverage
+**Page & Navigation:**
+- `dashboard/src/app/dashboard/roadmap/page.tsx` - Roadmap page route
+- Updated `dashboard/src/components/dashboard/dashboard-tabs.tsx`:
+  - Added Roadmap tab with MapIcon
+  - Ginko green accent color for roadmap tab
 
-**T3: Epic Validation Middleware**
-- Created `packages/shared/src/validation/epic-roadmap.ts`
-- Validates: uncommitted items can't have dates, quarter format, start <= end
-- Warnings: far future quarters (>2 years), missing end quarter
-- Helper functions: createChangelogEntry, detectRoadmapChanges, formatValidationResult
-
-**T4: Data Migration Script**
-- Created CLI migration: `packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts`
-- Created API endpoint: `dashboard/src/app/api/v1/migrations/009-epic-roadmap/route.ts`
-- Added `ginko graph migrate 009` command with --dry-run and --verbose options
-- Migration adds default roadmap properties and initializes changelog
-
-**T5: Changelog Auto-Population**
-- Created `packages/cli/src/lib/roadmap/changelog-inference.ts`
-- Infers roadmap_status from Epic status (complete→completed, active→in_progress)
-- Uses sprint dates for timeline inference
-- Helper functions: inferHistoricalChangelog, mergeChangelogs, summarizeChangelog, validateChangelog
-
-**Files Created:**
-- `packages/shared/src/types/roadmap.ts`
-- `packages/shared/src/types/index.ts`
-- `packages/shared/src/utils/quarter.ts`
-- `packages/shared/src/utils/__tests__/quarter.test.ts`
-- `packages/shared/src/validation/epic-roadmap.ts`
-- `packages/shared/src/validation/index.ts`
-- `packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts`
-- `packages/cli/src/lib/roadmap/changelog-inference.ts`
-- `dashboard/src/app/api/v1/migrations/009-epic-roadmap/route.ts`
-
-**Files Updated:**
-- `packages/shared/src/index.ts` (exports)
-- `packages/shared/tsconfig.json` (exclude tests)
-- `packages/cli/src/commands/graph/index.ts` (migrate command)
-- `dashboard/src/lib/graph/types.ts` (EpicNode roadmap properties)
-- `docs/epics/EPIC-INDEX.md` (marked EPIC-001, EPIC-002 complete)
+**Types Updated:**
+- `dashboard/src/lib/graph/types.ts`:
+  - Added `RoadmapLane` type: 'now' | 'next' | 'later' | 'done' | 'dropped'
+  - Added `DecisionFactor` type for 9 factor tags
+  - Updated `EpicNode` interface with `roadmap_lane`, `decision_factors`, `priority`
+  - Deprecated old quarterly properties
 
 ## Next Steps
 
-After Sprint 1:
-- Sprint 2: CLI `ginko roadmap` command and API endpoints
+After Sprint 3:
+- Sprint 4: History visualization and polish
 
 ## Blockers
 
@@ -233,6 +389,6 @@ After Sprint 1:
 ## Sprint Metadata
 
 **Epic:** EPIC-009 (Product Roadmap)
-**Sprint ID:** e009_s01
-**Started:** 2026-01-09
+**Sprint ID:** e009_s03
+**Started:** 2026-01-11
 **Participants:** Chris Norton, Claude

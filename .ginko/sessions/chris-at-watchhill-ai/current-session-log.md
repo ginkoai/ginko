@@ -1,30 +1,18 @@
 ---
-session_id: session-2026-01-09T16-00-06-257Z
-started: 2026-01-09T16:00:06.257Z
+session_id: session-2026-01-11T23-06-15-913Z
+started: 2026-01-11T23:06:15.913Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-09T16-00-06-257Z
+# Session Log: session-2026-01-11T23-06-15-913Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
 <!-- Includes: fixes, features, achievements, and categorized entries (decisions/insights/git also appear in their sections) -->
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
-
-### 11:09 - [feature]
-Starting EPIC-009 Sprint 1: Schema & Data Migration. Goal: extend Epic schema with roadmap properties (commitment_status, roadmap_status, target quarters, changelog) per ADR-056. Updated EPIC-INDEX to mark EPIC-001 and EPIC-002 as complete.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, docs/epics/EPIC-INDEX.md, docs/sprints/CURRENT-SPRINT.md
-Impact: medium
-
-
-### 11:18 - [achievement]
-Completed EPIC-009 Sprint 1: Schema & Data Migration. All 5 tasks complete. Created roadmap types, quarter utilities, validation middleware, migration script, and changelog inference. Files: packages/shared/src/types/roadmap.ts, packages/shared/src/utils/quarter.ts, packages/shared/src/validation/epic-roadmap.ts, packages/cli/src/commands/graph/migrations/009-epic-roadmap-properties.ts, dashboard/src/app/api/v1/migrations/009-epic-roadmap/route.ts
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/lib/graph/types.ts, docs/epics/EPIC-INDEX.md
-Impact: high
-
 
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
@@ -49,38 +37,38 @@ Impact: high
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 13:32 - [achievement]
-# [ACHIEVEMENT] 13:32
+### 18:20 - [feature]
+# [FEATURE] 18:20
 
-EPIC-009 Sprint 1 complete: Fixed migration API authentication (gk_ API key validation with bcrypt), Neo4j Integer conversion for count results. All 5 tasks done: roadmap types, quarter utilities, validation middleware, migration command/API, changelog inference. Dry-run successful: 29 epics ready to migrate.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/auth/device/init/route.ts
-- dashboard/src/app/auth/callback/route.ts
-
-**Impact:** high
-**Timestamp:** 2026-01-11T18:32:32.742Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/auth/device/init/route.ts, dashboard/src/app/auth/callback/route.ts
-Impact: high
-
-### 17:06 - [achievement]
-# [ACHIEVEMENT] 17:06
-
-EPIC-009 Sprint 2 complete: ginko roadmap CLI command with --all and --status flags. API endpoint GET /api/v1/graph/roadmap. Displays epics grouped by quarter with status icons. 12 epics visible in uncommitted backlog.
+Starting EPIC-009 Sprint 3: Roadmap Canvas. Updated sprint plan with vertical layout (Now/Next/Later lanes stacked top-to-bottom) per Chris's feedback. Added decision factor validation rules: work cannot enter Now lane until all decision factors are cleared. Tasks updated to reflect new UI model with lane sections, decision factor chips, and drag validation.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/auth/device/init/route.ts
-- dashboard/src/app/auth/callback/route.ts
+- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+- docs/sprints/CURRENT-SPRINT.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-11T23:20:07.506Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, docs/sprints/CURRENT-SPRINT.md
+Impact: medium
+
+### 18:30 - [feature]
+# [FEATURE] 18:30
+
+Completed e009_s03_t01 Canvas Layout: Created vertical roadmap canvas with Now/Next/Later lanes. Components: RoadmapCanvas.tsx (main canvas with header, filters, lane stack), LaneSection.tsx (collapsible lane with epic cards), EpicCard.tsx (status icons, decision factor chips). Added /dashboard/roadmap route and Roadmap tab to navigation with Ginko green accent. API endpoint already supports Now/Next/Later model.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+- dashboard/src/components/dashboard/dashboard-tabs.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-11T22:06:10.833Z
+**Timestamp:** 2026-01-11T23:30:48.408Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/auth/device/init/route.ts, dashboard/src/app/auth/callback/route.ts
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/components/dashboard/dashboard-tabs.tsx
 Impact: high

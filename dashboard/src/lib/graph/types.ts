@@ -54,6 +54,21 @@ export interface CharterNode extends BaseNodeProperties {
   success_criteria?: string[];
 }
 
+/** Roadmap lane type (ADR-056 Now/Next/Later model) */
+export type RoadmapLane = 'now' | 'next' | 'later' | 'done' | 'dropped';
+
+/** Decision factor tags for Later items */
+export type DecisionFactor =
+  | 'planning'
+  | 'value'
+  | 'feasibility'
+  | 'advisability'
+  | 'architecture'
+  | 'design'
+  | 'risks'
+  | 'market-fit'
+  | 'dependencies';
+
 /** Epic node - large feature grouping with roadmap properties (ADR-056) */
 export interface EpicNode extends BaseNodeProperties {
   epic_id: string;
@@ -61,17 +76,19 @@ export interface EpicNode extends BaseNodeProperties {
   description?: string;
   status: 'planning' | 'active' | 'complete' | 'on-hold';
 
-  // Roadmap properties (ADR-056)
-  /** Whether Epic is committed to roadmap: 'uncommitted' | 'committed' */
-  commitment_status?: 'uncommitted' | 'committed';
-  /** Roadmap execution status: 'not_started' | 'in_progress' | 'completed' | 'cancelled' */
+  // Roadmap properties (ADR-056 - Now/Next/Later model)
+  /** Priority lane: now (ready), next (committed), later (proposed), done, dropped */
+  roadmap_lane?: RoadmapLane;
+  /** Execution status */
   roadmap_status?: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
-  /** Target start quarter (e.g., "Q1-2026") - only for committed items */
-  target_start_quarter?: string;
-  /** Target end quarter (e.g., "Q2-2026") - only for committed items */
-  target_end_quarter?: string;
+  /** Priority within lane (lower = higher priority) */
+  priority?: number;
+  /** Decision factors explaining why work is in Later (blockers) */
+  decision_factors?: DecisionFactor[];
   /** Whether to show in public/external roadmap views */
   roadmap_visible?: boolean;
+  /** Tags for filtering */
+  tags?: string[];
   /** Changelog of roadmap property changes (audit trail) */
   changelog?: Array<{
     timestamp: string;
@@ -80,6 +97,14 @@ export interface EpicNode extends BaseNodeProperties {
     to: string;
     reason?: string;
   }>;
+
+  // Legacy properties (deprecated, for migration compatibility)
+  /** @deprecated Use roadmap_lane instead */
+  commitment_status?: 'uncommitted' | 'committed';
+  /** @deprecated Quarterly model removed in ADR-056 amendment */
+  target_start_quarter?: string;
+  /** @deprecated Quarterly model removed in ADR-056 amendment */
+  target_end_quarter?: string;
 }
 
 /** Sprint node - time-boxed work period */
