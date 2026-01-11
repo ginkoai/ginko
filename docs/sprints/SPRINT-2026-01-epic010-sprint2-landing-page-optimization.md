@@ -6,13 +6,13 @@
 
 **Duration**: 2 weeks (2026-01-13 to 2026-01-27)
 **Type**: Feature sprint
-**Progress:** 20% (2/10 tasks complete)
+**Progress:** 40% (4/10 tasks complete)
 
 **Success Criteria:**
 - [x] Landing page template implemented with modern design
 - [ ] Hero CTA conversion rate measurable and >3% target
 - [ ] Social proof elements live (testimonials, GitHub stars, user quotes)
-- [ ] A/B testing framework operational with 2+ active tests
+- [x] A/B testing framework operational with 2+ active tests
 - [ ] Page load time <3s (90th percentile)
 - [ ] Mobile responsive design validated
 - [ ] Blog CTAs cross-link to landing page
@@ -77,7 +77,7 @@ Follow: ADR-TBD (design system standards)
 ---
 
 ### TASK-2: Refine hero CTA with pain-point messaging (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Craft compelling headline and CTAs that address specific developer pain points
@@ -166,7 +166,7 @@ Avoid: 💡 fake-testimonials-gotcha (only use real users)
 ---
 
 ### TASK-4: Set up A/B testing framework (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 
 **Goal:** Implement A/B testing infrastructure for headline and CTA optimization
@@ -512,6 +512,80 @@ Apply: content-marketing-pattern
 - `dashboard/tailwind.config.js` (added `marquee` keyframes animation)
 
 **Future:** Replace ALL CAPS text with actual logos when available, add testimonials/GitHub stats
+
+### 2026-01-11: TASK-2 - Hero CTA Pain-Point Messaging
+
+**Created marketing copy config** (`dashboard/src/config/marketing-copy.ts`) with A/B test variants.
+
+**5 Hero Variants:**
+- **A (Problem-first):** "Stop re-explaining your codebase to AI."
+- **B (Outcome-first):** "Resume any AI session in 30 seconds."
+- **C (Contrast):** "AI forgets. Ginko doesn't."
+- **D (Quantified-pain):** "You've spent 10 minutes re-explaining. Again."
+- **E (Identity):** "Stop being your AI's context janitor."
+
+**3+ CTA Variants:**
+- "Install CLI" (technical, direct)
+- "Get Started Free" (benefit-focused)
+- "Try Ginko Now" (action-oriented)
+
+**Micro-copy Added:**
+- "Free forever. 2-minute setup." below CTAs
+
+**Trust Signals Added:**
+- GitHub icon + "Open Source"
+- Scale icon + "MIT License"
+- Lock icon + "No Vendor Lock-in"
+
+**A/B Test Infrastructure:**
+- Variant stored in localStorage (`ginko_hero_variant`)
+- URL override: `?hero_variant=B`
+- Random assignment on first visit
+- `data-variant` attribute on hero section for analytics
+
+**Files:**
+- `dashboard/src/config/marketing-copy.ts` (new - 160 lines)
+- `dashboard/src/components/landing-page.tsx` (updated hero section)
+
+### 2026-01-11: TASK-4 - A/B Testing Framework
+
+**Created complete A/B testing infrastructure** (PostHog-ready, works standalone).
+
+**New Files:**
+- `dashboard/src/lib/experiments.ts` - Core experiment system
+- `dashboard/src/hooks/useExperiment.ts` - React hook for experiments
+
+**Features:**
+- Weighted variant assignment (configurable per variant)
+- Consistent assignment via localStorage
+- URL override for testing: `?exp_hero-headline=E`
+- Exposure tracking (when variant is rendered)
+- Conversion tracking (on CTA clicks)
+- Event storage (last 100 events in localStorage)
+- GA4 integration ready
+- PostHog integration ready (just uncomment)
+
+**Active Experiments:**
+1. `hero-headline` - 5 variants (A-E), equal weight
+2. `cta-text` - 3 variants (technical, benefit, action)
+3. `social-proof-position` - 2 variants (draft)
+
+**Tracking Events:**
+- `experiment_assigned` - When variant first assigned
+- `experiment_exposed` - When variant rendered
+- `experiment_conversion` - When CTA clicked
+
+**Debug Tools (dev mode):**
+```javascript
+window.ginkoExperiments.getAssignments()
+window.ginkoExperiments.getStoredEvents()
+window.ginkoExperiments.clearExperimentData()
+```
+
+**Landing Page Integration:**
+- Hero section uses `useExperiment('hero-headline')`
+- CTA clicks tracked with location (hero/footer)
+- Exposure marked on component mount
 
 ---
 
