@@ -1,239 +1,538 @@
-# SPRINT: Data Integrity & ADR-058 Hardening
+# SPRINT: EPIC-010 Sprint 2 - MVP Marketing Strategy - Landing Page Optimization
 
 ## Sprint Overview
 
-**Sprint Goal**: Resolve all epic ID conflicts, implement proper author tracking, and prevent future collisions
-**Duration**: 1-2 days (2026-01-07 to 2026-01-09)
-**Type**: Cleanup + Hardening sprint
-**Progress:** 100% (8/8 tasks complete)
+**Sprint Goal**: Maximize landing page conversion through proven best practices, clear pain-point-addressing CTAs, social proof, and A/B testing infrastructure
+
+**Duration**: 2 weeks (2026-01-13 to 2026-01-27)
+**Type**: Feature sprint
+**Progress:** 20% (2/10 tasks complete)
 
 **Success Criteria:**
-- [x] No duplicate epic IDs in local files or graph
-- [x] All graph epics have corresponding local files
-- [x] `createdBy` populated for all epics
-- [x] `suggestedId` returns sequential format (EPIC-NNN)
-- [x] EPIC-INDEX reflects actual state
-- [x] CLI warns on local duplicate IDs before sync
-
----
-
-## Context
-
-During team collaboration testing (EPIC-008), we discovered data integrity issues:
-- Duplicate epic IDs (EPIC-006 has two different epics)
-- Missing local files for graph entities (EPIC-010)
-- ~~Orphan entities with malformed IDs (`epic_ginko_1763746656116`)~~ **RESOLVED**
-- ADR-058 conflict resolution not fully implemented (createdBy, suggestedId broken)
-
-**Graph state:** 11 epics (EPIC-001 through EPIC-011, orphan entity deleted)
-**Local state:** 9 files (with 1 duplicate ID)
+- [x] Landing page template implemented with modern design
+- [ ] Hero CTA conversion rate measurable and >3% target
+- [ ] Social proof elements live (testimonials, GitHub stars, user quotes)
+- [ ] A/B testing framework operational with 2+ active tests
+- [ ] Page load time <3s (90th percentile)
+- [ ] Mobile responsive design validated
+- [ ] Blog CTAs cross-link to landing page
 
 ---
 
 ## Sprint Tasks
 
-### e008_s05_t01: Resolve EPIC-006 Duplicate (30m)
+### TASK-1: Implement landing page template (8h)
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assigned:** chris@watchhill.ai
 
-**Goal:** Eliminate duplicate EPIC-006 files
+**Goal:** Apply provided landing page template with modern, conversion-focused design
 
-**Current State:**
-- `EPIC-006-ux-polish-uat.md` - "UX Polish and UAT" (Complete, proper frontmatter)
-- `EPIC-006-graph-explorer-v2.md` - "Graph Explorer v2" (Proposed, no frontmatter)
+**Implementation Notes:**
+User will provide template as starting point. Key sections to include:
+1. **Hero Section**
+   - Pain-point-addressing headline
+   - Clear value proposition
+   - Primary CTA (Install CLI)
+   - Secondary CTA (View Demo / Read Docs)
+   - Hero image/video/animation
 
-**Action:**
-- Keep `EPIC-006-ux-polish-uat.md` as canonical EPIC-006
-- Rename `EPIC-006-graph-explorer-v2.md` to `EPIC-011-graph-explorer-v2.md`
-- Update epic_id frontmatter to EPIC-011
-- Sync renamed epic to graph
+2. **Problem/Solution**
+   - Developer pain points (context switching, AI rework, team visibility)
+   - How ginko solves each
+
+3. **Features**
+   - Key capabilities with icons/visuals
+   - Session management
+   - Knowledge graph
+   - Team collaboration
+
+4. **Social Proof**
+   - User testimonials
+   - GitHub stars counter
+   - Company logos (if applicable)
+   - Usage stats
+
+5. **How It Works**
+   - 3-step flow (Install → Start → Collaborate)
+   - Screenshots or demo
+
+6. **CTA Section**
+   - Final conversion push
+   - Install instructions
+   - Links to docs, GitHub, Discord
+
+**Files:**
+- `dashboard/src/app/(marketing)/page.tsx`
+- `dashboard/src/components/marketing/*.tsx` (new components)
+- `dashboard/src/styles/marketing.css`
+
+**Acceptance Criteria:**
+- Template implemented with all sections
+- Responsive design (mobile, tablet, desktop)
+- Accessible (WCAG AA)
+- No layout shift (CLS < 0.1)
+
+Follow: ADR-TBD (design system standards)
 
 ---
 
-### e008_s05_t02: Fix EPIC-009 ID Format (15m)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Fix inconsistent ID format
-
-**Current State:**
-- Local file has `epic_id: e009` (lowercase)
-- Graph has `EPIC-009` (uppercase)
-
-**Action:**
-- Update frontmatter to `epic_id: EPIC-009`
-- Verify graph node consistency
-
----
-
-### e008_s05_t03: Pull EPIC-010 to Local (30m)
-**Status:** [x] Complete
+### TASK-2: Refine hero CTA with pain-point messaging (4h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
-**Assigned:** chris@watchhill.ai
 
-**Goal:** Create local file for graph-only epic
+**Goal:** Craft compelling headline and CTAs that address specific developer pain points
 
-**Current State:**
-- Exists in graph: "Web Collaboration GUI" (created 2026-01-06)
-- No local file
-- Created by: xtophr (attributed as "unknown" due to bug)
+**Implementation Notes:**
+**Pain Points to Address:**
+- "Stop losing context every time your AI restarts"
+- "Make your AI collaboration observable and traceable"
+- "Turn 28-second session starts into 2 seconds"
+- "Give your team visibility into AI-driven work"
 
-**Action:**
-- Query graph for full EPIC-010 content
-- Create `EPIC-010-web-collaboration-gui.md`
-- Add proper frontmatter
+**Headline Options (A/B test):**
+- "Git-native context for AI pair programming"
+- "Never lose your AI collaboration context again"
+- "Make AI collaboration safe, observable, and learnable"
 
----
-
-### e008_s05_t04: Clean Orphan Entity (15m) ✓
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Remove malformed orphan epic from graph
-
-**Resolution (2026-01-07):**
-- Deleted `epic_ginko_1763746656116` via DELETE /api/v1/graph/nodes endpoint
-- Root cause: timestamp-based ID generation bug created malformed entity on 2025-11-21
-- Generic node delete API works for epics (no epic-specific delete needed)
-- Updated EPIC-INDEX to document cleanup
-
----
-
-### e008_s05_t05: Implement createdBy Tracking (2h) ✓
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Track entity authorship for conflict detection
-
-**Resolution (2026-01-07):**
-- Created `/api/v1/epic/backfill` endpoint for one-time backfill
-- Backfilled all 10 epics with `createdBy: chris@watchhill.ai`
-- `createdBy` already tracked on new epic creation (sync/route.ts)
-- Verified `/api/v1/epic/check` now returns actual author
-
-Follow: ADR-058 (Entity ID Conflict Resolution)
-
----
-
-### e008_s05_t06: Fix suggestedId Generation (1h) ✓
-**Status:** [x] Complete
-**Priority:** HIGH
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Return sequential IDs instead of timestamps
-
-**Resolution (2026-01-07):**
-- Root cause: Orphan entity `epic_ginko_1763746656116` was poisoning max calculation
-- Deleting orphan (T4) fixed the issue - no code changes needed
-- API now returns `suggestedId: "EPIC-011"` (correct sequential format)
-- Verified via API call after orphan deletion
-
----
-
-### e008_s05_t07: Update EPIC-INDEX (30m)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Synchronize index with actual state
-
-**Current State:**
-- Index shows: 001, 002, 005, 006, 009
-- Reality: 001-011 (after renaming)
-
-**Action:**
-- Regenerate index from local files
-- Include lifecycle status for each epic
-- Add last-updated timestamp
-
----
-
-### e008_s05_t08: Add Local Duplicate Detection (1h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assigned:** chris@watchhill.ai
-
-**Goal:** Prevent future duplicate IDs
+**CTA Button Text (A/B test):**
+- "Install Ginko CLI" (technical, direct)
+- "Get Started Free" (benefit-focused)
+- "Try Ginko Now" (action-oriented)
 
 **Implementation:**
-- Added `detectLocalDuplicates()` function to epic.ts
-- Scans local epic files before sync
-- Extracts ID from frontmatter (`epic_id:`) or title (`# EPIC-NNN:`)
-- Shows clear warning with affected files and resolution instructions
-- Prompts user to confirm if proceeding with duplicates (defaults to No)
-- References ADR-058 in the guidance
+- Create headline variants
+- Design CTA buttons with high contrast
+- Add micro-copy under CTA ("Free forever. 2-minute setup.")
+- Include trust signals near CTA (GitHub stars, open source badge)
 
-Files:
-- `packages/cli/src/commands/epic.ts` (updated)
+**Files:**
+- `dashboard/src/app/(marketing)/page.tsx` (hero section)
+- `dashboard/src/config/marketing-copy.ts` (copy variants)
+
+**Acceptance Criteria:**
+- 3+ headline variants ready for A/B test
+- 3+ CTA button text variants
+- Micro-copy reinforces low friction
+- Design passes contrast ratio checks (WCAG)
+
+Apply: conversion-optimization-pattern
+
+---
+
+### TASK-3: Add social proof elements (6h)
+**Status:** [x] Complete (placeholder)
+**Priority:** HIGH
+
+**Goal:** Build trust through testimonials, GitHub stats, and early user quotes
+
+**Implementation Notes:**
+**Social Proof Types:**
+1. **GitHub Stats**
+   - Live star count (GitHub API)
+   - Contributor count
+   - "Trusted by X developers"
+
+2. **User Testimonials**
+   - Collect from early users (2-3 quotes minimum)
+   - Include name, role, company (if permissible)
+   - Photo or avatar
+   - Quote format: Pain point → How ginko solved it
+
+3. **Usage Stats** (if available)
+   - "X sessions managed"
+   - "X context switches prevented"
+   - "65% reduction in rework" (from internal data)
+
+4. **Trust Badges**
+   - Open source badge
+   - Built with Claude badge
+   - MIT License badge
+
+**Files:**
+- `dashboard/src/components/marketing/SocialProof.tsx`
+- `dashboard/src/components/marketing/GitHubStats.tsx`
+- `dashboard/src/components/marketing/Testimonials.tsx`
+- `dashboard/src/app/api/github-stats/route.ts` (fetch stars)
+
+**Acceptance Criteria:**
+- GitHub star count live and accurate
+- 2+ testimonials displayed attractively
+- Trust badges visible above the fold or in footer
+- Responsive design for all proof elements
+
+Apply: social-proof-pattern
+Avoid: 💡 fake-testimonials-gotcha (only use real users)
+
+---
+
+### TASK-4: Set up A/B testing framework (6h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Implement A/B testing infrastructure for headline and CTA optimization
+
+**Implementation Notes:**
+**Tool Options:**
+- Google Optimize (deprecated, use GA4 experiments)
+- PostHog Feature Flags + Experiments
+- Vercel Edge Config + Middleware
+- Custom implementation with cookies
+
+**Recommended:** PostHog Experiments (already installing PostHog)
+
+**Implementation:**
+1. Configure PostHog experiments
+2. Create feature flags for:
+   - Hero headline variant
+   - CTA button text variant
+   - CTA button color variant
+3. Implement variant rendering in React
+4. Set conversion goal (CTA click or install initiated)
+5. Statistical significance calculator
+
+**Initial Tests:**
+- Test 1: Headline A vs B vs C
+- Test 2: CTA button text A vs B
+- Test 3: CTA button color (primary vs accent)
+
+**Files:**
+- `dashboard/src/lib/experiments.ts` (wrapper for PostHog)
+- `dashboard/src/app/(marketing)/page.tsx` (variant rendering)
+- `dashboard/src/hooks/useExperiment.ts` (React hook)
+
+**Acceptance Criteria:**
+- 2+ experiments running simultaneously
+- Variant assignment consistent per user
+- Conversion events tracked per variant
+- Results viewable in PostHog
+
+Follow: ADR-TBD (experimentation standards)
+Apply: ab-testing-pattern
+
+---
+
+### TASK-5: Optimize page load performance (4h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Achieve <3s page load time (90th percentile) for landing page
+
+**Implementation Notes:**
+**Optimization Tactics:**
+1. **Images**
+   - Use Next.js Image component
+   - WebP format with fallbacks
+   - Lazy loading below the fold
+   - Proper sizing (no oversized images)
+
+2. **JavaScript**
+   - Code splitting
+   - Lazy load non-critical components
+   - Remove unused dependencies
+   - Minimize third-party scripts
+
+3. **CSS**
+   - Critical CSS inline
+   - Remove unused styles
+   - Minimize reflows
+
+4. **Fonts**
+   - Subset fonts (only needed characters)
+   - Preload critical fonts
+   - font-display: swap
+
+5. **Caching**
+   - Set proper cache headers
+   - CDN for static assets (Vercel Edge)
+
+**Measurement:**
+- Lighthouse CI in GitHub Actions
+- WebPageTest
+- Real User Monitoring (RUM) via GA4
+
+**Files:**
+- `dashboard/next.config.js` (optimization config)
+- `dashboard/src/app/(marketing)/page.tsx` (lazy loading)
+- `dashboard/src/styles/globals.css` (critical CSS)
+
+**Acceptance Criteria:**
+- Lighthouse Performance score >90
+- Largest Contentful Paint (LCP) <2.5s
+- First Input Delay (FID) <100ms
+- Cumulative Layout Shift (CLS) <0.1
+- Total Blocking Time (TBT) <300ms
+
+Apply: performance-optimization-pattern
+Avoid: 💡 premature-optimization-gotcha (measure first)
+
+---
+
+### TASK-6: Add mobile responsive design (4h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Ensure landing page converts well on mobile devices
+
+**Implementation Notes:**
+**Breakpoints:**
+- Mobile: <640px
+- Tablet: 640px - 1024px
+- Desktop: >1024px
+
+**Mobile Optimizations:**
+- Hamburger menu for navigation
+- Larger tap targets (min 44x44px)
+- Simplified hero section (shorter headline, single CTA)
+- Stacked layouts instead of side-by-side
+- Readable font sizes (min 16px body)
+- No horizontal scroll
+
+**Testing:**
+- Chrome DevTools device emulation
+- Real device testing (iOS Safari, Android Chrome)
+- BrowserStack for broad coverage
+
+**Files:**
+- `dashboard/src/app/(marketing)/page.tsx` (responsive components)
+- `dashboard/tailwind.config.ts` (breakpoint config)
+- `dashboard/src/components/marketing/MobileNav.tsx`
+
+**Acceptance Criteria:**
+- All sections render correctly on mobile
+- CTAs easily tappable
+- No layout issues on iOS Safari
+- Text readable without zooming
+- Lighthouse mobile score >85
+
+---
+
+### TASK-7: Integrate blog CTAs to landing page (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Cross-link blog posts to landing page with conversion CTAs
+
+**Implementation Notes:**
+**CTA Placements:**
+1. **Inline CTAs** (mid-post)
+   - After problem description: "Ginko solves this with..." → CTA
+   - After technical explanation: "Try it yourself" → CTA
+
+2. **End-of-post CTA**
+   - Summary of value prop
+   - Install button
+   - Links to docs, GitHub, Discord
+
+3. **Sidebar CTA** (persistent)
+   - "Get Started with Ginko"
+   - GitHub stars badge
+   - Install command
+
+**CTA Copy Examples:**
+- "Stop losing AI context. Install Ginko in 2 minutes."
+- "Make your AI collaboration traceable. Try Ginko free."
+- "Turn 28s session starts into 2s. Get Ginko now."
+
+**Files:**
+- `blog/src/components/InlineCTA.astro`
+- `blog/src/components/EndOfPostCTA.astro`
+- `blog/src/components/SidebarCTA.astro`
+- `blog/src/layouts/BlogPost.astro` (integrate CTAs)
+
+**Acceptance Criteria:**
+- CTAs appear on all blog posts
+- Click tracking via GA4
+- Responsive design
+- A/B test different CTA copy variants
+
+Apply: content-marketing-pattern
+
+---
+
+### TASK-8: Add install instructions and quick start (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+
+**Goal:** Reduce friction from CTA click to first session
+
+**Implementation Notes:**
+**Install Section:**
+- Copy-paste npm install command
+- One-click copy button
+- Platform detection (macOS, Linux, Windows)
+- Prerequisites check (Node.js version)
+- Link to troubleshooting docs
+
+**Quick Start:**
+1. Install: `npm install -g ginko`
+2. Initialize: `ginko init`
+3. Start session: `ginko start`
+4. Log your work: `ginko log "Achievement unlocked"`
+
+**Video/GIF:**
+- 30-second demo of installation and first session
+- Hosted on YouTube or embedded
+- Autoplay muted with captions
+
+**Files:**
+- `dashboard/src/components/marketing/InstallInstructions.tsx`
+- `dashboard/src/components/marketing/QuickStart.tsx`
+- `dashboard/src/components/marketing/DemoVideo.tsx`
+
+**Acceptance Criteria:**
+- Install command copy works
+- Platform-specific instructions shown
+- Quick start guide clear and actionable
+- Demo video loads quickly (<1MB)
+
+---
+
+### TASK-9: Create conversion funnel visualization (3h)
+**Status:** [ ] Not Started
+**Priority:** LOW
+
+**Goal:** Visualize user journey from landing to CLI install
+
+**Implementation Notes:**
+**Funnel Stages:**
+1. Landing page view
+2. Hero CTA click
+3. Install instructions viewed
+4. Install command copied
+5. CLI installed (tracked via PostHog)
+6. First `ginko start` session
+
+**Tool:** PostHog Funnels or GA4 Funnel Exploration
+
+**Metrics:**
+- Conversion rate per stage
+- Drop-off points (where users leave)
+- Time between stages
+- Segmentation by traffic source
+
+**Deliverable:**
+- Funnel report in PostHog/GA4
+- Weekly funnel review schedule
+- Documented in `docs/analytics/CONVERSION-FUNNEL.md`
+
+**Acceptance Criteria:**
+- All 6 stages tracked
+- Drop-off analysis identifies bottlenecks
+- Funnel viewable by team
+- Alerts for significant drop-off changes
+
+---
+
+### TASK-10: Conduct landing page audit (2h)
+**Status:** [ ] Not Started
+**Priority:** LOW
+
+**Goal:** Review landing page against conversion best practices checklist
+
+**Implementation Notes:**
+**Audit Checklist:**
+- [ ] Clear value proposition above the fold
+- [ ] Pain points explicitly stated
+- [ ] Single primary CTA (no confusion)
+- [ ] Social proof visible
+- [ ] Trust signals (open source, GitHub, testimonials)
+- [ ] Fast load time (<3s)
+- [ ] Mobile responsive
+- [ ] Accessible (keyboard navigation, screen readers)
+- [ ] No broken links
+- [ ] Clear next steps after CTA
+
+**Tools:**
+- Manual review
+- Lighthouse audit
+- WAVE accessibility checker
+- UsabilityHub five-second test (optional)
+
+**Deliverable:**
+- Audit report in `docs/marketing/LANDING-PAGE-AUDIT.md`
+- List of improvements for future sprints
+
+**Acceptance Criteria:**
+- Checklist 90%+ complete
+- Critical issues (broken links, slow load) resolved
+- Recommendations documented
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-07: Local Data Cleanup (T1, T2, T3, T7)
+### 2026-01-11: TASK-1 - Landing Page Template Implementation
 
-**T1: Resolved EPIC-006 Duplicate**
-- Kept `EPIC-006-ux-polish-uat.md` as canonical EPIC-006 ("UX Polish and UAT", Complete)
-- Renamed `EPIC-006-graph-explorer-v2.md` to `EPIC-011-graph-explorer-v2.md`
-- Added proper frontmatter with `epic_id: EPIC-011`
-- Added note documenting the renumbering
+**Enhanced dashboard landing page** (`dashboard/src/components/landing-page.tsx`) with conversion-focused design matching the website.
 
-**T2: Fixed EPIC-009 ID Format**
-- Updated frontmatter from `epic_id: e009` to `epic_id: EPIC-009`
-- Ensures consistent uppercase format across all epics
+**Sections Added:**
+1. **Hero Section**
+   - Pain-point headline: "Stop re-explaining your codebase to AI."
+   - A/B test-ready with `data-hero-title`, `data-hero-subtitle`, `data-hero-cta-*` attributes
+   - Terminal install command with copy-to-clipboard
+   - Primary CTA: "Install CLI", Secondary CTA: "View Docs"
 
-**T3: Created EPIC-010 Local File**
-- Created `EPIC-010-web-collaboration-gui.md` from graph metadata
-- Title: "Web Collaboration GUI", created by xtophr on 2026-01-06
-- Stub file - full content to be added by original author
-- Note: Graph API doesn't expose full Epic content, only metadata
+2. **Problem Cards** - CONTEXT_ROT, SESSION_RESET, KNOWLEDGE_SILOS
 
-**T7: Updated EPIC-INDEX**
-- Regenerated index with all 11 epics (001-011)
-- Added status summary table
-- Documented cleanup notes (renumbering, orphan deleted 2026-01-07)
-- Added lifecycle definitions
+3. **How ginko works** - Terminal demo showing `ginko start` output with explanation
 
-**Resolved: T4 (Clean Orphan Entity)** ✓
-- Used generic DELETE /api/v1/graph/nodes endpoint
-- Entity `epic_ginko_1763746656116` successfully deleted (2026-01-07)
-- Root cause documented: timestamp-based ID generation bug
+4. **Features Grid** (6 features)
+   - SESSION_HANDOFF, SPRINT_TRACKING, PATTERN_CAPTURE
+   - GOTCHA_ALERTS, GIT_NATIVE, TEAM_SYNC (Pro)
 
-### 2026-01-07: CLI Duplicate Detection (T8)
+5. **Testimonial Section** - Beta user quote with corner brackets
 
-**T8: Implemented Local Duplicate Detection**
-- Added `detectLocalDuplicates()` function to `packages/cli/src/commands/epic.ts`
-- Detection runs before sync, scans all `EPIC-NNN*.md` files
-- Extracts ID from:
-  - Frontmatter `epic_id:` field (preferred)
-  - Title `# EPIC-NNN:` pattern (fallback)
-  - Filename (last resort)
-- On duplicate found:
-  - Shows red warning banner with ADR-058 reference
-  - Lists all files sharing the same ID with their titles
-  - Provides resolution instructions
-  - Prompts for confirmation (defaults to No)
-- Updated global `ginko` via `npm link`
-- Tested with synthetic duplicate - warning displays correctly
+6. **Stats Section** - 30s Flow Recovery, 10x Faster Context, 100% Git-Native, 0 Vendor Lock-in
+
+7. **Pricing Section** - Free/Pro/Enterprise tiers with feature lists
+
+8. **Final CTA Section** - "Ready to eliminate context rot?" with install command
+
+9. **Enhanced Footer** - 4-column layout with Product, Company, Resources links
+
+**Files:**
+- `dashboard/src/components/landing-page.tsx` (193 → 549 lines)
+
+**Ready for:** A/B testing integration (TASK-4), social proof components (TASK-3)
+
+### 2026-01-11: TASK-3 - Social Proof Placeholder (Logo Marquee)
+
+**Added scrolling logo marquee** below hero CTAs as placeholder for social proof until testimonials are collected.
+
+**Implementation:**
+- Horizontal scrolling marquee of tool/company names in ALL CAPS
+- Tools shown: ANTHROPIC, CURSOR, GITHUB, VERCEL, NEO4J, TYPESCRIPT, NEXT.JS, SUPABASE
+- Positioned at bottom of hero section, still above the fold
+- Edge fade gradients for smooth visual effect
+- CSS animation: 30s linear infinite scroll (right to left)
+- Duplicate set of items for seamless loop
+
+**Files:**
+- `dashboard/src/components/landing-page.tsx` (marquee HTML)
+- `dashboard/tailwind.config.js` (added `marquee` keyframes animation)
+
+**Future:** Replace ALL CAPS text with actual logos when available, add testimonials/GitHub stats
 
 ---
 
 ## Next Steps
 
-After cleanup:
-1. Backend deployment for T5/T6
-2. Consider automation to keep EPIC-INDEX in sync
-3. Add similar duplicate detection for Sprints and Tasks
+1. Begin Sprint 3: Content & Multi-Channel Funnel
+2. Monitor landing page conversion rate post-launch
+3. Iterate on A/B test winners
 
 ---
 
-## Sprint Metadata
+## Blockers
 
-**Epic:** EPIC-008 (Team Collaboration)
-**Sprint ID:** e008_s05
-**Created:** 2026-01-07
-**Participants:** Chris Norton, Claude
+[To be updated if blockers arise]
+
+---
+
+## References
+
+- [EPIC-010: MVP Marketing Strategy](../epics/EPIC-010-mvp-marketing-strategy.md)
+- [Sprint 1: Analytics Foundation](./SPRINT-2026-01-e010-sprint1-analytics-foundation.md)
+- Conversion optimization resources:
+  - https://unbounce.com/landing-page-examples/
+  - https://www.optimizely.com/optimization-glossary/
