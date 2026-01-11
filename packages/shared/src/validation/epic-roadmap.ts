@@ -14,113 +14,87 @@ import {
   RoadmapValidationResult,
   RoadmapValidationError,
   RoadmapValidationWarning,
+  RoadmapLane,
+  RoadmapStatus,
 } from '../types/roadmap';
-import { isValidQuarter, compareQuarters, isFarFuture } from '../utils/quarter';
 
 // =============================================================================
-// Epic Roadmap Validation (ADR-056)
+// Epic Roadmap Validation (ADR-056 - Now/Next/Later Model)
 // =============================================================================
+
+const VALID_LANES: RoadmapLane[] = ['now', 'next', 'later', 'done', 'dropped'];
+const VALID_STATUSES: RoadmapStatus[] = ['not_started', 'in_progress', 'completed', 'cancelled'];
 
 /**
  * Validate Epic roadmap properties
  *
  * Rules enforced:
- * 1. Uncommitted items cannot have target dates (ERROR)
- * 2. Committed items should warn if > 2 years out (WARNING)
- * 3. start_quarter must be <= end_quarter (ERROR)
- * 4. Quarter format must be valid Q{1-4}-{YYYY} (ERROR)
+ * 1. NOW items should not have decision_factors (they're fully decided) - ERROR
+ * 2. LATER items should have decision_factors explaining why not ready - WARNING
+ * 3. Lane must be valid (now/next/later) - ERROR
+ * 4. Status must be valid - ERROR
+ * 5. Warn if too many items in NOW lane (checked at aggregate level)
  *
  * @param properties The roadmap properties to validate
+ * @param nowItemCount Optional count of items in NOW lane for aggregate warning
  * @returns Validation result with errors and warnings
  */
 export function validateEpicRoadmapProperties(
-  properties: Partial<EpicRoadmapProperties>
+  properties: Partial<EpicRoadmapProperties>,
+  nowItemCount?: number
 ): RoadmapValidationResult {
   const errors: RoadmapValidationError[] = [];
   const warnings: RoadmapValidationWarning[] = [];
 
   const {
-    commitment_status,
-    target_start_quarter,
-    target_end_quarter,
+    roadmap_lane,
+    roadmap_status,
+    decision_factors,
   } = properties;
 
-  // Rule 1: Uncommitted items cannot have dates
-  if (commitment_status === 'uncommitted') {
-    if (target_start_quarter) {
-      errors.push({
-        field: 'target_start_quarter',
-        message: 'Uncommitted items cannot have a target start quarter. Commit the Epic first.',
-        code: 'UNCOMMITTED_WITH_DATES',
-      });
-    }
-    if (target_end_quarter) {
-      errors.push({
-        field: 'target_end_quarter',
-        message: 'Uncommitted items cannot have a target end quarter. Commit the Epic first.',
-        code: 'UNCOMMITTED_WITH_DATES',
-      });
-    }
-  }
-
-  // Rule 4: Validate quarter format (check before comparing)
-  if (target_start_quarter && !isValidQuarter(target_start_quarter)) {
+  // Rule 3: Validate lane value
+  if (roadmap_lane && !VALID_LANES.includes(roadmap_lane)) {
     errors.push({
-      field: 'target_start_quarter',
-      message: `Invalid quarter format: "${target_start_quarter}". Expected Q{1-4}-{YYYY} (e.g., Q1-2026)`,
-      code: 'INVALID_QUARTER_FORMAT',
+      field: 'roadmap_lane',
+      message: `Invalid lane: "${roadmap_lane}". Must be one of: now, next, later`,
+      code: 'INVALID_LANE',
     });
   }
 
-  if (target_end_quarter && !isValidQuarter(target_end_quarter)) {
+  // Rule 4: Validate status value
+  if (roadmap_status && !VALID_STATUSES.includes(roadmap_status)) {
     errors.push({
-      field: 'target_end_quarter',
-      message: `Invalid quarter format: "${target_end_quarter}". Expected Q{1-4}-{YYYY} (e.g., Q2-2026)`,
-      code: 'INVALID_QUARTER_FORMAT',
+      field: 'roadmap_status',
+      message: `Invalid status: "${roadmap_status}". Must be one of: not_started, in_progress, completed, cancelled`,
+      code: 'INVALID_STATUS',
     });
   }
 
-  // Only check these rules if format is valid
-  const startValid = target_start_quarter && isValidQuarter(target_start_quarter);
-  const endValid = target_end_quarter && isValidQuarter(target_end_quarter);
-
-  // Rule 3: start_quarter must be <= end_quarter
-  if (startValid && endValid) {
-    if (compareQuarters(target_start_quarter!, target_end_quarter!) > 0) {
-      errors.push({
-        field: 'target_end_quarter',
-        message: `End quarter (${target_end_quarter}) must be on or after start quarter (${target_start_quarter})`,
-        code: 'END_BEFORE_START',
-      });
-    }
+  // Rule 1: NOW items should not have decision_factors
+  if (roadmap_lane === 'now' && decision_factors && decision_factors.length > 0) {
+    errors.push({
+      field: 'decision_factors',
+      message: 'Items in NOW lane should be fully decided. Remove decision factors or move to NEXT/LATER.',
+      code: 'NOW_WITH_DECISION_FACTORS',
+    });
   }
 
-  // Rule 2: Warn if quarters are > 2 years in the future
-  if (commitment_status === 'committed') {
-    if (startValid && isFarFuture(target_start_quarter!)) {
-      warnings.push({
-        field: 'target_start_quarter',
-        message: `Start quarter (${target_start_quarter}) is more than 2 years in the future. Consider a nearer-term target.`,
-        code: 'FAR_FUTURE',
-      });
-    }
+  // Rule 2: LATER items should have decision_factors
+  if (roadmap_lane === 'later' && (!decision_factors || decision_factors.length === 0)) {
+    warnings.push({
+      field: 'decision_factors',
+      message: 'Items in LATER lane should have decision factors explaining what needs to happen before they can be committed.',
+      code: 'LATER_WITHOUT_FACTORS',
+    });
+  }
 
-    if (endValid && isFarFuture(target_end_quarter!)) {
-      warnings.push({
-        field: 'target_end_quarter',
-        message: `End quarter (${target_end_quarter}) is more than 2 years in the future. Consider a nearer-term target.`,
-        code: 'FAR_FUTURE',
-      });
-    }
-
-    // Warn if committed but missing end quarter
-    if (startValid && !target_end_quarter) {
-      warnings.push({
-        field: 'target_end_quarter',
-        message: 'Committed Epic has a start quarter but no end quarter. Consider adding a target completion quarter.',
-        code: 'MISSING_END_QUARTER',
-      });
-    }
+  // Rule 5: Warn if too many items in NOW lane (more than 3 is typically too many)
+  if (nowItemCount !== undefined && nowItemCount > 3) {
+    warnings.push({
+      field: 'roadmap_lane',
+      message: `${nowItemCount} items in NOW lane. Consider limiting to 3 or fewer to maintain focus.`,
+      code: 'MANY_NOW_ITEMS',
+    });
   }
 
   return {
@@ -169,10 +143,9 @@ export function detectRoadmapChanges(
   reason?: string
 ) {
   const trackedFields: (keyof EpicRoadmapProperties)[] = [
-    'commitment_status',
+    'roadmap_lane',
     'roadmap_status',
-    'target_start_quarter',
-    'target_end_quarter',
+    'priority',
     'roadmap_visible',
   ];
 

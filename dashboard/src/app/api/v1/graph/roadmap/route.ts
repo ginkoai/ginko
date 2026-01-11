@@ -17,21 +17,28 @@
  *
  * Query Parameters:
  * - graphId: Graph namespace (required)
- * - all: Include Later items (default: false, shows only Now+Next)
- * - lane: Filter by specific lane (now, next, later)
+ * - all: Include Later, Done, and Dropped items (default: false, shows only Now+Next)
+ * - lane: Filter by specific lane (now, next, later, done, dropped)
  * - status: Filter by roadmap_status (not_started, in_progress, completed, cancelled)
  * - visible: Filter by roadmap_visible (default: true for public views)
  *
+ * Lanes:
+ * - now: Fully planned, committed, ready for implementation
+ * - next: Committed but may need additional planning
+ * - later: Proposed but not yet committed (has decision factors)
+ * - done: Completed work (hidden by default)
+ * - dropped: Cancelled/abandoned work (hidden by default)
+ *
  * Returns:
  * - epics: Array of Epic nodes with roadmap properties
- * - lanes: Grouped by lane (Now, Next, Later)
+ * - lanes: Grouped by lane (Now, Next, and optionally Later/Done/Dropped)
  * - summary: Counts by lane and status
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, runQuery } from '../_neo4j';
 
-type RoadmapLane = 'now' | 'next' | 'later';
+type RoadmapLane = 'now' | 'next' | 'later' | 'done' | 'dropped';
 type RoadmapStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled';
 
 interface EpicRoadmapItem {
@@ -66,6 +73,8 @@ const LANE_LABELS: Record<RoadmapLane, string> = {
   now: 'Now',
   next: 'Next',
   later: 'Later',
+  done: 'Done',
+  dropped: 'Dropped',
 };
 
 export async function GET(request: NextRequest) {
@@ -140,7 +149,14 @@ export async function GET(request: NextRequest) {
              e.roadmap_visible as roadmap_visible,
              e.tags as tags
       ORDER BY
-        CASE e.roadmap_lane WHEN 'now' THEN 0 WHEN 'next' THEN 1 WHEN 'later' THEN 2 ELSE 3 END,
+        CASE e.roadmap_lane
+          WHEN 'now' THEN 0
+          WHEN 'next' THEN 1
+          WHEN 'later' THEN 2
+          WHEN 'done' THEN 3
+          WHEN 'dropped' THEN 4
+          ELSE 5
+        END,
         e.priority,
         e.id
     `;
@@ -174,24 +190,39 @@ export async function GET(request: NextRequest) {
     laneMap.set('now', []);
     laneMap.set('next', []);
     laneMap.set('later', []);
+    laneMap.set('done', []);
+    laneMap.set('dropped', []);
 
     for (const epic of epics) {
-      laneMap.get(epic.roadmap_lane)!.push(epic);
+      const laneEpics = laneMap.get(epic.roadmap_lane);
+      if (laneEpics) {
+        laneEpics.push(epic);
+      } else {
+        // Handle unknown lanes by defaulting to later
+        laneMap.get('later')!.push(epic);
+      }
     }
 
-    const lanes: LaneGroup[] = (['now', 'next', 'later'] as RoadmapLane[])
-      .filter(lane => includeAll || lane !== 'later' || laneMap.get(lane)!.length > 0)
+    // Build lanes array - filter based on includeAll flag
+    const allLanes: RoadmapLane[] = ['now', 'next', 'later', 'done', 'dropped'];
+    const activeLanes: RoadmapLane[] = ['now', 'next'];
+    const lanesToShow = includeAll ? allLanes : activeLanes;
+
+    const lanes: LaneGroup[] = lanesToShow
+      .filter(lane => laneMap.get(lane)!.length > 0 || (includeAll && activeLanes.includes(lane)))
       .map(lane => ({
         lane,
         label: LANE_LABELS[lane],
         epics: laneMap.get(lane)!,
       }));
 
-    // Calculate summary stats
+    // Calculate summary stats (always include all lanes for footer message)
     const byLane: Record<RoadmapLane, number> = {
       now: laneMap.get('now')!.length,
       next: laneMap.get('next')!.length,
       later: laneMap.get('later')!.length,
+      done: laneMap.get('done')!.length,
+      dropped: laneMap.get('dropped')!.length,
     };
 
     const byStatus: Record<string, number> = {};

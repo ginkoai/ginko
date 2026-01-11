@@ -1,3 +1,14 @@
+---
+epic_id: EPIC-007
+status: planned
+created: 2025-12-19
+updated: 2026-01-11
+adr: ADR-055
+roadmap_lane: done
+roadmap_status: completed
+tags: [cross-platform, codex, cursor, copilot, instructions]
+---
+
 # EPIC-007: Cross-Platform AI Instructions
 
 **Status:** Planned

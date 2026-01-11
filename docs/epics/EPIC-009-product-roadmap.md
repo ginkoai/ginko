@@ -2,7 +2,9 @@
 epic_id: EPIC-009
 status: active
 created: 2026-01-03
-updated: 2026-01-03
+updated: 2026-01-11
+roadmap_lane: now
+roadmap_status: in_progress
 tags: [roadmap, product-management, strategic-planning, dashboard]
 ---
 

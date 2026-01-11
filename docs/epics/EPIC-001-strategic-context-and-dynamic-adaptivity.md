@@ -1,3 +1,13 @@
+---
+epic_id: EPIC-001
+status: planning
+created: 2025-11-21
+updated: 2026-01-11
+roadmap_lane: done
+roadmap_status: completed
+tags: [graph, context, cognitive-scaffolding, infrastructure]
+---
+
 # EPIC-001: Strategic Context & Dynamic Adaptivity
 
 ## Epic Overview

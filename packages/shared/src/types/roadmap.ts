@@ -20,8 +20,10 @@
  * - now: Fully planned, committed, ready for immediate implementation
  * - next: Committed but may require additional planning or enablers
  * - later: Proposed but not pulled into active development (default)
+ * - done: Completed work (filtered by default, shown with --all)
+ * - dropped: Cancelled/abandoned work (filtered by default, shown with --all)
  */
-export type RoadmapLane = 'now' | 'next' | 'later';
+export type RoadmapLane = 'now' | 'next' | 'later' | 'done' | 'dropped';
 
 /**
  * Execution status of an Epic on the roadmap
@@ -197,11 +199,15 @@ export function getLaneLabel(lane: RoadmapLane): string {
       return 'Next';
     case 'later':
       return 'Later';
+    case 'done':
+      return 'Done';
+    case 'dropped':
+      return 'Dropped';
   }
 }
 
 /**
- * Get the sort order for lanes (now=0, next=1, later=2)
+ * Get the sort order for lanes (now=0, next=1, later=2, done=3, dropped=4)
  */
 export function getLaneSortOrder(lane: RoadmapLane): number {
   switch (lane) {
@@ -211,6 +217,10 @@ export function getLaneSortOrder(lane: RoadmapLane): number {
       return 1;
     case 'later':
       return 2;
+    case 'done':
+      return 3;
+    case 'dropped':
+      return 4;
   }
 }
 
@@ -219,6 +229,22 @@ export function getLaneSortOrder(lane: RoadmapLane): number {
  */
 export function isCommitted(lane: RoadmapLane): boolean {
   return lane === 'now' || lane === 'next';
+}
+
+/**
+ * Check if a lane is active (shown by default without --all flag)
+ * Active lanes: now, next
+ * Filtered lanes: later, done, dropped (require --all to show)
+ */
+export function isActiveLane(lane: RoadmapLane): boolean {
+  return lane === 'now' || lane === 'next';
+}
+
+/**
+ * Check if a lane is archived (done or dropped)
+ */
+export function isArchivedLane(lane: RoadmapLane): boolean {
+  return lane === 'done' || lane === 'dropped';
 }
 
 /**

@@ -14,7 +14,7 @@ import chalk from 'chalk';
 import { GraphApiClient } from '../graph/api-client.js';
 import { loadGraphConfig } from '../graph/config.js';
 
-type RoadmapLane = 'now' | 'next' | 'later';
+type RoadmapLane = 'now' | 'next' | 'later' | 'done' | 'dropped';
 
 interface EpicRoadmapItem {
   id: string;
@@ -80,6 +80,10 @@ function getLaneHeader(lane: RoadmapLane, count: number): string {
       return chalk.cyan(`📋 Next`) + chalk.dim(` (${count})`);
     case 'later':
       return chalk.yellow(`💭 Later`) + chalk.dim(` (${count})`);
+    case 'done':
+      return chalk.gray(`✓ Done`) + chalk.dim(` (${count})`);
+    case 'dropped':
+      return chalk.red(`✗ Dropped`) + chalk.dim(` (${count})`);
   }
 }
 
@@ -110,6 +114,12 @@ function displayRoadmap(response: RoadmapResponse, options: RoadmapOptions): voi
   }
   if (options.all && summary.byLane.later > 0) {
     summaryParts.push(chalk.yellow(`${summary.byLane.later} later`));
+  }
+  if (options.all && summary.byLane.done > 0) {
+    summaryParts.push(chalk.gray(`${summary.byLane.done} done`));
+  }
+  if (options.all && summary.byLane.dropped > 0) {
+    summaryParts.push(chalk.red(`${summary.byLane.dropped} dropped`));
   }
   if (summary.byStatus.in_progress) {
     summaryParts.push(chalk.blue(`${summary.byStatus.in_progress} in progress`));
@@ -157,9 +167,15 @@ function displayRoadmap(response: RoadmapResponse, options: RoadmapOptions): voi
     console.log('');
   }
 
-  // Footer
-  if (!options.all && summary.byLane.later > 0) {
-    console.log(chalk.dim(`   ${summary.byLane.later} items in Later. Use --all to show.`));
+  // Footer - show hidden counts
+  if (!options.all) {
+    const hiddenCounts = [];
+    if (summary.byLane.later > 0) hiddenCounts.push(`${summary.byLane.later} later`);
+    if (summary.byLane.done > 0) hiddenCounts.push(`${summary.byLane.done} done`);
+    if (summary.byLane.dropped > 0) hiddenCounts.push(`${summary.byLane.dropped} dropped`);
+    if (hiddenCounts.length > 0) {
+      console.log(chalk.dim(`   ${hiddenCounts.join(', ')} hidden. Use --all to show.`));
+    }
   }
   console.log(chalk.dim('   Tip: Use --lane or --status to filter'));
 }
@@ -216,20 +232,23 @@ export async function roadmapAction(options: RoadmapOptions): Promise<void> {
 export function roadmapCommand() {
   const roadmap = new Command('roadmap')
     .description('View product roadmap (Now/Next/Later priority lanes)')
-    .option('-a, --all', 'Include Later items (ideas/backlog)')
-    .option('-l, --lane <lane>', 'Filter by lane (now, next, later)')
+    .option('-a, --all', 'Include Later, Done, and Dropped items')
+    .option('-l, --lane <lane>', 'Filter by lane (now, next, later, done, dropped)')
     .option('-s, --status <status>', 'Filter by status (not_started, in_progress, completed, cancelled)')
     .option('--json', 'Output as JSON')
     .addHelpText('after', `
 ${chalk.gray('Lanes (ADR-056):')}
-  ${chalk.green('⚡ Now')}    Fully planned, committed, ready for implementation
-  ${chalk.cyan('📋 Next')}   Committed but may need additional planning
-  ${chalk.yellow('💭 Later')}  Proposed but not yet committed (has decision factors)
+  ${chalk.green('⚡ Now')}      Fully planned, committed, ready for implementation
+  ${chalk.cyan('📋 Next')}     Committed but may need additional planning
+  ${chalk.yellow('💭 Later')}    Proposed but not yet committed (has decision factors)
+  ${chalk.gray('✓ Done')}      Completed work (hidden by default)
+  ${chalk.red('✗ Dropped')}   Cancelled/abandoned work (hidden by default)
 
 ${chalk.gray('Examples:')}
   ${chalk.green('ginko roadmap')}                    ${chalk.gray('# Show Now and Next lanes')}
-  ${chalk.green('ginko roadmap --all')}              ${chalk.gray('# Include Later items')}
+  ${chalk.green('ginko roadmap --all')}              ${chalk.gray('# Include Later, Done, Dropped')}
   ${chalk.green('ginko roadmap --lane now')}         ${chalk.gray('# Show only Now lane')}
+  ${chalk.green('ginko roadmap --lane done')}        ${chalk.gray('# Show completed work')}
   ${chalk.green('ginko roadmap --status in_progress')} ${chalk.gray('# Show only in-progress epics')}
 
 ${chalk.gray('Status Icons:')}
