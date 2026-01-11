@@ -2,7 +2,7 @@
  * @fileType: api-route
  * @status: current
  * @updated: 2026-01-11
- * @tags: [api, graph, roadmap, epic, ADR-056]
+ * @tags: [api, graph, roadmap, epic, ADR-056, now-next-later]
  * @related: [../nodes/route.ts, ../../migrations/009-epic-roadmap/route.ts]
  * @priority: high
  * @complexity: medium
@@ -12,63 +12,61 @@
 /**
  * GET /api/v1/graph/roadmap
  *
- * Query roadmap view over Epic nodes (ADR-056).
- * Returns Epics organized by quarter for roadmap visualization.
+ * Query roadmap view over Epic nodes (ADR-056 - Now/Next/Later Model).
+ * Returns Epics organized by priority lane for roadmap visualization.
  *
  * Query Parameters:
  * - graphId: Graph namespace (required)
- * - all: Include uncommitted items (default: false)
- * - status: Filter by roadmap_status (optional: not_started, in_progress, completed, cancelled)
+ * - all: Include Later items (default: false, shows only Now+Next)
+ * - lane: Filter by specific lane (now, next, later)
+ * - status: Filter by roadmap_status (not_started, in_progress, completed, cancelled)
  * - visible: Filter by roadmap_visible (default: true for public views)
  *
  * Returns:
  * - epics: Array of Epic nodes with roadmap properties
- * - quarters: Grouped by quarter for display
- * - summary: Counts by status
+ * - lanes: Grouped by lane (Now, Next, Later)
+ * - summary: Counts by lane and status
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, runQuery } from '../_neo4j';
 
+type RoadmapLane = 'now' | 'next' | 'later';
+type RoadmapStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+
 interface EpicRoadmapItem {
   id: string;
   title: string;
   description?: string;
-  commitment_status: 'uncommitted' | 'committed';
-  roadmap_status: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
-  target_start_quarter?: string;
-  target_end_quarter?: string;
+  roadmap_lane: RoadmapLane;
+  roadmap_status: RoadmapStatus;
+  priority?: number;
+  decision_factors?: string[];
   roadmap_visible: boolean;
   tags?: string[];
 }
 
-interface QuarterGroup {
-  quarter: string;
+interface LaneGroup {
+  lane: RoadmapLane;
+  label: string;
   epics: EpicRoadmapItem[];
 }
 
 interface RoadmapResponse {
   epics: EpicRoadmapItem[];
-  quarters: QuarterGroup[];
-  uncommitted: EpicRoadmapItem[];
+  lanes: LaneGroup[];
   summary: {
     total: number;
-    committed: number;
-    uncommitted: number;
+    byLane: Record<RoadmapLane, number>;
     byStatus: Record<string, number>;
   };
 }
 
-/**
- * Convert Neo4j Integer to JavaScript number
- */
-function toNumber(value: any): number {
-  if (typeof value === 'number') return value;
-  if (typeof value === 'object' && value !== null && 'toNumber' in value) {
-    return value.toNumber();
-  }
-  return parseInt(value, 10) || 0;
-}
+const LANE_LABELS: Record<RoadmapLane, string> = {
+  now: 'Now',
+  next: 'Next',
+  later: 'Later',
+};
 
 export async function GET(request: NextRequest) {
   console.log('[Roadmap API] GET /api/v1/graph/roadmap called');
@@ -92,6 +90,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const graphId = searchParams.get('graphId');
     const includeAll = searchParams.get('all') === 'true';
+    const laneFilter = searchParams.get('lane') as RoadmapLane | null;
     const statusFilter = searchParams.get('status');
     const visibleOnly = searchParams.get('visible') !== 'false';
 
@@ -110,9 +109,12 @@ export async function GET(request: NextRequest) {
     // Build the Cypher query
     let whereClause = 'WHERE e.graph_id = $graphId';
 
-    // Filter by commitment status unless --all is specified
-    if (!includeAll) {
-      whereClause += " AND e.commitment_status = 'committed'";
+    // Filter by lane
+    if (laneFilter) {
+      whereClause += ' AND e.roadmap_lane = $laneFilter';
+    } else if (!includeAll) {
+      // Default: show Now and Next only (committed work)
+      whereClause += " AND e.roadmap_lane IN ['now', 'next']";
     }
 
     // Filter by roadmap_status if specified
@@ -131,65 +133,67 @@ export async function GET(request: NextRequest) {
       RETURN e.id as id,
              e.title as title,
              e.description as description,
-             e.commitment_status as commitment_status,
+             e.roadmap_lane as roadmap_lane,
              e.roadmap_status as roadmap_status,
-             e.target_start_quarter as target_start_quarter,
-             e.target_end_quarter as target_end_quarter,
+             e.priority as priority,
+             e.decision_factors as decision_factors,
              e.roadmap_visible as roadmap_visible,
              e.tags as tags
-      ORDER BY e.target_start_quarter, e.id
+      ORDER BY
+        CASE e.roadmap_lane WHEN 'now' THEN 0 WHEN 'next' THEN 1 WHEN 'later' THEN 2 ELSE 3 END,
+        e.priority,
+        e.id
     `;
 
-    const results = await runQuery(query, { graphId, statusFilter });
+    const results = await runQuery(query, { graphId, laneFilter, statusFilter });
 
     // Transform results into EpicRoadmapItems
-    const epics: EpicRoadmapItem[] = results.map(r => ({
-      id: r.id,
-      title: r.title || 'Untitled Epic',
-      description: r.description,
-      commitment_status: r.commitment_status || 'uncommitted',
-      roadmap_status: r.roadmap_status || 'not_started',
-      target_start_quarter: r.target_start_quarter,
-      target_end_quarter: r.target_end_quarter,
-      roadmap_visible: r.roadmap_visible !== false,
-      tags: r.tags || [],
-    }));
-
-    // Group by quarter
-    const quarterMap = new Map<string, EpicRoadmapItem[]>();
-    const uncommitted: EpicRoadmapItem[] = [];
-
-    for (const epic of epics) {
-      if (epic.commitment_status === 'uncommitted') {
-        uncommitted.push(epic);
-      } else if (epic.target_start_quarter) {
-        const quarter = epic.target_start_quarter;
-        if (!quarterMap.has(quarter)) {
-          quarterMap.set(quarter, []);
-        }
-        quarterMap.get(quarter)!.push(epic);
-      } else {
-        // Committed but no quarter assigned - put in "Unscheduled"
-        if (!quarterMap.has('Unscheduled')) {
-          quarterMap.set('Unscheduled', []);
-        }
-        quarterMap.get('Unscheduled')!.push(epic);
+    // Handle legacy data: convert commitment_status to roadmap_lane if needed
+    const epics: EpicRoadmapItem[] = results.map(r => {
+      // Convert legacy commitment_status to roadmap_lane
+      let lane: RoadmapLane = r.roadmap_lane || 'later';
+      if (!r.roadmap_lane && r.commitment_status) {
+        lane = r.commitment_status === 'committed' ? 'next' : 'later';
       }
-    }
 
-    // Sort quarters chronologically
-    const sortedQuarters = Array.from(quarterMap.keys()).sort((a, b) => {
-      if (a === 'Unscheduled') return 1;
-      if (b === 'Unscheduled') return -1;
-      return a.localeCompare(b);
+      return {
+        id: r.id,
+        title: r.title || 'Untitled Epic',
+        description: r.description,
+        roadmap_lane: lane,
+        roadmap_status: r.roadmap_status || 'not_started',
+        priority: r.priority,
+        decision_factors: r.decision_factors || (lane === 'later' ? ['planning'] : undefined),
+        roadmap_visible: r.roadmap_visible !== false,
+        tags: r.tags || [],
+      };
     });
 
-    const quarters: QuarterGroup[] = sortedQuarters.map(q => ({
-      quarter: q,
-      epics: quarterMap.get(q)!,
-    }));
+    // Group by lane
+    const laneMap = new Map<RoadmapLane, EpicRoadmapItem[]>();
+    laneMap.set('now', []);
+    laneMap.set('next', []);
+    laneMap.set('later', []);
+
+    for (const epic of epics) {
+      laneMap.get(epic.roadmap_lane)!.push(epic);
+    }
+
+    const lanes: LaneGroup[] = (['now', 'next', 'later'] as RoadmapLane[])
+      .filter(lane => includeAll || lane !== 'later' || laneMap.get(lane)!.length > 0)
+      .map(lane => ({
+        lane,
+        label: LANE_LABELS[lane],
+        epics: laneMap.get(lane)!,
+      }));
 
     // Calculate summary stats
+    const byLane: Record<RoadmapLane, number> = {
+      now: laneMap.get('now')!.length,
+      next: laneMap.get('next')!.length,
+      later: laneMap.get('later')!.length,
+    };
+
     const byStatus: Record<string, number> = {};
     for (const epic of epics) {
       const status = epic.roadmap_status;
@@ -198,17 +202,15 @@ export async function GET(request: NextRequest) {
 
     const response: RoadmapResponse = {
       epics,
-      quarters,
-      uncommitted: includeAll ? uncommitted : [],
+      lanes,
       summary: {
         total: epics.length,
-        committed: epics.filter(e => e.commitment_status === 'committed').length,
-        uncommitted: uncommitted.length,
+        byLane,
         byStatus,
       },
     };
 
-    console.log(`[Roadmap API] Returning ${epics.length} epics, ${quarters.length} quarters`);
+    console.log(`[Roadmap API] Returning ${epics.length} epics in ${lanes.length} lanes`);
     return NextResponse.json(response);
 
   } catch (error) {

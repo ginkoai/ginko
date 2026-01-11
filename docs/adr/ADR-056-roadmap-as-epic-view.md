@@ -1,8 +1,8 @@
 ---
 type: decision
-status: proposed
-updated: 2026-01-03
-tags: [roadmap, epic, product-management, graph, strategic-planning]
+status: accepted
+updated: 2026-01-11
+tags: [roadmap, epic, product-management, graph, strategic-planning, ai-native]
 related: [ADR-052-unified-entity-naming-convention.md, ADR-054-knowledge-editing-architecture.md]
 priority: high
 audience: [developer, ai-agent, stakeholder]
@@ -10,10 +10,10 @@ estimated-read: 5-min
 dependencies: []
 ---
 
-# ADR-056: Roadmap as Epic View (No Separate Node)
+# ADR-056: Roadmap as Epic View (Now/Next/Later)
 
-**Status:** Proposed
-**Date:** 2026-01-03
+**Status:** Accepted
+**Date:** 2026-01-03 (Amended 2026-01-11)
 **Authors:** Chris Norton, Claude
 **Reviewers:** —
 
@@ -21,7 +21,7 @@ dependencies: []
 
 ### Problem Statement
 
-Ginko needs a way to represent product roadmaps—strategic, time-based views of planned work. The question is whether to introduce a new `Roadmap` node type or model roadmaps as a view over existing Epic nodes.
+Ginko needs a way to represent product roadmaps—priority-based views of planned work. The question is whether to introduce a new `Roadmap` node type or model roadmaps as a view over existing Epic nodes.
 
 ### Business Context
 
@@ -30,7 +30,11 @@ Roadmaps serve multiple stakeholders:
 - **Customers** want visibility into upcoming features
 - **Leadership** needs progress tracking and strategic alignment
 
-A roadmap is inherently visionary and aspirational—it shows direction, not promises. Dates are expressed as quarters (e.g., Q1-2026), not specific dates, reflecting the uncertainty of long-term planning.
+### AI-Native Planning Context (Amendment 2026-01-11)
+
+Traditional quarterly planning (Q1-2026, Q2-2026) assumes work takes weeks or months. With Human+AI teams that ship work in hours and days, quarterly cycles are too slow.
+
+**Observation:** We shipped two full sprints of EPIC-009 in a single session. The roadmap should reflect *priority order*, not calendar dates.
 
 ### Technical Context
 
@@ -47,24 +51,69 @@ The hierarchy is: Epic → Sprint → Task, where Epic defines WHAT and Sprint d
 1. **One roadmap per project** (1:1 relationship)
 2. **Coarse granularity**: Show Epics only, not Sprints/Tasks/Bugs
 3. **Commitment tracking**: Distinguish committed work from exploratory ideas
-4. **Temporal organization**: Quarter-based start/end dates (Q1-2026 format)
-5. **Status visibility**: Track not_started → in_progress → completed
-6. **History tracking**: Changelog for date/status changes
-7. **Public curation**: External roadmaps are curated exports, not live views
+4. **Priority-based organization**: Now/Next/Later lanes instead of quarters
+5. **Decision factor tracking**: Tags indicating why work is in Later
+6. **Status visibility**: Track not_started → in_progress → completed
+7. **History tracking**: Changelog for lane/status changes
+8. **Public curation**: External roadmaps are curated exports, not live views
 
 ## Decision
 
 ### Chosen Solution
 
-**Model the roadmap as a query-based view over Epic nodes, not as a separate node type.**
+**Model the roadmap as a priority-based view over Epic nodes using Now/Next/Later lanes.**
 
-A roadmap is a lens, not an entity. The question "What's on our roadmap?" translates to: "What Epics have we committed to, organized by time?"
+A roadmap is a lens, not an entity. The question "What's on our roadmap?" translates to: "What Epics have we committed to, organized by priority?"
 
 ```cypher
 // Roadmap query
 MATCH (e:Epic)-[:PART_OF]->(p:Project {id: $projectId})
-WHERE e.commitment_status IN ['committed', 'in_progress', 'completed']
-RETURN e ORDER BY e.target_start_quarter
+WHERE e.roadmap_lane IN ['now', 'next']
+RETURN e ORDER BY e.roadmap_lane, e.priority
+```
+
+### Now/Next/Later Model
+
+| Lane | Definition | Commitment |
+|------|------------|------------|
+| **Now** | Fully planned, committed, ready for immediate implementation | Committed |
+| **Next** | Committed but may require additional planning or enablers | Committed |
+| **Later** | Proposed but not pulled into active development | Uncommitted |
+
+**Lane Semantics:**
+
+- **Now**: Work that has been fully planned, committed to, and is ready for implementation immediately. All decision factors resolved. Clear scope, architecture, and acceptance criteria.
+
+- **Next**: Work that has been committed to, but may require additional planning or enablers before it can move to Now. Dependencies may need resolution.
+
+- **Later**: Work that has been proposed but is not being pulled into active development due to incomplete decision factors. This is the default lane for new epics.
+
+### Decision Factors
+
+Epics in Later should have decision factor tags indicating what's blocking commitment:
+
+| Tag | Description |
+|-----|-------------|
+| `planning` | Needs further scope definition or breakdown |
+| `value` | Value proposition unclear or unvalidated |
+| `feasibility` | Technical feasibility not yet assessed |
+| `advisability` | Strategic fit or timing uncertain |
+| `architecture` | Requires architectural decisions or ADRs |
+| `design` | Needs UX/UI design work |
+| `risks` | Unmitigated risks identified |
+| `market-fit` | Market validation needed |
+| `dependencies` | Blocked by external dependencies |
+
+Newly-proposed epics should include the `planning` tag by default.
+
+Each Epic in Later should have a "Decision Factors" section in its body describing the specific blockers:
+
+```markdown
+## Decision Factors
+
+**planning**: Scope needs breakdown into sprints. Estimate: 2 planning sessions.
+
+**architecture**: Requires decision on auth provider (see ADR-060 draft).
 ```
 
 ### Implementation Approach
@@ -79,15 +128,17 @@ Epic nodes gain the following properties:
 
 ```typescript
 interface EpicRoadmapProperties {
-  // Commitment tracking
-  commitment_status: 'uncommitted' | 'committed';
+  // Priority lane (replaces commitment_status + quarters)
+  roadmap_lane: 'now' | 'next' | 'later';
 
-  // Execution status
+  // Execution status (unchanged)
   roadmap_status: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
 
-  // Temporal planning (only valid when committed)
-  target_start_quarter?: string;  // "Q1-2026"
-  target_end_quarter?: string;    // "Q2-2026"
+  // Priority within lane (lower = higher priority)
+  priority?: number;
+
+  // Decision factors for Later items (tags)
+  decision_factors?: string[];  // ['planning', 'architecture', ...]
 
   // Visibility control
   roadmap_visible: boolean;  // false = internal/tech-debt, hidden from public views
@@ -98,7 +149,7 @@ interface EpicRoadmapProperties {
 
 interface ChangelogEntry {
   timestamp: string;      // ISO 8601
-  field: string;          // "target_end_quarter", "commitment_status", etc.
+  field: string;          // "roadmap_lane", "roadmap_status", etc.
   from: string | null;    // Previous value
   to: string;             // New value
   reason?: string;        // Optional explanation
@@ -108,112 +159,97 @@ interface ChangelogEntry {
 ### Validation Rules
 
 ```typescript
-// Uncommitted items cannot have dates
-if (epic.commitment_status === 'uncommitted') {
-  if (epic.target_start_quarter || epic.target_end_quarter) {
-    throw new ValidationError('Uncommitted items cannot have target dates');
+// Later items should have decision factors
+if (epic.roadmap_lane === 'later') {
+  if (!epic.decision_factors || epic.decision_factors.length === 0) {
+    warn('Later items should have decision_factors explaining blockers');
+    epic.decision_factors = ['planning']; // Default
   }
 }
 
-// Committed items should not extend beyond 2 years
-if (epic.commitment_status === 'committed' && epic.target_end_quarter) {
-  const maxQuarter = getCurrentQuarter().add(8, 'quarters'); // ~2 years
-  if (parseQuarter(epic.target_end_quarter) > maxQuarter) {
-    warn('Committed work extends beyond 2-year horizon');
+// Now items should have no unresolved decision factors
+if (epic.roadmap_lane === 'now') {
+  if (epic.decision_factors && epic.decision_factors.length > 0) {
+    throw new ValidationError('Now items cannot have unresolved decision factors');
   }
 }
-```
 
-### Quarter Format
-
-```typescript
-// Format: "Q{1-4}-{YYYY}"
-const QUARTER_REGEX = /^Q[1-4]-\d{4}$/;
-
-function parseQuarter(q: string): { year: number; quarter: number } {
-  const [qNum, year] = q.split('-');
-  return { year: parseInt(year), quarter: parseInt(qNum[1]) };
-}
-
-function compareQuarters(a: string, b: string): number {
-  const pa = parseQuarter(a);
-  const pb = parseQuarter(b);
-  return (pa.year * 4 + pa.quarter) - (pb.year * 4 + pb.quarter);
+// Newly proposed epics default to Later with planning tag
+function createEpic(props: EpicProps): Epic {
+  return {
+    ...props,
+    roadmap_lane: props.roadmap_lane || 'later',
+    decision_factors: props.decision_factors || ['planning'],
+    roadmap_status: 'not_started',
+    roadmap_visible: true,
+  };
 }
 ```
 
 ### Integration Points
 
 **Dashboard (Primary Interface)**
-- Visual canvas for arranging Epics by quarter
-- Drag-and-drop to change dates
-- Toggle commitment status
+- Visual canvas with three lanes: Now, Next, Later
+- Drag-and-drop to move Epics between lanes
+- Decision factor tags visible on Later items
 - Filter by status, tags, visibility
 - Export curated public roadmap
 
 **CLI (Read-Only View)**
 ```bash
-ginko roadmap                    # Show committed epics by quarter
-ginko roadmap --all              # Include uncommitted items
-ginko roadmap --status completed # Filter by status
+ginko roadmap                    # Show Now and Next lanes
+ginko roadmap --all              # Include Later items
+ginko roadmap --lane now         # Show only Now
+ginko roadmap --status in_progress # Filter by status
 ```
 
 **Graph Queries**
 ```cypher
-// All roadmap items for a project
+// Active roadmap (Now + Next)
 MATCH (e:Epic)-[:PART_OF]->(p:Project {id: $projectId})
-WHERE e.roadmap_visible = true
-RETURN e ORDER BY e.target_start_quarter
+WHERE e.roadmap_lane IN ['now', 'next']
+  AND e.roadmap_visible = true
+RETURN e ORDER BY
+  CASE e.roadmap_lane WHEN 'now' THEN 0 WHEN 'next' THEN 1 END,
+  e.priority
 
-// Uncommitted ideas (backlog)
+// Backlog (Later)
 MATCH (e:Epic)-[:PART_OF]->(p:Project {id: $projectId})
-WHERE e.commitment_status = 'uncommitted'
+WHERE e.roadmap_lane = 'later'
 RETURN e
 
-// In-progress work
+// Items needing planning
 MATCH (e:Epic)-[:PART_OF]->(p:Project {id: $projectId})
-WHERE e.roadmap_status = 'in_progress'
+WHERE 'planning' IN e.decision_factors
 RETURN e
 ```
 
 ## Alternatives Considered
 
-### Option 1: Separate Roadmap Node
+### Option 1: Quarterly Planning (Original Design)
+
+**Description:** Organize Epics by quarter (Q1-2026, Q2-2026, etc.)
+
+**Pros:**
+- Familiar to traditional product teams
+- Aligns with fiscal planning cycles
+
+**Cons:**
+- Too slow for AI-native teams that ship in hours/days
+- Creates false precision about timing
+- Requires constant re-planning as quarters shift
+
+**Decision:** Rejected in Amendment 2026-01-11. Priority-based lanes better fit AI-native velocity.
+
+### Option 2: Separate Roadmap Node
 
 **Description:** Create a `Roadmap` node type with `CONTAINS` relationships to Epics.
 
-```
-Project ──HAS_ROADMAP──> Roadmap ──CONTAINS──> Epic
-```
-
-**Pros:**
-- Explicit container for roadmap-level metadata
-- Could support multiple roadmaps per project (public vs internal)
-- Clear relationship structure
-
-**Cons:**
-- Additional node type and relationships to manage
-- Roadmap metadata is sparse (mostly just a container)
-- Multiple roadmaps per project violates stated requirement
-
 **Decision:** Rejected. The 1:1 constraint and sparse metadata make this unnecessary complexity.
 
-### Option 2: RoadmapItem Join Node
+### Option 3: RoadmapItem Join Node
 
-**Description:** Create a `RoadmapItem` node between Roadmap and Epic to hold planning metadata.
-
-```
-Roadmap ──CONTAINS──> RoadmapItem ──REFERENCES──> Epic
-```
-
-**Pros:**
-- Separates planning metadata from execution metadata
-- Same Epic could appear differently on multiple roadmaps
-
-**Cons:**
-- Most complex option
-- Violates 1:1 constraint
-- Duplicates Epic identity
+**Description:** Create a `RoadmapItem` node between Roadmap and Epic.
 
 **Decision:** Rejected. Over-engineered for current requirements.
 
@@ -222,36 +258,36 @@ Roadmap ──CONTAINS──> RoadmapItem ──REFERENCES──> Epic
 ### Positive Impacts
 
 - **Simpler schema**: No new node types
-- **Query-based flexibility**: Roadmap views can be customized per-user
-- **Single source of truth**: Epic properties are authoritative
-- **Natural fit**: Aligns with "graph as truth, UI as lens" philosophy
+- **Priority-focused**: Reflects actual work prioritization
+- **AI-native velocity**: No arbitrary time constraints
+- **Clear commitment model**: Now/Next = committed, Later = proposed
+- **Decision transparency**: Tags explain why work isn't committed yet
 
 ### Negative Impacts
 
-- **Limited roadmap metadata**: No place for roadmap-level vision statement
-  - *Mitigation*: Use Project description or curated export metadata
-- **All-or-nothing visibility**: Epic is either on roadmap or not
-  - *Mitigation*: `roadmap_visible` boolean handles internal vs public
+- **No time visibility**: Stakeholders can't see "when" only "priority"
+  - *Mitigation*: For external communication, map lanes to rough timeframes
+- **Requires discipline**: Teams must actively groom Later lane
+  - *Mitigation*: Decision factor tags create accountability
 
 ### Migration Strategy
 
-1. Add new properties to Epic schema with defaults:
-   - `commitment_status`: 'uncommitted'
-   - `roadmap_status`: 'not_started'
-   - `roadmap_visible`: true
-   - `changelog`: []
-2. Existing Epics remain unchanged (uncommitted, no dates)
-3. Dashboard gains roadmap view components
-4. CLI gains `ginko roadmap` command
+1. Migrate existing `commitment_status` to `roadmap_lane`:
+   - `committed` → `next` (needs review for `now`)
+   - `uncommitted` → `later`
+2. Add `decision_factors: ['planning']` to all Later items
+3. Remove `target_start_quarter` and `target_end_quarter` fields
+4. Update CLI and API to use new model
 
 ## Implementation Details
 
 ### Technical Requirements
 
 - Neo4j schema update for Epic properties
-- Dashboard: New roadmap canvas component
-- CLI: New `roadmap` command
-- Validation middleware for commitment/date rules
+- Migration script to convert existing data
+- Dashboard: Three-lane canvas component
+- CLI: Updated `roadmap` command
+- Validation middleware for lane rules
 
 ### Security Considerations
 
@@ -267,24 +303,24 @@ Roadmap ──CONTAINS──> RoadmapItem ──REFERENCES──> Epic
 
 ### Success Criteria
 
-- Teams can visualize committed work by quarter
-- Uncommitted items are clearly separated
-- Date changes are tracked in changelog
+- Teams can visualize work by priority lane
+- Decision factors provide clarity on Later items
+- Lane transitions are tracked in changelog
 - Public roadmap exports exclude internal work
 
 ### Failure Criteria
 
 - Schema changes break existing Epic workflows
 - Changelog arrays grow unbounded
-- Users confuse commitment_status with roadmap_status
+- Confusion between roadmap_lane and roadmap_status
 
 ## Risks and Mitigations
 
 | Risk | Impact | Probability | Mitigation |
 |------|--------|-------------|------------|
 | Changelog arrays grow too large | Low | Medium | Prune entries older than 2 years |
-| Confusion between commitment and status | Medium | Medium | Clear UI labels, validation messages |
-| Need for multiple roadmaps later | Medium | Low | Can revisit if requirement emerges |
+| Later lane becomes dumping ground | Medium | Medium | Decision factor tags create accountability |
+| Stakeholders want dates | Medium | High | Document lane-to-timeframe mapping for external comms |
 
 ## References
 
@@ -293,8 +329,9 @@ Roadmap ──CONTAINS──> RoadmapItem ──REFERENCES──> Epic
 - [ADR-054: Knowledge Editing Architecture](ADR-054-knowledge-editing-architecture.md)
 
 ### Code References
-- Epic schema: `packages/cli/src/types/graph.ts` (to be updated)
-- Graph queries: `dashboard/src/lib/graph-queries.ts` (to be created)
+- Epic schema: `packages/shared/src/types/roadmap.ts`
+- CLI command: `packages/cli/src/commands/roadmap/index.ts`
+- API endpoint: `dashboard/src/app/api/v1/graph/roadmap/route.ts`
 
 ---
 
@@ -302,4 +339,5 @@ Roadmap ──CONTAINS──> RoadmapItem ──REFERENCES──> Epic
 
 | Date | Author | Changes |
 |------|--------|---------|
-| 2026-01-03 | Chris Norton, Claude | Initial draft from collaborative design session |
+| 2026-01-03 | Chris Norton, Claude | Initial draft with quarterly planning |
+| 2026-01-11 | Chris Norton, Claude | **Amendment:** Replace quarterly model with Now/Next/Later lanes for AI-native teams |
