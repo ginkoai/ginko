@@ -308,8 +308,20 @@
 4. **Landscape hint** - Shows "Rotate to portrait" banner on phones in landscape (max-height 500px)
 
 **Files Changed:**
-- `dashboard/src/components/roadmap/EpicCard.tsx` - Added select-none, webkit styles, improved drag scale
-- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` - Reduced delay to 150ms, added landscape hint
+- `dashboard/src/components/roadmap/EpicCard.tsx` - isOverlay prop, placeholder/overlay differentiation, select-none
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` - MouseSensor for desktop, TouchSensor for mobile
+
+**Final Implementation (after iterative UAT):**
+- **MouseSensor**: Desktop mouse drag with 8px distance activation (ignores touch events)
+- **TouchSensor**: Mobile long-press with 250ms delay, 8px tolerance (allows scrolling)
+- **Placeholder styling**: Dashed green border, 40% opacity, light green tint
+- **Overlay styling**: Scale 105%, shadow, solid green border, 2° rotation
+- **Text selection**: `select-none` prevents iOS copy behavior
+
+**Tests Passed (iPhone Safari):**
+- Scroll page: ✅
+- Long-press drag: ✅
+- Drop to new lane: ✅
 
 ---
 
