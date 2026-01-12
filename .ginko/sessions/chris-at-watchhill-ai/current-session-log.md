@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-12T16-34-58-992Z
-started: 2026-01-12T16:34:58.992Z
+session_id: session-2026-01-12T22-00-33-300Z
+started: 2026-01-12T22:00:33.300Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-12T16-34-58-992Z
+# Session Log: session-2026-01-12T22-00-33-300Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,44 +37,50 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 13:08 - [feature]
-# [FEATURE] 13:08
+### 17:06 - [feature]
+# [FEATURE] 17:06
 
-Created ad-hoc sprint for Insights mobile UAT & Polish. 7 tasks from user testing feedback: remove redundant header, hide Last Analysis badge on mobile, full-width label, reposition analysis period, stack scoring widgets vertically, reorder analysis detail cards layout, add bottom scroll padding for footer.
+Starting e009_s05_t03: Mobile Drag-and-Drop Evaluation. Goal: Evaluate touch drag UX on iOS/Android and decide between drag vs tap-to-modal pattern for mobile.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 
 **Impact:** medium
-**Timestamp:** 2026-01-12T18:08:05.310Z
+**Timestamp:** 2026-01-12T22:06:44.333Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: medium
 
-### 16:29 - [decision]
-# [DECISION] 16:29
+### 17:32 - [feature]
+# [FEATURE] 17:32
 
-Created ADR-059 (Maintenance Epics) establishing that all sprints must belong to an epic. Created EPIC-014 (Dashboard Maintenance Q1-2026) as first maintenance epic. Migrated Insights Mobile UAT sprint from adhoc to e014_s01.
+Completed e009_s05_t03: Mobile Drag-and-Drop Evaluation. UAT tested on iPhone/iPad. Fixes: disabled text selection (select-none + webkit styles), reduced drag delay 250ms→150ms, improved drag visual feedback (scale 105% + shadow), added landscape orientation hint for phones. Decision: Keep drag-and-drop with improvements, modal lane selector remains as fallback.
 
 **Files:**
-- .ginko/graph/config.json
-- docs/epics/EPIC-INDEX.md
-- docs/sprints/SPRINT-2026-01-adhoc-insights-mobile-uat.md
+- dashboard/src/components/roadmap/EpicCard.tsx
+- dashboard/src/components/roadmap/RoadmapCanvas.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-12T21:29:00.676Z
+**Timestamp:** 2026-01-12T22:32:59.284Z
 
-Files: .ginko/graph/config.json, docs/epics/EPIC-INDEX.md, docs/sprints/SPRINT-2026-01-adhoc-insights-mobile-uat.md
+Files: dashboard/src/components/roadmap/EpicCard.tsx, dashboard/src/components/roadmap/RoadmapCanvas.tsx
 Impact: high
 
-### 16:49 - [achievement]
-# [ACHIEVEMENT] 16:49
+### 18:11 - [feature]
+# [FEATURE] 18:11
 
-Completed e014_s01 (Insights Mobile UAT). All 7 tasks done: header restructure, badge hiding, widget stacking, card layout reorder, bottom padding. Files: InsightsOverview.tsx, InsightCard.tsx. Build compiles but pre-existing Stripe config issue blocks full build.
+Completed e009_s05_t03: Mobile Drag-and-Drop UAT. Final solution: MouseSensor for desktop (8px distance), TouchSensor for mobile (250ms delay, 8px tolerance). Visual feedback: placeholder shows dashed border + 40% opacity, overlay card scales 105% with rotation. Scrolling works, long-press initiates drag.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/components/roadmap/EpicCard.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-12T21:49:47.098Z
+**Timestamp:** 2026-01-12T23:11:54.980Z
 
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/components/roadmap/EpicCard.tsx
 Impact: high

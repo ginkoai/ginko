@@ -17,7 +17,7 @@ import {
   DragOverlay,
   closestCenter,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
@@ -197,15 +197,15 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   const { filters, setFilters, filterEpics, extractTags, isFiltered } = useRoadmapFilters();
 
   // DnD Sensors - configured for both desktop and mobile
-  // - PointerSensor: Desktop mouse with 8px distance threshold
+  // - MouseSensor: Desktop mouse only (not touch) with 8px distance threshold
   // - TouchSensor: Mobile touch with 250ms delay (long-press to drag, prevents scroll conflicts)
   // - KeyboardSensor: Accessibility support
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       activationConstraint: { distance: 8 },
     }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 250, tolerance: 5 },
+      activationConstraint: { delay: 250, tolerance: 8 },
     }),
     useSensor(KeyboardSensor)
   );
@@ -509,13 +509,14 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
         )}
       </div>
 
-      {/* Drag Overlay - shows the dragged card */}
+      {/* Drag Overlay - shows the dragged card (lifted, rotated) */}
       <DragOverlay dropAnimation={null}>
         {activeEpic && (
           <EpicCard
             epic={activeEpic}
             lane={activeEpic.roadmap_lane}
             isDragging
+            isOverlay
           />
         )}
       </DragOverlay>

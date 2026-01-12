@@ -5,7 +5,7 @@
 **Sprint Goal**: Manual UAT testing and UI/UX polish for all roadmap features
 **Duration**: 1 week (2026-01-13 to 2026-01-17)
 **Type**: QA/Polish sprint
-**Progress:** 33% (2/6 tasks complete)
+**Progress:** 50% (3/6 tasks complete)
 
 **Success Criteria:**
 - [ ] All drag-and-drop bugs resolved (including card duplication)
@@ -86,7 +86,7 @@
 ---
 
 ### e009_s05_t03: Mobile Drag-and-Drop Evaluation (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assignee:** chris@watchhill.ai
 
@@ -281,6 +281,35 @@
 
 **Files Changed:**
 - `dashboard/src/components/roadmap/RoadmapCanvas.tsx:479` - Updated container classes
+
+---
+
+### 2026-01-12: T03 Mobile Drag-and-Drop Evaluation
+
+**UAT Results:**
+| Test | Result |
+|------|--------|
+| Scroll page | ✅ Pass |
+| Quick tap on card | ✅ Pass |
+| Long-press + drag | ⚠️ Pass (text copy behavior triggered) |
+| Drag while scrolling | ✅ Pass |
+| Drag handle visibility | ✅ Pass |
+| Touch target hit area | ✅ Pass |
+| Modal lane change | ✅ Pass |
+| Landscape (iPad) | ✅ Pass |
+| Landscape (iPhone) | ❌ Not practical |
+
+**Decision:** Keep drag-and-drop for mobile with improvements. Modal lane selector remains as fallback.
+
+**Fixes Applied:**
+1. **Text selection disabled** - Added `select-none` + webkit touch callout styles to prevent iOS copy behavior
+2. **Faster drag activation** - Reduced TouchSensor delay from 250ms to 150ms
+3. **Better drag feedback** - Card now scales to 105% with shadow when dragging (was 102% with opacity)
+4. **Landscape hint** - Shows "Rotate to portrait" banner on phones in landscape (max-height 500px)
+
+**Files Changed:**
+- `dashboard/src/components/roadmap/EpicCard.tsx` - Added select-none, webkit styles, improved drag scale
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` - Reduced delay to 150ms, added landscape hint
 
 ---
 

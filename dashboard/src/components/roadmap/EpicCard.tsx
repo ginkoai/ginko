@@ -26,6 +26,7 @@ interface EpicCardProps {
   epic: RoadmapEpic;
   lane: RoadmapLane;
   isDragging?: boolean;
+  isOverlay?: boolean; // True when rendered in DragOverlay (the card being dragged)
   onClick?: () => void;
 }
 
@@ -44,7 +45,7 @@ const STATUS_ICONS: Record<string, { icon: typeof Circle; className: string }> =
 // Base EpicCard Component (non-draggable) - Memoized for performance
 // =============================================================================
 
-export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
+export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, isOverlay, onClick }: EpicCardProps) {
   const statusConfig = STATUS_ICONS[epic.roadmap_status] || STATUS_ICONS.not_started;
   const StatusIcon = statusConfig.icon;
   const hasDecisionFactors = epic.decision_factors && epic.decision_factors.length > 0;
@@ -63,10 +64,14 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick
       onClick={onClick}
       className={`
         group relative cursor-pointer transition-all duration-200
-        border-2 border-border
-        hover:border-primary/70 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]
-        ${isDragging ? 'opacity-50 shadow-lg scale-[1.02] ring-2 ring-primary' : ''}
-        ${isCompleted ? 'opacity-70' : ''}
+        border-2 select-none
+        ${isOverlay
+          ? 'border-primary shadow-xl scale-105 ring-2 ring-primary z-50 rotate-2'
+          : isDragging
+            ? 'border-dashed border-primary/50 opacity-40 bg-primary/5'
+            : 'border-border hover:border-primary/70 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+        }
+        ${isCompleted && !isOverlay ? 'opacity-70' : ''}
       `}
     >
       {/* Completed Overlay */}
@@ -79,7 +84,7 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick
       <div className="flex items-start gap-2 p-3">
         {/* Drag Handle - always visible on touch, hover on desktop */}
         {/* Min 44px touch target per iOS HIG */}
-        <div className="opacity-50 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground shrink-0 -ml-1 p-2 -m-2 touch-none">
+        <div className="opacity-50 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground shrink-0 -ml-1 p-2 -m-2">
           <GripVertical className="w-5 h-5" />
         </div>
 
@@ -161,6 +166,7 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick
     prevProps.epic.totalSprints === nextProps.epic.totalSprints &&
     prevProps.lane === nextProps.lane &&
     prevProps.isDragging === nextProps.isDragging &&
+    prevProps.isOverlay === nextProps.isOverlay &&
     // Compare arrays by reference first, then by content if needed
     prevProps.epic.decision_factors === nextProps.epic.decision_factors &&
     prevProps.epic.tags === nextProps.epic.tags
@@ -188,7 +194,7 @@ export const DraggableEpicCard = memo(function DraggableEpicCard({ epic, lane, o
   });
 
   // Don't apply transform - let DragOverlay handle the visual drag feedback
-  // The original card stays in place as a placeholder (with opacity-50 styling)
+  // The original card stays in place as a placeholder (with dimmed styling)
   return (
     <div
       ref={setNodeRef}
