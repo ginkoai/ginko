@@ -5,7 +5,7 @@
 **Sprint Goal**: Build vertical priority-based canvas for editing roadmap in the dashboard
 **Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 50% (3/6 tasks complete)
+**Progress:** 100% (6/6 tasks complete)
 
 **Success Criteria:**
 - [ ] Vertical canvas displays Epics in Now/Next/Later lanes (priority flows top-to-bottom)
@@ -193,7 +193,7 @@ function handleDragEnd(event: DragEndEvent) {
 ---
 
 ### e009_s03_t04: Epic Edit Modal with Decision Factors (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Depends:** t02
 
@@ -251,7 +251,7 @@ interface EpicRoadmapUpdate {
 ---
 
 ### e009_s03_t05: Filter Controls (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Depends:** t01
 
@@ -290,7 +290,7 @@ interface RoadmapFilters {
 ---
 
 ### e009_s03_t06: Optimistic Updates & Error Handling (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Depends:** t03, t04
 
@@ -344,6 +344,95 @@ const { mutate, isPending, error } = useMutation({
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-11: T6 Optimistic Updates & Error Handling
+
+**Implementation (completed alongside t03/t04):**
+- Both `moveMutation` and `updateMutation` use React Query optimistic update pattern
+- `onMutate`: Cancel outgoing queries, snapshot previous state, apply optimistic update
+- `onError`: Rollback to previous state on API failure
+- `onSettled`: Invalidate queries to refetch fresh data
+
+**Coverage:**
+- Drag-and-drop lane moves - optimistic + rollback ✓
+- Edit modal saves - optimistic + rollback ✓
+- Error logging to console (toast notifications deferred)
+
+**Files:**
+- dashboard/src/components/roadmap/RoadmapCanvas.tsx (moveMutation, updateMutation)
+
+---
+
+### 2026-01-11: T5 Filter Controls
+
+**Components Created:**
+- `dashboard/src/components/roadmap/RoadmapFilters.tsx` - Full filter panel
+  - Lane toggles (Now/Next/Later) with pill buttons
+  - Status filter chips (not_started, in_progress, completed, cancelled)
+  - Decision factor filter (9 factors with amber highlighting)
+  - Tag filter (from available epic tags)
+  - Visibility toggle (show/hide internal items)
+  - Clear filters button with active filter summary
+- `dashboard/src/hooks/useRoadmapFilters.ts` - Filter state management
+  - URL persistence for all filter states
+  - filterEpics function for applying filters
+  - extractTags helper for available tags
+
+**RoadmapCanvas Integration:**
+- Filter button shows active indicator (green dot) when filters applied
+- Footer shows "X of Y epics shown" when filtered
+- Lanes dynamically show/hide based on lane filter
+- All filters persist in URL params for shareability
+
+**URL Parameters:**
+- `lanes=now,next` - Show specific lanes
+- `statuses=in_progress` - Filter by status
+- `factors=planning,architecture` - Filter by decision factors
+- `tags=roadmap,dashboard` - Filter by tags
+- `internal=false` - Hide internal items
+
+**Files Created/Modified:**
+- dashboard/src/components/roadmap/RoadmapFilters.tsx (new)
+- dashboard/src/hooks/useRoadmapFilters.ts (new)
+- dashboard/src/components/roadmap/RoadmapCanvas.tsx (updated)
+- dashboard/src/components/roadmap/index.ts (updated)
+
+---
+
+### 2026-01-11: T4 Epic Edit Modal with Decision Factors
+
+**Components Created:**
+- `dashboard/src/components/roadmap/DecisionFactorSelector.tsx` - Multi-select grid for decision factors
+  - 9 factor options with descriptions (planning, value, feasibility, etc.)
+  - Checkbox-style selection with amber highlight
+  - Count indicator for selected factors
+- `dashboard/src/components/roadmap/EpicEditModal.tsx` - Full edit modal
+  - Lane selector (Now/Next/Later/Done/Dropped) with color-coded borders
+  - Status selector with icons (not_started, in_progress, completed, cancelled)
+  - Decision factor multi-select with blocking message
+  - Visibility toggle (Public/Internal)
+  - Change reason textarea for changelog
+  - **Validation:** Now lane disabled when decision factors present
+
+**RoadmapCanvas Integration:**
+- Added `editingEpic` state for modal control
+- Added `updateEpicProperties` API function
+- Added `updateMutation` with optimistic updates and rollback
+- Epic cards now open edit modal on click
+- Moving to Later without factors opens edit modal for factor selection
+
+**Key Validation Logic:**
+- Cannot select "Now" lane if decision factors exist (ADR-056 rule)
+- Visual warning on disabled Now button
+- Validation error message if attempting invalid state
+
+**Files Created/Modified:**
+- dashboard/src/components/roadmap/DecisionFactorSelector.tsx (new)
+- dashboard/src/components/roadmap/EpicEditModal.tsx (new)
+- dashboard/src/components/roadmap/RoadmapCanvas.tsx (updated)
+- dashboard/src/components/roadmap/index.ts (updated)
+
+---
 
 ### 2026-01-11: T3 Drag-and-Drop with Decision Factor Validation
 

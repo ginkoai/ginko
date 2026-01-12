@@ -24,8 +24,11 @@ import {
 import { Filter, Settings, Loader2 } from 'lucide-react';
 import { LaneSection } from './LaneSection';
 import { EpicCard } from './EpicCard';
+import { EpicEditModal, type EpicRoadmapUpdate } from './EpicEditModal';
+import { RoadmapFilters } from './RoadmapFilters';
 import { Button } from '@/components/ui/button';
 import { useRoadmapDnd } from '@/hooks/useRoadmapDnd';
+import { useRoadmapFilters } from '@/hooks/useRoadmapFilters';
 import type { RoadmapLane, DecisionFactor } from '@/lib/graph/types';
 
 // =============================================================================
@@ -130,6 +133,38 @@ async function updateEpicLane(
   }
 }
 
+async function updateEpicProperties(
+  epicId: string,
+  updates: EpicRoadmapUpdate,
+  graphId: string
+): Promise<void> {
+  const properties: Record<string, unknown> = {};
+
+  if (updates.roadmap_lane !== undefined) properties.roadmap_lane = updates.roadmap_lane;
+  if (updates.roadmap_status !== undefined) properties.roadmap_status = updates.roadmap_status;
+  if (updates.decision_factors !== undefined) properties.decision_factors = updates.decision_factors;
+  if (updates.roadmap_visible !== undefined) properties.roadmap_visible = updates.roadmap_visible;
+
+  // Add changelog entry if reason provided
+  if (updates.changelog_reason) {
+    properties.changelog_entry = {
+      timestamp: new Date().toISOString(),
+      reason: updates.changelog_reason,
+      changes: Object.keys(updates).filter(k => k !== 'changelog_reason'),
+    };
+  }
+
+  const response = await fetch(`/api/v1/graph/nodes/${epicId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ graphId, properties }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update epic');
+  }
+}
+
 // =============================================================================
 // Component
 // =============================================================================
@@ -137,7 +172,11 @@ async function updateEpicLane(
 export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   const [showAll, setShowAll] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [editingEpic, setEditingEpic] = useState<RoadmapEpic | null>(null);
   const queryClient = useQueryClient();
+
+  // Filters hook
+  const { filters, setFilters, filterEpics, extractTags, isFiltered } = useRoadmapFilters();
 
   // DnD Sensors
   const sensors = useSensors(
@@ -154,8 +193,14 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     staleTime: 30_000,
   });
 
-  // All epics flattened for DnD
+  // All epics flattened for DnD (unfiltered, needed for drag operations)
   const allEpics = data?.epics || [];
+
+  // Filtered epics for display
+  const filteredEpics = filterEpics(allEpics);
+
+  // Extract available tags for filter component
+  const availableTags = extractTags(allEpics);
 
   // Mutation for moving epics
   const moveMutation = useMutation({
@@ -204,6 +249,52 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     },
   });
 
+  // Mutation for updating epic properties (from edit modal)
+  const updateMutation = useMutation({
+    mutationFn: ({ epicId, updates }: { epicId: string; updates: EpicRoadmapUpdate }) =>
+      updateEpicProperties(epicId, updates, graphId),
+    onMutate: async ({ epicId, updates }) => {
+      await queryClient.cancelQueries({ queryKey: ['roadmap', graphId] });
+      const previousData = queryClient.getQueryData<RoadmapResponse>(['roadmap', graphId]);
+
+      if (previousData) {
+        const updatedEpics = previousData.epics.map((epic) =>
+          epic.id === epicId
+            ? {
+                ...epic,
+                ...(updates.roadmap_lane && { roadmap_lane: updates.roadmap_lane }),
+                ...(updates.roadmap_status && { roadmap_status: updates.roadmap_status }),
+                ...(updates.decision_factors !== undefined && { decision_factors: updates.decision_factors }),
+                ...(updates.roadmap_visible !== undefined && { roadmap_visible: updates.roadmap_visible }),
+              }
+            : epic
+        );
+
+        const updatedLanes = previousData.lanes.map((lane) => ({
+          ...lane,
+          epics: updatedEpics.filter((e) => e.roadmap_lane === lane.lane),
+        }));
+
+        queryClient.setQueryData<RoadmapResponse>(['roadmap', graphId], {
+          ...previousData,
+          epics: updatedEpics,
+          lanes: updatedLanes,
+        });
+      }
+
+      return { previousData };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(['roadmap', graphId], context.previousData);
+      }
+      console.error('Failed to update epic:', _err);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['roadmap', graphId] });
+    },
+  });
+
   // Handle epic move
   const handleEpicMove = (epicId: string, targetLane: RoadmapLane) => {
     moveMutation.mutate({ epicId, targetLane });
@@ -211,9 +302,24 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
 
   // Handle prompt for decision factors (when moving to Later without factors)
   const handlePromptForFactors = (epic: RoadmapEpic, targetLane: RoadmapLane) => {
-    // For now, just move it - the edit modal (t04) will handle factor selection
-    console.log('Moving to Later - consider adding decision factors');
-    handleEpicMove(epic.id, targetLane);
+    // Open edit modal for the epic so user can add decision factors
+    setEditingEpic({ ...epic, roadmap_lane: targetLane });
+  };
+
+  // Handle epic click to open edit modal
+  const handleEpicClick = (epicId: string) => {
+    const epic = allEpics.find((e) => e.id === epicId);
+    if (epic) {
+      setEditingEpic(epic);
+    }
+    // Note: Don't call onEpicSelect here - that's for external navigation
+    // The edit modal is the primary action on click
+  };
+
+  // Handle save from edit modal
+  const handleEpicSave = async (updates: EpicRoadmapUpdate) => {
+    if (!editingEpic) return;
+    await updateMutation.mutateAsync({ epicId: editingEpic.id, updates });
   };
 
   // DnD hook
@@ -230,19 +336,22 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     onPromptForFactors: handlePromptForFactors,
   });
 
-  // Build lane groups with configuration
+  // Build lane groups with filtered epics
   const laneGroups: LaneGroup[] = (showAll
     ? (['now', 'next', 'later', 'done', 'dropped'] as RoadmapLane[])
     : (['now', 'next', 'later'] as RoadmapLane[])
-  ).map((lane) => {
-    const laneData = data?.lanes.find((l) => l.lane === lane);
-    return {
-      lane,
-      label: LANE_CONFIG[lane].label,
-      description: LANE_CONFIG[lane].description,
-      epics: laneData?.epics || [],
-    };
-  });
+  )
+    .filter((lane) => filters.lanes.includes(lane) || showAll)
+    .map((lane) => {
+      // Use filtered epics instead of raw lane data
+      const laneEpics = filteredEpics.filter((e) => e.roadmap_lane === lane);
+      return {
+        lane,
+        label: LANE_CONFIG[lane].label,
+        description: LANE_CONFIG[lane].description,
+        epics: laneEpics,
+      };
+    });
 
   // Loading state
   if (isLoading) {
@@ -293,10 +402,13 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
               variant="ghost"
               size="sm"
               onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? 'bg-secondary' : ''}
+              className={showFilters || isFiltered ? 'bg-secondary' : ''}
             >
               <Filter className="w-4 h-4 mr-2" />
               Filters
+              {isFiltered && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-primary" />
+              )}
             </Button>
             <Button
               variant="ghost"
@@ -311,12 +423,14 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
           </div>
         </div>
 
-        {/* Filter Panel (placeholder) */}
+        {/* Filter Panel */}
         {showFilters && (
-          <div className="px-6 py-3 border-b border-border bg-secondary/30">
-            <p className="text-sm text-muted-foreground">
-              Filter controls coming in Task 5...
-            </p>
+          <div className="px-6 py-4 border-b border-border bg-secondary/30">
+            <RoadmapFilters
+              filters={filters}
+              onChange={setFilters}
+              availableTags={availableTags}
+            />
           </div>
         )}
 
@@ -330,7 +444,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
                 label={group.label}
                 description={group.description}
                 epics={group.epics}
-                onEpicSelect={onEpicSelect}
+                onEpicSelect={handleEpicClick}
                 isDropAllowed={isDropAllowed}
                 isDragActive={dragState.activeId !== null}
               />
@@ -342,12 +456,20 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
         {summary && (
           <div className="px-6 py-3 border-t border-border bg-secondary/30 text-sm text-muted-foreground">
             <span className="font-mono">
-              {summary.total} epics total
-              {summary.byStatus.in_progress > 0 && (
-                <> · {summary.byStatus.in_progress} in progress</>
-              )}
-              {summary.byStatus.completed > 0 && (
-                <> · {summary.byStatus.completed} completed</>
+              {isFiltered ? (
+                <>
+                  {filteredEpics.length} of {summary.total} epics shown
+                </>
+              ) : (
+                <>
+                  {summary.total} epics total
+                  {summary.byStatus.in_progress > 0 && (
+                    <> · {summary.byStatus.in_progress} in progress</>
+                  )}
+                  {summary.byStatus.completed > 0 && (
+                    <> · {summary.byStatus.completed} completed</>
+                  )}
+                </>
               )}
             </span>
           </div>
@@ -364,6 +486,14 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
           />
         )}
       </DragOverlay>
+
+      {/* Edit Modal */}
+      <EpicEditModal
+        epic={editingEpic}
+        isOpen={editingEpic !== null}
+        onClose={() => setEditingEpic(null)}
+        onSave={handleEpicSave}
+      />
     </DndContext>
   );
 }
