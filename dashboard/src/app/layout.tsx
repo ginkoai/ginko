@@ -18,11 +18,15 @@ import { OAuthHandler } from '@/components/auth/oauth-handler'
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
+  display: 'swap', // Prevent FOIT (Flash of Invisible Text)
+  preload: true,
 })
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-mono',
+  display: 'swap', // Prevent FOIT
+  preload: true,
 })
 
 export const metadata: Metadata = {

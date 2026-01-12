@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-11T18-29-51-616Z
-started: 2026-01-11T18:29:51.616Z
+session_id: session-2026-01-12T12-35-24-328Z
+started: 2026-01-12T12:35:24.328Z
 user: reese@ginkoai.com
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-11T18-29-51-616Z
+# Session Log: session-2026-01-12T12-35-24-328Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,16 +14,10 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 17:11 - [feature]
-Completed TASK-2: Created marketing-copy.ts config with 5 hero variants (A-E) for A/B testing. Added micro-copy 'Free forever. 2-minute setup.' and trust signals (Open Source, MIT License, No Vendor Lock-in). Hero now uses dynamic variant from localStorage with URL override support.
-Files: .ginko/sessions/reese-at-ginkoai-com/current-context.jsonl, .ginko/sessions/reese-at-ginkoai-com/current-events.jsonl, .ginko/sessions/reese-at-ginkoai-com/current-session-log.md, dashboard/package-lock.json, dashboard/src/components/landing-page.tsx
-Impact: high
-
-
-### 17:17 - [feature]
-Completed TASK-4: Built complete A/B testing framework. Created experiments.ts (core system with weighted assignment, localStorage persistence, event tracking) and useExperiment.ts hook. Integrated with landing page - hero section now tracks exposure and CTA conversions. 3 experiments configured: hero-headline (5 variants), cta-text (3 variants), social-proof-position (draft). PostHog-ready when needed.
-Files: .ginko/sessions/reese-at-ginkoai-com/current-context.jsonl, .ginko/sessions/reese-at-ginkoai-com/current-events.jsonl, .ginko/sessions/reese-at-ginkoai-com/current-session-log.md, dashboard/package-lock.json, dashboard/src/components/landing-page.tsx
-Impact: high
+### 07:56 - [feature]
+Completed TASK-5: Page load performance optimization. Split 637-line monolithic landing-page.tsx into modular components with dynamic imports for below-the-fold content. Created dashboard/src/components/landing/ directory with header, hero-section, sections, footer-cta, and footer components. Added font optimization with display:swap and preload. Baseline was already strong (Lighthouse 97, LCP 2.5s, TBT 40ms, CLS 0) but optimizations should reduce initial JS by ~30KB and improve LCP consistency.
+Files: .ginko/sessions/reese-at-ginkoai-com/current-context.jsonl, .ginko/sessions/reese-at-ginkoai-com/current-session-log.md, dashboard/package-lock.json, dashboard/src/app/layout.tsx, dashboard/src/components/landing-page.tsx
+Impact: medium
 
 
 ## Key Decisions
