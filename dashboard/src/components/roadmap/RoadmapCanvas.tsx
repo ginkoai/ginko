@@ -25,7 +25,6 @@ import { Filter, Settings, Loader2 } from 'lucide-react';
 import { LaneSection } from './LaneSection';
 import { EpicCard } from './EpicCard';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
 import { useRoadmapDnd } from '@/hooks/useRoadmapDnd';
 import type { RoadmapLane, DecisionFactor } from '@/lib/graph/types';
 
@@ -140,7 +139,6 @@ async function updateEpicLane(
 export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   const [showAll, setShowAll] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // DnD Sensors
@@ -198,17 +196,10 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
       if (context?.previousData) {
         queryClient.setQueryData(['roadmap', graphId, showAll], context.previousData);
       }
-      toast({
-        title: 'Failed to move epic',
-        description: 'Could not update the roadmap. Please try again.',
-        variant: 'destructive',
-      });
+      console.error('Failed to move epic:', _err);
     },
     onSuccess: () => {
-      toast({
-        title: 'Epic moved',
-        description: 'Roadmap updated successfully.',
-      });
+      console.log('Epic moved successfully');
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['roadmap', graphId] });
@@ -223,10 +214,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   // Handle prompt for decision factors (when moving to Later without factors)
   const handlePromptForFactors = (epic: RoadmapEpic, targetLane: RoadmapLane) => {
     // For now, just move it - the edit modal (t04) will handle factor selection
-    toast({
-      title: 'Moving to Later',
-      description: 'Consider adding decision factors to explain why this work is uncommitted.',
-    });
+    console.log('Moving to Later - consider adding decision factors');
     handleEpicMove(epic.id, targetLane);
   };
 
