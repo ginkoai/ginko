@@ -20,6 +20,14 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-012](EPIC-012-web-collaboration-gui.md) | Web Collaboration GUI | Proposed | `EPIC-012-web-collaboration-gui.md` |
 | [EPIC-013](EPIC-013-codex-integration.md) | Ginko + OpenAI Codex Integration | Proposed | `EPIC-013-codex-integration.md` |
 
+## Maintenance Epics
+
+Maintenance epics (ADR-059) are containers for ongoing operational work. They are hidden from the roadmap by default.
+
+| Epic # | Title | Status | File |
+|--------|-------|--------|------|
+| [EPIC-014](EPIC-014-dashboard-maintenance-q1-2026.md) | Dashboard Maintenance Q1-2026 | Active | `EPIC-014-dashboard-maintenance-q1-2026.md` |
+
 ## Status Summary
 
 | Status | Count | Epics |
@@ -83,5 +91,5 @@ This document maintains the official registry of all Epics to ensure unique numb
 
 ---
 
-*Last updated: 2026-01-08*
-*Added EPIC-013: Ginko + OpenAI Codex Integration*
+*Last updated: 2026-01-12*
+*Added EPIC-014: Dashboard Maintenance Q1-2026 (first maintenance epic per ADR-059)*

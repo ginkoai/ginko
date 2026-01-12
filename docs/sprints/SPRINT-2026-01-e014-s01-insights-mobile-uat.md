@@ -56,7 +56,7 @@
 
 ## Sprint Tasks
 
-### adhoc_260112_s01_t01: Remove Redundant Header Text (15m)
+### e014_s01_t01: Remove Redundant Header Text (15m)
 **Status:** [ ] Not Started
 **Priority:** LOW
 **Assignee:** chris@watchhill.ai
@@ -75,7 +75,7 @@
 
 ---
 
-### adhoc_260112_s01_t02: Hide Last Analysis Badge on Mobile (20m)
+### e014_s01_t02: Hide Last Analysis Badge on Mobile (20m)
 **Status:** [ ] Not Started
 **Priority:** HIGH
 **Assignee:** chris@watchhill.ai
@@ -99,7 +99,7 @@
 
 ---
 
-### adhoc_260112_s01_t03: Full-Width Coaching Insights Label (15m)
+### e014_s01_t03: Full-Width Coaching Insights Label (15m)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
@@ -121,7 +121,7 @@ Or use responsive text size:
 
 ---
 
-### adhoc_260112_s01_t04: Reposition Analysis Period for Mobile (25m)
+### e014_s01_t04: Reposition Analysis Period for Mobile (25m)
 **Status:** [ ] Not Started
 **Priority:** LOW
 **Assignee:** chris@watchhill.ai
@@ -152,7 +152,7 @@ Or use responsive text size:
 
 ---
 
-### adhoc_260112_s01_t05: Stack Scoring Widgets Vertically on Mobile (30m)
+### e014_s01_t05: Stack Scoring Widgets Vertically on Mobile (30m)
 **Status:** [ ] Not Started
 **Priority:** HIGH
 **Assignee:** chris@watchhill.ai
@@ -192,7 +192,7 @@ Or use responsive text size:
 
 ---
 
-### adhoc_260112_s01_t06: Reorder Analysis Detail Cards for Mobile (45m)
+### e014_s01_t06: Reorder Analysis Detail Cards for Mobile (45m)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
@@ -245,7 +245,7 @@ Or use responsive text size:
 
 ---
 
-### adhoc_260112_s01_t07: Add Bottom Scroll Padding for Footer (10m)
+### e014_s01_t07: Add Bottom Scroll Padding for Footer (10m)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
@@ -304,7 +304,7 @@ Add padding to the container or the last element:
 
 ## Sprint Metadata
 
-**Epic:** Ad-hoc (UAT feedback)
-**Sprint ID:** adhoc_260112_s01
+**Epic:** EPIC-014 (Dashboard Maintenance Q1-2026)
+**Sprint ID:** e014_s01
 **Started:** 2026-01-12
 **Participants:** Chris Norton, Claude

@@ -1081,18 +1081,18 @@
       "sessionId": "session-chris-at-watchhill-ai-1768229414272"
     },
     {
-      "filename": "pattern-completed-task1-created-blogcontentcalendar.md",
-      "type": "pattern",
+      "filename": "decision-created-adr059-maintenance-epics-establishing-that.md",
+      "type": "decision",
       "tags": [
-        "feature",
+        "decision",
         "high"
       ],
       "relevance": "critical",
-      "created": "2026-01-12T19:23:56.673Z",
-      "sessionId": "session-reese-at-ginkoai-com-1768245836649"
+      "created": "2026-01-12T21:29:03.979Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768253343856"
     }
   ],
-  "lastUpdated": "2026-01-12T19:23:56.674Z",
+  "lastUpdated": "2026-01-12T21:29:03.980Z",
   "totalModules": 83,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",

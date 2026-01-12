@@ -52,3 +52,19 @@ Created ad-hoc sprint for Insights mobile UAT & Polish. 7 tasks from user testin
 
 Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: medium
+
+### 16:29 - [decision]
+# [DECISION] 16:29
+
+Created ADR-059 (Maintenance Epics) establishing that all sprints must belong to an epic. Created EPIC-014 (Dashboard Maintenance Q1-2026) as first maintenance epic. Migrated Insights Mobile UAT sprint from adhoc to e014_s01.
+
+**Files:**
+- .ginko/graph/config.json
+- docs/epics/EPIC-INDEX.md
+- docs/sprints/SPRINT-2026-01-adhoc-insights-mobile-uat.md
+
+**Impact:** high
+**Timestamp:** 2026-01-12T21:29:00.676Z
+
+Files: .ginko/graph/config.json, docs/epics/EPIC-INDEX.md, docs/sprints/SPRINT-2026-01-adhoc-insights-mobile-uat.md
+Impact: high
