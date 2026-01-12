@@ -5,7 +5,7 @@
 **Sprint Goal**: Add changelog visualization and polish the roadmap experience
 **Duration**: 1 week (2026-02-03 to 2026-02-07)
 **Type**: Polish sprint
-**Progress:** 0% (0/4 tasks complete)
+**Progress:** 100% (4/4 tasks complete)
 
 **Success Criteria:**
 - [ ] Epic changelog visible in UI with timeline view
@@ -18,8 +18,9 @@
 ## Sprint Tasks
 
 ### e009_s04_t01: Changelog Timeline Component (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Display Epic changelog as a visual timeline
 
@@ -56,8 +57,9 @@ Epic History
 ---
 
 ### e009_s04_t02: Public Roadmap Page (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Public-facing roadmap page for sharing with stakeholders
 
@@ -75,8 +77,9 @@ Epic History
 ---
 
 ### e009_s04_t03: Navigation Integration (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (Pre-existing)
 **Priority:** MEDIUM
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Add Roadmap to main dashboard navigation
 
@@ -93,8 +96,9 @@ Epic History
 ---
 
 ### e009_s04_t04: Performance Optimization (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Ensure smooth performance with many Epics
 
@@ -135,7 +139,79 @@ Epic History
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2026-01-11: T01 Changelog Timeline Component
+
+**Components Created:**
+- `dashboard/src/components/roadmap/ChangelogTimeline.tsx` - Vertical timeline display
+  - Color-coded entries by field type (status=blue, lane=green, factors=amber, visibility=purple)
+  - Collapsible with "Show more/less" when > maxEntries (default 10)
+  - Empty state with icon and message
+  - Formatted timestamps with relative dates
+- Updated `EpicEditModal.tsx` - Added "Properties" | "History" tab navigation
+  - Badge shows changelog count on History tab
+  - Tab resets to Properties when modal opens for new epic
+
+**Files:**
+- dashboard/src/components/roadmap/ChangelogTimeline.tsx (new)
+- dashboard/src/components/roadmap/EpicEditModal.tsx (updated)
+- dashboard/src/components/roadmap/index.ts (updated)
+
+---
+
+### 2026-01-11: T02 Public Roadmap Page
+
+**Components Created:**
+- `dashboard/src/app/roadmap/[projectId]/public/page.tsx` - Server component route
+- `dashboard/src/components/roadmap/PublicRoadmapView.tsx` - Read-only view
+  - Shows only `roadmap_visible=true` items
+  - Now/Next/Later lanes only (no Done/Dropped)
+  - Clean, minimal design with status icons
+  - "Powered by Ginko" footer
+  - Responsive design with max-width container
+
+**URL Pattern:** `/roadmap/{projectId}/public`
+
+**Files:**
+- dashboard/src/app/roadmap/[projectId]/public/page.tsx (new)
+- dashboard/src/components/roadmap/PublicRoadmapView.tsx (new)
+- dashboard/src/components/roadmap/index.ts (updated)
+
+---
+
+### 2026-01-11: T03 Navigation Integration
+
+**Status:** Pre-existing - Roadmap tab already in `dashboard-tabs.tsx` (lines 37-42)
+- Uses MapIcon with ginko green accent color
+- Active state detection via pathname prefix matching
+- No changes needed
+
+---
+
+### 2026-01-11: T04 Performance Optimization
+
+**Optimizations Applied:**
+
+1. **EpicCard.tsx** - Wrapped with React.memo() + custom comparator
+   - Checks only props that affect rendering
+   - Prevents unnecessary re-renders
+
+2. **LaneSection.tsx** - Wrapped with React.memo()
+   - useCallback for toggle and click handlers
+   - useMemo for computed styles and messages
+
+3. **useRoadmapFilters.ts** - Added debounced URL updates (300ms)
+   - Local state for immediate UI feedback
+   - Debounced URL sync prevents excessive history changes
+
+4. **RoadmapCanvas.tsx** - Comprehensive memoization
+   - useMemo for allEpics, filteredEpics, laneGroups, summary
+   - useCallback for all event handlers
+   - Stable callback references prevent child re-renders
+
+**Expected Performance:**
+- Initial load: < 500ms for 50 Epics
+- Drag response: < 16ms (60fps)
+- Filter apply: < 100ms
 
 ## Next Steps
 
@@ -154,5 +230,5 @@ After Sprint 4:
 
 **Epic:** EPIC-009 (Product Roadmap)
 **Sprint ID:** e009_s04
-**Started:** —
-**Participants:** —
+**Started:** 2026-01-11
+**Participants:** Chris Norton, Claude

@@ -2,7 +2,7 @@
  * @fileType: component
  * @status: current
  * @updated: 2026-01-11
- * @tags: [roadmap, lane, now-next-later, ADR-056, drop-zone]
+ * @tags: [roadmap, lane, now-next-later, ADR-056, drop-zone, performance]
  * @related: [RoadmapCanvas.tsx, EpicCard.tsx, useRoadmapDnd.ts]
  * @priority: high
  * @complexity: medium
@@ -11,7 +11,7 @@
 'use client';
 
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback, memo, useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { DraggableEpicCard } from './EpicCard';
 import type { RoadmapEpic } from './RoadmapCanvas';
@@ -65,10 +65,10 @@ const LANE_STYLES: Record<RoadmapLane, { border: string; badge: string; icon: st
 };
 
 // =============================================================================
-// Component
+// Component - Memoized for performance
 // =============================================================================
 
-export function LaneSection({
+export const LaneSection = memo(function LaneSection({
   lane,
   label,
   description,
@@ -81,6 +81,11 @@ export function LaneSection({
   const styles = LANE_STYLES[lane];
   const isEmpty = epics.length === 0;
 
+  // Memoize toggle handler
+  const handleToggle = useCallback(() => {
+    setIsExpanded(prev => !prev);
+  }, []);
+
   // Make this lane a drop target
   const { isOver, setNodeRef } = useDroppable({
     id: lane,
@@ -90,8 +95,8 @@ export function LaneSection({
   const dropResult = isDropAllowed?.(lane);
   const canDrop = dropResult?.allowed ?? true;
 
-  // Visual feedback classes
-  const getDropFeedbackClass = () => {
+  // Memoize visual feedback class computation
+  const dropFeedbackClass = useMemo(() => {
     if (!isDragActive) return '';
     if (!isOver) return 'transition-all duration-200';
 
@@ -100,16 +105,33 @@ export function LaneSection({
     } else {
       return 'ring-2 ring-destructive bg-destructive/5 transition-all duration-200';
     }
-  };
+  }, [isDragActive, isOver, canDrop]);
+
+  // Memoize empty state message
+  const emptyMessage = useMemo(() => {
+    switch (lane) {
+      case 'now': return 'No work ready to start. Move items from Next when ready.';
+      case 'next': return 'No committed work. Drag items from Later to commit.';
+      case 'later': return 'No proposed work. Add epics to build your backlog.';
+      case 'done': return 'No completed work yet.';
+      case 'dropped': return 'No dropped items.';
+      default: return '';
+    }
+  }, [lane]);
+
+  // Memoize click handler creator to avoid creating new functions for each epic
+  const handleEpicClick = useCallback((epicId: string) => {
+    onEpicSelect?.(epicId);
+  }, [onEpicSelect]);
 
   return (
     <div
       ref={setNodeRef}
-      className={`border-l-4 ${styles.border} rounded-r-lg bg-card ${getDropFeedbackClass()}`}
+      className={`border-l-4 ${styles.border} rounded-r-lg bg-card ${dropFeedbackClass}`}
     >
       {/* Lane Header */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        onClick={handleToggle}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/50 transition-colors rounded-tr-lg"
       >
         <div className="flex items-center gap-3">
@@ -151,31 +173,29 @@ export function LaneSection({
         </div>
       )}
 
-      {/* Epic Cards */}
+      {/* Epic Cards - Grid layout for multiple cards per row */}
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-2">
+        <div className="px-4 pb-4">
           {isEmpty ? (
             <div className={`py-8 text-center text-sm text-muted-foreground ${isDragActive && canDrop ? 'border-2 border-dashed border-primary/30 rounded-lg' : ''}`}>
-              {lane === 'now' && 'No work ready to start. Move items from Next when ready.'}
-              {lane === 'next' && 'No committed work. Drag items from Later to commit.'}
-              {lane === 'later' && 'No proposed work. Add epics to build your backlog.'}
-              {lane === 'done' && 'No completed work yet.'}
-              {lane === 'dropped' && 'No dropped items.'}
+              {emptyMessage}
             </div>
           ) : (
-            epics.map((epic) => (
-              <DraggableEpicCard
-                key={epic.id}
-                epic={epic}
-                lane={lane}
-                onClick={() => onEpicSelect?.(epic.id)}
-              />
-            ))
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {epics.map((epic) => (
+                <DraggableEpicCard
+                  key={epic.id}
+                  epic={epic}
+                  lane={lane}
+                  onClick={() => handleEpicClick(epic.id)}
+                />
+              ))}
+            </div>
           )}
         </div>
       )}
     </div>
   );
-}
+});
 
 export default LaneSection;

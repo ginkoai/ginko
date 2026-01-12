@@ -2,7 +2,7 @@
  * @fileType: component
  * @status: current
  * @updated: 2026-01-11
- * @tags: [roadmap, epic-card, decision-factors, ADR-056, draggable]
+ * @tags: [roadmap, epic-card, decision-factors, ADR-056, draggable, performance]
  * @related: [LaneSection.tsx, RoadmapCanvas.tsx, DecisionFactorChips.tsx]
  * @priority: high
  * @complexity: low
@@ -10,6 +10,7 @@
  */
 'use client';
 
+import { memo } from 'react';
 import { Circle, CircleDot, CheckCircle2, XCircle, GripVertical } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -41,10 +42,10 @@ const STATUS_ICONS: Record<string, { icon: typeof Circle; className: string }> =
 };
 
 // =============================================================================
-// Base EpicCard Component (non-draggable)
+// Base EpicCard Component (non-draggable) - Memoized for performance
 // =============================================================================
 
-export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
+export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
   const statusConfig = STATUS_ICONS[epic.roadmap_status] || STATUS_ICONS.not_started;
   const StatusIcon = statusConfig.icon;
   const hasDecisionFactors = epic.decision_factors && epic.decision_factors.length > 0;
@@ -59,9 +60,9 @@ export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
       onClick={onClick}
       className={`
         group relative cursor-pointer transition-all duration-200
-        hover:border-primary/50 hover:shadow-md
+        border-2 border-border
+        hover:border-primary/70 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]
         ${isDragging ? 'opacity-50 shadow-lg scale-[1.02] ring-2 ring-primary' : ''}
-        ${epic.roadmap_status === 'in_progress' ? 'border-l-2 border-l-primary' : ''}
         ${isCompleted ? 'opacity-70' : ''}
       `}
     >
@@ -72,44 +73,50 @@ export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
         </div>
       )}
 
-      <div className="flex items-start gap-3 p-4">
+      <div className="flex items-start gap-2 p-3">
         {/* Drag Handle */}
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground shrink-0">
           <GripVertical className="w-4 h-4" />
         </div>
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          {/* Title Row */}
-          <div className="flex items-center gap-2">
+          {/* ID as header */}
+          <div className="flex items-center justify-between gap-2 mb-1">
             <span className="text-xs font-mono text-muted-foreground">
               {displayId}
             </span>
-            <span className={`font-medium truncate ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-              {epic.title}
-            </span>
+            {/* Status Icon */}
+            {!isCompleted && (
+              <div className={`shrink-0 ${statusConfig.className}`}>
+                <StatusIcon className="w-4 h-4" />
+              </div>
+            )}
           </div>
+
+          {/* Title */}
+          <p className={`text-sm font-medium line-clamp-2 ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+            {epic.title}
+          </p>
 
           {/* Sprint Progress (if available) */}
           {hasSprints && (
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs text-muted-foreground">
-                Sprint {epic.currentSprint || 1} of {epic.totalSprints}
-              </span>
-            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Sprint {epic.currentSprint || 1}/{epic.totalSprints}
+            </p>
           )}
 
           {/* Decision Factors (only in Later lane) */}
           {lane === 'later' && hasDecisionFactors && (
             <div className="mt-2">
-              <DecisionFactorChips factors={epic.decision_factors!} />
+              <DecisionFactorChips factors={epic.decision_factors!} size="sm" />
             </div>
           )}
 
-          {/* Tags (if any, limited to 3) */}
+          {/* Tags (if any, limited to 2 for compact view) */}
           {epic.tags && epic.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
-              {epic.tags.slice(0, 3).map((tag) => (
+              {epic.tags.slice(0, 2).map((tag) => (
                 <span
                   key={tag}
                   className="text-xs px-1.5 py-0.5 rounded bg-secondary text-muted-foreground"
@@ -117,28 +124,38 @@ export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
                   {tag}
                 </span>
               ))}
-              {epic.tags.length > 3 && (
+              {epic.tags.length > 2 && (
                 <span className="text-xs text-muted-foreground">
-                  +{epic.tags.length - 3}
+                  +{epic.tags.length - 2}
                 </span>
               )}
             </div>
           )}
         </div>
-
-        {/* Status Icon (hidden when completed - overlay shows instead) */}
-        {!isCompleted && (
-          <div className={statusConfig.className}>
-            <StatusIcon className="w-5 h-5" />
-          </div>
-        )}
       </div>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison function for better memoization
+  // Only re-render if these specific props change
+  return (
+    prevProps.epic.id === nextProps.epic.id &&
+    prevProps.epic.title === nextProps.epic.title &&
+    prevProps.epic.roadmap_status === nextProps.epic.roadmap_status &&
+    prevProps.epic.roadmap_lane === nextProps.epic.roadmap_lane &&
+    prevProps.epic.roadmap_visible === nextProps.epic.roadmap_visible &&
+    prevProps.epic.currentSprint === nextProps.epic.currentSprint &&
+    prevProps.epic.totalSprints === nextProps.epic.totalSprints &&
+    prevProps.lane === nextProps.lane &&
+    prevProps.isDragging === nextProps.isDragging &&
+    // Compare arrays by reference first, then by content if needed
+    prevProps.epic.decision_factors === nextProps.epic.decision_factors &&
+    prevProps.epic.tags === nextProps.epic.tags
+  );
+});
 
 // =============================================================================
-// Draggable EpicCard Wrapper
+// Draggable EpicCard Wrapper - Memoized for performance
 // =============================================================================
 
 interface DraggableEpicCardProps {
@@ -147,7 +164,7 @@ interface DraggableEpicCardProps {
   onClick?: () => void;
 }
 
-export function DraggableEpicCard({ epic, lane, onClick }: DraggableEpicCardProps) {
+export const DraggableEpicCard = memo(function DraggableEpicCard({ epic, lane, onClick }: DraggableEpicCardProps) {
   const {
     attributes,
     listeners,
@@ -178,6 +195,21 @@ export function DraggableEpicCard({ epic, lane, onClick }: DraggableEpicCardProp
       />
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Re-render only when epic data or lane changes
+  // onClick is a callback that should be stable from parent
+  return (
+    prevProps.epic.id === nextProps.epic.id &&
+    prevProps.epic.title === nextProps.epic.title &&
+    prevProps.epic.roadmap_status === nextProps.epic.roadmap_status &&
+    prevProps.epic.roadmap_lane === nextProps.epic.roadmap_lane &&
+    prevProps.epic.roadmap_visible === nextProps.epic.roadmap_visible &&
+    prevProps.epic.currentSprint === nextProps.epic.currentSprint &&
+    prevProps.epic.totalSprints === nextProps.epic.totalSprints &&
+    prevProps.lane === nextProps.lane &&
+    prevProps.epic.decision_factors === nextProps.epic.decision_factors &&
+    prevProps.epic.tags === nextProps.epic.tags
+  );
+});
 
 export default EpicCard;

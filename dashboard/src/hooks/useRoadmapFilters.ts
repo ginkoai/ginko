@@ -2,7 +2,7 @@
  * @fileType: hook
  * @status: current
  * @updated: 2026-01-11
- * @tags: [roadmap, filters, url-state, ADR-056]
+ * @tags: [roadmap, filters, url-state, ADR-056, performance, debounce]
  * @related: [RoadmapFilters.tsx, RoadmapCanvas.tsx]
  * @priority: medium
  * @complexity: medium
@@ -10,11 +10,55 @@
  */
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import type { RoadmapLane, DecisionFactor } from '@/lib/graph/types';
 import type { RoadmapFiltersState } from '@/components/roadmap/RoadmapFilters';
 import type { RoadmapEpic } from '@/components/roadmap/RoadmapCanvas';
+
+// =============================================================================
+// Debounce Helper
+// =============================================================================
+
+const DEBOUNCE_MS = 300;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function useDebouncedCallback<T extends (...args: any[]) => void>(
+  callback: T,
+  delay: number
+): (...args: Parameters<T>) => void {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const callbackRef = useRef<T>(callback);
+
+  // Keep callback ref up to date
+  useEffect(() => {
+    callbackRef.current = callback;
+  }, [callback]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Return a stable debounced function
+  const debouncedFn = useCallback(
+    (...args: Parameters<T>) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        callbackRef.current(...args);
+      }, delay);
+    },
+    [delay]
+  );
+
+  return debouncedFn;
+}
 
 // =============================================================================
 // Default Filters
@@ -51,8 +95,8 @@ export function useRoadmapFilters() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Parse filters from URL
-  const filters = useMemo<RoadmapFiltersState>(() => {
+  // Parse filters from URL (initial state)
+  const urlFilters = useMemo<RoadmapFiltersState>(() => {
     const lanesParam = searchParams.get('lanes');
     const statusesParam = searchParams.get('statuses');
     const factorsParam = searchParams.get('factors');
@@ -70,8 +114,16 @@ export function useRoadmapFilters() {
     };
   }, [searchParams]);
 
-  // Update filters and URL
-  const setFilters = useCallback(
+  // Local state for immediate UI updates (prevents lag during rapid changes)
+  const [localFilters, setLocalFilters] = useState<RoadmapFiltersState>(urlFilters);
+
+  // Sync local state when URL changes (e.g., browser back/forward)
+  useEffect(() => {
+    setLocalFilters(urlFilters);
+  }, [urlFilters]);
+
+  // Debounced URL update function
+  const updateUrl = useCallback(
     (newFilters: RoadmapFiltersState) => {
       const params = new URLSearchParams(searchParams.toString());
 
@@ -122,6 +174,23 @@ export function useRoadmapFilters() {
     },
     [searchParams, pathname, router]
   );
+
+  // Debounced URL update (300ms delay)
+  const debouncedUpdateUrl = useDebouncedCallback(updateUrl, DEBOUNCE_MS);
+
+  // Update filters: immediate local state + debounced URL
+  const setFilters = useCallback(
+    (newFilters: RoadmapFiltersState) => {
+      // Update local state immediately for responsive UI
+      setLocalFilters(newFilters);
+      // Debounce URL updates to prevent excessive re-renders
+      debouncedUpdateUrl(newFilters);
+    },
+    [debouncedUpdateUrl]
+  );
+
+  // Use local filters for display (immediate updates)
+  const filters = localFilters;
 
   // Filter epics based on current filters
   const filterEpics = useCallback(

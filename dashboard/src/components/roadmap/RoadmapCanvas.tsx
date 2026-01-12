@@ -2,7 +2,7 @@
  * @fileType: component
  * @status: current
  * @updated: 2026-01-11
- * @tags: [roadmap, canvas, now-next-later, ADR-056, priority, drag-drop]
+ * @tags: [roadmap, canvas, now-next-later, ADR-056, priority, drag-drop, performance]
  * @related: [LaneSection.tsx, EpicCard.tsx, useRoadmapDnd.ts]
  * @priority: high
  * @complexity: medium
@@ -10,7 +10,7 @@
  */
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
@@ -20,6 +20,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  type DropAnimation,
 } from '@dnd-kit/core';
 import { Filter, Settings, Loader2 } from 'lucide-react';
 import { LaneSection } from './LaneSection';
@@ -29,6 +30,7 @@ import { RoadmapFilters } from './RoadmapFilters';
 import { Button } from '@/components/ui/button';
 import { useRoadmapDnd } from '@/hooks/useRoadmapDnd';
 import { useRoadmapFilters } from '@/hooks/useRoadmapFilters';
+import { createClient } from '@/lib/supabase/client';
 import type { RoadmapLane, DecisionFactor } from '@/lib/graph/types';
 
 // =============================================================================
@@ -103,6 +105,18 @@ const LANE_CONFIG: Record<RoadmapLane, { label: string; description: string }> =
 // Data Fetching
 // =============================================================================
 
+// Supabase client for auth
+const supabase = createClient();
+
+// Helper to get auth headers
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  return {
+    'Content-Type': 'application/json',
+    ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
+  };
+}
+
 async function fetchRoadmap(graphId: string): Promise<RoadmapResponse> {
   // Always fetch all lanes - visibility is controlled client-side
   const params = new URLSearchParams({ graphId, all: 'true' });
@@ -119,9 +133,10 @@ async function updateEpicLane(
   targetLane: RoadmapLane,
   graphId: string
 ): Promise<void> {
-  const response = await fetch(`/api/v1/graph/nodes/${epicId}`, {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`/api/v1/graph/nodes/${epicId}?graphId=${graphId}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({
       graphId,
       properties: { roadmap_lane: targetLane },
@@ -129,7 +144,8 @@ async function updateEpicLane(
   });
 
   if (!response.ok) {
-    throw new Error('Failed to update epic lane');
+    const error = await response.json().catch(() => ({ error: { message: 'Failed to update epic lane' } }));
+    throw new Error(error.error?.message || 'Failed to update epic lane');
   }
 }
 
@@ -154,14 +170,16 @@ async function updateEpicProperties(
     };
   }
 
-  const response = await fetch(`/api/v1/graph/nodes/${epicId}`, {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`/api/v1/graph/nodes/${epicId}?graphId=${graphId}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ graphId, properties }),
   });
 
   if (!response.ok) {
-    throw new Error('Failed to update epic');
+    const error = await response.json().catch(() => ({ error: { message: 'Failed to update epic' } }));
+    throw new Error(error.error?.message || 'Failed to update epic');
   }
 }
 
@@ -178,13 +196,14 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   // Filters hook
   const { filters, setFilters, filterEpics, extractTags, isFiltered } = useRoadmapFilters();
 
-  // DnD Sensors
+  // DnD Sensors - memoized to prevent recreation on each render
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     }),
     useSensor(KeyboardSensor)
   );
+  // Note: useSensors already returns a stable reference internally
 
   // Fetch roadmap data (always fetches all lanes)
   const { data, isLoading, error } = useQuery({
@@ -194,13 +213,20 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   });
 
   // All epics flattened for DnD (unfiltered, needed for drag operations)
-  const allEpics = data?.epics || [];
+  // Memoized to prevent unnecessary recalculations
+  const allEpics = useMemo(() => data?.epics || [], [data?.epics]);
 
-  // Filtered epics for display
-  const filteredEpics = filterEpics(allEpics);
+  // Filtered epics for display - memoized for performance with 50+ epics
+  const filteredEpics = useMemo(
+    () => filterEpics(allEpics),
+    [filterEpics, allEpics]
+  );
 
-  // Extract available tags for filter component
-  const availableTags = extractTags(allEpics);
+  // Extract available tags for filter component - memoized
+  const availableTags = useMemo(
+    () => extractTags(allEpics),
+    [extractTags, allEpics]
+  );
 
   // Mutation for moving epics
   const moveMutation = useMutation({
@@ -295,32 +321,37 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     },
   });
 
-  // Handle epic move
-  const handleEpicMove = (epicId: string, targetLane: RoadmapLane) => {
+  // Handle epic move - memoized callback for performance
+  const handleEpicMove = useCallback((epicId: string, targetLane: RoadmapLane) => {
     moveMutation.mutate({ epicId, targetLane });
-  };
+  }, [moveMutation]);
 
   // Handle prompt for decision factors (when moving to Later without factors)
-  const handlePromptForFactors = (epic: RoadmapEpic, targetLane: RoadmapLane) => {
+  const handlePromptForFactors = useCallback((epic: RoadmapEpic, targetLane: RoadmapLane) => {
     // Open edit modal for the epic so user can add decision factors
     setEditingEpic({ ...epic, roadmap_lane: targetLane });
-  };
+  }, []);
 
-  // Handle epic click to open edit modal
-  const handleEpicClick = (epicId: string) => {
+  // Handle epic click to open edit modal - memoized for stable reference
+  const handleEpicClick = useCallback((epicId: string) => {
     const epic = allEpics.find((e) => e.id === epicId);
     if (epic) {
       setEditingEpic(epic);
     }
     // Note: Don't call onEpicSelect here - that's for external navigation
     // The edit modal is the primary action on click
-  };
+  }, [allEpics]);
 
-  // Handle save from edit modal
-  const handleEpicSave = async (updates: EpicRoadmapUpdate) => {
+  // Handle save from edit modal - memoized callback
+  const handleEpicSave = useCallback(async (updates: EpicRoadmapUpdate) => {
     if (!editingEpic) return;
     await updateMutation.mutateAsync({ epicId: editingEpic.id, updates });
-  };
+  }, [editingEpic, updateMutation]);
+
+  // Handle close modal - memoized to prevent creating new function on each render
+  const handleCloseModal = useCallback(() => {
+    setEditingEpic(null);
+  }, []);
 
   // DnD hook
   const {
@@ -336,22 +367,39 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     onPromptForFactors: handlePromptForFactors,
   });
 
-  // Build lane groups with filtered epics
-  const laneGroups: LaneGroup[] = (showAll
-    ? (['now', 'next', 'later', 'done', 'dropped'] as RoadmapLane[])
-    : (['now', 'next', 'later'] as RoadmapLane[])
-  )
-    .filter((lane) => filters.lanes.includes(lane) || showAll)
-    .map((lane) => {
-      // Use filtered epics instead of raw lane data
-      const laneEpics = filteredEpics.filter((e) => e.roadmap_lane === lane);
-      return {
-        lane,
-        label: LANE_CONFIG[lane].label,
-        description: LANE_CONFIG[lane].description,
-        epics: laneEpics,
-      };
-    });
+  // Calculate summary stats - memoized (must be before early returns)
+  const { summary, committedCount, laterCount } = useMemo(() => {
+    const sum = data?.summary;
+    return {
+      summary: sum,
+      committedCount: (sum?.byLane.now || 0) + (sum?.byLane.next || 0),
+      laterCount: sum?.byLane.later || 0,
+    };
+  }, [data?.summary]);
+
+  // Build lane groups with filtered epics - memoized for performance
+  // This computation runs O(lanes * epics) so memoization helps with 50+ epics
+  const laneGroups = useMemo<LaneGroup[]>(() => {
+    const baseLanes = showAll
+      ? (['now', 'next', 'later', 'done', 'dropped'] as RoadmapLane[])
+      : (['now', 'next', 'later'] as RoadmapLane[]);
+
+    return baseLanes
+      .filter((lane) => filters.lanes.includes(lane) || showAll)
+      .map((lane) => {
+        // Use filtered epics instead of raw lane data
+        const laneEpics = filteredEpics.filter((e) => e.roadmap_lane === lane);
+        return {
+          lane,
+          label: LANE_CONFIG[lane].label,
+          description: LANE_CONFIG[lane].description,
+          epics: laneEpics,
+        };
+      });
+  }, [showAll, filters.lanes, filteredEpics]);
+
+  // Find the active epic for DragOverlay (must be before early returns)
+  const activeEpic = dragState.activeEpic;
 
   // Loading state
   if (isLoading) {
@@ -370,14 +418,6 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
       </div>
     );
   }
-
-  // Calculate summary stats
-  const summary = data?.summary;
-  const committedCount = (summary?.byLane.now || 0) + (summary?.byLane.next || 0);
-  const laterCount = summary?.byLane.later || 0;
-
-  // Find the active epic for DragOverlay
-  const activeEpic = dragState.activeEpic;
 
   return (
     <DndContext
@@ -477,7 +517,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
       </div>
 
       {/* Drag Overlay - shows the dragged card */}
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeEpic && (
           <EpicCard
             epic={activeEpic}
@@ -491,7 +531,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
       <EpicEditModal
         epic={editingEpic}
         isOpen={editingEpic !== null}
-        onClose={() => setEditingEpic(null)}
+        onClose={handleCloseModal}
         onSave={handleEpicSave}
       />
     </DndContext>

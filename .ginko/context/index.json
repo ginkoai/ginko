@@ -1054,10 +1054,24 @@
       "relevance": "critical",
       "created": "2026-01-12T01:08:31.308Z",
       "sessionId": "session-chris-at-watchhill-ai-1768180111272"
+    },
+    {
+      "filename": "gotcha-fixed-epic-card-save-not-persisting.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "supabase",
+        "api",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-12T02:03:23.291Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768183403258"
     }
   ],
-  "lastUpdated": "2026-01-12T01:08:31.308Z",
-  "totalModules": 80,
+  "lastUpdated": "2026-01-12T02:03:23.291Z",
+  "totalModules": 81,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
