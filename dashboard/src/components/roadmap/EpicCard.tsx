@@ -2,18 +2,21 @@
  * @fileType: component
  * @status: current
  * @updated: 2026-01-11
- * @tags: [roadmap, epic-card, decision-factors, ADR-056]
+ * @tags: [roadmap, epic-card, decision-factors, ADR-056, draggable]
  * @related: [LaneSection.tsx, RoadmapCanvas.tsx, DecisionFactorChips.tsx]
  * @priority: high
  * @complexity: low
- * @dependencies: [react, lucide-react]
+ * @dependencies: [react, @dnd-kit/core, lucide-react]
  */
 'use client';
 
-import { AlertTriangle, Circle, CircleDot, CheckCircle2, XCircle, GripVertical } from 'lucide-react';
+import { Circle, CircleDot, CheckCircle2, XCircle, GripVertical } from 'lucide-react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
+import { DecisionFactorChips } from './DecisionFactorChips';
 import type { RoadmapEpic } from './RoadmapCanvas';
-import type { RoadmapLane, DecisionFactor } from '@/lib/graph/types';
+import type { RoadmapLane } from '@/lib/graph/types';
 
 // =============================================================================
 // Types
@@ -38,29 +41,15 @@ const STATUS_ICONS: Record<string, { icon: typeof Circle; className: string }> =
 };
 
 // =============================================================================
-// Decision Factor Labels
-// =============================================================================
-
-const DECISION_FACTOR_LABELS: Record<DecisionFactor, string> = {
-  planning: 'planning',
-  value: 'value',
-  feasibility: 'feasibility',
-  advisability: 'advisability',
-  architecture: 'architecture',
-  design: 'design',
-  risks: 'risks',
-  'market-fit': 'market-fit',
-  dependencies: 'dependencies',
-};
-
-// =============================================================================
-// Component
+// Base EpicCard Component (non-draggable)
 // =============================================================================
 
 export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
   const statusConfig = STATUS_ICONS[epic.roadmap_status] || STATUS_ICONS.not_started;
   const StatusIcon = statusConfig.icon;
   const hasDecisionFactors = epic.decision_factors && epic.decision_factors.length > 0;
+  const isCompleted = epic.roadmap_status === 'completed';
+  const hasSprints = epic.totalSprints && epic.totalSprints > 0;
 
   // Extract epic ID for display (e.g., "EPIC-009" from "e009" or full ID)
   const displayId = epic.id.toUpperCase().replace(/^E(\d+)/, 'EPIC-$1');
@@ -71,13 +60,20 @@ export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
       className={`
         group relative cursor-pointer transition-all duration-200
         hover:border-primary/50 hover:shadow-md
-        ${isDragging ? 'opacity-50 shadow-lg scale-[1.02]' : ''}
+        ${isDragging ? 'opacity-50 shadow-lg scale-[1.02] ring-2 ring-primary' : ''}
         ${epic.roadmap_status === 'in_progress' ? 'border-l-2 border-l-primary' : ''}
-        ${epic.roadmap_status === 'completed' ? 'opacity-70' : ''}
+        ${isCompleted ? 'opacity-70' : ''}
       `}
     >
+      {/* Completed Overlay */}
+      {isCompleted && (
+        <div className="absolute top-2 right-2 z-10">
+          <CheckCircle2 className="w-5 h-5 text-green-500" />
+        </div>
+      )}
+
       <div className="flex items-start gap-3 p-4">
-        {/* Drag Handle (placeholder for drag-and-drop) */}
+        {/* Drag Handle */}
         <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground">
           <GripVertical className="w-4 h-4" />
         </div>
@@ -89,25 +85,24 @@ export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
             <span className="text-xs font-mono text-muted-foreground">
               {displayId}
             </span>
-            <span className="font-medium text-foreground truncate">
+            <span className={`font-medium truncate ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
               {epic.title}
             </span>
           </div>
 
+          {/* Sprint Progress (if available) */}
+          {hasSprints && (
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-xs text-muted-foreground">
+                Sprint {epic.currentSprint || 1} of {epic.totalSprints}
+              </span>
+            </div>
+          )}
+
           {/* Decision Factors (only in Later lane) */}
           {lane === 'later' && hasDecisionFactors && (
-            <div className="flex items-center gap-1.5 mt-2">
-              <AlertTriangle className="w-3 h-3 text-amber-500 flex-shrink-0" />
-              <div className="flex flex-wrap gap-1">
-                {epic.decision_factors!.map((factor) => (
-                  <span
-                    key={factor}
-                    className="text-xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 font-mono"
-                  >
-                    {DECISION_FACTOR_LABELS[factor] || factor}
-                  </span>
-                ))}
-              </div>
+            <div className="mt-2">
+              <DecisionFactorChips factors={epic.decision_factors!} />
             </div>
           )}
 
@@ -131,12 +126,57 @@ export function EpicCard({ epic, lane, isDragging, onClick }: EpicCardProps) {
           )}
         </div>
 
-        {/* Status Icon */}
-        <div className={statusConfig.className}>
-          <StatusIcon className="w-5 h-5" />
-        </div>
+        {/* Status Icon (hidden when completed - overlay shows instead) */}
+        {!isCompleted && (
+          <div className={statusConfig.className}>
+            <StatusIcon className="w-5 h-5" />
+          </div>
+        )}
       </div>
     </Card>
+  );
+}
+
+// =============================================================================
+// Draggable EpicCard Wrapper
+// =============================================================================
+
+interface DraggableEpicCardProps {
+  epic: RoadmapEpic;
+  lane: RoadmapLane;
+  onClick?: () => void;
+}
+
+export function DraggableEpicCard({ epic, lane, onClick }: DraggableEpicCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging,
+  } = useDraggable({
+    id: epic.id,
+  });
+
+  const style = transform ? {
+    transform: CSS.Translate.toString(transform),
+    zIndex: isDragging ? 50 : undefined,
+  } : undefined;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+    >
+      <EpicCard
+        epic={epic}
+        lane={lane}
+        isDragging={isDragging}
+        onClick={onClick}
+      />
+    </div>
   );
 }
 

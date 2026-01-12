@@ -5,7 +5,7 @@
 **Sprint Goal**: Build vertical priority-based canvas for editing roadmap in the dashboard
 **Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 17% (1/6 tasks complete)
+**Progress:** 50% (3/6 tasks complete)
 
 **Success Criteria:**
 - [ ] Vertical canvas displays Epics in Now/Next/Later lanes (priority flows top-to-bottom)
@@ -83,7 +83,7 @@ type RoadmapLane = 'now' | 'next' | 'later';
 ---
 
 ### e009_s03_t02: Epic Card Component (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Draggable Epic card with status and decision factor display
@@ -128,7 +128,7 @@ interface EpicCardProps {
 ---
 
 ### e009_s03_t03: Drag-and-Drop with Decision Factor Validation (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Depends:** t01, t02
 
@@ -344,6 +344,68 @@ const { mutate, isPending, error } = useMutation({
 ---
 
 ## Accomplishments This Sprint
+
+### 2026-01-11: T3 Drag-and-Drop with Decision Factor Validation
+
+**Core Implementation:**
+- Installed `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
+- Created `dashboard/src/lib/roadmap/lane-rules.ts`:
+  - Lane transition validation (ADR-056 rules)
+  - Key rule: Now lane requires cleared decision factors
+  - Prompt for factors when moving to Later
+- Created `dashboard/src/hooks/useRoadmapDnd.ts`:
+  - DnD state management (activeId, overLane, canDrop)
+  - Drag event handlers (start, over, end, cancel)
+  - isDropAllowed validation per lane
+
+**Component Updates:**
+- `RoadmapCanvas.tsx`:
+  - Added DndContext with sensors (pointer, keyboard)
+  - Optimistic updates with rollback on error
+  - Toast notifications for success/failure
+  - DragOverlay for dragged card preview
+- `LaneSection.tsx`:
+  - Made lanes droppable with useDroppable
+  - Visual feedback (ring-2 green=valid, red=invalid)
+  - Error message display for blocked drops
+- `EpicCard.tsx`:
+  - Added DraggableEpicCard wrapper with useDraggable
+  - Transform style during drag
+  - Visual feedback (ring-2, scale)
+
+**Files Created/Modified:**
+- dashboard/src/lib/roadmap/lane-rules.ts (new)
+- dashboard/src/hooks/useRoadmapDnd.ts (new)
+- dashboard/src/components/roadmap/RoadmapCanvas.tsx
+- dashboard/src/components/roadmap/LaneSection.tsx
+- dashboard/src/components/roadmap/EpicCard.tsx
+- dashboard/src/components/roadmap/index.ts
+
+---
+
+### 2026-01-11: T2 Epic Card Component Enhancements
+
+**Components Created/Updated:**
+- `dashboard/src/components/roadmap/DecisionFactorChips.tsx` - Reusable decision factor display
+  - Configurable size (sm/md)
+  - Optional warning icon
+  - Amber styling for factor chips
+- `dashboard/src/components/roadmap/EpicCard.tsx` - Enhanced with:
+  - Sprint progress display ("Sprint X of Y")
+  - Checkmark overlay for completed epics (top-right)
+  - Strikethrough text for completed titles
+  - Uses extracted DecisionFactorChips component
+
+**Types Updated:**
+- `RoadmapEpic` interface: Added `currentSprint` and `totalSprints` fields
+
+**Files:**
+- dashboard/src/components/roadmap/EpicCard.tsx
+- dashboard/src/components/roadmap/DecisionFactorChips.tsx
+- dashboard/src/components/roadmap/RoadmapCanvas.tsx
+- dashboard/src/components/roadmap/index.ts
+
+---
 
 ### 2026-01-11: T1 Canvas Layout Component
 

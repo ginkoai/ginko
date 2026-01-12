@@ -11,4 +11,5 @@
 
 export { RoadmapCanvas, type RoadmapEpic } from './RoadmapCanvas';
 export { LaneSection } from './LaneSection';
-export { EpicCard } from './EpicCard';
+export { EpicCard, DraggableEpicCard } from './EpicCard';
+export { DecisionFactorChips } from './DecisionFactorChips';

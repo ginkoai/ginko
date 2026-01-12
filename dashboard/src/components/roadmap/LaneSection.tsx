@@ -2,19 +2,21 @@
  * @fileType: component
  * @status: current
  * @updated: 2026-01-11
- * @tags: [roadmap, lane, now-next-later, ADR-056]
- * @related: [RoadmapCanvas.tsx, EpicCard.tsx]
+ * @tags: [roadmap, lane, now-next-later, ADR-056, drop-zone]
+ * @related: [RoadmapCanvas.tsx, EpicCard.tsx, useRoadmapDnd.ts]
  * @priority: high
- * @complexity: low
- * @dependencies: [react, lucide-react]
+ * @complexity: medium
+ * @dependencies: [react, @dnd-kit/core, lucide-react]
  */
 'use client';
 
 import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { EpicCard } from './EpicCard';
+import { useDroppable } from '@dnd-kit/core';
+import { DraggableEpicCard } from './EpicCard';
 import type { RoadmapEpic } from './RoadmapCanvas';
 import type { RoadmapLane } from '@/lib/graph/types';
+import type { LaneTransitionResult } from '@/lib/roadmap/lane-rules';
 
 // =============================================================================
 // Types
@@ -26,7 +28,8 @@ interface LaneSectionProps {
   description: string;
   epics: RoadmapEpic[];
   onEpicSelect?: (epicId: string) => void;
-  onEpicMove?: (epicId: string, targetLane: RoadmapLane) => void;
+  isDropAllowed?: (lane: RoadmapLane) => LaneTransitionResult;
+  isDragActive?: boolean;
 }
 
 // =============================================================================
@@ -71,14 +74,39 @@ export function LaneSection({
   description,
   epics,
   onEpicSelect,
-  onEpicMove,
+  isDropAllowed,
+  isDragActive,
 }: LaneSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const styles = LANE_STYLES[lane];
   const isEmpty = epics.length === 0;
 
+  // Make this lane a drop target
+  const { isOver, setNodeRef } = useDroppable({
+    id: lane,
+  });
+
+  // Check if drop is allowed for this lane
+  const dropResult = isDropAllowed?.(lane);
+  const canDrop = dropResult?.allowed ?? true;
+
+  // Visual feedback classes
+  const getDropFeedbackClass = () => {
+    if (!isDragActive) return '';
+    if (!isOver) return 'transition-all duration-200';
+
+    if (canDrop) {
+      return 'ring-2 ring-primary bg-primary/5 transition-all duration-200';
+    } else {
+      return 'ring-2 ring-destructive bg-destructive/5 transition-all duration-200';
+    }
+  };
+
   return (
-    <div className={`border-l-4 ${styles.border} rounded-r-lg bg-card`}>
+    <div
+      ref={setNodeRef}
+      className={`border-l-4 ${styles.border} rounded-r-lg bg-card ${getDropFeedbackClass()}`}
+    >
       {/* Lane Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -116,11 +144,18 @@ export function LaneSection({
         )}
       </button>
 
+      {/* Drop zone feedback when dragging */}
+      {isDragActive && isOver && !canDrop && dropResult?.reason && (
+        <div className="mx-4 mb-2 px-3 py-2 rounded bg-destructive/10 border border-destructive/30">
+          <p className="text-xs text-destructive">{dropResult.reason}</p>
+        </div>
+      )}
+
       {/* Epic Cards */}
       {isExpanded && (
         <div className="px-4 pb-4 space-y-2">
           {isEmpty ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">
+            <div className={`py-8 text-center text-sm text-muted-foreground ${isDragActive && canDrop ? 'border-2 border-dashed border-primary/30 rounded-lg' : ''}`}>
               {lane === 'now' && 'No work ready to start. Move items from Next when ready.'}
               {lane === 'next' && 'No committed work. Drag items from Later to commit.'}
               {lane === 'later' && 'No proposed work. Add epics to build your backlog.'}
@@ -129,7 +164,7 @@ export function LaneSection({
             </div>
           ) : (
             epics.map((epic) => (
-              <EpicCard
+              <DraggableEpicCard
                 key={epic.id}
                 epic={epic}
                 lane={lane}
