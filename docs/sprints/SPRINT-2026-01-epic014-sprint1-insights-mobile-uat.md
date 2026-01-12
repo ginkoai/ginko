@@ -56,7 +56,7 @@
 
 ## Sprint Tasks
 
-### e014_s01_t01: Remove Redundant Header Text (15m)
+### TASK-1: Remove Redundant Header Text (15m)
 **Status:** [ ] Not Started
 **Priority:** LOW
 **Assignee:** chris@watchhill.ai
@@ -75,7 +75,7 @@
 
 ---
 
-### e014_s01_t02: Hide Last Analysis Badge on Mobile (20m)
+### TASK-2: Hide Last Analysis Badge on Mobile (20m)
 **Status:** [ ] Not Started
 **Priority:** HIGH
 **Assignee:** chris@watchhill.ai
@@ -99,7 +99,7 @@
 
 ---
 
-### e014_s01_t03: Full-Width Coaching Insights Label (15m)
+### TASK-3: Full-Width Coaching Insights Label (15m)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
@@ -121,7 +121,7 @@ Or use responsive text size:
 
 ---
 
-### e014_s01_t04: Reposition Analysis Period for Mobile (25m)
+### TASK-4: Reposition Analysis Period for Mobile (25m)
 **Status:** [ ] Not Started
 **Priority:** LOW
 **Assignee:** chris@watchhill.ai
@@ -152,7 +152,7 @@ Or use responsive text size:
 
 ---
 
-### e014_s01_t05: Stack Scoring Widgets Vertically on Mobile (30m)
+### TASK-5: Stack Scoring Widgets Vertically on Mobile (30m)
 **Status:** [ ] Not Started
 **Priority:** HIGH
 **Assignee:** chris@watchhill.ai
@@ -192,7 +192,7 @@ Or use responsive text size:
 
 ---
 
-### e014_s01_t06: Reorder Analysis Detail Cards for Mobile (45m)
+### TASK-6: Reorder Analysis Detail Cards for Mobile (45m)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
@@ -245,7 +245,7 @@ Or use responsive text size:
 
 ---
 
-### e014_s01_t07: Add Bottom Scroll Padding for Footer (10m)
+### TASK-7: Add Bottom Scroll Padding for Footer (10m)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
