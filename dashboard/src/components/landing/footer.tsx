@@ -13,9 +13,9 @@ import Link from 'next/link'
 
 export function Footer() {
   return (
-    <footer className="border-t border-border py-12">
-      <div className="container mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+    <footer className="border-t border-border py-8 sm:py-12">
+      <div className="container mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8">
           <div>
             <Link href="/" className="font-mono text-xl font-bold text-foreground hover:text-primary transition-colors">
               <span className="text-primary">g</span>inko

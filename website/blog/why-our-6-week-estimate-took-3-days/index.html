@@ -223,6 +223,90 @@
             color: var(--color-accent);
         }
 
+        /* Blog CTA Section */
+        .blog-cta {
+            max-width: 720px;
+            margin: var(--space-12) auto var(--space-16);
+            padding: 0 var(--space-6);
+        }
+
+        .blog-cta-content {
+            position: relative;
+            background: linear-gradient(135deg, var(--color-surface) 0%, #0a0a0a 100%);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-10);
+            text-align: center;
+        }
+
+        .blog-cta-content:hover {
+            border-color: var(--color-accent);
+        }
+
+        .blog-cta-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            margin-bottom: var(--space-4);
+        }
+
+        .blog-cta-subtitle {
+            font-size: var(--font-size-base);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-6);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .blog-cta-terminal {
+            margin-bottom: var(--space-6);
+        }
+
+        .blog-cta-buttons {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .blog-cta-buttons .btn-primary,
+        .blog-cta-buttons .btn-outline {
+            padding: var(--space-3) var(--space-6);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-semibold);
+            border-radius: 9999px;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .blog-cta-buttons .btn-primary {
+            background-color: var(--color-accent);
+            color: #0A0A0A;
+            border: 2px solid var(--color-accent);
+        }
+
+        .blog-cta-buttons .btn-primary:hover {
+            background-color: var(--color-accent-hover);
+            border-color: var(--color-accent-hover);
+        }
+
+        .blog-cta-buttons .btn-outline {
+            background-color: transparent;
+            color: var(--color-accent);
+            border: 2px solid var(--color-accent);
+        }
+
+        .blog-cta-buttons .btn-outline:hover {
+            background-color: var(--color-accent);
+            color: #0A0A0A;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .blog-post-content {
@@ -245,6 +329,28 @@
 
             .back-to-blog-top {
                 padding-top: calc(70px + var(--space-4));
+            }
+
+            .blog-cta {
+                padding: 0 var(--space-4);
+            }
+
+            .blog-cta-content {
+                padding: var(--space-6);
+            }
+
+            .blog-cta-title {
+                font-size: var(--font-size-xl);
+            }
+
+            .blog-cta-buttons {
+                flex-direction: column;
+            }
+
+            .blog-cta-buttons .btn-primary,
+            .blog-cta-buttons .btn-outline {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -503,6 +609,30 @@ work_mode: think-and-build
 <p><em>Ginko helps Human+AI teams work faster by making context persistent and knowledge shareable. If you&#39;re seeing similar acceleration factors—or want to—we&#39;d love to hear about it. <a href="https://ginkoai.com">Get in touch</a>.</em></p>
 
     </article>
+
+    <!-- End-of-Post CTA -->
+    <section class="blog-cta">
+        <div class="blog-cta-content">
+            <div class="corner-bracket top-left"></div>
+            <div class="corner-bracket top-right"></div>
+            <h3 class="blog-cta-title">Stop losing AI context. Start shipping faster.</h3>
+            <p class="blog-cta-subtitle">Ginko keeps your development context in git. Resume any AI session in 30 seconds.</p>
+            <div class="terminal-inline terminal-copyable blog-cta-terminal" data-copy="npm install -g @ginkoai/cli">
+                <span class="terminal-prompt">$</span>
+                <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="blog-post">
+                    <span class="copy-icon">⧉</span>
+                    <span class="copy-success">✓</span>
+                </button>
+            </div>
+            <div class="blog-cta-buttons">
+                <a href="../../get-started.html" class="btn-primary" data-track-cta data-cta-location="blog-post">Get Started Free</a>
+                <a href="https://docs.ginko.ai" class="btn-outline" data-track-docs data-link-location="blog-post">Read the Docs</a>
+            </div>
+            <div class="corner-bracket bottom-left"></div>
+            <div class="corner-bracket bottom-right"></div>
+        </div>
+    </section>
 
     <!-- Post Navigation -->
     <nav class="post-navigation" aria-label="Post navigation">

@@ -34,19 +34,19 @@ export function FooterCTA() {
   }
 
   return (
-    <section className="container mx-auto px-6 py-16 md:py-24">
+    <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24">
       <div className="max-w-2xl mx-auto">
-        <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-8 md:p-12 text-center">
-          <h2 className="text-2xl md:text-3xl font-mono font-bold text-foreground mb-6">
+        <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-6 sm:p-8 md:p-12 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-bold text-foreground mb-4 sm:mb-6">
             Ready to eliminate context rot?
           </h2>
 
           {/* Terminal Install Command */}
-          <div className="inline-flex items-center gap-3 bg-background border border-border rounded-lg px-4 py-3 mb-8 font-mono text-sm">
-            <span className="text-primary">$</span>
-            <code className="text-foreground">npm install -g @ginkoai/cli</code>
+          <div className="inline-flex items-center gap-2 sm:gap-3 bg-background border border-border rounded-lg px-3 sm:px-4 py-2 sm:py-3 mb-6 sm:mb-8 font-mono text-xs sm:text-sm max-w-full overflow-x-auto">
+            <span className="text-primary flex-shrink-0">$</span>
+            <code className="text-foreground whitespace-nowrap">npm install -g @ginkoai/cli</code>
             <button
-              className="text-muted-foreground hover:text-primary transition-colors"
+              className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 min-w-[24px] min-h-[24px] flex items-center justify-center"
               onClick={() => copyToClipboard('npm install -g @ginkoai/cli')}
               aria-label="Copy to clipboard"
             >

@@ -26,8 +26,8 @@ import {
 // Problem Cards - Static server component
 export function ProblemCards() {
   return (
-    <section className="container mx-auto px-6 py-16">
-      <div className="grid md:grid-cols-3 gap-6">
+    <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
         <CornerBrackets corners="all" variant="muted" className="bg-card rounded-lg">
           <div className="text-center p-6">
             <div className="font-mono text-sm text-primary mb-3 uppercase tracking-wider">CONTEXT_ROT</div>
@@ -62,7 +62,7 @@ export function ProblemCards() {
 // How It Works - Static server component
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="container mx-auto px-6 py-16 md:py-24">
+    <section id="how-it-works" className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24">
       <h2 className="text-2xl md:text-3xl font-mono font-bold text-center text-foreground mb-12">
         How ginko works
       </h2>
@@ -129,12 +129,12 @@ export function HowItWorks() {
 // Features Section - Static server component
 export function FeaturesSection() {
   return (
-    <section id="features" className="container mx-auto px-6 py-16 md:py-24">
-      <h2 className="text-2xl md:text-3xl font-mono font-bold text-center text-foreground mb-12">
+    <section id="features" className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-bold text-center text-foreground mb-8 sm:mb-12">
         Features
       </h2>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <CornerBrackets corners="all" variant="muted" className="bg-card rounded-lg">
           <div className="p-6">
             <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -217,10 +217,10 @@ export function FeaturesSection() {
 // Testimonial Section - Static server component
 export function TestimonialSection() {
   return (
-    <section className="container mx-auto px-6 py-16">
+    <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
       <div className="max-w-2xl mx-auto">
-        <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-8 md:p-12">
-          <blockquote className="text-lg md:text-xl text-foreground text-center font-medium leading-relaxed">
+        <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-6 sm:p-8 md:p-12">
+          <blockquote className="text-base sm:text-lg md:text-xl text-foreground text-center font-medium leading-relaxed">
             &ldquo;The rapport is right there from the start. The flow is preserved, and my frustrations are gone.&rdquo;
           </blockquote>
           <cite className="block text-center text-muted-foreground text-sm mt-4 not-italic">
@@ -235,24 +235,24 @@ export function TestimonialSection() {
 // Stats Section - Static server component
 export function StatsSection() {
   return (
-    <section className="container mx-auto px-6 py-16">
-      <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-8 md:p-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+    <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
+      <CornerBrackets corners="all" className="bg-card border border-border rounded-lg p-6 sm:p-8 md:p-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 text-center">
           <div>
-            <div className="text-3xl md:text-4xl font-mono font-bold text-primary">30s</div>
-            <div className="text-muted-foreground text-sm mt-1">Flow Recovery</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold text-primary">30s</div>
+            <div className="text-muted-foreground text-xs sm:text-sm mt-1">Flow Recovery</div>
           </div>
           <div>
-            <div className="text-3xl md:text-4xl font-mono font-bold text-primary">10x</div>
-            <div className="text-muted-foreground text-sm mt-1">Faster Context</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold text-primary">10x</div>
+            <div className="text-muted-foreground text-xs sm:text-sm mt-1">Faster Context</div>
           </div>
           <div>
-            <div className="text-3xl md:text-4xl font-mono font-bold text-primary">100%</div>
-            <div className="text-muted-foreground text-sm mt-1">Git-Native</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold text-primary">100%</div>
+            <div className="text-muted-foreground text-xs sm:text-sm mt-1">Git-Native</div>
           </div>
           <div>
-            <div className="text-3xl md:text-4xl font-mono font-bold text-primary">0</div>
-            <div className="text-muted-foreground text-sm mt-1">Vendor Lock-in</div>
+            <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold text-primary">0</div>
+            <div className="text-muted-foreground text-xs sm:text-sm mt-1">Vendor Lock-in</div>
           </div>
         </div>
       </CornerBrackets>
@@ -263,12 +263,12 @@ export function StatsSection() {
 // Pricing Section - Static server component
 export function PricingSection() {
   return (
-    <section id="pricing" className="container mx-auto px-6 py-16 md:py-24">
-      <h2 className="text-2xl md:text-3xl font-mono font-bold text-center text-foreground mb-12">
+    <section id="pricing" className="container mx-auto px-4 sm:px-6 py-12 sm:py-16 md:py-24">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-mono font-bold text-center text-foreground mb-8 sm:mb-12">
         Pricing
       </h2>
 
-      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
         {/* Free Plan */}
         <CornerBrackets corners="all" variant="muted" className="bg-card rounded-lg">
           <div className="p-6">

@@ -68,7 +68,7 @@ export function HeroSection() {
   }
 
   return (
-    <section className="container mx-auto px-6 py-20 md:py-28" data-variant={heroVariant.id}>
+    <section className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 md:py-28" data-variant={heroVariant.id}>
       <div className="text-center max-w-4xl mx-auto">
         <CornerBrackets size="lg" corners="all" className="inline-block mb-8">
           <h1
@@ -86,11 +86,11 @@ export function HeroSection() {
         </p>
 
         {/* Terminal Install Command */}
-        <div className="inline-flex items-center gap-3 bg-card border border-border rounded-lg px-4 py-3 mb-8 font-mono text-sm">
-          <span className="text-primary">$</span>
-          <code className="text-foreground">npm install -g @ginkoai/cli</code>
+        <div className="inline-flex items-center gap-2 sm:gap-3 bg-card border border-border rounded-lg px-3 sm:px-4 py-2 sm:py-3 mb-8 font-mono text-xs sm:text-sm max-w-full overflow-x-auto">
+          <span className="text-primary flex-shrink-0">$</span>
+          <code className="text-foreground whitespace-nowrap">npm install -g @ginkoai/cli</code>
           <button
-            className="text-muted-foreground hover:text-primary transition-colors"
+            className="text-muted-foreground hover:text-primary transition-colors flex-shrink-0 min-w-[24px] min-h-[24px] flex items-center justify-center"
             onClick={() => copyToClipboard('npm install -g @ginkoai/cli')}
             aria-label="Copy to clipboard"
           >
@@ -143,28 +143,28 @@ export function HeroSection() {
       </div>
 
       {/* Logo Marquee - Tools & Technologies */}
-      <div className="mt-16 relative overflow-hidden">
-        <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-background to-transparent z-10" />
-        <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-background to-transparent z-10" />
+      <div className="mt-12 sm:mt-16 relative overflow-hidden">
+        <div className="absolute inset-y-0 left-0 w-12 sm:w-24 bg-gradient-to-r from-background to-transparent z-10" />
+        <div className="absolute inset-y-0 right-0 w-12 sm:w-24 bg-gradient-to-l from-background to-transparent z-10" />
         <div className="flex animate-marquee whitespace-nowrap py-4">
           {/* First set */}
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">ANTHROPIC</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">CURSOR</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">GITHUB</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">VERCEL</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEO4J</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">TYPESCRIPT</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEXT.JS</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">SUPABASE</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">ANTHROPIC</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">CURSOR</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">GITHUB</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">VERCEL</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEO4J</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">TYPESCRIPT</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEXT.JS</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">SUPABASE</span>
           {/* Duplicate set for seamless loop */}
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">ANTHROPIC</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">CURSOR</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">GITHUB</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">VERCEL</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEO4J</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">TYPESCRIPT</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEXT.JS</span>
-          <span className="mx-8 text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">SUPABASE</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">ANTHROPIC</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">CURSOR</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">GITHUB</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">VERCEL</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEO4J</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">TYPESCRIPT</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">NEXT.JS</span>
+          <span className="mx-4 sm:mx-8 text-sm sm:text-lg font-mono font-semibold text-muted-foreground/50 tracking-widest">SUPABASE</span>
         </div>
       </div>
     </section>

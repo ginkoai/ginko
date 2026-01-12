@@ -12,6 +12,7 @@
 // Client components (interactive)
 export { HeroSection } from './hero-section'
 export { FooterCTA } from './footer-cta'
+export { MobileNav } from './mobile-nav'
 
 // Server components (static)
 export { Header } from './header'
