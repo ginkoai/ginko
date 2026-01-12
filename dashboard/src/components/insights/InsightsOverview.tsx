@@ -131,15 +131,15 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-6">
       {/* Overall Score Card */}
       <Card withBrackets>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
-              <CardTitle className="text-xl">Coaching Insights</CardTitle>
+              <CardTitle className="text-lg md:text-xl whitespace-nowrap">Coaching Insights</CardTitle>
               <CardDescription>
-                Analysis period: {report.period.days} days ({new Date(report.period.start).toLocaleDateString()} - {new Date(report.period.end).toLocaleDateString()})
+                {report.period.days}-day analysis ({new Date(report.period.start).toLocaleDateString()} - {new Date(report.period.end).toLocaleDateString()})
               </CardDescription>
             </div>
             <div className="flex items-center gap-3">
@@ -148,16 +148,16 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
                 onChange={onPeriodChange}
                 disabled={loading}
               />
-              <Badge className="bg-secondary text-muted-foreground">
+              <Badge className="hidden md:inline-flex bg-secondary text-muted-foreground">
                 Last analyzed: {new Date(report.runAt).toLocaleString()}
               </Badge>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-8">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
             {/* Score Circle */}
-            <div className="text-center">
+            <div className="text-center shrink-0">
               <div className="relative w-24 h-24">
                 <svg className="w-24 h-24" viewBox="0 0 96 96">
                   {/* Gradient definitions - dark at arc start (top), light toward arc end */}
@@ -235,7 +235,7 @@ export function InsightsOverview({ report, loading, error, selectedPeriod, onPer
             </div>
 
             {/* Category Scores Grid */}
-            <div className="flex-1 grid grid-cols-2 gap-3">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
               {report.categoryScores.map((categoryScore) => (
                 <CategoryScoreCard
                   key={categoryScore.category}

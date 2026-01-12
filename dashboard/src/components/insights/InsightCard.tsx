@@ -119,48 +119,91 @@ export function InsightCard({ insight, expanded: initialExpanded = false }: Insi
         onClick={() => hasDetails && setExpanded(!expanded)}
         disabled={!hasDetails}
         className={clsx(
-          'w-full p-4 text-left flex items-start gap-3',
+          'w-full p-4 text-left',
           hasDetails && 'cursor-pointer hover:bg-white/5'
         )}
       >
-        {/* Expand/Collapse Icon */}
-        {hasDetails && (
-          <span className="mt-0.5 text-muted-foreground">
-            {expanded ? (
-              <ChevronDownIcon className="h-4 w-4" />
-            ) : (
-              <ChevronRightIcon className="h-4 w-4" />
-            )}
-          </span>
-        )}
+        {/* Mobile: Controls row at top */}
+        <div className="flex items-center gap-2 mb-2 md:hidden">
+          {hasDetails && (
+            <span className="text-muted-foreground">
+              {expanded ? (
+                <ChevronDownIcon className="h-4 w-4" />
+              ) : (
+                <ChevronRightIcon className="h-4 w-4" />
+              )}
+            </span>
+          )}
+          <span className="text-lg">{severityIcon}</span>
+          {insight.scoreImpact !== 0 && (
+            <Badge
+              className={clsx(
+                'text-xs ml-auto',
+                insight.scoreImpact > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+              )}
+            >
+              {insight.scoreImpact > 0 ? '+' : ''}{insight.scoreImpact}
+            </Badge>
+          )}
+        </div>
 
-        {/* Severity Icon */}
-        <span className="text-lg mt-[-2px]">{severityIcon}</span>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-mono font-medium text-foreground truncate">
-              {insight.title}
-            </h4>
-            {insight.scoreImpact !== 0 && (
-              <Badge
-                className={clsx(
-                  'text-xs',
-                  insight.scoreImpact > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+        {/* Desktop: Original horizontal layout */}
+        <div className="hidden md:flex items-start gap-3">
+          {hasDetails && (
+            <span className="mt-0.5 text-muted-foreground">
+              {expanded ? (
+                <ChevronDownIcon className="h-4 w-4" />
+              ) : (
+                <ChevronRightIcon className="h-4 w-4" />
+              )}
+            </span>
+          )}
+          <span className="text-lg mt-[-2px]">{severityIcon}</span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <h4 className="font-mono font-medium text-foreground truncate">
+                {insight.title}
+              </h4>
+              {insight.scoreImpact !== 0 && (
+                <Badge
+                  className={clsx(
+                    'text-xs',
+                    insight.scoreImpact > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                  )}
+                >
+                  {insight.scoreImpact > 0 ? '+' : ''}{insight.scoreImpact}
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {insight.description}
+            </p>
+            {insight.metricName && (
+              <div className="mt-2 flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">{insight.metricName}:</span>
+                <span className={clsx('font-mono font-medium', severityColors.text)}>
+                  {insight.metricValue}{insight.metricUnit || ''}
+                </span>
+                {insight.metricTarget && (
+                  <span className="text-muted-foreground">
+                    (target: {insight.metricTarget}{insight.metricUnit || ''})
+                  </span>
                 )}
-              >
-                {insight.scoreImpact > 0 ? '+' : ''}{insight.scoreImpact}
-              </Badge>
+              </div>
             )}
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2">
+        </div>
+
+        {/* Mobile: Title and description full width below controls */}
+        <div className="md:hidden">
+          <h4 className="font-mono font-medium text-foreground mb-1">
+            {insight.title}
+          </h4>
+          <p className="text-sm text-muted-foreground">
             {insight.description}
           </p>
-
-          {/* Metric Display (if present) */}
           {insight.metricName && (
-            <div className="mt-2 flex items-center gap-2 text-sm">
+            <div className="mt-2 flex items-center gap-2 text-sm flex-wrap">
               <span className="text-muted-foreground">{insight.metricName}:</span>
               <span className={clsx('font-mono font-medium', severityColors.text)}>
                 {insight.metricValue}{insight.metricUnit || ''}
