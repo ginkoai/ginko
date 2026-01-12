@@ -68,3 +68,13 @@ Created ADR-059 (Maintenance Epics) establishing that all sprints must belong to
 
 Files: .ginko/graph/config.json, docs/epics/EPIC-INDEX.md, docs/sprints/SPRINT-2026-01-adhoc-insights-mobile-uat.md
 Impact: high
+
+### 16:49 - [achievement]
+# [ACHIEVEMENT] 16:49
+
+Completed e014_s01 (Insights Mobile UAT). All 7 tasks done: header restructure, badge hiding, widget stacking, card layout reorder, bottom padding. Files: InsightsOverview.tsx, InsightCard.tsx. Build compiles but pre-existing Stripe config issue blocks full build.
+
+**Impact:** high
+**Timestamp:** 2026-01-12T21:49:47.098Z
+
+Impact: high
