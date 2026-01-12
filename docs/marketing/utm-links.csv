@@ -1,0 +1,13 @@
+short_code,full_url,platform,content_type,post_reference,created,notes
+tw-velocity,"https://ginkoai.com/blog/why-our-6-week-estimate-took-3-days?utm_source=twitter&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=thread-velocity",twitter,thread,post-6,2026-01-12,6-week estimate thread
+tw-amnesia,"https://ginkoai.com/blog/why-ai-assistants-forget?utm_source=twitter&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=thread-ai-amnesia",twitter,thread,post-1,2026-01-12,AI context loss thread
+tw-flow,"https://ginkoai.com/blog/back-in-flow-30-seconds?utm_source=twitter&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=thread-flow-state",twitter,thread,post-2,2026-01-12,Flow state thread
+tw-tip-logging,"https://ginkoai.com?utm_source=twitter&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=tip-context-logging",twitter,tip,general,2026-01-12,Context logging tip
+rd-showcase,"https://ginkoai.com?utm_source=reddit&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=r-programming-showcase",reddit,showcase,general,2026-01-12,r/programming Saturday showcase
+rd-velocity,"https://ginkoai.com/blog/why-our-6-week-estimate-took-3-days?utm_source=reddit&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=r-experienceddevs-velocity",reddit,discussion,post-6,2026-01-12,r/ExperiencedDevs velocity discussion
+rd-context,"https://ginkoai.com/blog/why-ai-assistants-forget?utm_source=reddit&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=r-chatgptcoding-context",reddit,discussion,post-1,2026-01-12,r/ChatGPTCoding context loss
+li-chaos,"https://ginkoai.com/blog/ai-development-without-chaos?utm_source=linkedin&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=post-team-chaos",linkedin,post,post-3,2026-01-12,Team coordination post
+li-roi,"https://ginkoai.com/blog/measuring-ai-collaboration-roi?utm_source=linkedin&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=post-roi",linkedin,post,post-5,2026-01-12,ROI measurement post
+li-velocity,"https://ginkoai.com/blog/why-our-6-week-estimate-took-3-days?utm_source=linkedin&utm_medium=organic-social&utm_campaign=sprint3-content&utm_content=post-velocity",linkedin,post,post-6,2026-01-12,15x velocity post
+yt-tutorial,"https://ginkoai.com?utm_source=youtube&utm_medium=video&utm_campaign=sprint3-content&utm_content=tutorial-getting-started",youtube,tutorial,general,2026-01-12,Getting started tutorial
+yt-short-30s,"https://ginkoai.com?utm_source=youtube&utm_medium=video&utm_campaign=sprint3-content&utm_content=short-30-seconds",youtube,short,post-2,2026-01-12,30-second flow short
