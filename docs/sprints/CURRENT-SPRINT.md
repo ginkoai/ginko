@@ -1,601 +1,384 @@
-# SPRINT: EPIC-010 Sprint 2 - MVP Marketing Strategy - Landing Page Optimization
+# SPRINT: Product Roadmap Sprint 3 - Roadmap Canvas
 
 ## Sprint Overview
 
-**Sprint Goal**: Maximize landing page conversion through proven best practices, clear pain-point-addressing CTAs, social proof, and A/B testing infrastructure
-
-**Duration**: 2 weeks (2026-01-13 to 2026-01-27)
+**Sprint Goal**: Build vertical priority-based canvas for editing roadmap in the dashboard
+**Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 40% (4/10 tasks complete)
+**Progress:** 17% (1/6 tasks complete)
 
 **Success Criteria:**
-- [x] Landing page template implemented with modern design
-- [ ] Hero CTA conversion rate measurable and >3% target
-- [ ] Social proof elements live (testimonials, GitHub stars, user quotes)
-- [x] A/B testing framework operational with 2+ active tests
-- [ ] Page load time <3s (90th percentile)
-- [ ] Mobile responsive design validated
-- [ ] Blog CTAs cross-link to landing page
+- [ ] Vertical canvas displays Epics in Now/Next/Later lanes (priority flows top-to-bottom)
+- [ ] Drag-and-drop with decision factor validation (Now requires cleared factors)
+- [ ] Click to edit Epic roadmap properties and decision factors
+- [ ] Filter controls for status, visibility, tags
+- [ ] Responsive design (works on tablet+)
+- [ ] Optimistic updates with error recovery
 
 ---
 
 ## Sprint Tasks
 
-### TASK-1: Implement landing page template (8h)
+### e009_s03_t01: Canvas Layout Component (6h)
 **Status:** [x] Complete
 **Priority:** HIGH
 
-**Goal:** Apply provided landing page template with modern, conversion-focused design
+**Goal:** Create vertical priority-based canvas with Now/Next/Later lanes
 
 **Implementation Notes:**
-User will provide template as starting point. Key sections to include:
-1. **Hero Section**
-   - Pain-point-addressing headline
-   - Clear value proposition
-   - Primary CTA (Install CLI)
-   - Secondary CTA (View Demo / Read Docs)
-   - Hero image/video/animation
+```typescript
+interface RoadmapCanvasProps {
+  projectId: string;
+  onEpicMove: (epicId: string, targetLane: 'now' | 'next' | 'later') => void;
+  onEpicSelect: (epicId: string) => void;
+}
 
-2. **Problem/Solution**
-   - Developer pain points (context switching, AI rework, team visibility)
-   - How ginko solves each
+type RoadmapLane = 'now' | 'next' | 'later';
+```
 
-3. **Features**
-   - Key capabilities with icons/visuals
-   - Session management
-   - Knowledge graph
-   - Team collaboration
+**Layout (Vertical - Priority flows top to bottom):**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ROADMAP                                    [Filters] [⚙️]  │
+├─────────────────────────────────────────────────────────────┤
+│  NOW  ────────────────────────────────────────────────────  │
+│  Ready for immediate implementation. Fully committed.       │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-009  Product Roadmap           ◐ in_progress   │    │
+│  │ Sprint 3 of 4 • roadmap, dashboard                  │    │
+│  └─────────────────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-003  Marketing Launch          ◐ in_progress   │    │
+│  └─────────────────────────────────────────────────────┘    │
+├─────────────────────────────────────────────────────────────┤
+│  NEXT  ───────────────────────────────────────────────────  │
+│  Committed but may need enablers before starting.           │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-010  MVP Marketing Strategy    ○ not_started   │    │
+│  └─────────────────────────────────────────────────────┘    │
+├─────────────────────────────────────────────────────────────┤
+│  LATER  ──────────────────────────────────────────────────  │
+│  Proposed work with unresolved decision factors.            │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-011  Graph Explorer v2         ○ not_started   │    │
+│  │ ⚠️ planning • architecture                          │    │
+│  └─────────────────────────────────────────────────────┘    │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ EPIC-012  Web Collaboration GUI     ○ not_started   │    │
+│  │ ⚠️ planning • design • dependencies                 │    │
+│  └─────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────┘
+```
 
-4. **Social Proof**
-   - User testimonials
-   - GitHub stars counter
-   - Company logos (if applicable)
-   - Usage stats
-
-5. **How It Works**
-   - 3-step flow (Install → Start → Collaborate)
-   - Screenshots or demo
-
-6. **CTA Section**
-   - Final conversion push
-   - Install instructions
-   - Links to docs, GitHub, Discord
+**Design:**
+- Vertical scroll (natural direction)
+- Lane headers with descriptions
+- Drag up = higher priority, drag down = lower priority
+- Later items show decision factor tags prominently
 
 **Files:**
-- `dashboard/src/app/(marketing)/page.tsx`
-- `dashboard/src/components/marketing/*.tsx` (new components)
-- `dashboard/src/styles/marketing.css`
-
-**Acceptance Criteria:**
-- Template implemented with all sections
-- Responsive design (mobile, tablet, desktop)
-- Accessible (WCAG AA)
-- No layout shift (CLS < 0.1)
-
-Follow: ADR-TBD (design system standards)
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (new)
+- `dashboard/src/components/roadmap/LaneSection.tsx` (new)
 
 ---
 
-### TASK-2: Refine hero CTA with pain-point messaging (4h)
-**Status:** [x] Complete
+### e009_s03_t02: Epic Card Component (4h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
 
-**Goal:** Craft compelling headline and CTAs that address specific developer pain points
+**Goal:** Draggable Epic card with status and decision factor display
 
 **Implementation Notes:**
-**Pain Points to Address:**
-- "Stop losing context every time your AI restarts"
-- "Make your AI collaboration observable and traceable"
-- "Turn 28-second session starts into 2 seconds"
-- "Give your team visibility into AI-driven work"
+```typescript
+interface EpicCardProps {
+  epic: Epic;
+  lane: 'now' | 'next' | 'later';
+  isDragging?: boolean;
+  onEdit: () => void;
+}
+```
 
-**Headline Options (A/B test):**
-- "Git-native context for AI pair programming"
-- "Never lose your AI collaboration context again"
-- "Make AI collaboration safe, observable, and learnable"
+**Card Content:**
+- Epic ID + title
+- Status icon: ○ not_started, ◐ in_progress, ● completed, ✗ cancelled
+- Sprint progress (if applicable): "Sprint 3 of 4"
+- Tags (max 3)
+- **Decision factors** (Later lane only): warning icon + factor tags
+- Drag handle
 
-**CTA Button Text (A/B test):**
-- "Install Ginko CLI" (technical, direct)
-- "Get Started Free" (benefit-focused)
-- "Try Ginko Now" (action-oriented)
+**Visual States:**
+- Default: white background, subtle border
+- Dragging: elevated shadow, slight opacity
+- In Progress: accent left border
+- Completed: muted colors, checkmark overlay
+- **Has decision factors**: warning badge, factor chips visible
 
-**Implementation:**
-- Create headline variants
-- Design CTA buttons with high contrast
-- Add micro-copy under CTA ("Free forever. 2-minute setup.")
-- Include trust signals near CTA (GitHub stars, open source badge)
+**Decision Factor Display (Later items):**
+```
+┌─────────────────────────────────────────────────────────┐
+│ EPIC-012  Web Collaboration GUI        ○ not_started   │
+│ ⚠️ planning • design • dependencies                    │
+└─────────────────────────────────────────────────────────┘
+```
 
 **Files:**
-- `dashboard/src/app/(marketing)/page.tsx` (hero section)
-- `dashboard/src/config/marketing-copy.ts` (copy variants)
-
-**Acceptance Criteria:**
-- 3+ headline variants ready for A/B test
-- 3+ CTA button text variants
-- Micro-copy reinforces low friction
-- Design passes contrast ratio checks (WCAG)
-
-Apply: conversion-optimization-pattern
+- `dashboard/src/components/roadmap/EpicCard.tsx` (new)
+- `dashboard/src/components/roadmap/DecisionFactorChips.tsx` (new)
 
 ---
 
-### TASK-3: Add social proof elements (6h)
-**Status:** [x] Complete (placeholder)
+### e009_s03_t03: Drag-and-Drop with Decision Factor Validation (6h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
+**Depends:** t01, t02
 
-**Goal:** Build trust through testimonials, GitHub stats, and early user quotes
+**Goal:** Enable drag-and-drop between lanes with decision factor validation
+
+**Lane Transition Rules:**
+
+| From | To | Allowed? | Behavior |
+|------|-----|----------|----------|
+| Later | Next | ✅ Yes | Commits work (decision factors may remain) |
+| Later | Now | ⚠️ Conditional | Only if `decision_factors` is empty |
+| Next | Now | ⚠️ Conditional | Only if `decision_factors` is empty |
+| Next | Later | ✅ Yes | Uncommits work, prompts for decision factors |
+| Now | Next | ✅ Yes | Deprioritizes (stays committed) |
+| Now | Later | ✅ Yes | Uncommits, prompts for decision factors |
+
+**Key Rule:** Work cannot enter "Now" until all decision factors are cleared.
 
 **Implementation Notes:**
-**Social Proof Types:**
-1. **GitHub Stats**
-   - Live star count (GitHub API)
-   - Contributor count
-   - "Trusted by X developers"
+```typescript
+function canMoveTo(epic: Epic, targetLane: RoadmapLane): boolean {
+  if (targetLane === 'now') {
+    // Now requires all decision factors cleared
+    return !epic.decision_factors || epic.decision_factors.length === 0;
+  }
+  return true; // All other transitions allowed
+}
 
-2. **User Testimonials**
-   - Collect from early users (2-3 quotes minimum)
-   - Include name, role, company (if permissible)
-   - Photo or avatar
-   - Quote format: Pain point → How ginko solved it
+function handleDragEnd(event: DragEndEvent) {
+  const { active, over } = event;
+  if (!over) return;
 
-3. **Usage Stats** (if available)
-   - "X sessions managed"
-   - "X context switches prevented"
-   - "65% reduction in rework" (from internal data)
+  const epic = getEpic(active.id as string);
+  const targetLane = over.id as RoadmapLane;
 
-4. **Trust Badges**
-   - Open source badge
-   - Built with Claude badge
-   - MIT License badge
+  if (!canMoveTo(epic, targetLane)) {
+    // Show validation error
+    toast.error('Clear all decision factors before moving to Now');
+    return;
+  }
+
+  // Moving to Later: prompt for decision factors if none exist
+  if (targetLane === 'later' && (!epic.decision_factors || epic.decision_factors.length === 0)) {
+    openDecisionFactorModal(epic, targetLane);
+    return;
+  }
+
+  updateEpicLane(epic.id, targetLane);
+}
+```
+
+**Visual Feedback:**
+- Invalid drop target: red overlay, cursor shows "not allowed"
+- Valid drop target: green highlight
+- Blocked by decision factors: show tooltip explaining why
 
 **Files:**
-- `dashboard/src/components/marketing/SocialProof.tsx`
-- `dashboard/src/components/marketing/GitHubStats.tsx`
-- `dashboard/src/components/marketing/Testimonials.tsx`
-- `dashboard/src/app/api/github-stats/route.ts` (fetch stars)
-
-**Acceptance Criteria:**
-- GitHub star count live and accurate
-- 2+ testimonials displayed attractively
-- Trust badges visible above the fold or in footer
-- Responsive design for all proof elements
-
-Apply: social-proof-pattern
-Avoid: 💡 fake-testimonials-gotcha (only use real users)
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (update)
+- `dashboard/src/hooks/useRoadmapDnd.ts` (new)
+- `dashboard/src/lib/roadmap/lane-rules.ts` (new)
 
 ---
 
-### TASK-4: Set up A/B testing framework (6h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
+### e009_s03_t04: Epic Edit Modal with Decision Factors (4h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+**Depends:** t02
 
-**Goal:** Implement A/B testing infrastructure for headline and CTA optimization
+**Goal:** Modal for editing Epic roadmap properties including decision factors
 
 **Implementation Notes:**
-**Tool Options:**
-- Google Optimize (deprecated, use GA4 experiments)
-- PostHog Feature Flags + Experiments
-- Vercel Edge Config + Middleware
-- Custom implementation with cookies
+```typescript
+interface EpicEditModalProps {
+  epic: Epic;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (updates: EpicRoadmapUpdate) => void;
+}
 
-**Recommended:** PostHog Experiments (already installing PostHog)
+interface EpicRoadmapUpdate {
+  roadmap_lane?: 'now' | 'next' | 'later';
+  roadmap_status?: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  decision_factors?: string[];
+  roadmap_visible?: boolean;
+  changelog_reason?: string;
+}
+```
 
-**Implementation:**
-1. Configure PostHog experiments
-2. Create feature flags for:
-   - Hero headline variant
-   - CTA button text variant
-   - CTA button color variant
-3. Implement variant rendering in React
-4. Set conversion goal (CTA click or install initiated)
-5. Statistical significance calculator
+**Fields:**
+- **Lane selector**: Now / Next / Later (with validation)
+- **Status**: not_started, in_progress, completed, cancelled
+- **Decision factors** (multi-select chips):
+  - planning, value, feasibility, advisability
+  - architecture, design, risks, market-fit, dependencies
+- **Visibility toggle**: Public / Internal
+- **Change reason** (optional): For changelog entry
+- **Tags editor**
 
-**Initial Tests:**
-- Test 1: Headline A vs B vs C
-- Test 2: CTA button text A vs B
-- Test 3: CTA button color (primary vs accent)
+**Validation:**
+- Cannot select "Now" lane if decision factors exist
+- Moving to "Later" prompts for at least one decision factor
+- Shows warning if clearing factors while in Later
+
+**Decision Factor Selector:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Decision Factors                                            │
+│ What's blocking this work from being committed?             │
+│                                                             │
+│ [x] planning      [ ] feasibility    [ ] architecture       │
+│ [x] design        [ ] value          [ ] risks              │
+│ [ ] dependencies  [ ] market-fit     [ ] advisability       │
+└─────────────────────────────────────────────────────────────┘
+```
 
 **Files:**
-- `dashboard/src/lib/experiments.ts` (wrapper for PostHog)
-- `dashboard/src/app/(marketing)/page.tsx` (variant rendering)
-- `dashboard/src/hooks/useExperiment.ts` (React hook)
-
-**Acceptance Criteria:**
-- 2+ experiments running simultaneously
-- Variant assignment consistent per user
-- Conversion events tracked per variant
-- Results viewable in PostHog
-
-Follow: ADR-TBD (experimentation standards)
-Apply: ab-testing-pattern
+- `dashboard/src/components/roadmap/EpicEditModal.tsx` (new)
+- `dashboard/src/components/roadmap/DecisionFactorSelector.tsx` (new)
 
 ---
 
-### TASK-5: Optimize page load performance (4h)
+### e009_s03_t05: Filter Controls (3h)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
+**Depends:** t01
 
-**Goal:** Achieve <3s page load time (90th percentile) for landing page
+**Goal:** Filter roadmap view by lane, status, decision factors, visibility, and tags
 
 **Implementation Notes:**
-**Optimization Tactics:**
-1. **Images**
-   - Use Next.js Image component
-   - WebP format with fallbacks
-   - Lazy loading below the fold
-   - Proper sizing (no oversized images)
+```typescript
+interface RoadmapFilters {
+  lanes: ('now' | 'next' | 'later')[];
+  roadmap_status: ('not_started' | 'in_progress' | 'completed' | 'cancelled')[];
+  decision_factors: string[];  // Filter by specific blockers
+  show_internal: boolean;
+  tags: string[];
+}
+```
 
-2. **JavaScript**
-   - Code splitting
-   - Lazy load non-critical components
-   - Remove unused dependencies
-   - Minimize third-party scripts
+**UI:**
+- Lane toggles: Now / Next / Later (all on by default)
+- Status chips: not_started, in_progress, completed, cancelled
+- Decision factor filter: "Show items blocked by: [planning] [architecture] ..."
+- Toggle for "Show internal items"
+- Tag filter with autocomplete
+- "Clear filters" button
+- Persist filters in URL params
 
-3. **CSS**
-   - Critical CSS inline
-   - Remove unused styles
-   - Minimize reflows
-
-4. **Fonts**
-   - Subset fonts (only needed characters)
-   - Preload critical fonts
-   - font-display: swap
-
-5. **Caching**
-   - Set proper cache headers
-   - CDN for static assets (Vercel Edge)
-
-**Measurement:**
-- Lighthouse CI in GitHub Actions
-- WebPageTest
-- Real User Monitoring (RUM) via GA4
+**Useful Filter Presets:**
+- "Ready to start": Now lane only
+- "Committed work": Now + Next lanes
+- "Needs planning": Later lane + `planning` factor
+- "Blocked": Any items with decision factors
 
 **Files:**
-- `dashboard/next.config.js` (optimization config)
-- `dashboard/src/app/(marketing)/page.tsx` (lazy loading)
-- `dashboard/src/styles/globals.css` (critical CSS)
-
-**Acceptance Criteria:**
-- Lighthouse Performance score >90
-- Largest Contentful Paint (LCP) <2.5s
-- First Input Delay (FID) <100ms
-- Cumulative Layout Shift (CLS) <0.1
-- Total Blocking Time (TBT) <300ms
-
-Apply: performance-optimization-pattern
-Avoid: 💡 premature-optimization-gotcha (measure first)
+- `dashboard/src/components/roadmap/RoadmapFilters.tsx` (new)
+- `dashboard/src/hooks/useRoadmapFilters.ts` (new)
 
 ---
 
-### TASK-6: Add mobile responsive design (4h)
+### e009_s03_t06: Optimistic Updates & Error Handling (3h)
 **Status:** [ ] Not Started
 **Priority:** MEDIUM
+**Depends:** t03, t04
 
-**Goal:** Ensure landing page converts well on mobile devices
+**Goal:** Smooth UX with optimistic updates and graceful error recovery
 
 **Implementation Notes:**
-**Breakpoints:**
-- Mobile: <640px
-- Tablet: 640px - 1024px
-- Desktop: >1024px
+- Update UI immediately on drag/edit
+- Revert on API error with toast notification
+- Queue updates if rapid changes
+- Handle concurrent edit conflicts (show conflict resolution)
 
-**Mobile Optimizations:**
-- Hamburger menu for navigation
-- Larger tap targets (min 44x44px)
-- Simplified hero section (shorter headline, single CTA)
-- Stacked layouts instead of side-by-side
-- Readable font sizes (min 16px body)
-- No horizontal scroll
-
-**Testing:**
-- Chrome DevTools device emulation
-- Real device testing (iOS Safari, Android Chrome)
-- BrowserStack for broad coverage
+```typescript
+const { mutate, isPending, error } = useMutation({
+  mutationFn: updateEpicRoadmap,
+  onMutate: async (updates) => {
+    // Optimistically update cache
+    await queryClient.cancelQueries(['roadmap']);
+    const previous = queryClient.getQueryData(['roadmap']);
+    queryClient.setQueryData(['roadmap'], optimisticUpdate(updates));
+    return { previous };
+  },
+  onError: (err, updates, context) => {
+    // Rollback on error
+    queryClient.setQueryData(['roadmap'], context?.previous);
+    toast.error('Failed to update roadmap');
+  },
+});
+```
 
 **Files:**
-- `dashboard/src/app/(marketing)/page.tsx` (responsive components)
-- `dashboard/tailwind.config.ts` (breakpoint config)
-- `dashboard/src/components/marketing/MobileNav.tsx`
-
-**Acceptance Criteria:**
-- All sections render correctly on mobile
-- CTAs easily tappable
-- No layout issues on iOS Safari
-- Text readable without zooming
-- Lighthouse mobile score >85
+- `dashboard/src/hooks/useRoadmapMutations.ts` (new)
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (update)
 
 ---
 
-### TASK-7: Integrate blog CTAs to landing page (3h)
-**Status:** [ ] Not Started
-**Priority:** MEDIUM
+## Execution Plan
 
-**Goal:** Cross-link blog posts to landing page with conversion CTAs
+**Phase 1: Core Components**
+- t01: Vertical canvas layout with Now/Next/Later lanes
+- t02: Epic card with decision factor display
 
-**Implementation Notes:**
-**CTA Placements:**
-1. **Inline CTAs** (mid-post)
-   - After problem description: "Ginko solves this with..." → CTA
-   - After technical explanation: "Try it yourself" → CTA
+**Phase 2: Interactions**
+- t03: Drag-and-drop with lane validation rules
+- t04: Edit modal with decision factor management
 
-2. **End-of-post CTA**
-   - Summary of value prop
-   - Install button
-   - Links to docs, GitHub, Discord
-
-3. **Sidebar CTA** (persistent)
-   - "Get Started with Ginko"
-   - GitHub stars badge
-   - Install command
-
-**CTA Copy Examples:**
-- "Stop losing AI context. Install Ginko in 2 minutes."
-- "Make your AI collaboration traceable. Try Ginko free."
-- "Turn 28s session starts into 2s. Get Ginko now."
-
-**Files:**
-- `blog/src/components/InlineCTA.astro`
-- `blog/src/components/EndOfPostCTA.astro`
-- `blog/src/components/SidebarCTA.astro`
-- `blog/src/layouts/BlogPost.astro` (integrate CTAs)
-
-**Acceptance Criteria:**
-- CTAs appear on all blog posts
-- Click tracking via GA4
-- Responsive design
-- A/B test different CTA copy variants
-
-Apply: content-marketing-pattern
-
----
-
-### TASK-8: Add install instructions and quick start (3h)
-**Status:** [ ] Not Started
-**Priority:** MEDIUM
-
-**Goal:** Reduce friction from CTA click to first session
-
-**Implementation Notes:**
-**Install Section:**
-- Copy-paste npm install command
-- One-click copy button
-- Platform detection (macOS, Linux, Windows)
-- Prerequisites check (Node.js version)
-- Link to troubleshooting docs
-
-**Quick Start:**
-1. Install: `npm install -g ginko`
-2. Initialize: `ginko init`
-3. Start session: `ginko start`
-4. Log your work: `ginko log "Achievement unlocked"`
-
-**Video/GIF:**
-- 30-second demo of installation and first session
-- Hosted on YouTube or embedded
-- Autoplay muted with captions
-
-**Files:**
-- `dashboard/src/components/marketing/InstallInstructions.tsx`
-- `dashboard/src/components/marketing/QuickStart.tsx`
-- `dashboard/src/components/marketing/DemoVideo.tsx`
-
-**Acceptance Criteria:**
-- Install command copy works
-- Platform-specific instructions shown
-- Quick start guide clear and actionable
-- Demo video loads quickly (<1MB)
-
----
-
-### TASK-9: Create conversion funnel visualization (3h)
-**Status:** [ ] Not Started
-**Priority:** LOW
-
-**Goal:** Visualize user journey from landing to CLI install
-
-**Implementation Notes:**
-**Funnel Stages:**
-1. Landing page view
-2. Hero CTA click
-3. Install instructions viewed
-4. Install command copied
-5. CLI installed (tracked via PostHog)
-6. First `ginko start` session
-
-**Tool:** PostHog Funnels or GA4 Funnel Exploration
-
-**Metrics:**
-- Conversion rate per stage
-- Drop-off points (where users leave)
-- Time between stages
-- Segmentation by traffic source
-
-**Deliverable:**
-- Funnel report in PostHog/GA4
-- Weekly funnel review schedule
-- Documented in `docs/analytics/CONVERSION-FUNNEL.md`
-
-**Acceptance Criteria:**
-- All 6 stages tracked
-- Drop-off analysis identifies bottlenecks
-- Funnel viewable by team
-- Alerts for significant drop-off changes
-
----
-
-### TASK-10: Conduct landing page audit (2h)
-**Status:** [ ] Not Started
-**Priority:** LOW
-
-**Goal:** Review landing page against conversion best practices checklist
-
-**Implementation Notes:**
-**Audit Checklist:**
-- [ ] Clear value proposition above the fold
-- [ ] Pain points explicitly stated
-- [ ] Single primary CTA (no confusion)
-- [ ] Social proof visible
-- [ ] Trust signals (open source, GitHub, testimonials)
-- [ ] Fast load time (<3s)
-- [ ] Mobile responsive
-- [ ] Accessible (keyboard navigation, screen readers)
-- [ ] No broken links
-- [ ] Clear next steps after CTA
-
-**Tools:**
-- Manual review
-- Lighthouse audit
-- WAVE accessibility checker
-- UsabilityHub five-second test (optional)
-
-**Deliverable:**
-- Audit report in `docs/marketing/LANDING-PAGE-AUDIT.md`
-- List of improvements for future sprints
-
-**Acceptance Criteria:**
-- Checklist 90%+ complete
-- Critical issues (broken links, slow load) resolved
-- Recommendations documented
+**Phase 3: Polish**
+- t05: Filter controls
+- t06: Optimistic updates and error handling
+- Integration testing
 
 ---
 
 ## Accomplishments This Sprint
 
-### 2026-01-11: TASK-1 - Landing Page Template Implementation
+### 2026-01-11: T1 Canvas Layout Component
 
-**Enhanced dashboard landing page** (`dashboard/src/components/landing-page.tsx`) with conversion-focused design matching the website.
+**Components Created:**
+- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` - Main canvas with vertical lane stack
+  - Header with title, stats, filter toggle, show/hide done/dropped
+  - Fetches from `/api/v1/graph/roadmap` API
+  - Renders lanes in Now → Next → Later order
+- `dashboard/src/components/roadmap/LaneSection.tsx` - Collapsible lane sections
+  - Color-coded borders (green/blue/gray/green/red)
+  - Lane headers with descriptions and epic counts
+  - Expandable/collapsible
+- `dashboard/src/components/roadmap/EpicCard.tsx` - Epic cards with status
+  - Status icons: ○ not_started, ◐ in_progress, ● completed, ✗ cancelled
+  - Decision factor chips for Later items (with warning icon)
+  - Drag handle placeholder (for T3)
+  - Tags display
 
-**Sections Added:**
-1. **Hero Section**
-   - Pain-point headline: "Stop re-explaining your codebase to AI."
-   - A/B test-ready with `data-hero-title`, `data-hero-subtitle`, `data-hero-cta-*` attributes
-   - Terminal install command with copy-to-clipboard
-   - Primary CTA: "Install CLI", Secondary CTA: "View Docs"
+**Page & Navigation:**
+- `dashboard/src/app/dashboard/roadmap/page.tsx` - Roadmap page route
+- Updated `dashboard/src/components/dashboard/dashboard-tabs.tsx`:
+  - Added Roadmap tab with MapIcon
+  - Ginko green accent color for roadmap tab
 
-2. **Problem Cards** - CONTEXT_ROT, SESSION_RESET, KNOWLEDGE_SILOS
-
-3. **How ginko works** - Terminal demo showing `ginko start` output with explanation
-
-4. **Features Grid** (6 features)
-   - SESSION_HANDOFF, SPRINT_TRACKING, PATTERN_CAPTURE
-   - GOTCHA_ALERTS, GIT_NATIVE, TEAM_SYNC (Pro)
-
-5. **Testimonial Section** - Beta user quote with corner brackets
-
-6. **Stats Section** - 30s Flow Recovery, 10x Faster Context, 100% Git-Native, 0 Vendor Lock-in
-
-7. **Pricing Section** - Free/Pro/Enterprise tiers with feature lists
-
-8. **Final CTA Section** - "Ready to eliminate context rot?" with install command
-
-9. **Enhanced Footer** - 4-column layout with Product, Company, Resources links
-
-**Files:**
-- `dashboard/src/components/landing-page.tsx` (193 → 549 lines)
-
-**Ready for:** A/B testing integration (TASK-4), social proof components (TASK-3)
-
-### 2026-01-11: TASK-3 - Social Proof Placeholder (Logo Marquee)
-
-**Added scrolling logo marquee** below hero CTAs as placeholder for social proof until testimonials are collected.
-
-**Implementation:**
-- Horizontal scrolling marquee of tool/company names in ALL CAPS
-- Tools shown: ANTHROPIC, CURSOR, GITHUB, VERCEL, NEO4J, TYPESCRIPT, NEXT.JS, SUPABASE
-- Positioned at bottom of hero section, still above the fold
-- Edge fade gradients for smooth visual effect
-- CSS animation: 30s linear infinite scroll (right to left)
-- Duplicate set of items for seamless loop
-
-**Files:**
-- `dashboard/src/components/landing-page.tsx` (marquee HTML)
-- `dashboard/tailwind.config.js` (added `marquee` keyframes animation)
-
-**Future:** Replace ALL CAPS text with actual logos when available, add testimonials/GitHub stats
-
-### 2026-01-11: TASK-2 - Hero CTA Pain-Point Messaging
-
-**Created marketing copy config** (`dashboard/src/config/marketing-copy.ts`) with A/B test variants.
-
-**5 Hero Variants:**
-- **A (Problem-first):** "Stop re-explaining your codebase to AI."
-- **B (Outcome-first):** "Resume any AI session in 30 seconds."
-- **C (Contrast):** "AI forgets. Ginko doesn't."
-- **D (Quantified-pain):** "You've spent 10 minutes re-explaining. Again."
-- **E (Identity):** "Stop being your AI's context janitor."
-
-**3+ CTA Variants:**
-- "Install CLI" (technical, direct)
-- "Get Started Free" (benefit-focused)
-- "Try Ginko Now" (action-oriented)
-
-**Micro-copy Added:**
-- "Free forever. 2-minute setup." below CTAs
-
-**Trust Signals Added:**
-- GitHub icon + "Open Source"
-- Scale icon + "MIT License"
-- Lock icon + "No Vendor Lock-in"
-
-**A/B Test Infrastructure:**
-- Variant stored in localStorage (`ginko_hero_variant`)
-- URL override: `?hero_variant=B`
-- Random assignment on first visit
-- `data-variant` attribute on hero section for analytics
-
-**Files:**
-- `dashboard/src/config/marketing-copy.ts` (new - 160 lines)
-- `dashboard/src/components/landing-page.tsx` (updated hero section)
-
-### 2026-01-11: TASK-4 - A/B Testing Framework
-
-**Created complete A/B testing infrastructure** (PostHog-ready, works standalone).
-
-**New Files:**
-- `dashboard/src/lib/experiments.ts` - Core experiment system
-- `dashboard/src/hooks/useExperiment.ts` - React hook for experiments
-
-**Features:**
-- Weighted variant assignment (configurable per variant)
-- Consistent assignment via localStorage
-- URL override for testing: `?exp_hero-headline=E`
-- Exposure tracking (when variant is rendered)
-- Conversion tracking (on CTA clicks)
-- Event storage (last 100 events in localStorage)
-- GA4 integration ready
-- PostHog integration ready (just uncomment)
-
-**Active Experiments:**
-1. `hero-headline` - 5 variants (A-E), equal weight
-2. `cta-text` - 3 variants (technical, benefit, action)
-3. `social-proof-position` - 2 variants (draft)
-
-**Tracking Events:**
-- `experiment_assigned` - When variant first assigned
-- `experiment_exposed` - When variant rendered
-- `experiment_conversion` - When CTA clicked
-
-**Debug Tools (dev mode):**
-```javascript
-window.ginkoExperiments.getAssignments()
-window.ginkoExperiments.getStoredEvents()
-window.ginkoExperiments.clearExperimentData()
-```
-
-**Landing Page Integration:**
-- Hero section uses `useExperiment('hero-headline')`
-- CTA clicks tracked with location (hero/footer)
-- Exposure marked on component mount
-
----
+**Types Updated:**
+- `dashboard/src/lib/graph/types.ts`:
+  - Added `RoadmapLane` type: 'now' | 'next' | 'later' | 'done' | 'dropped'
+  - Added `DecisionFactor` type for 9 factor tags
+  - Updated `EpicNode` interface with `roadmap_lane`, `decision_factors`, `priority`
+  - Deprecated old quarterly properties
 
 ## Next Steps
 
-1. Begin Sprint 3: Content & Multi-Channel Funnel
-2. Monitor landing page conversion rate post-launch
-3. Iterate on A/B test winners
-
----
+After Sprint 3:
+- Sprint 4: History visualization and polish
 
 ## Blockers
 
@@ -603,10 +386,9 @@ window.ginkoExperiments.clearExperimentData()
 
 ---
 
-## References
+## Sprint Metadata
 
-- [EPIC-010: MVP Marketing Strategy](../epics/EPIC-010-mvp-marketing-strategy.md)
-- [Sprint 1: Analytics Foundation](./SPRINT-2026-01-e010-sprint1-analytics-foundation.md)
-- Conversion optimization resources:
-  - https://unbounce.com/landing-page-examples/
-  - https://www.optimizely.com/optimization-glossary/
+**Epic:** EPIC-009 (Product Roadmap)
+**Sprint ID:** e009_s03
+**Started:** 2026-01-11
+**Participants:** Chris Norton, Claude

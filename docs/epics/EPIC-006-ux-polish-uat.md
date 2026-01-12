@@ -2,9 +2,12 @@
 epic_id: EPIC-006
 status: complete
 created: 2025-12-16
-updated: 2026-01-03
+updated: 2026-01-11
 completed: 2026-01-03
 target: 2026-01 (when-ready)
+roadmap_lane: done
+roadmap_status: completed
+tags: [ux, dashboard, graph-explorer, insights]
 ---
 
 # EPIC-006: UX Polish and UAT

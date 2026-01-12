@@ -16,12 +16,14 @@ import { clsx } from 'clsx'
 import {
   ChartBarIcon,
   CircleStackIcon,
-  LightBulbIcon
+  LightBulbIcon,
+  MapIcon
 } from '@heroicons/react/24/outline'
 import {
   ChartBarIcon as ChartBarIconSolid,
   CircleStackIcon as CircleStackIconSolid,
-  LightBulbIcon as LightBulbIconSolid
+  LightBulbIcon as LightBulbIconSolid,
+  MapIcon as MapIconSolid
 } from '@heroicons/react/24/solid'
 
 const navigation = [
@@ -31,6 +33,13 @@ const navigation = [
     icon: ChartBarIcon,
     iconActive: ChartBarIconSolid,
     color: 'focus', // cyan
+  },
+  {
+    name: 'Roadmap',
+    href: '/dashboard/roadmap',
+    icon: MapIcon,
+    iconActive: MapIconSolid,
+    color: 'roadmap', // ginko green
   },
   {
     name: 'Insights',
@@ -52,6 +61,10 @@ const colorStyles = {
   focus: {
     active: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50',
     hover: 'hover:bg-cyan-500/10 hover:text-cyan-400',
+  },
+  roadmap: {
+    active: 'bg-primary/20 text-primary border-primary/50',
+    hover: 'hover:bg-primary/10 hover:text-primary',
   },
   insights: {
     active: 'bg-amber-500/20 text-amber-400 border-amber-500/50',

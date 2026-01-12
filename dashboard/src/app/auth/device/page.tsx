@@ -29,19 +29,39 @@ export default function DeviceAuthPage() {
   useEffect(() => {
     const supabase = createClient()
 
-    // Check if user is logged in
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
+    // Add timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.log('[DeviceAuth] Auth check timed out, showing login')
       setLoading(false)
-    })
+    }, 5000) // 5 second timeout
+
+    // Check if user is logged in
+    supabase.auth.getUser()
+      .then(({ data: { user }, error }) => {
+        clearTimeout(timeout)
+        if (error) {
+          console.error('[DeviceAuth] getUser error:', error)
+        }
+        setUser(user)
+        setLoading(false)
+      })
+      .catch((error) => {
+        clearTimeout(timeout)
+        console.error('[DeviceAuth] getUser exception:', error)
+        setLoading(false)
+      })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      clearTimeout(timeout)
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(timeout)
+      subscription.unsubscribe()
+    }
   }, [])
 
   // Focus input when user is logged in
@@ -58,8 +78,8 @@ export default function DeviceAuthPage() {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        // Redirect back to this page after login
-        redirectTo: `${window.location.origin}/auth/callback?next=/auth/device`,
+        // Use dedicated device auth callback that always returns here
+        redirectTo: `${window.location.origin}/auth/device/callback`,
         skipBrowserRedirect: false
       }
     })

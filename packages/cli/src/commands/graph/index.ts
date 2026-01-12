@@ -1,9 +1,9 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-10-31
- * @tags: [graph, cli, knowledge-graph, cloud]
- * @related: [init.ts, load.ts, status.ts, query.ts, explore.ts]
+ * @updated: 2026-01-09
+ * @tags: [graph, cli, knowledge-graph, cloud, migrations]
+ * @related: [init.ts, load.ts, status.ts, query.ts, explore.ts, migrations/]
  * @priority: critical
  * @complexity: medium
  * @dependencies: [commander, chalk]
@@ -17,6 +17,7 @@ import { statusCommand } from './status.js';
 import { healthCommand } from './health.js';
 import { queryCommand } from './query.js';
 import { exploreCommand } from './explore.js';
+import { migrate009Command } from './migrations/009-epic-roadmap-properties.js';
 
 /**
  * Main graph command with subcommands for knowledge graph operations
@@ -112,6 +113,26 @@ ${chalk.gray('Learn More:')}
     .action(async (documentId, options) => {
       const depth = parseInt(options.depth, 10);
       await exploreCommand(documentId, { depth });
+    });
+
+  // Run migrations
+  graph
+    .command('migrate <migration>')
+    .description('Run graph migrations (e.g., "009" for roadmap properties)')
+    .option('--dry-run', 'Preview changes without applying them')
+    .option('-v, --verbose', 'Show detailed migration output')
+    .action(async (migration, options) => {
+      if (migration === '009' || migration === '009-epic-roadmap') {
+        await migrate009Command({
+          dryRun: options.dryRun,
+          verbose: options.verbose,
+        });
+      } else {
+        console.log(chalk.red(`Unknown migration: ${migration}`));
+        console.log(chalk.dim('Available migrations:'));
+        console.log(chalk.dim('  009  - Add roadmap properties to Epic nodes (ADR-056)'));
+        process.exit(1);
+      }
     });
 
   return graph;

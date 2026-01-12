@@ -2,9 +2,12 @@
 epic_id: EPIC-005
 status: complete
 created: 2025-12-09
-updated: 2025-12-16
+updated: 2026-01-11
 completed: 2025-12-15
 target: 2026-01 (when-ready)
+roadmap_lane: done
+roadmap_status: completed
+tags: [beta, positioning, dashboard]
 ---
 
 # EPIC-005: Market Readiness (Beta 1)

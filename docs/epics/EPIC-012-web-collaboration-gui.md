@@ -2,8 +2,11 @@
 epic_id: EPIC-012
 status: proposed
 created: 2026-01-06
-updated: 2026-01-07
+updated: 2026-01-11
 created_by: xtophr
+roadmap_lane: later
+roadmap_status: not_started
+decision_factors: [planning, design]
 tags: [web, collaboration, gui, dashboard]
 ---
 

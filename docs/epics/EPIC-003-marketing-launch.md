@@ -2,7 +2,10 @@
 epic_id: EPIC-003
 status: active
 created: 2025-12-02
-updated: 2025-12-02
+updated: 2026-01-11
+roadmap_lane: done
+roadmap_status: completed
+tags: [marketing, launch, content-strategy]
 ---
 
 # EPIC-003: Marketing & Launch Readiness

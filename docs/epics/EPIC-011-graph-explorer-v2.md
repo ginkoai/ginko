@@ -2,7 +2,10 @@
 epic_id: EPIC-011
 status: proposed
 created: 2025-12-11
-updated: 2026-01-07
+updated: 2026-01-11
+roadmap_lane: later
+roadmap_status: not_started
+decision_factors: [planning, design]
 tags: [graph-explorer, ux, dashboard, visualization]
 ---
 

@@ -2,7 +2,10 @@
 epic_id: EPIC-013
 status: proposed
 created: 2026-01-08
-updated: 2026-01-08
+updated: 2026-01-11
+roadmap_lane: later
+roadmap_status: not_started
+decision_factors: [planning, feasibility]
 tags: [codex, openai, integration, context-management, rust]
 ---
 

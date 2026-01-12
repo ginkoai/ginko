@@ -1,9 +1,9 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-12-11
- * @tags: [graph, types, visualization, neo4j]
- * @related: [api-client.ts, hooks.ts]
+ * @updated: 2026-01-09
+ * @tags: [graph, types, visualization, neo4j, roadmap]
+ * @related: [api-client.ts, hooks.ts, ADR-056]
  * @priority: high
  * @complexity: low
  * @dependencies: []
@@ -54,12 +54,57 @@ export interface CharterNode extends BaseNodeProperties {
   success_criteria?: string[];
 }
 
-/** Epic node - large feature grouping */
+/** Roadmap lane type (ADR-056 Now/Next/Later model) */
+export type RoadmapLane = 'now' | 'next' | 'later' | 'done' | 'dropped';
+
+/** Decision factor tags for Later items */
+export type DecisionFactor =
+  | 'planning'
+  | 'value'
+  | 'feasibility'
+  | 'advisability'
+  | 'architecture'
+  | 'design'
+  | 'risks'
+  | 'market-fit'
+  | 'dependencies';
+
+/** Epic node - large feature grouping with roadmap properties (ADR-056) */
 export interface EpicNode extends BaseNodeProperties {
   epic_id: string;
   title: string;
   description?: string;
   status: 'planning' | 'active' | 'complete' | 'on-hold';
+
+  // Roadmap properties (ADR-056 - Now/Next/Later model)
+  /** Priority lane: now (ready), next (committed), later (proposed), done, dropped */
+  roadmap_lane?: RoadmapLane;
+  /** Execution status */
+  roadmap_status?: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  /** Priority within lane (lower = higher priority) */
+  priority?: number;
+  /** Decision factors explaining why work is in Later (blockers) */
+  decision_factors?: DecisionFactor[];
+  /** Whether to show in public/external roadmap views */
+  roadmap_visible?: boolean;
+  /** Tags for filtering */
+  tags?: string[];
+  /** Changelog of roadmap property changes (audit trail) */
+  changelog?: Array<{
+    timestamp: string;
+    field: string;
+    from: string | null;
+    to: string;
+    reason?: string;
+  }>;
+
+  // Legacy properties (deprecated, for migration compatibility)
+  /** @deprecated Use roadmap_lane instead */
+  commitment_status?: 'uncommitted' | 'committed';
+  /** @deprecated Quarterly model removed in ADR-056 amendment */
+  target_start_quarter?: string;
+  /** @deprecated Quarterly model removed in ADR-056 amendment */
+  target_end_quarter?: string;
 }
 
 /** Sprint node - time-boxed work period */

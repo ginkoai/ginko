@@ -2,10 +2,12 @@
 epic_id: EPIC-008
 status: complete
 created: 2026-01-03
-updated: 2026-01-05
+updated: 2026-01-11
 completed: 2026-01-05
 current_sprint: none
 adr: ADR-057
+roadmap_lane: done
+roadmap_status: completed
 # Velocity Metrics (ADR-057)
 traditional_estimate: 6-7 weeks
 actual_delivery: 3 days
@@ -13,6 +15,7 @@ acceleration_factor: 15
 complexity: high
 greenfield: false
 work_mode: think-and-build
+tags: [team, collaboration, invites, onboarding]
 ---
 
 # EPIC-008: Team Collaboration

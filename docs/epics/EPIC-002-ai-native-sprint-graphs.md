@@ -1,3 +1,15 @@
+---
+epic_id: EPIC-002
+status: in_progress
+created: 2025-11-21
+updated: 2026-01-11
+started: 2025-11-24
+owner: Chris Norton
+roadmap_lane: done
+roadmap_status: completed
+tags: [sprint-graphs, cognitive-scaffolding, core-differentiator]
+---
+
 # EPIC-002: AI-Native Sprint Graphs
 
 **Status:** In Progress

@@ -21,6 +21,11 @@ export function OAuthHandler() {
   useEffect(() => {
     // Handle OAuth redirect with hash fragments
     const handleOAuthRedirect = async () => {
+      // Don't handle on device auth page (CLI flow handles its own navigation)
+      if (window.location.pathname.startsWith('/auth/device')) {
+        return
+      }
+
       // Check for hash fragments (Supabase returns tokens as fragments)
       if (window.location.hash) {
         // Supabase automatically handles the hash fragments
@@ -39,6 +44,10 @@ export function OAuthHandler() {
     // Also listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
+        // Don't redirect if on device auth page (CLI flow handles its own navigation)
+        if (window.location.pathname.startsWith('/auth/device')) {
+          return
+        }
         router.push('/dashboard')
       }
     })

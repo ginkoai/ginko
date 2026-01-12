@@ -2,7 +2,9 @@
 epic_id: EPIC-010
 status: active
 created: 2026-01-06
-updated: 2026-01-06
+updated: 2026-01-11
+roadmap_lane: now
+roadmap_status: in_progress
 tags: [marketing, launch, analytics, conversion, content-strategy, community]
 ---
 
