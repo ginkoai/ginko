@@ -40,6 +40,8 @@ const LANE_OPTIONS: { value: RoadmapLane; label: string }[] = [
   { value: 'now', label: 'Now' },
   { value: 'next', label: 'Next' },
   { value: 'later', label: 'Later' },
+  { value: 'done', label: 'Done' },
+  { value: 'dropped', label: 'Dropped' },
 ];
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
@@ -114,9 +116,11 @@ export function RoadmapFilters({ filters, onChange, availableTags = [] }: Roadma
     onChange(DEFAULT_FILTERS);
   };
 
-  // Check if any filters are active
+  // Check if any filters are active (default is 3 lanes: now, next, later)
   const hasActiveFilters =
     filters.lanes.length !== 3 ||
+    filters.lanes.includes('done') ||
+    filters.lanes.includes('dropped') ||
     filters.statuses.length > 0 ||
     filters.decisionFactors.length > 0 ||
     !filters.showInternal ||

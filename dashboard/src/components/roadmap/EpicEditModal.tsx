@@ -237,7 +237,7 @@ export function EpicEditModal({ epic, isOpen, onClose, onSave }: EpicEditModalPr
               {/* Lane Selector */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Priority Lane</label>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="flex justify-center gap-1 sm:gap-2">
                   {LANES.map(({ value, label, description, color }) => {
                     const isSelected = lane === value;
                     const isDisabled = value === 'now' && !canSelectNow;
@@ -248,13 +248,13 @@ export function EpicEditModal({ epic, isOpen, onClose, onSave }: EpicEditModalPr
                         onClick={() => handleLaneChange(value)}
                         disabled={isDisabled}
                         className={`
-                          relative p-3 rounded-lg border-2 text-center transition-all
+                          relative px-2 sm:px-3 py-2 rounded-lg border-2 text-center transition-all
                           ${isSelected ? `${color} bg-secondary` : 'border-transparent bg-card hover:bg-secondary/50'}
                           ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                         `}
                         title={isDisabled ? 'Clear decision factors first' : description}
                       >
-                        <div className="text-sm font-medium">{label}</div>
+                        <div className="text-xs sm:text-sm font-medium">{label}</div>
                         {isDisabled && (
                           <AlertTriangle className="absolute top-1 right-1 w-3 h-3 text-amber-500" />
                         )}
@@ -274,7 +274,7 @@ export function EpicEditModal({ epic, isOpen, onClose, onSave }: EpicEditModalPr
               {/* Status Selector */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {STATUSES.map(({ value, label, icon: Icon, iconClass }) => {
                     const isSelected = status === value;
                     return (
@@ -283,12 +283,12 @@ export function EpicEditModal({ epic, isOpen, onClose, onSave }: EpicEditModalPr
                         type="button"
                         onClick={() => setStatus(value)}
                         className={`
-                          flex items-center gap-2 p-3 rounded-lg border transition-all
+                          flex items-center justify-center gap-2 p-3 rounded-lg border transition-all
                           ${isSelected ? 'border-primary bg-secondary' : 'border-transparent bg-card hover:bg-secondary/50'}
                         `}
                       >
-                        <Icon className={`w-4 h-4 ${iconClass}`} />
-                        <span className="text-sm">{label}</span>
+                        <Icon className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
+                        <span className="text-sm whitespace-nowrap">{label}</span>
                       </button>
                     );
                   })}

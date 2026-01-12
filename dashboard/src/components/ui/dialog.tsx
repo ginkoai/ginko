@@ -68,14 +68,23 @@ export const DialogContent = forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={clsx(
-        'fixed left-[50%] top-[50%] z-50 w-full translate-x-[-50%] translate-y-[-50%]',
-        'bg-card border border-border rounded-lg shadow-xl',
+        // Mobile: full-width sheet from bottom; Desktop: centered modal
+        'fixed z-50 w-full bg-card border border-border shadow-xl',
+        // Mobile positioning (bottom sheet style)
+        'bottom-0 left-0 right-0 rounded-t-xl max-h-[90vh]',
+        // Desktop positioning (centered modal)
+        'sm:bottom-auto sm:left-[50%] sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:rounded-lg sm:max-h-[85vh]',
+        // Safe area padding for iOS
+        'pb-[env(safe-area-inset-bottom)]',
         'duration-200',
         'data-[state=open]:animate-in data-[state=closed]:animate-out',
         'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-        'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
-        'data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]',
-        'data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+        // Mobile: slide up from bottom; Desktop: zoom
+        'data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom',
+        'sm:data-[state=closed]:slide-out-to-bottom-0 sm:data-[state=open]:slide-in-from-bottom-0',
+        'sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95',
+        'sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%]',
+        'sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%]',
         sizeClasses[size],
         className
       )}
@@ -122,7 +131,10 @@ export const DialogFooter = forwardRef<
   <div
     ref={ref}
     className={clsx(
-      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 p-6 pt-4 border-t border-border',
+      'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:space-x-2',
+      'px-6 py-4 border-t border-border',
+      // Extra bottom padding on mobile for safe area
+      'pb-6 sm:pb-4',
       className
     )}
     {...props}
@@ -163,7 +175,7 @@ export const DialogBody = forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={clsx('px-6 py-2 max-h-[60vh] overflow-y-auto', className)}
+    className={clsx('px-6 py-2 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto', className)}
     {...props}
   />
 ))

@@ -80,7 +80,7 @@ export function DashboardTabs() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex items-center gap-1 p-1 bg-secondary/50 rounded-lg border border-border">
+    <nav className="flex items-center gap-1 p-1 bg-secondary/50 rounded-lg border border-border overflow-x-auto scrollbar-hide">
       {navigation.map((item) => {
         // Exact match for Focus (/dashboard), prefix match for others
         const isActive = item.href === '/dashboard'
@@ -101,7 +101,7 @@ export function DashboardTabs() {
             )}
           >
             <Icon className="h-4 w-4 flex-shrink-0" />
-            <span className="font-mono">{item.name}</span>
+            <span className="font-mono whitespace-nowrap">{item.name}</span>
           </Link>
         )
       })}

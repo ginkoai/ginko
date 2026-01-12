@@ -18,11 +18,12 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DropAnimation,
 } from '@dnd-kit/core';
-import { Filter, Settings, Loader2 } from 'lucide-react';
+import { Filter, Loader2 } from 'lucide-react';
 import { LaneSection } from './LaneSection';
 import { EpicCard } from './EpicCard';
 import { EpicEditModal, type EpicRoadmapUpdate } from './EpicEditModal';
@@ -188,7 +189,6 @@ async function updateEpicProperties(
 // =============================================================================
 
 export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
-  const [showAll, setShowAll] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [editingEpic, setEditingEpic] = useState<RoadmapEpic | null>(null);
   const queryClient = useQueryClient();
@@ -196,14 +196,19 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
   // Filters hook
   const { filters, setFilters, filterEpics, extractTags, isFiltered } = useRoadmapFilters();
 
-  // DnD Sensors - memoized to prevent recreation on each render
+  // DnD Sensors - configured for both desktop and mobile
+  // - PointerSensor: Desktop mouse with 8px distance threshold
+  // - TouchSensor: Mobile touch with 250ms delay (long-press to drag, prevents scroll conflicts)
+  // - KeyboardSensor: Accessibility support
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 250, tolerance: 5 },
+    }),
     useSensor(KeyboardSensor)
   );
-  // Note: useSensors already returns a stable reference internally
 
   // Fetch roadmap data (always fetches all lanes)
   const { data, isLoading, error } = useQuery({
@@ -379,13 +384,13 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
 
   // Build lane groups with filtered epics - memoized for performance
   // This computation runs O(lanes * epics) so memoization helps with 50+ epics
+  // Lane visibility is controlled by filters.lanes (includes done/dropped when selected)
   const laneGroups = useMemo<LaneGroup[]>(() => {
-    const baseLanes = showAll
-      ? (['now', 'next', 'later', 'done', 'dropped'] as RoadmapLane[])
-      : (['now', 'next', 'later'] as RoadmapLane[]);
+    // Order lanes consistently: now, next, later, done, dropped
+    const allLanes: RoadmapLane[] = ['now', 'next', 'later', 'done', 'dropped'];
 
-    return baseLanes
-      .filter((lane) => filters.lanes.includes(lane) || showAll)
+    return allLanes
+      .filter((lane) => filters.lanes.includes(lane))
       .map((lane) => {
         // Use filtered epics instead of raw lane data
         const laneEpics = filteredEpics.filter((e) => e.roadmap_lane === lane);
@@ -396,7 +401,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
           epics: laneEpics,
         };
       });
-  }, [showAll, filters.lanes, filteredEpics]);
+  }, [filters.lanes, filteredEpics]);
 
   // Find the active epic for DragOverlay (must be before early returns)
   const activeEpic = dragState.activeEpic;
@@ -429,38 +434,26 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
       onDragCancel={handleDragCancel}
     >
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <div>
-            <h1 className="text-xl font-mono font-semibold">Roadmap</h1>
-            <p className="text-sm text-muted-foreground">
-              {committedCount} committed · {laterCount} proposed
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className={showFilters || isFiltered ? 'bg-secondary' : ''}
-            >
-              <Filter className="w-4 h-4 mr-2" />
-              Filters
-              {isFiltered && (
-                <span className="ml-1 w-2 h-2 rounded-full bg-primary" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowAll(!showAll)}
-            >
-              {showAll ? 'Hide Done/Dropped' : 'Show All'}
-            </Button>
-            <Button variant="ghost" size="sm">
-              <Settings className="w-4 h-4" />
-            </Button>
-          </div>
+        {/* Header - compact */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-2 border-b border-border">
+          <h1 className="text-lg font-mono font-semibold">Roadmap</h1>
+          <Button
+            variant={showFilters ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className={!showFilters && isFiltered ? 'bg-secondary' : ''}
+          >
+            {showFilters ? (
+              'Apply'
+            ) : (
+              <>
+                <Filter className="w-4 h-4" />
+                {isFiltered && (
+                  <span className="ml-1 w-2 h-2 rounded-full bg-primary" />
+                )}
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Filter Panel */}
@@ -476,7 +469,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
 
         {/* Canvas - Vertical Lane Stack */}
         <div className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto py-6 px-4 space-y-6">
+          <div className="max-w-7xl mx-auto py-6 px-4 lg:px-8 space-y-6">
             {laneGroups.map((group) => (
               <LaneSection
                 key={group.lane}

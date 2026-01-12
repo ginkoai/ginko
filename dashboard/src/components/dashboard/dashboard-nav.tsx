@@ -54,6 +54,11 @@ export function DashboardNav({ user }: DashboardNavProps) {
 
   const userMenuItems = [
     {
+      label: 'Notifications',
+      icon: BellIcon,
+      href: '/dashboard/notifications'
+    },
+    {
       label: 'Profile',
       icon: UserCircleIcon,
       href: '/dashboard/settings#account'
@@ -72,8 +77,9 @@ export function DashboardNav({ user }: DashboardNavProps) {
   ]
 
   return (
-    <nav className="bg-card/80 backdrop-blur-md border-b border-border h-16 sticky top-0 z-50">
-      <div className="px-6 h-full flex items-center justify-between">
+    <nav className="bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
+      {/* Top row: Logo and user actions */}
+      <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Logo - Ginko branding with green accent */}
         <Link
           href="/dashboard"
@@ -82,35 +88,35 @@ export function DashboardNav({ user }: DashboardNavProps) {
           <Image
             src={ginkoLogo}
             alt="ginko"
-            height={32}
+            height={36}
             className="w-auto"
             priority
           />
         </Link>
 
-        {/* Center - Navigation Tabs */}
-        <DashboardTabs />
+        {/* Center - Navigation Tabs (hidden on mobile) */}
+        <div className="hidden sm:block">
+          <DashboardTabs />
+        </div>
 
         {/* Right side */}
-        <div className="flex items-center space-x-3">
-          {/* Notifications */}
-          <Button variant="ghost" size="sm" className="relative text-muted-foreground hover:text-foreground">
-            <BellIcon className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-mono">
-              3
-            </span>
-          </Button>
-
-          {/* User Menu */}
+        <div className="flex items-center">
+          {/* User Menu with notification badge */}
           <Dropdown
             trigger={
-              <Button variant="ghost" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground">
-                <Avatar
-                  src={user.user_metadata?.avatar_url}
-                  alt={user.user_metadata?.full_name || user.email || ''}
-                  fallback={(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
-                  className="h-8 w-8 border border-border"
-                />
+              <Button variant="ghost" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground p-1 sm:p-2">
+                <div className="relative">
+                  <Avatar
+                    src={user.user_metadata?.avatar_url}
+                    alt={user.user_metadata?.full_name || user.email || ''}
+                    fallback={(user.user_metadata?.full_name || user.email || '').charAt(0).toUpperCase()}
+                    className="h-8 w-8 border border-border"
+                  />
+                  {/* Notification badge - top right of avatar */}
+                  <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-mono">
+                    3
+                  </span>
+                </div>
                 <span className="hidden md:block text-sm font-medium">
                   {user.user_metadata?.full_name || user.email}
                 </span>
@@ -119,6 +125,11 @@ export function DashboardNav({ user }: DashboardNavProps) {
             items={userMenuItems}
           />
         </div>
+      </div>
+
+      {/* Bottom row: Navigation tabs (mobile only) */}
+      <div className="sm:hidden px-2 pb-2">
+        <DashboardTabs />
       </div>
     </nav>
   )

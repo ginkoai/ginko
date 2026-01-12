@@ -64,11 +64,12 @@ Implement ADR-056 (Roadmap as Epic View) to provide product teams with:
 |--------|-----|------|----------|--------|
 | Sprint 1 | e009_s01 | Schema & Data Migration | 1 week | Complete |
 | Sprint 2 | e009_s02 | CLI & API | 1 week | Complete |
-| Sprint 3 | e009_s03 | Roadmap Canvas (Dashboard) | 2 weeks | Not Started |
-| Sprint 4 | e009_s04 | History & Polish | 1 week | Not Started |
+| Sprint 3 | e009_s03 | Roadmap Canvas (Dashboard) | 2 weeks | Complete |
+| Sprint 4 | e009_s04 | History & Polish | 1 week | Complete |
+| Sprint 5 | e009_s05 | UAT & Polish | 1 week | In Progress |
 
-**Total Duration:** ~5 weeks
-**Total Effort:** ~64 hours
+**Total Duration:** ~6 weeks
+**Total Effort:** ~79 hours
 
 ## Risks & Mitigations
 

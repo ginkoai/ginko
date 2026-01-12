@@ -1068,10 +1068,21 @@
       "relevance": "critical",
       "created": "2026-01-12T02:03:23.291Z",
       "sessionId": "session-chris-at-watchhill-ai-1768183403258"
+    },
+    {
+      "filename": "gotcha-fixed-card-duplication-bug-e009s05t01-removed-css-.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-12T14:50:14.388Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768229414272"
     }
   ],
-  "lastUpdated": "2026-01-12T02:03:23.291Z",
-  "totalModules": 81,
+  "lastUpdated": "2026-01-12T14:50:14.389Z",
+  "totalModules": 82,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

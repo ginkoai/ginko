@@ -65,7 +65,7 @@ export function DecisionFactorSelector({
         <span>What&apos;s blocking this work from being committed?</span>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {DECISION_FACTORS.map(({ value, label, description }) => {
           const isSelected = selected.includes(value);
           return (

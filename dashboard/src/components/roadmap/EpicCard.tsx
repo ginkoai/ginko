@@ -13,7 +13,6 @@
 import { memo } from 'react';
 import { Circle, CircleDot, CheckCircle2, XCircle, GripVertical } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
 import { DecisionFactorChips } from './DecisionFactorChips';
 import type { RoadmapEpic } from './RoadmapCanvas';
@@ -53,7 +52,11 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick
   const hasSprints = epic.totalSprints && epic.totalSprints > 0;
 
   // Extract epic ID for display (e.g., "EPIC-009" from "e009" or full ID)
-  const displayId = epic.id.toUpperCase().replace(/^E(\d+)/, 'EPIC-$1');
+  // Skip showing ID if title already starts with EPIC pattern to avoid duplication
+  const rawDisplayId = epic.id.toUpperCase().replace(/^E(\d+)/, 'EPIC-$1').replace(/-/g, ' ').split(' ')[0] +
+    (epic.id.match(/\d+/) ? '-' + epic.id.match(/\d+/)?.[0] : '');
+  const titleStartsWithEpic = /^EPIC[-\s]?\d+/i.test(epic.title);
+  const displayId = titleStartsWithEpic ? null : rawDisplayId;
 
   return (
     <Card
@@ -74,30 +77,40 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, onClick
       )}
 
       <div className="flex items-start gap-2 p-3">
-        {/* Drag Handle */}
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground shrink-0">
-          <GripVertical className="w-4 h-4" />
+        {/* Drag Handle - always visible on touch, hover on desktop */}
+        {/* Min 44px touch target per iOS HIG */}
+        <div className="opacity-50 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing text-muted-foreground shrink-0 -ml-1 p-2 -m-2 touch-none">
+          <GripVertical className="w-5 h-5" />
         </div>
 
         {/* Main Content */}
         <div className="flex-1 min-w-0">
-          {/* ID as header */}
-          <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-xs font-mono text-muted-foreground">
-              {displayId}
-            </span>
-            {/* Status Icon */}
-            {!isCompleted && (
-              <div className={`shrink-0 ${statusConfig.className}`}>
+          {/* ID as header (only if title doesn't already contain it) */}
+          {displayId && (
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <span className="text-xs font-mono text-muted-foreground">
+                {displayId}
+              </span>
+              {/* Status Icon */}
+              {!isCompleted && (
+                <div className={`shrink-0 ${statusConfig.className}`}>
+                  <StatusIcon className="w-4 h-4" />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Title with status icon inline if no ID header */}
+          <div className="flex items-start justify-between gap-2">
+            <p className={`text-sm font-medium line-clamp-2 ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+              {epic.title}
+            </p>
+            {!displayId && !isCompleted && (
+              <div className={`shrink-0 mt-0.5 ${statusConfig.className}`}>
                 <StatusIcon className="w-4 h-4" />
               </div>
             )}
           </div>
-
-          {/* Title */}
-          <p className={`text-sm font-medium line-clamp-2 ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
-            {epic.title}
-          </p>
 
           {/* Sprint Progress (if available) */}
           {hasSprints && (
@@ -169,21 +182,16 @@ export const DraggableEpicCard = memo(function DraggableEpicCard({ epic, lane, o
     attributes,
     listeners,
     setNodeRef,
-    transform,
     isDragging,
   } = useDraggable({
     id: epic.id,
   });
 
-  const style = transform ? {
-    transform: CSS.Translate.toString(transform),
-    zIndex: isDragging ? 50 : undefined,
-  } : undefined;
-
+  // Don't apply transform - let DragOverlay handle the visual drag feedback
+  // The original card stays in place as a placeholder (with opacity-50 styling)
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...listeners}
       {...attributes}
     >
