@@ -100,11 +100,9 @@ const LANE_CONFIG: Record<RoadmapLane, { label: string; description: string }> =
 // Data Fetching
 // =============================================================================
 
-async function fetchRoadmap(graphId: string, includeAll: boolean): Promise<RoadmapResponse> {
-  const params = new URLSearchParams({ graphId });
-  if (includeAll) {
-    params.set('all', 'true');
-  }
+async function fetchRoadmap(graphId: string): Promise<RoadmapResponse> {
+  // Always fetch all lanes - visibility is controlled client-side
+  const params = new URLSearchParams({ graphId, all: 'true' });
 
   const response = await fetch(`/api/v1/graph/roadmap?${params}`);
   if (!response.ok) {
@@ -149,10 +147,10 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     useSensor(KeyboardSensor)
   );
 
-  // Fetch roadmap data
+  // Fetch roadmap data (always fetches all lanes)
   const { data, isLoading, error } = useQuery({
-    queryKey: ['roadmap', graphId, showAll],
-    queryFn: () => fetchRoadmap(graphId, showAll),
+    queryKey: ['roadmap', graphId],
+    queryFn: () => fetchRoadmap(graphId),
     staleTime: 30_000,
   });
 
@@ -168,7 +166,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
       await queryClient.cancelQueries({ queryKey: ['roadmap', graphId] });
 
       // Snapshot previous value
-      const previousData = queryClient.getQueryData<RoadmapResponse>(['roadmap', graphId, showAll]);
+      const previousData = queryClient.getQueryData<RoadmapResponse>(['roadmap', graphId]);
 
       // Optimistically update
       if (previousData) {
@@ -182,7 +180,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
           epics: updatedEpics.filter((e) => e.roadmap_lane === lane.lane),
         }));
 
-        queryClient.setQueryData<RoadmapResponse>(['roadmap', graphId, showAll], {
+        queryClient.setQueryData<RoadmapResponse>(['roadmap', graphId], {
           ...previousData,
           epics: updatedEpics,
           lanes: updatedLanes,
@@ -194,7 +192,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     onError: (_err, _vars, context) => {
       // Rollback on error
       if (context?.previousData) {
-        queryClient.setQueryData(['roadmap', graphId, showAll], context.previousData);
+        queryClient.setQueryData(['roadmap', graphId], context.previousData);
       }
       console.error('Failed to move epic:', _err);
     },
