@@ -10,7 +10,7 @@
  */
 'use client';
 
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Ban } from 'lucide-react';
 import { useState, useCallback, memo, useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { DraggableEpicCard } from './EpicCard';
@@ -166,19 +166,25 @@ export const LaneSection = memo(function LaneSection({
         )}
       </button>
 
-      {/* Drop zone feedback when dragging */}
-      {isDragActive && isOver && !canDrop && dropResult?.reason && (
-        <div className="mx-4 mb-2 px-3 py-2 rounded bg-destructive/10 border border-destructive/30">
-          <p className="text-xs text-destructive">{dropResult.reason}</p>
-        </div>
-      )}
-
       {/* Epic Cards - Grid layout for multiple cards per row */}
       {isExpanded && (
         <div className="px-4 pb-4">
           {isEmpty ? (
-            <div className={`py-8 text-center text-sm text-muted-foreground ${isDragActive && canDrop ? 'border-2 border-dashed border-primary/30 rounded-lg' : ''}`}>
-              {emptyMessage}
+            <div className={`py-8 text-center text-sm text-muted-foreground ${
+              isDragActive && isOver && canDrop
+                ? 'border-2 border-dashed border-primary/30 rounded-lg'
+                : isDragActive && isOver && !canDrop && dropResult?.reason
+                  ? 'border-2 border-dashed border-destructive rounded-lg bg-destructive/20'
+                  : ''
+            }`}>
+              {isDragActive && isOver && !canDrop && dropResult?.reason ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Ban className="w-5 h-5 text-destructive" />
+                  <span className="text-sm text-destructive font-mono">{dropResult.reason}</span>
+                </div>
+              ) : (
+                emptyMessage
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
@@ -190,6 +196,19 @@ export const LaneSection = memo(function LaneSection({
                   onClick={() => handleEpicClick(epic.id)}
                 />
               ))}
+              {/* Drop placeholder - shows where card will land */}
+              {isDragActive && isOver && canDrop && (
+                <div className="h-[120px] border-2 border-dashed border-primary/50 rounded-lg bg-primary/5 flex items-center justify-center transition-all duration-200">
+                  <span className="text-xs text-primary/70 font-mono">Drop here</span>
+                </div>
+              )}
+              {/* Invalid drop placeholder - shows why drop is not allowed */}
+              {isDragActive && isOver && !canDrop && dropResult?.reason && (
+                <div className="h-[120px] border-2 border-dashed border-destructive rounded-lg bg-destructive/20 flex items-center justify-center gap-2 transition-all duration-200 px-3">
+                  <Ban className="w-5 h-5 text-destructive flex-shrink-0" />
+                  <span className="text-sm text-destructive font-mono text-center">{dropResult.reason}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

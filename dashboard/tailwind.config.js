@@ -117,6 +117,7 @@ module.exports = {
         'slide-up': 'slideUp 0.3s ease-out',
         'pulse-slow': 'pulse 3s infinite',
         'marquee': 'marquee 30s linear infinite',
+        'shake-no': 'shakeNo 0.3s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -130,6 +131,14 @@ module.exports = {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-50%)' },
+        },
+        shakeNo: {
+          '0%, 100%': { transform: 'rotate(2deg)' },
+          '16.67%': { transform: 'rotate(-4deg)' },
+          '33.33%': { transform: 'rotate(4deg)' },
+          '50%': { transform: 'rotate(-4deg)' },
+          '66.67%': { transform: 'rotate(4deg)' },
+          '83.33%': { transform: 'rotate(-4deg)' },
         },
       },
     },

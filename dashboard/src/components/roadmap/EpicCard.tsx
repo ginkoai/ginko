@@ -27,6 +27,7 @@ interface EpicCardProps {
   lane: RoadmapLane;
   isDragging?: boolean;
   isOverlay?: boolean; // True when rendered in DragOverlay (the card being dragged)
+  isInvalidDrop?: boolean; // True when hovering over invalid drop target
   onClick?: () => void;
 }
 
@@ -45,7 +46,7 @@ const STATUS_ICONS: Record<string, { icon: typeof Circle; className: string }> =
 // Base EpicCard Component (non-draggable) - Memoized for performance
 // =============================================================================
 
-export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, isOverlay, onClick }: EpicCardProps) {
+export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, isOverlay, isInvalidDrop, onClick }: EpicCardProps) {
   const statusConfig = STATUS_ICONS[epic.roadmap_status] || STATUS_ICONS.not_started;
   const StatusIcon = statusConfig.icon;
   const hasDecisionFactors = epic.decision_factors && epic.decision_factors.length > 0;
@@ -65,11 +66,13 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, isOverl
       className={`
         group relative cursor-pointer transition-all duration-200
         border-2 select-none
-        ${isOverlay
-          ? 'border-primary shadow-xl scale-105 ring-2 ring-primary z-50 rotate-2'
-          : isDragging
-            ? 'border-dashed border-primary/50 opacity-40 bg-primary/5'
-            : 'border-border hover:border-primary/70 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
+        ${isOverlay && isInvalidDrop
+          ? 'border-destructive shadow-xl scale-105 ring-2 ring-destructive z-50 animate-shake-no'
+          : isOverlay
+            ? 'border-primary shadow-xl scale-105 ring-2 ring-primary z-50 rotate-2'
+            : isDragging
+              ? 'border-dashed border-primary/50 opacity-40 bg-primary/5'
+              : 'border-border hover:border-primary/70 hover:shadow-[0_0_15px_rgba(34,197,94,0.2)]'
         }
         ${isCompleted && !isOverlay ? 'opacity-70' : ''}
       `}
@@ -124,8 +127,8 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, isOverl
             </p>
           )}
 
-          {/* Decision Factors (only in Later lane) */}
-          {lane === 'later' && hasDecisionFactors && (
+          {/* Decision Factors (Next and Later lanes) */}
+          {(lane === 'next' || lane === 'later') && hasDecisionFactors && (
             <div className="mt-2">
               <DecisionFactorChips factors={epic.decision_factors!} size="sm" />
             </div>
@@ -167,6 +170,7 @@ export const EpicCard = memo(function EpicCard({ epic, lane, isDragging, isOverl
     prevProps.lane === nextProps.lane &&
     prevProps.isDragging === nextProps.isDragging &&
     prevProps.isOverlay === nextProps.isOverlay &&
+    prevProps.isInvalidDrop === nextProps.isInvalidDrop &&
     // Compare arrays by reference first, then by content if needed
     prevProps.epic.decision_factors === nextProps.epic.decision_factors &&
     prevProps.epic.tags === nextProps.epic.tags

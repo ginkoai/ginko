@@ -435,25 +435,45 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
     >
       <div className="flex flex-col h-full">
         {/* Header - compact */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-2 border-b border-border">
-          <h1 className="text-lg font-mono font-semibold">Roadmap</h1>
-          <Button
-            variant={showFilters ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setShowFilters(!showFilters)}
-            className={!showFilters && isFiltered ? 'bg-secondary' : ''}
-          >
-            {showFilters ? (
-              'Apply'
-            ) : (
-              <>
-                <Filter className="w-4 h-4" />
-                {isFiltered && (
-                  <span className="ml-1 w-2 h-2 rounded-full bg-primary" />
-                )}
-              </>
-            )}
-          </Button>
+        <div className="border-b border-border">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-2">
+            <h1 className="text-lg font-mono font-semibold">Roadmap</h1>
+            <Button
+              variant={showFilters ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className={!showFilters && isFiltered ? 'bg-secondary' : ''}
+            >
+              {showFilters ? (
+                'Apply'
+              ) : (
+                <>
+                  <Filter className="w-4 h-4" />
+                  {isFiltered && (
+                    <span className="ml-1 w-2 h-2 rounded-full bg-primary" />
+                  )}
+                </>
+              )}
+            </Button>
+          </div>
+          {/* Stats row */}
+          {summary && (
+            <div className="px-4 sm:px-6 pb-2 text-xs text-muted-foreground font-mono">
+              {isFiltered ? (
+                <span>{filteredEpics.length} of {summary.total} epics shown</span>
+              ) : (
+                <span>
+                  {summary.total} epics
+                  {summary.byStatus.in_progress > 0 && (
+                    <> · {summary.byStatus.in_progress} in progress</>
+                  )}
+                  {summary.byStatus.completed > 0 && (
+                    <> · {summary.byStatus.completed} done</>
+                  )}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Filter Panel */}
@@ -485,28 +505,6 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
           </div>
         </div>
 
-        {/* Footer Summary */}
-        {summary && (
-          <div className="px-6 py-3 border-t border-border bg-secondary/30 text-sm text-muted-foreground">
-            <span className="font-mono">
-              {isFiltered ? (
-                <>
-                  {filteredEpics.length} of {summary.total} epics shown
-                </>
-              ) : (
-                <>
-                  {summary.total} epics total
-                  {summary.byStatus.in_progress > 0 && (
-                    <> · {summary.byStatus.in_progress} in progress</>
-                  )}
-                  {summary.byStatus.completed > 0 && (
-                    <> · {summary.byStatus.completed} completed</>
-                  )}
-                </>
-              )}
-            </span>
-          </div>
-        )}
       </div>
 
       {/* Drag Overlay - shows the dragged card (lifted, rotated) */}
@@ -517,6 +515,7 @@ export function RoadmapCanvas({ graphId, onEpicSelect }: RoadmapCanvasProps) {
             lane={activeEpic.roadmap_lane}
             isDragging
             isOverlay
+            isInvalidDrop={dragState.overLane !== null && !dragState.canDrop}
           />
         )}
       </DragOverlay>
