@@ -28,6 +28,10 @@ export function OAuthHandler() {
 
       // Check for hash fragments (Supabase returns tokens as fragments)
       if (window.location.hash) {
+        // Don't process if already on a dashboard page (prevents deep link interruption)
+        if (window.location.pathname.startsWith('/dashboard')) {
+          return
+        }
         // Supabase automatically handles the hash fragments
         // Just wait a moment for it to process
         setTimeout(async () => {
@@ -46,6 +50,10 @@ export function OAuthHandler() {
       if (event === 'SIGNED_IN' && session) {
         // Don't redirect if on device auth page (CLI flow handles its own navigation)
         if (window.location.pathname.startsWith('/auth/device')) {
+          return
+        }
+        // Don't redirect if already on a dashboard page (prevents deep link interruption)
+        if (window.location.pathname.startsWith('/dashboard')) {
           return
         }
         router.push('/dashboard')
