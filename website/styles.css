@@ -2777,3 +2777,77 @@ pre {
         aspect-ratio: 4 / 3;
     }
 }
+
+/* ===== Logo Marquee ===== */
+.logo-marquee {
+    position: relative;
+    overflow: hidden;
+    margin-top: 3rem;
+    padding: 1rem 0;
+    /* Transparent to let hero gradient show through */
+    background: transparent;
+    /* Full bleed - extend to screen edges */
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    /* Use mask to fade edges - works over any background */
+    -webkit-mask-image: linear-gradient(to right, transparent, black 6rem, black calc(100% - 6rem), transparent);
+    mask-image: linear-gradient(to right, transparent, black 6rem, black calc(100% - 6rem), transparent);
+}
+
+.logo-marquee-track {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    animation: marquee 30s linear infinite;
+    width: max-content;
+    background: transparent;
+}
+
+.logo-marquee-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+    background: transparent;
+}
+
+.logo-marquee-item:hover {
+    opacity: 0.7;
+}
+
+.logo-marquee-item svg {
+    width: 28px;
+    height: 28px;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-16.666%);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .logo-marquee {
+        margin-top: 2rem;
+    }
+
+    .logo-marquee-fade {
+        width: 2rem;
+    }
+
+    .logo-marquee-track {
+        gap: 2rem;
+    }
+
+    .logo-marquee-item svg {
+        width: 24px;
+        height: 24px;
+    }
+}

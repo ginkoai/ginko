@@ -130,7 +130,7 @@ module.exports = {
         },
         marquee: {
           '0%': { transform: 'translateX(0%)' },
-          '100%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(-16.666%)' },
         },
         shakeNo: {
           '0%, 100%': { transform: 'rotate(2deg)' },
