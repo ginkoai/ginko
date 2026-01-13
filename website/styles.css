@@ -2789,6 +2789,7 @@ pre {
     /* Full bleed - extend to screen edges */
     margin-left: calc(-50vw + 50%);
     margin-right: calc(-50vw + 50%);
+    width: 100vw;
     /* Use mask to fade edges - works over any background */
     -webkit-mask-image: linear-gradient(to right, transparent, black 6rem, black calc(100% - 6rem), transparent);
     mask-image: linear-gradient(to right, transparent, black 6rem, black calc(100% - 6rem), transparent);
@@ -2796,6 +2797,7 @@ pre {
 
 .logo-marquee-track {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     gap: 3rem;
     animation: marquee 30s linear infinite;
