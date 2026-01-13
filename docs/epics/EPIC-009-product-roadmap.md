@@ -1,10 +1,10 @@
 ---
 epic_id: EPIC-009
-status: active
+status: complete
 created: 2026-01-03
-updated: 2026-01-11
+updated: 2026-01-13
 roadmap_lane: now
-roadmap_status: in_progress
+roadmap_status: completed
 tags: [roadmap, product-management, strategic-planning, dashboard]
 ---
 
@@ -66,7 +66,7 @@ Implement ADR-056 (Roadmap as Epic View) to provide product teams with:
 | Sprint 2 | e009_s02 | CLI & API | 1 week | Complete |
 | Sprint 3 | e009_s03 | Roadmap Canvas (Dashboard) | 2 weeks | Complete |
 | Sprint 4 | e009_s04 | History & Polish | 1 week | Complete |
-| Sprint 5 | e009_s05 | UAT & Polish | 1 week | In Progress |
+| Sprint 5 | e009_s05 | UAT & Polish | 1 week | Complete |
 
 **Total Duration:** ~6 weeks
 **Total Effort:** ~79 hours
@@ -87,6 +87,16 @@ See [ADR-056: Roadmap as Epic View](../adr/ADR-056-roadmap-as-epic-view.md) for 
 ---
 
 ## Changelog
+
+### v2.0.0 - 2026-01-13 (Epic Complete)
+- Completed Sprint 5: UAT & Polish
+- Fixed BUG-003: Deep links from Roadmap to Graph now work correctly
+  - Root cause: OAuthHandler redirecting on session refresh events
+  - Fix: Skip redirect when already on /dashboard/* routes
+  - File: `dashboard/src/components/auth/oauth-handler.tsx:49-58`
+- All UAT tests passing (drag-drop, responsive, navigation)
+- t05 (Data Sync Verification) deferred to EPIC-011 due to BUG-002
+- Participants: Chris Norton, Claude
 
 ### v1.2.0 - 2026-01-11 (Sprint 2 Complete)
 - Completed Sprint 2: CLI & API

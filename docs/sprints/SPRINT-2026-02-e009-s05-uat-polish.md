@@ -5,13 +5,13 @@
 **Sprint Goal**: Manual UAT testing and UI/UX polish for all roadmap features
 **Duration**: 1 week (2026-01-13 to 2026-01-17)
 **Type**: QA/Polish sprint
-**Progress:** 75% (4.5/6 tasks complete, t06 partial)
+**Progress:** 100% (5/5 actionable tasks complete, t05 blocked/deferred)
 
 **Success Criteria:**
 - [x] All drag-and-drop bugs resolved (including card duplication)
 - [x] Responsive design works on mobile, tablet, and desktop
 - [ ] Data sync verified between dashboard and git
-- [ ] Navigation workflows intuitive and tested
+- [x] Navigation workflows intuitive and tested
 - [x] Roadmap uses appropriate screen width on desktop
 
 ---
@@ -190,7 +190,7 @@
 ---
 
 ### e009_s05_t06: Navigation Workflow Testing (2h)
-**Status:** [@] In Progress (Partial)
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assignee:** chris@watchhill.ai
 
@@ -221,7 +221,7 @@
 **Acceptance Criteria:**
 - [x] Seamless navigation between views (Roadmap → Graph works)
 - [x] Context preserved when switching views
-- [ ] Deep links work correctly (BUG-003: redirects to /dashboard)
+- [x] Deep links work correctly (BUG-003 fixed 2026-01-13)
 - [x] Back button behavior correct
 
 **Implementation (2026-01-13):**
@@ -378,8 +378,11 @@
 
 3. **Back button behavior** - Browser back navigation works correctly
 
-**Not Completed:**
-- Deep links redirect to /dashboard (BUG-003) - deferred to EPIC-011
+**Completed 2026-01-13:**
+- Deep links now work correctly (BUG-003 fixed)
+- Root cause: OAuthHandler in root layout was redirecting to /dashboard on SIGNED_IN events during session refresh
+- Fix: Added guard to skip redirect when already on /dashboard/* routes
+- File: `dashboard/src/components/auth/oauth-handler.tsx:49-58`
 
 ---
 
