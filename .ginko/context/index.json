@@ -1112,10 +1112,21 @@
       "relevance": "critical",
       "created": "2026-01-12T23:11:57.566Z",
       "sessionId": "session-chris-at-watchhill-ai-1768259517532"
+    },
+    {
+      "filename": "pattern-enhanced-roadmap-dnd-visual-feedback-added-drop-pl.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-13T00:22:14.257Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768263734197"
     }
   ],
-  "lastUpdated": "2026-01-12T23:11:57.567Z",
-  "totalModules": 85,
+  "lastUpdated": "2026-01-13T00:22:14.257Z",
+  "totalModules": 86,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
