@@ -5,20 +5,20 @@
 **Sprint Goal**: Expose roadmap data through CLI command and API endpoints
 **Duration**: 1 week (2026-01-13 to 2026-01-17)
 **Type**: Feature sprint
-**Progress:** 0% (0/4 tasks complete)
+**Progress:** 75% (3/4 tasks complete)
 
 **Success Criteria:**
-- [ ] `ginko roadmap` displays committed Epics by quarter
-- [ ] API endpoint returns roadmap data with filtering
-- [ ] Curated export endpoint for public roadmaps
-- [ ] CLI output is readable and informative
+- [x] `ginko roadmap` displays Epics by Now/Next/Later lanes
+- [x] API endpoint returns roadmap data with filtering
+- [ ] Curated export endpoint for public roadmaps (deferred)
+- [x] CLI output is readable and informative
 
 ---
 
 ## Sprint Tasks
 
 ### e009_s02_t01: CLI Roadmap Command (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** Create `ginko roadmap` command for viewing roadmap from terminal
@@ -56,7 +56,7 @@ Follow: ADR-056
 ---
 
 ### e009_s02_t02: Roadmap Query API (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 
 **Goal:** API endpoint for querying roadmap data with filters
@@ -90,7 +90,7 @@ interface RoadmapResponse {
 ---
 
 ### e009_s02_t03: Roadmap Update API (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (via existing node PATCH)
 **Priority:** HIGH
 **Depends:** t02
 
@@ -171,7 +171,51 @@ interface PublicRoadmapExport {
 
 ## Accomplishments This Sprint
 
-[To be filled as work progresses]
+### 2026-01-11: T01 CLI Roadmap Command
+
+**Implementation:**
+- Created `packages/cli/src/commands/roadmap/index.ts`
+- `ginko roadmap` command with Now/Next/Later lane display
+- Options: `--all` (include Later/Done/Dropped), `--lane`, `--status`, `--json`
+- Color-coded output with status icons: ○ not_started, ◐ in_progress, ● completed, ✗ cancelled
+- Lane headers: ⚡ Now, 📋 Next, 💭 Later, ✓ Done, ✗ Dropped
+- Decision factors displayed for Later items
+- Summary stats and hidden count footer
+
+**Files:**
+- packages/cli/src/commands/roadmap/index.ts (new)
+
+---
+
+### 2026-01-11: T02 Roadmap Query API
+
+**Implementation:**
+- Created `dashboard/src/app/api/v1/graph/roadmap/route.ts`
+- GET endpoint with query params: graphId, all, lane, status, visible
+- Returns epics grouped by lane with summary statistics
+- Legacy support: converts old commitment_status to roadmap_lane
+- Default: shows Now + Next lanes only (committed work)
+
+**Files:**
+- dashboard/src/app/api/v1/graph/roadmap/route.ts (new)
+
+---
+
+### 2026-01-11: T03 Roadmap Update API
+
+**Implementation:**
+- Updates handled via existing PATCH `/api/v1/graph/nodes/[id]` endpoint
+- Dashboard components call this endpoint for lane moves and property updates
+- Changelog entries auto-appended on changes
+
+**Note:** Dedicated roadmap update endpoint not needed - generic node PATCH suffices.
+
+---
+
+### T04: Public Roadmap Export (Deferred)
+
+**Status:** Not implemented - deferred to future sprint
+**Reason:** Public roadmap page (`/roadmap/[projectId]/public`) created in S04 serves the primary use case. Export endpoint is lower priority.
 
 ## Next Steps
 
@@ -188,5 +232,5 @@ After Sprint 2:
 
 **Epic:** EPIC-009 (Product Roadmap)
 **Sprint ID:** e009_s02
-**Started:** —
-**Participants:** —
+**Started:** 2026-01-11
+**Participants:** Chris Norton, Claude

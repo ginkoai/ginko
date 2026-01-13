@@ -140,6 +140,24 @@ export async function getNodesByLabel(
   return response.nodes;
 }
 
+/**
+ * Get a single node by ID
+ */
+export async function getNodeById(
+  nodeId: string,
+  options: FetchOptions = {}
+): Promise<GraphNode | null> {
+  try {
+    const response = await graphFetch<{ node: GraphNode }>(
+      `${API_BASE}/nodes/${encodeURIComponent(nodeId)}`,
+      options
+    );
+    return response.node;
+  } catch {
+    return null;
+  }
+}
+
 // =============================================================================
 // Search Operations
 // =============================================================================
@@ -609,6 +627,7 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
 export const graphApi = {
   listNodes,
   getNodesByLabel,
+  getNodeById,
   searchNodes,
   getAdjacencies,
   getGraphStatus,

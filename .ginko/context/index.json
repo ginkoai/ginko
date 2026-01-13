@@ -1123,10 +1123,22 @@
       "relevance": "critical",
       "created": "2026-01-13T00:22:14.257Z",
       "sessionId": "session-chris-at-watchhill-ai-1768263734197"
+    },
+    {
+      "filename": "gotcha-fixed-roadmap-graph-navigation.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-13T18:15:56.844Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768328156801"
     }
   ],
-  "lastUpdated": "2026-01-13T00:22:14.257Z",
-  "totalModules": 86,
+  "lastUpdated": "2026-01-13T18:15:56.844Z",
+  "totalModules": 87,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

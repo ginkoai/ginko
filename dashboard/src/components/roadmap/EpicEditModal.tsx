@@ -11,6 +11,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   Circle,
@@ -22,6 +23,7 @@ import {
   ArrowRight,
   Settings2,
   History,
+  ExternalLink,
 } from 'lucide-react';
 import {
   Dialog,
@@ -88,6 +90,8 @@ const STATUSES: { value: string; label: string; icon: typeof Circle; iconClass: 
 // =============================================================================
 
 export function EpicEditModal({ epic, isOpen, onClose, onSave }: EpicEditModalProps) {
+  const router = useRouter();
+
   // Tab state
   const [activeTab, setActiveTab] = useState<ModalTab>('properties');
 
@@ -378,18 +382,32 @@ export function EpicEditModal({ epic, isOpen, onClose, onSave }: EpicEditModalPr
           )}
         </DialogBody>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={onClose} disabled={isSaving}>
-            {activeTab === 'history' ? 'Close' : 'Cancel'}
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onClose();
+              router.push(`/dashboard/graph?node=${epic?.id}`);
+            }}
+            className="sm:mr-auto"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            View in Graph
           </Button>
-          {activeTab === 'properties' && (
-            <Button
-              onClick={handleSave}
-              disabled={isSaving || !!validationError || !hasChanges}
-            >
-              {isSaving ? 'Saving...' : 'Save Changes'}
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onClose} disabled={isSaving}>
+              {activeTab === 'history' ? 'Close' : 'Cancel'}
             </Button>
-          )}
+            {activeTab === 'properties' && (
+              <Button
+                onClick={handleSave}
+                disabled={isSaving || !!validationError || !hasChanges}
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            )}
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

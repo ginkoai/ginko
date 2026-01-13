@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef, RefObject } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, RefObject, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Loader2, AlertCircle } from 'lucide-react';
@@ -33,7 +33,7 @@ const NodeEditorModal = dynamic(
     ssr: false, // No need for SSR on modal
   }
 );
-import { setDefaultGraphId } from '@/lib/graph/api-client';
+import { setDefaultGraphId, getNodeById } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel, TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { useSupabase } from '@/components/providers';
 import { cn } from '@/lib/utils';
@@ -85,7 +85,7 @@ function NodeNotFound({ onBackToProject }: NodeNotFoundProps) {
 // Component
 // =============================================================================
 
-export default function GraphPage() {
+function GraphPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useSupabase();
@@ -95,17 +95,36 @@ export default function GraphPage() {
     setDefaultGraphId(DEFAULT_GRAPH_ID);
   }, []);
 
-  // View mode state (C4-style navigation)
+  // Check if we have URL params for deep linking
+  const nodeParam = searchParams.get('node');
+  const viewParam = searchParams.get('view');
+  const typeParam = searchParams.get('type') as NodeLabel | null;
+
+  // View mode state (C4-style navigation) - initialize from URL params
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    // Initialize from URL params
-    const view = searchParams.get('view');
-    if (view === 'category') return 'category';
-    if (searchParams.get('node')) return 'detail';
+    if (nodeParam) return 'detail';
+    if (viewParam === 'category') return 'category';
     return 'project';
   });
-  const [selectedCategory, setSelectedCategory] = useState<NodeLabel | null>(
-    searchParams.get('type') as NodeLabel | null
-  );
+  const [selectedCategory, setSelectedCategory] = useState<NodeLabel | null>(typeParam);
+
+  // Track if initial URL params have been processed
+  const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
+
+  // Sync state from URL params (handles deep links and initial render)
+  useEffect(() => {
+    if (nodeParam && !urlParamsProcessed) {
+      setSelectedNodeId(nodeParam);
+      setViewMode('detail');
+      setUrlParamsProcessed(true);
+    } else if (viewParam === 'category' && typeParam && !urlParamsProcessed) {
+      setSelectedCategory(typeParam);
+      setViewMode('category');
+      setUrlParamsProcessed(true);
+    } else if (!nodeParam && !viewParam && !urlParamsProcessed) {
+      setUrlParamsProcessed(true);
+    }
+  }, [searchParams, nodeParam, viewParam, typeParam, urlParamsProcessed]);
 
   // Track navigation direction for transitions
   const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('forward');
@@ -125,15 +144,16 @@ export default function GraphPage() {
   // UI state
   const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    searchParams.get('node')
-  );
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeParam);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string; name: string }[]>([]);
 
   // Edit modal state
   const [editingNode, setEditingNode] = useState<GraphNode | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  // Track if we're fetching a node by ID (for deep links)
+  const [isFetchingNode, setIsFetchingNode] = useState(false);
 
   // Fetch the selected node details when ID changes
   const { data: nodesData, isLoading: nodesLoading } = useGraphNodes({
@@ -142,18 +162,30 @@ export default function GraphPage() {
   });
 
   // Update selected node when ID or data changes
-  // Note: This effect only handles nodes found in the initial 100-node cache.
-  // Nodes from CategoryView are passed directly via handleViewDetails and don't need this.
+  // Note: This effect handles nodes from the 100-node cache first,
+  // then fetches directly if not found (for deep links to nodes outside cache)
   useEffect(() => {
     if (selectedNodeId && nodesData?.nodes) {
       const node = nodesData.nodes.find((n) => n.id === selectedNodeId);
       if (node) {
         setSelectedNode(node);
         setIsPanelOpen(true);
+        setIsFetchingNode(false);
+      } else if (!selectedNode && !isFetchingNode) {
+        // Node not in cache - fetch it directly (for deep links)
+        setIsFetchingNode(true);
+        getNodeById(selectedNodeId, { graphId: DEFAULT_GRAPH_ID })
+          .then(node => {
+            if (node) {
+              setSelectedNode(node);
+              setIsPanelOpen(true);
+            }
+          })
+          .catch(console.error)
+          .finally(() => setIsFetchingNode(false));
       }
-      // Don't clear if node not found - it may have been set directly by handleViewDetails
     }
-  }, [selectedNodeId, nodesData]);
+  }, [selectedNodeId, nodesData, selectedNode, isFetchingNode]);
 
   // Clean up stale breadcrumbs when nodes data changes
   useEffect(() => {
@@ -446,7 +478,8 @@ export default function GraphPage() {
 
             {/* Show NodeNotFound only for truly invalid node IDs (from URL) */}
             {/* Don't show if isPanelOpen - node was set via handleViewDetails */}
-            {selectedNodeId && !selectedNode && !nodesLoading && !isPanelOpen && viewMode === 'detail' && (
+            {/* Don't show while fetching node by ID */}
+            {selectedNodeId && !selectedNode && !nodesLoading && !isFetchingNode && !isPanelOpen && viewMode === 'detail' && (
               <NodeNotFound onBackToProject={handleGoToProject} />
             )}
 
@@ -485,5 +518,18 @@ export default function GraphPage() {
         onSave={handleEditSave}
       />
     </div>
+  );
+}
+
+// Wrap with Suspense for useSearchParams (Next.js requirement)
+export default function GraphPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+      </div>
+    }>
+      <GraphPageContent />
+    </Suspense>
   );
 }
