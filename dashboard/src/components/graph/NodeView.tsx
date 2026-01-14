@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   FileText,
   Target,
@@ -26,6 +26,8 @@ import {
   Clock,
   User,
   ArrowLeft,
+  ChevronDown,
+  ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
 import { useNodeAdjacencies, useParentNode, useChildNodes } from '@/lib/graph/hooks';
@@ -372,6 +374,7 @@ function NodeContent({ node }: { node: GraphNode }) {
 }
 
 function NodeProperties({ node }: { node: GraphNode }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const props = node.properties as Record<string, unknown>;
 
   // Filter out content fields and internal fields
@@ -400,21 +403,31 @@ function NodeProperties({ node }: { node: GraphNode }) {
 
   return (
     <div>
-      <h3 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
-        Properties
-      </h3>
-      <div className="grid grid-cols-2 gap-3">
-        {formattedProps.map(({ key, formatted }) => (
-          <div key={key} className="p-3 bg-card border border-border rounded-lg">
-            <p className="text-xs text-muted-foreground mb-1">
-              {key.replace(/_/g, ' ')}
-            </p>
-            <p className="text-sm text-foreground font-mono truncate" title={formatted}>
-              {formatted}
-            </p>
-          </div>
-        ))}
-      </div>
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-2 text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3 hover:text-foreground transition-colors"
+      >
+        {isExpanded ? (
+          <ChevronDown className="w-4 h-4" />
+        ) : (
+          <ChevronRight className="w-4 h-4" />
+        )}
+        Properties ({formattedProps.length})
+      </button>
+      {isExpanded && (
+        <div className="grid grid-cols-2 gap-3">
+          {formattedProps.map(({ key, formatted }) => (
+            <div key={key} className="p-3 bg-card border border-border rounded-lg">
+              <p className="text-xs text-muted-foreground mb-1">
+                {key.replace(/_/g, ' ')}
+              </p>
+              <p className="text-sm text-foreground font-mono truncate" title={formatted}>
+                {formatted}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -530,9 +543,6 @@ export function NodeView({
       {/* Content */}
       <NodeContent node={node} />
 
-      {/* Properties */}
-      <NodeProperties node={node} />
-
       {/* Children Section (for Epics and Sprints) */}
       {childInfo && (
         <ChildrenSection
@@ -542,6 +552,9 @@ export function NodeView({
           onNavigate={onNavigate}
         />
       )}
+
+      {/* Properties (collapsible) */}
+      <NodeProperties node={node} />
 
       {/* Related Nodes */}
       <div>

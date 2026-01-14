@@ -82,24 +82,24 @@ const statusIcons: Record<string, StatusConfig> = {
   active: { icon: Loader2, color: 'text-ginko-400', bg: 'bg-ginko-500/20' },
 };
 
-const nodeTypeConfig: Record<NodeLabel, { icon: LucideIcon; color: string; border: string }> = {
-  Sprint: { icon: Calendar, color: 'text-cyan-400', border: 'border-cyan-500/30' },
-  Task: { icon: CheckSquare, color: 'text-ginko-400', border: 'border-ginko-500/30' },
+const nodeTypeConfig: Record<NodeLabel, { icon: LucideIcon; color: string; border: string; bg: string }> = {
+  Sprint: { icon: Calendar, color: 'text-cyan-400', border: 'border-cyan-500/60', bg: 'bg-cyan-500/5' },
+  Task: { icon: CheckSquare, color: 'text-ginko-400', border: 'border-ginko-500/60', bg: 'bg-ginko-500/5' },
   // Fallbacks for other types (not typically shown as children)
-  Project: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Charter: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Epic: { icon: Calendar, color: 'text-purple-400', border: 'border-purple-500/30' },
-  ADR: { icon: Calendar, color: 'text-amber-400', border: 'border-amber-500/30' },
-  PRD: { icon: Calendar, color: 'text-orange-400', border: 'border-orange-500/30' },
-  Pattern: { icon: Calendar, color: 'text-emerald-400', border: 'border-emerald-500/30' },
-  Gotcha: { icon: Calendar, color: 'text-red-400', border: 'border-red-500/30' },
-  Principle: { icon: Calendar, color: 'text-indigo-400', border: 'border-indigo-500/30' },
-  Event: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Session: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Commit: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Team: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Membership: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
-  Invitation: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/30' },
+  Project: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Charter: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Epic: { icon: Calendar, color: 'text-purple-400', border: 'border-purple-500/60', bg: 'bg-purple-500/5' },
+  ADR: { icon: Calendar, color: 'text-amber-400', border: 'border-amber-500/60', bg: 'bg-amber-500/5' },
+  PRD: { icon: Calendar, color: 'text-orange-400', border: 'border-orange-500/60', bg: 'bg-orange-500/5' },
+  Pattern: { icon: Calendar, color: 'text-emerald-400', border: 'border-emerald-500/60', bg: 'bg-emerald-500/5' },
+  Gotcha: { icon: Calendar, color: 'text-red-400', border: 'border-red-500/60', bg: 'bg-red-500/5' },
+  Principle: { icon: Calendar, color: 'text-indigo-400', border: 'border-indigo-500/60', bg: 'bg-indigo-500/5' },
+  Event: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Session: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Commit: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Team: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Membership: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
+  Invitation: { icon: Calendar, color: 'text-slate-400', border: 'border-slate-500/60', bg: 'bg-slate-500/5' },
 };
 
 // =============================================================================
@@ -122,9 +122,10 @@ export function ChildCard({ node, onClick, className }: ChildCardProps) {
       onClick={() => onClick(node.id)}
       className={cn(
         'flex flex-col p-3 rounded-lg border transition-all',
-        'hover:bg-white/5 hover:border-white/20',
+        'hover:bg-white/10 hover:border-white/40',
         'text-left w-full',
         typeConfig.border,
+        typeConfig.bg,
         className
       )}
     >
