@@ -358,19 +358,31 @@ function deduplicateByProperty<T extends GraphNode>(
 }
 
 /**
- * Extract epic identifier from a sprint_id or task_id
- * Handles formats: e005_s01, e005, EPIC-005, epic_005, etc.
+ * Extract epic identifier from a sprint_id, task_id, or node ID
+ * Handles formats anywhere in string:
+ * - e005_s01, e005-s01 → e005
+ * - EPIC-005, epic_005, epic005 → e005
+ * - SPRINT-2026-01-epic010-sprint2 → e010
+ * - SPRINT-2026-02-e009-s05 → e009
  */
 function extractEpicId(id: string): string | null {
   const lower = id.toLowerCase();
 
-  // Pattern: e{NNN}_s{NN} or e{NNN}_s{NN}_t{NN}
-  const prefixMatch = lower.match(/^(e\d+)/);
-  if (prefixMatch) return prefixMatch[1];
+  // Pattern 1: e{NNN}[-_]s{NN} anywhere (e.g., "e009-s05", "e009_s01")
+  const eMatch = lower.match(/e(\d{2,3})[-_]s\d+/);
+  if (eMatch) return `e${eMatch[1].padStart(3, '0')}`;
 
-  // Pattern: epic-{NNN} or epic_{NNN}
-  const epicMatch = lower.match(/^epic[-_]?(\d+)/);
+  // Pattern 2: standalone e{NNN} at word boundary (e.g., "-e009-")
+  const standaloneE = lower.match(/[-_]e(\d{2,3})[-_]/);
+  if (standaloneE) return `e${standaloneE[1].padStart(3, '0')}`;
+
+  // Pattern 3: epic{NNN} or epic-{NNN} or epic_{NNN} anywhere
+  const epicMatch = lower.match(/epic[-_]?(\d{2,3})/);
   if (epicMatch) return `e${epicMatch[1].padStart(3, '0')}`;
+
+  // Pattern 4: e{NNN} at start of string (original behavior)
+  const prefixMatch = lower.match(/^e(\d+)/);
+  if (prefixMatch) return `e${prefixMatch[1].padStart(3, '0')}`;
 
   return null;
 }
@@ -433,7 +445,10 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
 
     // Add to map with multiple possible keys for matching
     epicMap.set(epicId.toLowerCase(), node);
-    const extracted = extractEpicId(epicId);
+    epicMap.set(epic.id.toLowerCase(), node);
+
+    // Extract from both epic_id property and node ID
+    const extracted = extractEpicId(epicId) || extractEpicId(epic.id);
     if (extracted) {
       epicMap.set(extracted, node);
       // Also store numeric part (e.g., "005" or "5")
@@ -473,7 +488,8 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     }
 
     // Nest sprint under parent Epic using extractEpicId
-    const epicIdFromSprint = extractEpicId(sprintId);
+    // Try extracting from sprint_id property, node ID, and title
+    const epicIdFromSprint = extractEpicId(sprintId) || extractEpicId(sprint.id) || extractEpicId(getNodeProp(props, 'title') || '');
     if (epicIdFromSprint) {
       const parentEpic = epicMap.get(epicIdFromSprint);
       if (parentEpic) {
