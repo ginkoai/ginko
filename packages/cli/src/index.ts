@@ -110,6 +110,7 @@ program
   .option('-v, --verbose', 'Show full session details with all context (~80 lines, for detailed review)')
   .option('-m, --minimal', 'Minimal output for quick start (deprecated, concise is now default)')
   .option('--compact', 'Compact output without table borders (previous default)')
+  .option('--full', 'Full table with task list (default is compact 8-line table)')
   .option('--no-table', 'Disable table formatting for piping/scripts')
   .option('--auto-progress', 'Automatically advance to next sprint when current is complete')
   .option('--noai', 'Disable AI enhancement and use procedural templates')

@@ -38,8 +38,9 @@ When the user types a **single word** that matches a ginko command (`start`, `ha
 
 **Correct response to "start":**
 ```
-[Immediately executes: ginko start]
-[After completion: Provide concise readiness message]
+[Execute: ginko start]
+[Output table as code block in response]
+AI: What would you like to work on?
 ```
 
 **Incorrect response to "start":**
@@ -89,22 +90,19 @@ When working with a **newly initialized project** (fresh `ginko init`, no charte
 ```
 User: start
 AI: [Executes ginko start immediately]
-AI: Ready | Cold | Think & Build mode
-    New project detected
-
-    I notice this is a new project. Would you like to create a project charter?
+[Table displays with "New project" indicator]
+AI: I notice this is a new project without a charter. Would you like to create one?
     This will help us align on goals and scope.
 
 User: yes
 AI: [Executes: ginko charter, reads template]
 AI: Great! Let's capture your project vision.
-
     What problem are you solving? What would you like to build?
 
 User: [describes project]
 AI: [Asks follow-up questions naturally based on template guidance]
 AI: [Synthesizes responses into charter]
-AI: ✓ Charter created at docs/PROJECT-CHARTER.md
+AI: Charter created at docs/PROJECT-CHARTER.md
 
     Key sections:
     - Purpose: [summarize]
@@ -120,60 +118,38 @@ AI: ✓ Charter created at docs/PROJECT-CHARTER.md
 - Human users can run `ginko charter --no-ai` for interactive CLI mode
 - After charter is created, reference it naturally during development
 
-**After Execution: Concise Readiness Message**
+**After Execution: Display Table as Code Block**
 
-After `ginko start` completes, provide a brief readiness message (6-10 lines) that preserves flow:
+Claude Code collapses long bash output. To ensure the table is visible, **output it as a code block in your response**.
 
-**Template:**
+**Correct behavior:**
 ```
-Ready | [Flow State] | [Work Mode]
-Last session: [What was done/in progress last time]
-Next up: [TASK-ID] - [Task title] (start|continue)
-
-Sprint: [Sprint Name] [Progress]%
-  Follow: [ADR constraints]
-  Apply: [Pattern guidance with confidence icons]
-  Avoid: [Gotcha warnings]
-Branch: [branch] ([uncommitted count] uncommitted files)
-
-⚠️  [Warning if critical]
+[Run ginko start, capture output]
+[Display table as markdown code block in response]
+AI: What would you like to work on?
 ```
 
-**Example (with cognitive scaffolding):**
+**Example:**
+~~~
 ```
-Ready | Hot (10/10) | Think & Build mode
-Last session: EPIC-003 Sprint 2 TASK-1 complete (Blog infrastructure)
-Next up: TASK-2 - Verify human output format (start)
-
-Sprint: Enrichment Test - Cognitive Scaffolding Demo 50%
-  Follow: ADR-002, ADR-033
-  Apply: retry-pattern ◐, output-formatter-pattern ◐
-  Avoid: 💡 timer-unref-gotcha, 💡 verbose-output-gotcha
-Branch: main (12 uncommitted files)
-
-⚠️  12 uncommitted files
+┌─────────────────────────────────────────────────────────────────────────┐
+│  ginko     Ready │ Hot (10/10) │ Think & Build                          │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Sprint: Graph Explorer v2 Sprint 1                       0% [t01/7]    │
+│  Next: e011_s01_t01 - Refactor Nav Tree (continue)                      │
+│  Branch: main (5 uncommitted) │ ⚠️ Blocked: ...                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ginko.ai                                                               │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
-
-**Example (task in progress from last session):**
-```
-Ready | Hot (10/10) | Think & Build mode
-Last session: EPIC-003 Sprint 2 TASK-1 in progress (Blog infrastructure)
-Next up: TASK-1 - Deploy and validate blog infrastructure (continue)
-
-Sprint: Enrichment Test 25%
-  Follow: ADR-002
-Branch: main (5 uncommitted files)
-```
+What would you like to work on?
+~~~
 
 **Guidelines:**
-- Typically 6-10 lines
-- Line 1: Flow state and work mode
-- Line 2: "Last session:" - what happened before (completed or in-progress)
-- Line 3: "Next up:" - what to work on now (with start/continue hint)
-- Sprint block: Progress + cognitive scaffolding (Follow/Apply/Avoid)
-- Confidence icons: ★ high, ◐ medium, ○ low
-- Severity icons: 🚨 critical, ⚠️ high, 💡 medium/low
-- If sprint complete or no current task, show "What would you like to work on?"
+- Run `ginko start` via Bash tool
+- Copy the table output into a markdown code block in your response
+- Add a single follow-up line: "What would you like to work on?"
+- Do NOT repeat the table info in prose - the code block IS the display
 
 **🔄 AUTO-SYNC: Staleness Warning Response**
 

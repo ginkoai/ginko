@@ -227,10 +227,9 @@ export class StartReflectionCommand extends ReflectionCommand {
           maxBatchSize: 20,                 // 20 events max
           silent: true                      // Suppress logs for clean table output
         });
-        spinner.succeed(chalk.dim('Event sync queue started'));
+        // Don't print - table will be the only output
       } catch (error) {
-        // Non-critical - continue without sync
-        spinner.warn(chalk.yellow('Event sync queue unavailable (offline mode)'));
+        // Non-critical - continue without sync (silent)
       }
 
       // 3. Gather context (including handoff)
@@ -349,9 +348,9 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // 6. Archive previous session log (ALWAYS, not conditionally)
       if (hasLog) {
-        spinner.text = 'Archiving previous session log...';
-        const archivePath = await SessionLogManager.archiveLog(sessionDir);
-        spinner.info(`Previous session archived: ${path.basename(archivePath)}`);
+        spinner.text = 'Archiving previous session...';
+        await SessionLogManager.archiveLog(sessionDir);
+        // Silent - table will be the only output
       }
 
       // 7. Determine work mode from context and update context manager
@@ -382,6 +381,7 @@ export class StartReflectionCommand extends ReflectionCommand {
               teamEventLimit: 10,
               documentDepth: 2,
               teamDays: 7,
+              silent: true,    // Suppress loading messages - table will be the only output
             })
           );
 
@@ -390,9 +390,8 @@ export class StartReflectionCommand extends ReflectionCommand {
             throw new Error('Event context loading failed');
           }
 
-          // Display event-based context summary
-          spinner.succeed('Event stream context loaded');
-          console.log(chalk.dim(formatEventContextSummary(eventContext)));
+          // Silent - context summary will be shown in table
+          spinner.text = 'Processing events...';
 
           // Generate synthesis from loaded events (replaces file-based synthesis)
           eventSynthesis = await SessionSynthesizer.synthesizeFromEvents(eventContext, projectRoot);
@@ -473,9 +472,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       const flowState = activeSynthesis?.flowState?.energy?.toLowerCase() as 'hot' | 'warm' | 'cool' | 'cold' | undefined;
       await this.initializeSessionLog(context, options, flowState);
 
-      if (!options.noLog) {
-        spinner.info('Session logging enabled (use --no-log to disable)');
-      }
+      // Session logging status shown in table if needed
 
       // 11. Build AI context for dual output system (TASK-11)
       // Now async due to graph API enrichment (EPIC-002 Sprint 3 completion)
@@ -518,8 +515,8 @@ export class StartReflectionCommand extends ReflectionCommand {
         }
       }
 
-      // 13. Complete spinner before display
-      spinner.succeed('Session initialized with strategic context!');
+      // 13. Stop spinner before any output
+      spinner.stop();
 
       // EPIC-008 Sprint 2: Check team context staleness (silent - no output)
       await this.checkTeamStaleness();
@@ -538,7 +535,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       });
 
       // 14. Display output LAST (after all async operations complete)
-      // Table view should be the final thing the user sees
+      // Table view is the FINAL output - nothing should print after it
       if (options.verbose) {
         // Verbose mode: Full session info (~80 lines)
         await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
@@ -546,10 +543,11 @@ export class StartReflectionCommand extends ReflectionCommand {
         console.log('');
         console.log(chalk.dim(formatContextSummary(strategyContext)));
       } else {
-        // Default mode: Table view (use --compact for previous format)
+        // Default mode: Compact table (use --full for task list)
         this.displayConciseOutput(aiContext, {
           compact: options.compact,
-          table: options.table
+          table: options.table,
+          full: options.full
         });
       }
 
@@ -1621,16 +1619,17 @@ Example output structure:
    */
   private displayConciseOutput(
     aiContext: AISessionContext,
-    options: { compact?: boolean; table?: boolean } = {}
+    options: { compact?: boolean; table?: boolean; full?: boolean } = {}
   ): void {
     console.log('');
 
-    // Table view is now the default
-    // --compact uses previous concise format
-    // --no-table (table === false) uses concise format
+    // Default: Full table with task list
+    // --compact: Previous concise format without borders
+    // --no-table (table === false): Plain text format for piping
     if (options.compact || options.table === false) {
       console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
     } else {
+      // Default: full table with task list
       console.log(formatTableOutput(aiContext));
     }
 

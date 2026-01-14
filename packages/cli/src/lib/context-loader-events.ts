@@ -104,6 +104,7 @@ export interface ContextLoadOptions {
   categories?: EventCategory[];
   documentDepth?: number;     // Graph relationship depth: default 2
   teamDays?: number;          // Team events from last N days: default 7
+  silent?: boolean;           // Suppress console output: default false
 }
 
 /**
@@ -181,8 +182,12 @@ export async function loadRecentEvents(
     teamEventLimit = 20,
     categories,
     documentDepth = 2,
-    teamDays = 7
+    teamDays = 7,
+    silent = false
   } = options;
+
+  // Helper for conditional logging (suppressed when silent=true)
+  const log = (...args: any[]) => { if (!silent) console.log(...args); };
 
   // TASK-012: Check cloud-only mode
   const cloudOnly = process.env.GINKO_CLOUD_ONLY === 'true';
@@ -208,12 +213,12 @@ export async function loadRecentEvents(
     }
 
     const mode = cloudOnly ? 'cloud-only' : 'chronological';
-    console.log(`📡 Using consolidated API endpoint (${mode} mode)`);
+    log(`📡 Using consolidated API endpoint (${mode} mode)`);
 
     // Single API call - server detects "chronological" cursor and uses ORDER BY timestamp DESC
     const response = await (client as any).request('GET', `/api/v1/context/initial-load?${params.toString()}`);
 
-    console.log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
+    log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
 
     // TASK-10: Load strategic context + charter in PARALLEL (saves 200-300ms)
     const graphId = process.env.GINKO_GRAPH_ID || '';
@@ -221,7 +226,7 @@ export async function loadRecentEvents(
     // Fire both requests simultaneously
     const [strategicResult, charterResult] = await Promise.all([
       graphId
-        ? loadStrategicContext(graphId, userId, projectId).catch(() => null)
+        ? loadStrategicContext(graphId, userId, projectId, silent).catch(() => null)
         : Promise.resolve(null),
       import('./charter-loader.js')
         .then(m => m.loadCharter())
@@ -232,7 +237,7 @@ export async function loadRecentEvents(
     const filesystemCharter = charterResult;
 
     if (strategicContext?.metadata) {
-      console.log(`📊 Strategic context loaded: ${strategicContext.metadata.teamEventCount} team events, ${strategicContext.metadata.patternCount} patterns`);
+      log(`📊 Strategic context loaded: ${strategicContext.metadata.teamEventCount} team events, ${strategicContext.metadata.patternCount} patterns`);
     }
 
     if (filesystemCharter) {
@@ -266,7 +271,7 @@ export async function loadRecentEvents(
         strategicContext.metadata.charterStatus = 'loaded-from-filesystem';
       }
 
-      console.log(`📜 Charter loaded from filesystem (${filesystemCharter.goals.length} goals, ${filesystemCharter.successCriteria.length} criteria)`);
+      log(`📜 Charter loaded from filesystem (${filesystemCharter.goals.length} goals, ${filesystemCharter.successCriteria.length} criteria)`);
     }
 
     // Create a minimal cursor for backward compatibility
@@ -301,7 +306,7 @@ export async function loadRecentEvents(
       throw new Error(`Cloud-only mode: Graph API failed: ${(error as Error).message}`);
     } else {
       // DUAL-MODE: Log warning and re-throw for fallback handling
-      console.log(`⚠️  Graph API failed: ${(error as Error).message}`);
+      log(`⚠️  Graph API failed: ${(error as Error).message}`);
       throw error; // Re-throw to trigger fallback
     }
   }
@@ -577,8 +582,12 @@ async function loadTeamEvents(
 async function loadStrategicContext(
   graphId: string,
   userId: string,
-  projectId: string
+  projectId: string,
+  silent: boolean = false
 ): Promise<StrategicContextData | null> {
+  // Helper for conditional logging (suppressed when silent=true)
+  const log = (...args: any[]) => { if (!silent) console.log(...args); };
+
   try {
     // Read API key from ~/.ginko/auth.json
     const authPath = path.join(os.homedir(), '.ginko', 'auth.json');
@@ -659,8 +668,8 @@ async function loadStrategicContext(
 
       if (!response.ok) {
         const errorBody = await response.text();
-        console.log(`⚠️  Strategic context GraphQL failed: ${response.status} ${response.statusText}`);
-        console.log(`   Response: ${errorBody.substring(0, 200)}`);
+        log(`⚠️  Strategic context GraphQL failed: ${response.status} ${response.statusText}`);
+        log(`   Response: ${errorBody.substring(0, 200)}`);
         return null;
       }
 
@@ -668,7 +677,7 @@ async function loadStrategicContext(
 
       // Check for GraphQL errors
       if (result.errors) {
-        console.log('⚠️  Strategic context GraphQL errors:', JSON.stringify(result.errors, null, 2));
+        log('⚠️  Strategic context GraphQL errors:', JSON.stringify(result.errors, null, 2));
         return null;
       }
 
@@ -677,16 +686,16 @@ async function loadStrategicContext(
       clearTimeout(timeoutId);
       // Handle timeout specifically
       if (innerError instanceof Error && innerError.name === 'AbortError') {
-        console.log('⚠️  Strategic context timeout (3s) - skipping');
+        log('⚠️  Strategic context timeout (3s) - skipping');
         return null;
       }
       throw innerError; // Re-throw for outer catch
     }
   } catch (error) {
-    console.log('⚠️  Strategic context not available (GraphQL query failed)');
-    console.log(`   Error: ${(error as Error).message}`);
+    log('⚠️  Strategic context not available (GraphQL query failed)');
+    log(`   Error: ${(error as Error).message}`);
     if (process.env.GINKO_DEBUG_API) {
-      console.log(`   Stack: ${(error as Error).stack}`);
+      log(`   Stack: ${(error as Error).stack}`);
     }
     return null;
   }

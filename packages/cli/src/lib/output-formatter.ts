@@ -31,10 +31,10 @@ import chalk from 'chalk';
  * Ginko brand styling for consistent CLI output
  */
 export const GINKO_BRAND = {
-  /** Header: Bold green "ginko" */
-  header: chalk.green.bold('ginko'),
-  /** Footer: Dimmed "ginko.ai" */
-  footer: chalk.dim('ginko.ai'),
+  /** Header: Bold #C0FD77 "ginko" */
+  header: chalk.hex('#C0FD77').bold('ginko'),
+  /** Footer: Dimmed "ginkoai.com" */
+  footer: chalk.dim('ginkoai.com'),
   /** Primary accent color (green) */
   accent: chalk.green,
   /** Highlight color (cyan) */
@@ -573,6 +573,122 @@ export interface TableOutputConfig {
   showTasks?: boolean;
   /** Maximum tasks to show (default: 6) */
   maxTasks?: number;
+  /** Compact mode - 8 lines max, no task list (default: false) */
+  compact?: boolean;
+}
+
+/**
+ * Format compact 8-line table for Claude Code display
+ * Avoids output collapsing in Claude Code UI
+ *
+ * Layout (8 lines):
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │  ginko     Ready │ Hot (10/10) │ Think & Build                          │
+ * ├─────────────────────────────────────────────────────────────────────────┤
+ * │  Sprint: Graph Explorer v2 Sprint 1                       0% [t01/7]    │
+ * │  Next: e011_s01_t01 - Refactor Nav Tree (continue)                      │
+ * │  Branch: main (5 uncommitted) ⚠️ Blocked: ...                           │
+ * ├─────────────────────────────────────────────────────────────────────────┤
+ * │  ginko.ai                                                               │
+ * └─────────────────────────────────────────────────────────────────────────┘
+ */
+function formatCompactTable(context: AISessionContext, width: number = 75): string {
+  const lines: string[] = [];
+  const { box } = GINKO_BRAND;
+
+  const hLine = (left: string, right: string, fill?: string) =>
+    left + (fill || box.horizontal).repeat(width - 2) + right;
+
+  const row = (content: string) => {
+    const stripped = content.replace(/\u001b\[[0-9;]*m/g, '');
+    const padding = Math.max(0, width - 4 - stripped.length);
+    return `${box.vertical}  ${content}${' '.repeat(padding)}${box.vertical}`;
+  };
+
+  // Line 1: Top border
+  lines.push(chalk.dim(hLine(box.topLeft, box.topRight)));
+
+  // Line 2: Header + Status combined
+  const flowState = getFlowStateLabel(context.session.flowScore);
+  const headerStatus =
+    GINKO_BRAND.header +
+    GINKO_BRAND.dim('     ') +
+    GINKO_BRAND.success('Ready') +
+    GINKO_BRAND.dim(' │ ') +
+    GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`) +
+    GINKO_BRAND.dim(' │ ') +
+    context.session.workMode;
+  lines.push(row(headerStatus));
+
+  // Line 3: Separator
+  lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+
+  // Line 4: Sprint info
+  if (context.sprint) {
+    const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
+    const sprintName = truncate(context.sprint.name || 'Active Sprint', width - 35);
+    const taskCount = context.sprint.tasks?.length || 0;
+    const currentTaskNum = context.sprint.currentTask?.id.split('_').pop()?.replace('t', '') || '0';
+
+    lines.push(
+      row(
+        GINKO_BRAND.dim('Sprint: ') +
+        sprintName +
+        GINKO_BRAND.dim(` ${progress}% [t${currentTaskNum}/${taskCount}]`)
+      )
+    );
+  } else {
+    lines.push(row(GINKO_BRAND.dim('No active sprint')));
+  }
+
+  // Line 5: Next task
+  if (context.sprint?.currentTask) {
+    const task = context.sprint.currentTask;
+    const statusLabel = task.status === 'in_progress' ? 'continue' : 'start';
+    lines.push(
+      row(
+        GINKO_BRAND.dim('Next: ') +
+        GINKO_BRAND.warning(task.id) +
+        GINKO_BRAND.dim(` - ${truncate(task.title, width - 35)} (${statusLabel})`)
+      )
+    );
+  } else {
+    lines.push(row(GINKO_BRAND.dim('Ready for work')));
+  }
+
+  // Line 6: Branch + Warning combined
+  const totalChanges =
+    context.git.uncommittedChanges.modified.length +
+    context.git.uncommittedChanges.created.length +
+    context.git.uncommittedChanges.untracked.length;
+
+  const branchPart = totalChanges > 0
+    ? `${context.git.branch} (${totalChanges} uncommitted)`
+    : `${context.git.branch} (clean)`;
+
+  let branchLine = GINKO_BRAND.dim('Branch: ') + branchPart;
+
+  // Add warning inline if there is one
+  if (context.synthesis?.blockedItems?.length) {
+    branchLine += GINKO_BRAND.dim(' │ ') +
+      GINKO_BRAND.error(`⚠️ ${truncate(context.synthesis.blockedItems[0], width - 50)}`);
+  } else if (context.git.warnings.length > 0) {
+    branchLine += GINKO_BRAND.dim(' │ ') +
+      GINKO_BRAND.warning(`⚠️ ${truncate(context.git.warnings[0], width - 50)}`);
+  }
+
+  lines.push(row(branchLine));
+
+  // Line 7: Separator
+  lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+
+  // Line 8: Footer
+  lines.push(row(GINKO_BRAND.footer));
+
+  // Line 9: Bottom border
+  lines.push(chalk.dim(hLine(box.bottomLeft, box.bottomRight)));
+
+  return lines.join('\n');
 }
 
 /**
@@ -605,10 +721,16 @@ export function formatTableOutput(
     showBranding = true,
     showTasks = true,
     maxTasks = 6,
+    compact = false,
   } = config;
 
   const lines: string[] = [];
   const { box } = GINKO_BRAND;
+
+  // Compact mode: 8 lines max for Claude Code display
+  if (compact) {
+    return formatCompactTable(context, width);
+  }
 
   // Helper to create a horizontal line
   const hLine = (left: string, right: string, fill?: string) =>
