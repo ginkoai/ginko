@@ -1216,10 +1216,22 @@
       "relevance": "critical",
       "created": "2026-01-14T22:03:01.174Z",
       "sessionId": "session-chris-at-watchhill-ai-1768428181138"
+    },
+    {
+      "filename": "gotcha-fixed-parent-link-navigation-bug.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-14T23:03:49.183Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768431829139"
     }
   ],
-  "lastUpdated": "2026-01-14T22:03:01.175Z",
-  "totalModules": 94,
+  "lastUpdated": "2026-01-14T23:03:49.185Z",
+  "totalModules": 95,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
