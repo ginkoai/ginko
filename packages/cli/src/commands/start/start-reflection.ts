@@ -1512,7 +1512,9 @@ Example output structure:
         tasks: (sprintChecklist.tasks || []).map((t: any) => ({
           id: t.id,
           title: t.title,
-          status: t.status,
+          status: t.state === 'complete' ? 'completed'
+            : t.state === 'in_progress' ? 'in_progress'
+            : 'pending',
         })),
       };
     }
