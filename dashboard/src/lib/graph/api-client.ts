@@ -813,6 +813,93 @@ export async function getParentNode(
 }
 
 // =============================================================================
+// Child Node Lookup
+// =============================================================================
+
+/**
+ * Determine the child type and search criteria for a given node
+ * Returns null if node has no children (Tasks, ADRs, etc.)
+ */
+export function getChildInfo(node: GraphNode): { type: NodeLabel; parentId: string } | null {
+  const props = node.properties as Record<string, unknown>;
+
+  // Epics have Sprints as children
+  if (node.label === 'Epic') {
+    const epicId = getNodeProp(props, 'epic_id') || node.id;
+    const normalizedId = extractEpicId(epicId) || extractEpicId(node.id);
+    if (normalizedId) {
+      return { type: 'Sprint', parentId: normalizedId };
+    }
+  }
+
+  // Sprints have Tasks as children
+  if (node.label === 'Sprint') {
+    const sprintId = getNodeProp(props, 'sprint_id') || node.id;
+    const title = getNodeProp(props, 'title') || '';
+    const normalizedId = extractNormalizedSprintId(sprintId, title) || extractNormalizedSprintId(node.id, title);
+    if (normalizedId) {
+      return { type: 'Task', parentId: normalizedId };
+    }
+  }
+
+  // Other node types have no children in our hierarchy
+  return null;
+}
+
+/**
+ * Find child nodes for a given node
+ * Uses the hierarchy relationships: Epic → Sprint, Sprint → Task
+ */
+export async function getChildNodes(
+  node: GraphNode,
+  options: FetchOptions = {}
+): Promise<GraphNode[]> {
+  const childInfo = getChildInfo(node);
+  if (!childInfo) {
+    return [];
+  }
+
+  // Fetch all nodes of the child type
+  const candidates = await getNodesByLabel(childInfo.type, options);
+  const children: GraphNode[] = [];
+
+  // Find matching children based on parent ID
+  for (const candidate of candidates) {
+    const props = candidate.properties as Record<string, unknown>;
+
+    if (childInfo.type === 'Sprint') {
+      // Match sprints that belong to this epic
+      const sprintId = getNodeProp(props, 'sprint_id') || candidate.id;
+      const title = getNodeProp(props, 'title') || '';
+      const epicId = extractEpicId(sprintId) || extractEpicId(candidate.id) || extractEpicId(title);
+      if (epicId === childInfo.parentId) {
+        children.push(candidate);
+      }
+    }
+
+    if (childInfo.type === 'Task') {
+      // Match tasks that belong to this sprint
+      const taskId = getNodeProp(props, 'task_id') || candidate.id;
+      const sprintId = extractSprintId(taskId);
+      if (sprintId === childInfo.parentId) {
+        children.push(candidate);
+      }
+    }
+  }
+
+  // Sort children by their ID for consistent ordering
+  children.sort((a, b) => {
+    const aProps = a.properties as Record<string, unknown>;
+    const bProps = b.properties as Record<string, unknown>;
+    const aId = getNodeProp(aProps, 'task_id') || getNodeProp(aProps, 'sprint_id') || a.id;
+    const bId = getNodeProp(bProps, 'task_id') || getNodeProp(bProps, 'sprint_id') || b.id;
+    return aId.localeCompare(bId);
+  });
+
+  return children;
+}
+
+// =============================================================================
 // Export all
 // =============================================================================
 
@@ -826,6 +913,8 @@ export const graphApi = {
   buildTreeHierarchy,
   getParentNode,
   getParentInfo,
+  getChildNodes,
+  getChildInfo,
   setDefaultGraphId,
   getDefaultGraphId,
 };

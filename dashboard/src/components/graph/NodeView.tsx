@@ -28,9 +28,11 @@ import {
   ArrowLeft,
   type LucideIcon,
 } from 'lucide-react';
-import { useNodeAdjacencies, useParentNode } from '@/lib/graph/hooks';
+import { useNodeAdjacencies, useParentNode, useChildNodes } from '@/lib/graph/hooks';
+import { getChildInfo } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
 import { RelatedNodesSummary } from './RelatedNodesSummary';
+import { ChildrenSection } from './ChildrenSection';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { cn } from '@/lib/utils';
 
@@ -496,6 +498,15 @@ export function NodeView({
     { graphId }
   );
 
+  // Fetch child nodes (for Epics and Sprints)
+  const { data: childNodes, isLoading: loadingChildren } = useChildNodes(
+    node,
+    { graphId }
+  );
+
+  // Determine child type for display
+  const childInfo = getChildInfo(node);
+
   const Icon = nodeIcons[node.label] || FileText;
   const colors = nodeColors[node.label] || nodeColors.Event;
 
@@ -521,6 +532,16 @@ export function NodeView({
 
       {/* Properties */}
       <NodeProperties node={node} />
+
+      {/* Children Section (for Epics and Sprints) */}
+      {childInfo && (
+        <ChildrenSection
+          children={childNodes || []}
+          childType={childInfo.type}
+          isLoading={loadingChildren}
+          onNavigate={onNavigate}
+        />
+      )}
 
       {/* Related Nodes */}
       <div>

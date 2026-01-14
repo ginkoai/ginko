@@ -21,6 +21,8 @@ import {
   getNodesByLabel,
   getParentNode,
   getParentInfo,
+  getChildNodes,
+  getChildInfo,
   type ListNodesOptions,
   type SearchOptions,
   type GetAdjacenciesOptions,
@@ -48,6 +50,7 @@ export const graphQueryKeys = {
   search: (query: string, graphId?: string) => ['graph', 'search', query, graphId] as const,
   adjacencies: (nodeId: string, graphId?: string) => ['graph', 'adjacencies', nodeId, graphId] as const,
   parent: (nodeId: string, graphId?: string) => ['graph', 'parent', nodeId, graphId] as const,
+  children: (nodeId: string, graphId?: string) => ['graph', 'children', nodeId, graphId] as const,
   status: (graphId?: string) => ['graph', 'status', graphId] as const,
   tree: (graphId?: string) => ['graph', 'tree', graphId] as const,
 };
@@ -149,6 +152,30 @@ export function useParentNode(
     queryFn: () => (node ? getParentNode(node, options) : null),
     enabled: !!node && hasParent, // Only fetch when node exists and has a parent
     staleTime: 60_000, // Parent relationships don't change often
+    ...queryOptions,
+  });
+}
+
+// =============================================================================
+// Child Nodes Hook
+// =============================================================================
+
+/**
+ * Fetch child nodes for a given node (Epic → Sprints, Sprint → Tasks)
+ */
+export function useChildNodes(
+  node: GraphNode | null,
+  options: { graphId?: string } = {},
+  queryOptions?: Omit<UseQueryOptions<GraphNode[]>, 'queryKey' | 'queryFn'>
+) {
+  // Check if node has children before querying
+  const hasChildren = node ? !!getChildInfo(node) : false;
+
+  return useQuery({
+    queryKey: graphQueryKeys.children(node?.id || '', options.graphId),
+    queryFn: () => (node ? getChildNodes(node, options) : []),
+    enabled: !!node && hasChildren, // Only fetch when node exists and has children
+    staleTime: 60_000, // Child relationships don't change often
     ...queryOptions,
   });
 }
