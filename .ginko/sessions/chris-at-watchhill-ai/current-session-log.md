@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-13T23-21-57-872Z
-started: 2026-01-13T23:21:57.872Z
+session_id: session-2026-01-14T16-16-12-803Z
+started: 2026-01-14T16:16:12.803Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-13T23-21-57-872Z
+# Session Log: session-2026-01-14T16-16-12-803Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,52 +37,54 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 18:31 - [fix]
-# [FIX] 18:31
+### 11:18 - [feature]
+# [FEATURE] 11:18
 
-Fixed Roadmap→Graph deep link redirect bug. Root cause: OAuthHandler in root layout was listening for SIGNED_IN events and calling router.push('/dashboard') even when already on dashboard pages. Session refreshes triggered this, interrupting navigation. Fix: Added check to skip redirect if already on /dashboard/* routes.
+Starting EPIC-011 Sprint 0: Data Model & Sync Fixes. First task is investigating why nodes API doesn't return Epic nodes when filtering by label.
 
 **Files:**
-- dashboard/src/components/auth/oauth-handler.tsx:49-58
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-14T16:18:23.519Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+### 11:42 - [feature]
+# [FEATURE] 11:42
+
+Deployed EPIC-011 changes: Added graph_id to Epic sync, added epic_id and graph_id to Sprint sync, created migrations 010 and 011 for existing nodes. Ready to run migrations.
+
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/api/v1/epic/sync/route.ts
+- dashboard/src/app/api/v1/sprint/sync/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-13T23:31:33.020Z
+**Timestamp:** 2026-01-14T16:42:17.860Z
 
-Files: dashboard/src/components/auth/oauth-handler.tsx:49-58
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/epic/sync/route.ts, dashboard/src/app/api/v1/sprint/sync/route.ts
 Impact: high
 
-### 18:41 - [achievement]
-# [ACHIEVEMENT] 18:41
+### 11:55 - [achievement]
+# [ACHIEVEMENT] 11:55
 
-Closed EPIC-009 Product Roadmap Visualization. All 5 sprints complete. Delivered: Roadmap Canvas with DnD lane management, ginko roadmap CLI, mobile-responsive design, Roadmap↔Graph navigation. t05 deferred to EPIC-011 (BUG-002 blocker).
+EPIC-011 Sprint 0 progress: Deployed graph_id fix for Epic nodes (migration 010 successful - 14 nodes). Re-synced all 14 epics with sprint data using ginko epic --sync. Sprint nodes should now have epic_id property. Remaining: verify sprint/task properties, add hierarchy API endpoint.
 
 **Files:**
 - .ginko/context/index.json
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+- dashboard/src/app/api/v1/epic/sync/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-13T23:41:12.987Z
+**Timestamp:** 2026-01-14T16:55:35.651Z
 
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-Impact: high
-
-### 11:11 - [decision]
-# [DECISION] 11:11
-
-Revised EPIC-011 scope based on user feedback. Reframed as Hierarchy Navigation (not relationship visualization). Created Sprint 0 for data model fixes (blocking: Epic nodes not visible via API, Sprints missing epic_id, Tasks not synced). Sprint 1 covers Nav Tree refactor, parent links, child cards, references section.
-
-**Files:**
-- .ginko/context/index.json
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-
-**Impact:** high
-**Timestamp:** 2026-01-14T16:11:40.649Z
-
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/epic/sync/route.ts
 Impact: high

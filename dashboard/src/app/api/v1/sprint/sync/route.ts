@@ -1,7 +1,7 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-21
+ * @updated: 2026-01-14
  * @tags: [sprint, graph-sync, epic-001, task-2]
  * @related: [_cloud-graph-client.ts, active/route.ts]
  * @priority: critical
@@ -41,6 +41,7 @@ interface SprintGraph {
     startDate: string;
     endDate: string;
     progress: number;
+    epicId: string | null; // EPIC-011: Parent epic for hierarchy navigation
   };
   tasks: Array<{
     id: string;
@@ -266,6 +267,12 @@ function parseSprintToGraph(content: string): SprintGraph {
   const progressMatch = content.match(/\*\*Progress:\*\*\s*(\d+)%/i);
   const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
 
+  // Extract epic ID for hierarchy (EPIC-011)
+  const epicSprintInfo = extractEpicSprintNumbers(content);
+  const epicId = epicSprintInfo
+    ? `EPIC-${epicSprintInfo.epicNum}`
+    : null;
+
   // Build sprint object
   const sprint = {
     id: sprintId,
@@ -274,6 +281,7 @@ function parseSprintToGraph(content: string): SprintGraph {
     startDate,
     endDate,
     progress,
+    epicId, // EPIC-011: Parent epic for hierarchy navigation
   };
 
   // Extract tasks
@@ -447,7 +455,7 @@ async function syncSprintToGraph(
   let nodeCount = 0;
   let relCount = 0;
 
-  // Create Sprint node
+  // Create Sprint node with epic_id for hierarchy navigation (EPIC-011)
   await client.createNode('Sprint', {
     id: graph.sprint.id,
     name: graph.sprint.name,
@@ -455,7 +463,9 @@ async function syncSprintToGraph(
     startDate: graph.sprint.startDate,
     endDate: graph.sprint.endDate,
     progress: graph.sprint.progress,
+    epic_id: graph.sprint.epicId, // EPIC-011: Parent epic for hierarchy queries
     graphId, // Required for nodes API filtering
+    graph_id: graphId, // EPIC-011: Consistency with other node types
   });
   nodeCount++;
 
@@ -472,6 +482,7 @@ async function syncSprintToGraph(
       path: filePath,
       status: 'current', // Default status
       graphId, // Required for nodes API filtering
+      graph_id: graphId, // EPIC-011: Consistency with other node types
     });
     nodeCount++;
   }
@@ -494,7 +505,10 @@ async function syncSprintToGraph(
       owner: task.owner || '',
       assignee: task.assignee || '', // Email for dashboard My Tasks matching
       sprintId: graph.sprint.id,
+      sprint_id: graph.sprint.id, // EPIC-011: Consistency with other node types
+      epic_id: graph.sprint.epicId, // EPIC-011: Grandparent epic for hierarchy
       graphId, // Required for nodes API filtering
+      graph_id: graphId, // EPIC-011: Consistency with other node types
     });
     if (isNew) nodeCount++;
   }

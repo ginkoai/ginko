@@ -1,7 +1,7 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-07
+ * @updated: 2026-01-14
  * @tags: [epic, graph-sync, planning, ADR-058]
  * @related: [../../sprint/sync/route.ts, ../../../graph/_cloud-graph-client.ts, ../check/route.ts]
  * @priority: high
@@ -168,6 +168,7 @@ async function syncEpicToGraph(epic: EpicSyncRequest, userEmail: string): Promis
       e.progress = $progress,
       e.inScope = $inScope,
       e.outOfScope = $outOfScope,
+      e.graph_id = $graphId,
       e.updatedAt = datetime(),
       e.updatedBy = $userEmail
     RETURN e.id as id, e.title as title, e.status as status, e.nodesCreated as created

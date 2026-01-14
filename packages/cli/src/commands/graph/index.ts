@@ -1,7 +1,7 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2026-01-09
+ * @updated: 2026-01-14
  * @tags: [graph, cli, knowledge-graph, cloud, migrations]
  * @related: [init.ts, load.ts, status.ts, query.ts, explore.ts, migrations/]
  * @priority: critical
@@ -18,6 +18,8 @@ import { healthCommand } from './health.js';
 import { queryCommand } from './query.js';
 import { exploreCommand } from './explore.js';
 import { migrate009Command } from './migrations/009-epic-roadmap-properties.js';
+import { migrate010Command } from './migrations/010-epic-graph-id.js';
+import { migrate011Command } from './migrations/011-sprint-epic-id.js';
 
 /**
  * Main graph command with subcommands for knowledge graph operations
@@ -122,16 +124,31 @@ ${chalk.gray('Learn More:')}
     .option('--dry-run', 'Preview changes without applying them')
     .option('-v, --verbose', 'Show detailed migration output')
     .action(async (migration, options) => {
-      if (migration === '009' || migration === '009-epic-roadmap') {
-        await migrate009Command({
-          dryRun: options.dryRun,
-          verbose: options.verbose,
-        });
-      } else {
-        console.log(chalk.red(`Unknown migration: ${migration}`));
-        console.log(chalk.dim('Available migrations:'));
-        console.log(chalk.dim('  009  - Add roadmap properties to Epic nodes (ADR-056)'));
-        process.exit(1);
+      const migrationOptions = {
+        dryRun: options.dryRun,
+        verbose: options.verbose,
+      };
+
+      switch (migration) {
+        case '009':
+        case '009-epic-roadmap':
+          await migrate009Command(migrationOptions);
+          break;
+        case '010':
+        case '010-epic-graph-id':
+          await migrate010Command(migrationOptions);
+          break;
+        case '011':
+        case '011-sprint-epic-id':
+          await migrate011Command(migrationOptions);
+          break;
+        default:
+          console.log(chalk.red(`Unknown migration: ${migration}`));
+          console.log(chalk.dim('Available migrations:'));
+          console.log(chalk.dim('  009  - Add roadmap properties to Epic nodes (ADR-056)'));
+          console.log(chalk.dim('  010  - Add graph_id to Epic nodes (EPIC-011)'));
+          console.log(chalk.dim('  011  - Add epic_id to Sprint/Task nodes (EPIC-011)'));
+          process.exit(1);
       }
     });
 

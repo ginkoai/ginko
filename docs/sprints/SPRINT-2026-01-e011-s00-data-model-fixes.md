@@ -5,14 +5,14 @@
 **Sprint Goal**: Fix graph data model to enable hierarchy navigation
 **Duration**: 1 week (2026-01-14 to 2026-01-20)
 **Type**: Infrastructure/Data sprint (prerequisite for UI work)
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 50% (3/6 tasks complete)
 
 **Success Criteria:**
-- [ ] All 14 Epics visible via nodes API
-- [ ] All ~30 Sprints synced with `epic_id` property
-- [ ] All Tasks extracted and synced with `sprint_id` property
+- [x] All 14 Epics visible via nodes API (Migration 010 complete)
+- [x] All ~30 Sprints synced with `epic_id` property (via ginko epic --sync)
+- [@] All Tasks extracted and synced with `sprint_id` property (in progress)
 - [ ] BELONGS_TO relationships created for hierarchy
-- [ ] `ginko graph explore EPIC-009` shows child sprints
+- [ ] `ginko graph explore EPIC-009` shows child sprints (needs hierarchy API)
 
 ---
 
@@ -40,9 +40,9 @@
 ## Sprint Tasks
 
 ### e011_s00_t01: Fix Nodes API Epic Label Query (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH - BLOCKING
-**Assignee:** TBD
+**Assignee:** Claude (2026-01-14)
 
 **Goal:** Fix the nodes API to return Epic nodes when filtering by label
 
