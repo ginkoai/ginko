@@ -1,5 +1,7 @@
 # SPRINT: Product Roadmap Sprint 1 - Schema & Data Migration
 
+**Epic**: EPIC-009 Product Roadmap Visualization
+
 ## Sprint Overview
 
 **Sprint Goal**: Extend Epic schema with roadmap properties and migrate existing data

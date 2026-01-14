@@ -480,10 +480,13 @@ async function syncEpicToGraph(projectRoot: string): Promise<void> {
 
       // Find and sync associated sprints
       // Use original ID for finding files (user hasn't renamed local files yet)
-      const epicPrefix = originalId.toLowerCase().replace('epic-', 'epic');
+      // Match both "epic009" and "e009" filename patterns
+      const epicNum = originalId.toLowerCase().replace('epic-', '');
+      const epicPrefix1 = `epic${epicNum}`; // e.g., "epic009"
+      const epicPrefix2 = `e${epicNum}-`;   // e.g., "e009-" (for e009-s01 format)
       const sprintFiles = sprintFilesList.filter(f =>
         f.startsWith('SPRINT-') &&
-        f.toLowerCase().includes(epicPrefix)
+        (f.toLowerCase().includes(epicPrefix1) || f.toLowerCase().includes(epicPrefix2))
       );
 
       for (const sprintFile of sprintFiles) {

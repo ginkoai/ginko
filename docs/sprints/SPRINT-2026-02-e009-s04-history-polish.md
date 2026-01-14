@@ -1,5 +1,7 @@
 # SPRINT: Product Roadmap Sprint 4 - History & Polish
 
+**Epic**: EPIC-009 Product Roadmap Visualization
+
 ## Sprint Overview
 
 **Sprint Goal**: Add changelog visualization and polish the roadmap experience

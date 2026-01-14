@@ -5,7 +5,7 @@
 **Sprint Goal**: Test and refine the Insights mobile view UI, validate correct display of all data
 **Duration**: 1-2 days
 **Type**: QA/Polish sprint
-**Progress:** 0% (0/7 tasks complete)
+**Progress:** 0% (0/0 tasks complete)
 
 **Success Criteria:**
 - [ ] Insights page renders correctly on mobile (375-430px)

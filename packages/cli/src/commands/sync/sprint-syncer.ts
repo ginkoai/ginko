@@ -114,6 +114,15 @@ function extractSprintId(content: string, filePath: string): string | null {
     return `e${epicNum}_s${sprintNum}`;
   }
 
+  // Try alternate filename pattern: e009-s01 format
+  // e.g., SPRINT-2026-01-e009-s01-schema-migration.md -> e009_s01
+  const altFilenameMatch = path.basename(filePath).match(/e(\d{3})-s(\d{2})/i);
+  if (altFilenameMatch) {
+    const epicNum = altFilenameMatch[1].padStart(3, '0');
+    const sprintNum = altFilenameMatch[2].padStart(2, '0');
+    return `e${epicNum}_s${sprintNum}`;
+  }
+
   return null;
 }
 

@@ -1,5 +1,7 @@
 # SPRINT: Product Roadmap Sprint 2 - CLI & API
 
+**Epic**: EPIC-009 Product Roadmap Visualization
+
 ## Sprint Overview
 
 **Sprint Goal**: Expose roadmap data through CLI command and API endpoints

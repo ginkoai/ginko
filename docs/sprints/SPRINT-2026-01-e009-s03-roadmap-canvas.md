@@ -1,5 +1,7 @@
 # SPRINT: Product Roadmap Sprint 3 - Roadmap Canvas
 
+**Epic**: EPIC-009 Product Roadmap Visualization
+
 ## Sprint Overview
 
 **Sprint Goal**: Build vertical priority-based canvas for editing roadmap in the dashboard

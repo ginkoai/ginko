@@ -1,5 +1,7 @@
 # SPRINT: Product Roadmap Sprint 5 - UAT & Polish
 
+**Epic**: EPIC-009 Product Roadmap Visualization
+
 ## Sprint Overview
 
 **Sprint Goal**: Manual UAT testing and UI/UX polish for all roadmap features
