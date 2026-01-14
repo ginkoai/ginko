@@ -1181,10 +1181,21 @@
       "relevance": "critical",
       "created": "2026-01-14T20:22:58.847Z",
       "sessionId": "session-chris-at-watchhill-ai-1768422178721"
+    },
+    {
+      "filename": "gotcha-fixed-ginko-start-table-display-for-claude-code.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-14T21:35:20.887Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768426520756"
     }
   ],
-  "lastUpdated": "2026-01-14T20:22:58.853Z",
-  "totalModules": 91,
+  "lastUpdated": "2026-01-14T21:35:20.890Z",
+  "totalModules": 92,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
