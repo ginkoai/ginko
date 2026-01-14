@@ -1,234 +1,392 @@
-# SPRINT: Product Roadmap Sprint 4 - History & Polish
+# SPRINT: Graph Explorer v2 Sprint 1 - Hierarchy Navigation UI
 
 ## Sprint Overview
 
-**Sprint Goal**: Add changelog visualization and polish the roadmap experience
-**Duration**: 1 week (2026-02-03 to 2026-02-07)
-**Type**: Polish sprint
-**Progress:** 100% (4/4 tasks complete)
+**Sprint Goal**: Implement tree-based navigation matching user mental model
+**Duration**: 1-2 weeks
+**Type**: Feature sprint
+**Progress:** 0% (0/7 tasks complete)
+**Prerequisite:** Sprint 0 complete (data model fixes)
 
 **Success Criteria:**
-- [ ] Epic changelog visible in UI with timeline view
-- [ ] Public roadmap export generates clean markdown/JSON
-- [ ] Roadmap page accessible from main navigation
-- [ ] Performance optimized for 50+ Epics
+- [ ] Nav Tree shows nested Epic → Sprint → Task hierarchy
+- [ ] Parent link visible at top of detail cards
+- [ ] Child summary cards shown at footer of parent nodes
+- [ ] Referenced nodes (ADRs, Patterns) in separate section
+- [ ] Browser back button works with breadcrumbs
+- [ ] BUG-002 fixed (ADR edit modal loads content)
+
+---
+
+## Design Specifications
+
+### Nav Tree Structure (Target)
+
+**Current (problematic):**
+```
+📁 Epics
+├── EPIC-009
+├── EPIC-010
+📁 Sprints        ← Flat, not nested
+├── Sprint 1
+├── Sprint 2
+📁 ADRs
+├── ADR-001
+```
+
+**Target:**
+```
+📁 Project
+├── 📋 EPIC-009: Product Roadmap
+│   ├── 🏃 e009_s01: Schema Migration
+│   ├── 🏃 e009_s02: CLI & API
+│   ├── 🏃 e009_s03: Roadmap Canvas
+│   ├── 🏃 e009_s04: History & Polish
+│   └── 🏃 e009_s05: UAT & Polish
+├── 📋 EPIC-010: Marketing Strategy
+│   ├── 🏃 e010_s01: Analytics
+│   └── 🏃 e010_s02: Landing Page
+└── 📚 Knowledge
+    ├── ADRs (24)
+    ├── Patterns (8)
+    └── Gotchas (5)
+```
+
+### Detail Card Layout (Target)
+
+```
+┌─────────────────────────────────────────────────┐
+│ ← Parent: EPIC-009                              │  Parent link (clickable)
+├─────────────────────────────────────────────────┤
+│ 🏃 Sprint: e009_s05 - UAT & Polish              │  Title
+│ Status: Complete • 6 tasks • 15h total          │  Metadata
+├─────────────────────────────────────────────────┤
+│                                                 │
+│ Sprint Goal: Manual UAT testing and UI/UX      │  Content
+│ polish for all roadmap features                │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│ Tasks (6)                                       │  Children section
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│ │ ✓ t01    │ │ ✓ t02    │ │ ✓ t03    │         │
+│ │ Card Dup │ │ Desktop  │ │ Mobile   │         │
+│ └──────────┘ └──────────┘ └──────────┘         │
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐         │
+│ │ ✓ t04    │ │ ⊘ t05    │ │ ✓ t06    │         │
+│ │ Responsive│ │ Blocked │ │ Navigation│        │
+│ └──────────┘ └──────────┘ └──────────┘         │
+├─────────────────────────────────────────────────┤
+│ References                                      │  References section
+│ 📄 ADR-056: Roadmap as Epic View               │
+│ 🎨 Pattern: DnD Kit Integration                │
+└─────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Sprint Tasks
 
-### e009_s04_t01: Changelog Timeline Component (4h)
-**Status:** [x] Complete
+### e011_s01_t01: Refactor Nav Tree for Hierarchy (6h)
+**Status:** [ ] Not Started
 **Priority:** HIGH
-**Assignee:** chris@watchhill.ai
+**Assignee:** TBD
 
-**Goal:** Display Epic changelog as a visual timeline
+**Goal:** Restructure Nav Tree to show Epic → Sprint → Task nesting
 
-**Implementation Notes:**
+**Current Implementation:**
+- `dashboard/src/components/graph/tree-explorer.tsx`
+- Flat structure with separate branches for each node type
+
+**Changes Required:**
+1. Remove flat "Sprints" top-level branch
+2. Nest sprints under their parent Epic
+3. Nest tasks under their parent Sprint
+4. Keep "Knowledge" branch for ADRs, Patterns, Gotchas
+5. Add expand/collapse for hierarchy levels
+
+**Data Requirements (from Sprint 0):**
+- Sprints have `epic_id` property
+- Tasks have `sprint_id` property
+- Hierarchy query API available
+
+**Files:**
+- `dashboard/src/components/graph/tree-explorer.tsx`
+- `dashboard/src/lib/graph/hooks.ts` - Data fetching
+
+**Acceptance Criteria:**
+- [ ] Epics show as top-level items under "Project"
+- [ ] Sprints nested under their parent Epic
+- [ ] Tasks nested under their parent Sprint (collapsed by default)
+- [ ] Expand/collapse icons work correctly
+- [ ] Selection state preserved when expanding/collapsing
+
+---
+
+### e011_s01_t02: Add Parent Link to Detail Cards (3h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+**Assignee:** TBD
+
+**Goal:** Show parent context at top of detail cards
+
+**Implementation:**
+1. Add "Parent: X" link at top of NodeView component
+2. Link navigates to parent node when clicked
+3. Show parent only if node has a parent (not for Epics, ADRs)
+
+**Parent Relationships:**
+- Task → Sprint
+- Sprint → Epic
+- Epic → (none)
+- ADR, Pattern, Gotcha → (none, but may have REFERENCES)
+
+**Files:**
+- `dashboard/src/components/graph/NodeView.tsx`
+- `dashboard/src/lib/graph/api-client.ts` - Add parent fetch
+
+**Acceptance Criteria:**
+- [ ] Sprint detail shows "Parent: EPIC-009" link
+- [ ] Task detail shows "Parent: e009_s05" link
+- [ ] Clicking parent navigates to parent node
+- [ ] Parent link styled consistently with breadcrumbs
+
+---
+
+### e011_s01_t03: Show Child Summary Cards (5h)
+**Status:** [ ] Not Started
+**Priority:** HIGH
+**Assignee:** TBD
+
+**Goal:** Display child nodes as clickable summary cards at footer
+
+**Implementation:**
+1. Add "Children" section below content in NodeView
+2. Fetch children using hierarchy API
+3. Display as compact cards with key info
+4. Clicking card navigates to child detail
+
+**Child Card Content:**
+- **Sprint card:** ID, title, status icon, task count
+- **Task card:** ID, title, status icon, estimated hours
+
+**Layout:**
+- Grid of cards: 3 columns desktop, 2 tablet, 1 mobile
+- Max 9 visible, "Show all X" link if more
+- Cards are compact (~100px width)
+
+**Files:**
+- `dashboard/src/components/graph/NodeView.tsx`
+- New: `dashboard/src/components/graph/ChildrenSection.tsx`
+- New: `dashboard/src/components/graph/ChildCard.tsx`
+
+**Acceptance Criteria:**
+- [ ] Epic shows Sprint cards
+- [ ] Sprint shows Task cards
+- [ ] Cards show status icon and key metadata
+- [ ] Clicking card navigates to child
+- [ ] "Show all" appears when >9 children
+
+---
+
+### e011_s01_t04: Show Referenced Nodes Section (4h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+**Assignee:** TBD
+
+**Goal:** Display ADRs, Patterns, Gotchas referenced by current node
+
+**Implementation:**
+1. Add "References" section below children
+2. Query REFERENCES relationships from current node
+3. Group by node type (ADRs, Patterns, Gotchas)
+4. Display as list items with icons
+
+**Query:**
+```cypher
+MATCH (n {id: $nodeId})-[:REFERENCES]->(ref)
+RETURN ref.id, ref.label, ref.title
+```
+
+**Display:**
+```
+References
+📄 ADR-056: Roadmap as Epic View
+📄 ADR-052: Entity Naming Convention
+🎨 Pattern: DnD Kit Integration
+⚠️ Gotcha: Neo4j Integer Comparison
+```
+
+**Files:**
+- `dashboard/src/components/graph/NodeView.tsx`
+- New: `dashboard/src/components/graph/ReferencesSection.tsx`
+- `dashboard/src/lib/graph/api-client.ts` - Add references fetch
+
+**Acceptance Criteria:**
+- [ ] References section shows related ADRs, Patterns, Gotchas
+- [ ] Grouped by type with appropriate icons
+- [ ] Clicking reference navigates to that node
+- [ ] Empty state: "No references" (hidden if none)
+
+---
+
+### e011_s01_t05: Fix Breadcrumb Back Button Navigation (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+**Assignee:** TBD
+
+**Goal:** Ensure browser back button works with breadcrumb navigation
+
+**Current Issue:**
+- Breadcrumbs track navigation path
+- But browser back may not match breadcrumb state
+
+**Implementation:**
+1. Ensure each navigation pushes to browser history
+2. Use `router.push()` not `router.replace()` for navigation
+3. Handle `popstate` event to sync breadcrumb state
+4. Clear breadcrumbs appropriately on back navigation
+
+**Test Scenarios:**
+1. Navigate: Epic → Sprint → Task
+2. Click back: Should return to Sprint (breadcrumb updates)
+3. Click back: Should return to Epic (breadcrumb updates)
+4. Click back: Should return to Project view
+
+**Files:**
+- `dashboard/src/app/dashboard/graph/page.tsx`
+- `dashboard/src/components/graph/Breadcrumbs.tsx`
+
+**Acceptance Criteria:**
+- [ ] Browser back button navigates to previous node
+- [ ] Breadcrumbs update to reflect back navigation
+- [ ] URL stays in sync with displayed node
+- [ ] No "flash" of wrong content on back
+
+---
+
+### e011_s01_t06: Fix BUG-002 - ADR Edit Modal Content (4h)
+**Status:** [ ] Not Started
+**Priority:** HIGH - Deferred from EPIC-009
+**Assignee:** TBD
+
+**Bug Description:**
+ADR edit modal opens but doesn't load existing content for editing. The content field is empty.
+
+**Investigation Areas:**
+1. NodeEditorModal component - How is content loaded?
+2. API call to fetch full node content
+3. State management - Is content being set correctly?
+4. Timing - Does modal open before content loads?
+
+**Files:**
+- `dashboard/src/components/graph/NodeEditorModal.tsx`
+- `dashboard/src/lib/graph/api-client.ts`
+
+**Acceptance Criteria:**
+- [ ] Edit modal loads existing ADR content
+- [ ] Content is editable and can be saved
+- [ ] Works for all editable node types (ADR, Pattern, Gotcha)
+
+---
+
+### e011_s01_t07: Integration Testing & Polish (3h)
+**Status:** [ ] Not Started
+**Priority:** MEDIUM
+**Assignee:** TBD
+
+**Goal:** End-to-end testing of hierarchy navigation
+
+**Test Scenarios:**
+1. **Nav Tree Navigation**
+   - Expand Epic → See Sprints
+   - Expand Sprint → See Tasks
+   - Click Task → Detail view opens
+
+2. **Detail Card Navigation**
+   - View Sprint → See "Parent: EPIC-X" link
+   - Click parent → Navigate to Epic
+   - View Sprint → See Task cards
+   - Click task card → Navigate to Task
+
+3. **Breadcrumb Navigation**
+   - Navigate deep: Epic → Sprint → Task
+   - Click breadcrumb → Navigate to that level
+   - Browser back → Previous level
+
+4. **References**
+   - View Sprint with ADR reference → See in References
+   - Click reference → Navigate to ADR
+
+**Acceptance Criteria:**
+- [ ] All navigation paths work correctly
+- [ ] No broken links or 404s
+- [ ] Performance acceptable (<500ms navigation)
+- [ ] Mobile layout functional (read-only)
+
+---
+
+## Technical Notes
+
+### Hierarchy API Usage
+
 ```typescript
-interface ChangelogTimelineProps {
-  changelog: ChangelogEntry[];
-  maxEntries?: number;  // Default 10, "Show more" for rest
-}
+// Fetch children for a node
+const { children } = await graphClient.getHierarchy(nodeId, 'children');
+
+// Fetch parent for a node
+const { parent } = await graphClient.getHierarchy(nodeId, 'parent');
+
+// Fetch references for a node
+const { references } = await graphClient.getReferences(nodeId);
 ```
 
-**UI:**
+### Component Structure
+
 ```
-Epic History
-────────────
-2026-01-15  Status changed: not_started → in_progress
-            "Starting Sprint 1 implementation"
-
-2026-01-10  Committed with target Q1-2026
-            "Approved in planning meeting"
-
-2026-01-03  Created
-            "Initial epic from ADR-056 discussion"
+graph/
+├── tree-explorer.tsx      # Left nav tree
+├── NodeView.tsx           # Main detail view
+├── ChildrenSection.tsx    # NEW: Child summary cards
+├── ChildCard.tsx          # NEW: Individual child card
+├── ReferencesSection.tsx  # NEW: Referenced nodes
+├── Breadcrumbs.tsx        # Navigation breadcrumbs
+└── NodeEditorModal.tsx    # Edit modal (fix BUG-002)
 ```
 
-- Collapsible by default, expand to see full history
-- Color-coded by change type (status, dates, commitment)
-- Truncate long reasons with "..."
+---
 
-**Files:**
-- `dashboard/src/components/roadmap/ChangelogTimeline.tsx` (new)
-- `dashboard/src/components/roadmap/EpicEditModal.tsx` (update - add tab)
+## UI/UX Notes
+
+### Icons
+- 📋 Epic
+- 🏃 Sprint
+- ✓ Task (complete)
+- ○ Task (pending)
+- ⊘ Task (blocked)
+- 📄 ADR
+- 🎨 Pattern
+- ⚠️ Gotcha
+
+### Status Colors
+- Complete: Green (#22c55e)
+- In Progress: Yellow (#eab308)
+- Blocked: Red (#ef4444)
+- Not Started: Gray (#6b7280)
 
 ---
 
-### e009_s04_t02: Public Roadmap Page (3h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assignee:** chris@watchhill.ai
+## Dependencies
 
-**Goal:** Public-facing roadmap page for sharing with stakeholders
-
-**Implementation Notes:**
-- Route: `/roadmap/[projectId]/public`
-- Read-only view (no editing)
-- Only shows `roadmap_visible=true` items
-- Clean, minimal design
-- Optional: Custom branding (project logo, colors)
-
-**Files:**
-- `dashboard/src/app/roadmap/[projectId]/public/page.tsx` (new)
-- `dashboard/src/components/roadmap/PublicRoadmapView.tsx` (new)
-
----
-
-### e009_s04_t03: Navigation Integration (2h)
-**Status:** [x] Complete (Pre-existing)
-**Priority:** MEDIUM
-**Assignee:** chris@watchhill.ai
-
-**Goal:** Add Roadmap to main dashboard navigation
-
-**Implementation Notes:**
-- Add "Roadmap" link to sidebar navigation
-- Show roadmap icon (e.g., map or timeline icon)
-- Highlight when on roadmap page
-- Add to command palette (Cmd+K)
-
-**Files:**
-- `dashboard/src/components/layout/Sidebar.tsx` (update)
-- `dashboard/src/components/layout/CommandPalette.tsx` (update)
-
----
-
-### e009_s04_t04: Performance Optimization (3h)
-**Status:** [x] Complete
-**Priority:** MEDIUM
-**Assignee:** chris@watchhill.ai
-
-**Goal:** Ensure smooth performance with many Epics
-
-**Implementation Notes:**
-- Virtualize quarter columns if > 20 items per column
-- Lazy load Epic details on hover/click
-- Memoize Epic cards to prevent re-renders
-- Debounce filter changes
-- Cache roadmap query with React Query
-
-**Benchmarks:**
-- Initial load: < 500ms for 50 Epics
-- Drag response: < 16ms (60fps)
-- Filter apply: < 100ms
-
-**Files:**
-- `dashboard/src/components/roadmap/RoadmapCanvas.tsx` (update)
-- `dashboard/src/components/roadmap/EpicCard.tsx` (update)
-
----
-
-## Execution Plan
-
-**Day 1-2:**
-- t01: Changelog timeline
-
-**Day 3:**
-- t02: Public roadmap page
-
-**Day 4:**
-- t03: Navigation integration
-
-**Day 5:**
-- t04: Performance optimization
-- Final testing and documentation
-
----
-
-## Accomplishments This Sprint
-
-### 2026-01-11: T01 Changelog Timeline Component
-
-**Components Created:**
-- `dashboard/src/components/roadmap/ChangelogTimeline.tsx` - Vertical timeline display
-  - Color-coded entries by field type (status=blue, lane=green, factors=amber, visibility=purple)
-  - Collapsible with "Show more/less" when > maxEntries (default 10)
-  - Empty state with icon and message
-  - Formatted timestamps with relative dates
-- Updated `EpicEditModal.tsx` - Added "Properties" | "History" tab navigation
-  - Badge shows changelog count on History tab
-  - Tab resets to Properties when modal opens for new epic
-
-**Files:**
-- dashboard/src/components/roadmap/ChangelogTimeline.tsx (new)
-- dashboard/src/components/roadmap/EpicEditModal.tsx (updated)
-- dashboard/src/components/roadmap/index.ts (updated)
-
----
-
-### 2026-01-11: T02 Public Roadmap Page
-
-**Components Created:**
-- `dashboard/src/app/roadmap/[projectId]/public/page.tsx` - Server component route
-- `dashboard/src/components/roadmap/PublicRoadmapView.tsx` - Read-only view
-  - Shows only `roadmap_visible=true` items
-  - Now/Next/Later lanes only (no Done/Dropped)
-  - Clean, minimal design with status icons
-  - "Powered by Ginko" footer
-  - Responsive design with max-width container
-
-**URL Pattern:** `/roadmap/{projectId}/public`
-
-**Files:**
-- dashboard/src/app/roadmap/[projectId]/public/page.tsx (new)
-- dashboard/src/components/roadmap/PublicRoadmapView.tsx (new)
-- dashboard/src/components/roadmap/index.ts (updated)
-
----
-
-### 2026-01-11: T03 Navigation Integration
-
-**Status:** Pre-existing - Roadmap tab already in `dashboard-tabs.tsx` (lines 37-42)
-- Uses MapIcon with ginko green accent color
-- Active state detection via pathname prefix matching
-- No changes needed
-
----
-
-### 2026-01-11: T04 Performance Optimization
-
-**Optimizations Applied:**
-
-1. **EpicCard.tsx** - Wrapped with React.memo() + custom comparator
-   - Checks only props that affect rendering
-   - Prevents unnecessary re-renders
-
-2. **LaneSection.tsx** - Wrapped with React.memo()
-   - useCallback for toggle and click handlers
-   - useMemo for computed styles and messages
-
-3. **useRoadmapFilters.ts** - Added debounced URL updates (300ms)
-   - Local state for immediate UI feedback
-   - Debounced URL sync prevents excessive history changes
-
-4. **RoadmapCanvas.tsx** - Comprehensive memoization
-   - useMemo for allEpics, filteredEpics, laneGroups, summary
-   - useCallback for all event handlers
-   - Stable callback references prevent child re-renders
-
-**Expected Performance:**
-- Initial load: < 500ms for 50 Epics
-- Drag response: < 16ms (60fps)
-- Filter apply: < 100ms
-
-## Next Steps
-
-After Sprint 4:
-- EPIC-009 complete
-- Consider: Cross-project roadmap view
-- Consider: Roadmap templates
-
-## Blockers
-
-[To be updated if blockers arise]
+- Sprint 0 complete (data model fixes)
+- Hierarchy API endpoint available
+- All sprints synced with `epic_id`
+- Tasks synced with `sprint_id`
 
 ---
 
 ## Sprint Metadata
 
-**Epic:** EPIC-009 (Product Roadmap)
-**Sprint ID:** e009_s04
-**Started:** 2026-01-11
-**Participants:** Chris Norton, Claude
+**Epic:** EPIC-011 (Graph Explorer v2)
+**Sprint ID:** e011_s01
+**Started:** TBD (after Sprint 0)
+**Participants:** TBD
