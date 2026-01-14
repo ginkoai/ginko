@@ -737,6 +737,82 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
 }
 
 // =============================================================================
+// Parent Node Lookup
+// =============================================================================
+
+/**
+ * Determine the parent type and ID for a given node
+ * Returns null if node has no parent (Epics, ADRs, etc.)
+ */
+export function getParentInfo(node: GraphNode): { type: NodeLabel; searchId: string } | null {
+  const props = node.properties as Record<string, unknown>;
+
+  // Tasks have Sprints as parents
+  if (node.label === 'Task') {
+    const taskId = getNodeProp(props, 'task_id') || node.id;
+    const sprintId = extractSprintId(taskId);
+    if (sprintId) {
+      return { type: 'Sprint', searchId: sprintId };
+    }
+  }
+
+  // Sprints have Epics as parents
+  if (node.label === 'Sprint') {
+    const sprintId = getNodeProp(props, 'sprint_id') || node.id;
+    const title = getNodeProp(props, 'title') || '';
+    const epicId = extractEpicId(sprintId) || extractEpicId(node.id) || extractEpicId(title);
+    if (epicId) {
+      return { type: 'Epic', searchId: epicId };
+    }
+  }
+
+  // Other node types have no parent in our hierarchy
+  return null;
+}
+
+/**
+ * Find the parent node for a given node
+ * Uses the hierarchy relationships: Task → Sprint → Epic
+ */
+export async function getParentNode(
+  node: GraphNode,
+  options: FetchOptions = {}
+): Promise<GraphNode | null> {
+  const parentInfo = getParentInfo(node);
+  if (!parentInfo) {
+    return null;
+  }
+
+  // Fetch all nodes of the parent type
+  const candidates = await getNodesByLabel(parentInfo.type, options);
+
+  // Find matching parent based on normalized IDs
+  for (const candidate of candidates) {
+    const props = candidate.properties as Record<string, unknown>;
+
+    if (parentInfo.type === 'Sprint') {
+      // Match sprint by extracting normalized sprint ID
+      const title = getNodeProp(props, 'title') || '';
+      const normalizedId = extractNormalizedSprintId(candidate.id, title);
+      if (normalizedId === parentInfo.searchId) {
+        return candidate;
+      }
+    }
+
+    if (parentInfo.type === 'Epic') {
+      // Match epic by extracting normalized epic ID
+      const epicId = getNodeProp(props, 'epic_id') || candidate.id;
+      const normalizedId = extractEpicId(epicId) || extractEpicId(candidate.id);
+      if (normalizedId === parentInfo.searchId) {
+        return candidate;
+      }
+    }
+  }
+
+  return null;
+}
+
+// =============================================================================
 // Export all
 // =============================================================================
 
@@ -748,6 +824,8 @@ export const graphApi = {
   getAdjacencies,
   getGraphStatus,
   buildTreeHierarchy,
+  getParentNode,
+  getParentInfo,
   setDefaultGraphId,
   getDefaultGraphId,
 };

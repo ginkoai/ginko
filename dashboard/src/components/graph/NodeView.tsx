@@ -25,9 +25,10 @@ import {
   Loader2,
   Clock,
   User,
+  ArrowLeft,
   type LucideIcon,
 } from 'lucide-react';
-import { useNodeAdjacencies } from '@/lib/graph/hooks';
+import { useNodeAdjacencies, useParentNode } from '@/lib/graph/hooks';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
 import { RelatedNodesSummary } from './RelatedNodesSummary';
 import { MarkdownRenderer } from './MarkdownRenderer';
@@ -417,6 +418,62 @@ function NodeProperties({ node }: { node: GraphNode }) {
 }
 
 // =============================================================================
+// Parent Link Component
+// =============================================================================
+
+function ParentLink({
+  parentNode,
+  isLoading,
+  onNavigate,
+}: {
+  parentNode: GraphNode | null | undefined;
+  isLoading: boolean;
+  onNavigate: (nodeId: string) => void;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        <span>Loading parent...</span>
+      </div>
+    );
+  }
+
+  if (!parentNode) {
+    return null;
+  }
+
+  const props = parentNode.properties as Record<string, unknown>;
+  const parentTitle = getNodeTitle(parentNode);
+  const parentTypeId = getNodeId(parentNode);
+  const colors = nodeColors[parentNode.label] || nodeColors.Event;
+  const Icon = nodeIcons[parentNode.label] || FileText;
+
+  return (
+    <button
+      onClick={() => onNavigate(parentNode.id)}
+      className={cn(
+        'flex items-center gap-2 px-3 py-2 rounded-lg mb-4',
+        'text-sm font-medium transition-colors',
+        'hover:bg-white/10 border',
+        colors.border,
+        colors.text
+      )}
+    >
+      <ArrowLeft className="w-4 h-4" />
+      <Icon className="w-4 h-4" />
+      <span>Parent:</span>
+      <span className="font-mono">{parentTypeId || parentNode.label}</span>
+      {parentTitle && parentTitle !== parentTypeId && (
+        <span className="text-muted-foreground truncate max-w-[200px]">
+          — {parentTitle}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
@@ -433,11 +490,24 @@ export function NodeView({
     { graphId }
   );
 
+  // Fetch parent node (for Tasks and Sprints)
+  const { data: parentNode, isLoading: loadingParent } = useParentNode(
+    node,
+    { graphId }
+  );
+
   const Icon = nodeIcons[node.label] || FileText;
   const colors = nodeColors[node.label] || nodeColors.Event;
 
   return (
     <div className={cn('p-6 space-y-6 max-w-4xl mx-auto', className)}>
+      {/* Parent Link (for Tasks and Sprints) */}
+      <ParentLink
+        parentNode={parentNode}
+        isLoading={loadingParent}
+        onNavigate={onNavigate}
+      />
+
       {/* Header Card */}
       <NodeHeader
         node={node}
