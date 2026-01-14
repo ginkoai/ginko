@@ -54,3 +54,13 @@ Completed EPIC-011 Sprint 0 - Data Model & Hierarchy API. Added hierarchy naviga
 
 Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, docs/sprints/SPRINT-2026-01-e011-s00-data-model-fixes.md, packages/cli/src/commands/graph/api-client.ts
 Impact: high
+
+### 13:13 - [fix]
+# [FIX] 13:13
+
+Fixed sprint filename pattern recognition for e009-s01 format. Updated epic sync and sprint syncer to match both 'epic009-sprint1' and 'e009-s01' naming conventions. EPIC-009 now shows 5 child sprints via 'ginko graph explore EPIC-009'. Added Epic line to sprint files for proper sync.
+
+**Impact:** medium
+**Timestamp:** 2026-01-14T18:13:06.096Z
+
+Impact: medium
