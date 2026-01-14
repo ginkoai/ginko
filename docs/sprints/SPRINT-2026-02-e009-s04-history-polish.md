@@ -10,10 +10,10 @@
 **Progress:** 100% (4/4 tasks complete)
 
 **Success Criteria:**
-- [ ] Epic changelog visible in UI with timeline view
-- [ ] Public roadmap export generates clean markdown/JSON
-- [ ] Roadmap page accessible from main navigation
-- [ ] Performance optimized for 50+ Epics
+- [x] Epic changelog visible in UI with timeline view
+- [x] Public roadmap export generates clean markdown/JSON
+- [x] Roadmap page accessible from main navigation
+- [x] Performance optimized for 50+ Epics
 
 ---
 

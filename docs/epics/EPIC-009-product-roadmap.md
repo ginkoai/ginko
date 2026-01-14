@@ -25,13 +25,13 @@ Implement ADR-056 (Roadmap as Epic View) to provide product teams with:
 
 ## Success Criteria
 
-- [ ] Epic nodes support roadmap properties (commitment_status, roadmap_status, target quarters)
-- [ ] Existing Epics migrated with changelog initialized
-- [ ] `ginko roadmap` CLI command displays committed work by quarter
-- [ ] Dashboard Roadmap Canvas allows visual editing of Epic placement
-- [ ] Changelog tracks all date/status changes with timestamps
-- [ ] Uncommitted items validated to have no dates
-- [ ] 2-year horizon warning for committed work
+- [x] Epic nodes support roadmap properties (commitment_status, roadmap_status, target quarters)
+- [x] Existing Epics migrated with changelog initialized
+- [x] `ginko roadmap` CLI command displays committed work by quarter
+- [x] Dashboard Roadmap Canvas allows visual editing of Epic placement
+- [x] Changelog tracks all date/status changes with timestamps
+- [x] Uncommitted items validated to have no dates
+- [x] 2-year horizon warning for committed work
 
 ## Scope
 
