@@ -171,8 +171,8 @@ function GraphPageContent() {
         setSelectedNode(node);
         setIsPanelOpen(true);
         setIsFetchingNode(false);
-      } else if (!selectedNode && !isFetchingNode) {
-        // Node not in cache - fetch it directly (for deep links)
+      } else if ((!selectedNode || selectedNode.id !== selectedNodeId) && !isFetchingNode) {
+        // Node not in cache - fetch it directly (for deep links or parent navigation)
         setIsFetchingNode(true);
         getNodeById(selectedNodeId, { graphId: DEFAULT_GRAPH_ID })
           .then(node => {
