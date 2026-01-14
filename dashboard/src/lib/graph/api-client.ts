@@ -1,7 +1,7 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-12-11
+ * @updated: 2026-01-14
  * @tags: [graph, api, client, fetching]
  * @related: [types.ts, hooks.ts]
  * @priority: high
@@ -450,8 +450,8 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   // Map for sprint lookup when grouping tasks
   const sprintMap = new Map<string, TreeNode>();
 
-  // Build sprint tree nodes (sprints are NOT nested under epics - they consume backlog items)
-  const sprintNodes: TreeNode[] = sprints.map((sprint) => {
+  // Build sprint tree nodes and nest them under their parent Epic
+  sprints.forEach((sprint) => {
     const props = sprint.properties as Record<string, unknown>;
     const sprintId = getNodeProp(props, 'sprint_id') || sprint.id;
 
@@ -472,7 +472,15 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
       sprintMap.set(extractedSprintId, sprintTreeNode);
     }
 
-    return sprintTreeNode;
+    // Nest sprint under parent Epic using extractEpicId
+    const epicIdFromSprint = extractEpicId(sprintId);
+    if (epicIdFromSprint) {
+      const parentEpic = epicMap.get(epicIdFromSprint);
+      if (parentEpic) {
+        parentEpic.children = parentEpic.children || [];
+        parentEpic.children.push(sprintTreeNode);
+      }
+    }
   });
 
   // Group tasks by sprint
@@ -504,7 +512,110 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     // They can still be found via search or category view
   });
 
-  // Build root tree
+  // Build knowledge folder children (ADRs, PRDs, Patterns, Gotchas, Principles)
+  const knowledgeChildren: TreeNode[] = [];
+
+  if (adrs.length > 0) {
+    knowledgeChildren.push({
+      id: 'adrs-folder',
+      label: 'Project' as const,
+      name: `ADRs (${adrs.length})`,
+      hasChildren: true,
+      isExpanded: false,
+      children: adrs.map((adr) => {
+        const props = adr.properties as Record<string, unknown>;
+        return {
+          id: adr.id,
+          label: 'ADR' as const,
+          name: getNodeProp(props, 'title') || getNodeProp(props, 'adr_id') || adr.id,
+          hasChildren: false,
+          properties: adr.properties,
+        };
+      }),
+    });
+  }
+
+  if (prds.length > 0) {
+    knowledgeChildren.push({
+      id: 'prds-folder',
+      label: 'Project' as const,
+      name: `PRDs (${prds.length})`,
+      hasChildren: true,
+      isExpanded: false,
+      children: prds.map((prd) => {
+        const props = prd.properties as Record<string, unknown>;
+        return {
+          id: prd.id,
+          label: 'PRD' as const,
+          name: getNodeProp(props, 'title') || getNodeProp(props, 'prd_id') || prd.id,
+          hasChildren: false,
+          properties: prd.properties,
+        };
+      }),
+    });
+  }
+
+  if (patterns.length > 0) {
+    knowledgeChildren.push({
+      id: 'patterns-folder',
+      label: 'Project' as const,
+      name: `Patterns (${patterns.length})`,
+      hasChildren: true,
+      isExpanded: false,
+      children: patterns.map((p) => {
+        const props = p.properties as Record<string, unknown>;
+        return {
+          id: p.id,
+          label: 'Pattern' as const,
+          name: getNodeProp(props, 'name') || getNodeProp(props, 'pattern_id') || p.id,
+          hasChildren: false,
+          properties: p.properties,
+        };
+      }),
+    });
+  }
+
+  if (gotchas.length > 0) {
+    knowledgeChildren.push({
+      id: 'gotchas-folder',
+      label: 'Project' as const,
+      name: `Gotchas (${gotchas.length})`,
+      hasChildren: true,
+      isExpanded: false,
+      children: gotchas.map((g) => {
+        const props = g.properties as Record<string, unknown>;
+        return {
+          id: g.id,
+          label: 'Gotcha' as const,
+          name: getNodeProp(props, 'title') || getNodeProp(props, 'gotcha_id') || g.id,
+          hasChildren: false,
+          properties: g.properties,
+        };
+      }),
+    });
+  }
+
+  if (principles.length > 0) {
+    knowledgeChildren.push({
+      id: 'principles-folder',
+      label: 'Project' as const,
+      name: `Principles (${principles.length})`,
+      hasChildren: true,
+      isExpanded: false,
+      children: principles.map((p) => {
+        const props = p.properties as Record<string, unknown>;
+        return {
+          id: p.id,
+          label: 'Principle' as const,
+          name: getNodeProp(props, 'title') || getNodeProp(props, 'principle_id') || p.id,
+          hasChildren: false,
+          properties: p.properties,
+        };
+      }),
+    });
+  }
+
+  // Build root tree with hierarchical Epic → Sprint → Task structure
   const root: TreeNode = {
     id: 'project-root',
     label: 'Project' as const,
@@ -512,107 +623,16 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     hasChildren: true,
     isExpanded: true,
     children: [
+      // Epics with nested Sprints and Tasks
+      ...epicNodes,
+      // Knowledge folder containing ADRs, PRDs, Patterns, Gotchas, Principles
       {
-        id: 'epics-folder',
+        id: 'knowledge-folder',
         label: 'Project' as const,
-        name: 'Epics',
-        hasChildren: epicNodes.length > 0,
+        name: 'Knowledge',
+        hasChildren: knowledgeChildren.length > 0,
         isExpanded: false,
-        children: epicNodes,
-      },
-      // Sprints are separate from epics (they consume backlog items, not part of backlog)
-      {
-        id: 'sprints-folder',
-        label: 'Project' as const,
-        name: 'Sprints',
-        hasChildren: sprintNodes.length > 0,
-        isExpanded: true,
-        children: sprintNodes,
-      },
-      {
-        id: 'adrs-folder',
-        label: 'Project' as const,
-        name: 'ADRs',
-        hasChildren: adrs.length > 0,
-        isExpanded: false,
-        children: adrs.map((adr) => {
-          const props = adr.properties as Record<string, unknown>;
-          return {
-            id: adr.id,
-            label: 'ADR' as const,
-            name: getNodeProp(props, 'title') || getNodeProp(props, 'adr_id') || adr.id,
-            hasChildren: false,
-            properties: adr.properties,
-          };
-        }),
-      },
-      {
-        id: 'prds-folder',
-        label: 'Project' as const,
-        name: 'PRDs',
-        hasChildren: prds.length > 0,
-        isExpanded: false,
-        children: prds.map((prd) => {
-          const props = prd.properties as Record<string, unknown>;
-          return {
-            id: prd.id,
-            label: 'PRD' as const,
-            name: getNodeProp(props, 'title') || getNodeProp(props, 'prd_id') || prd.id,
-            hasChildren: false,
-            properties: prd.properties,
-          };
-        }),
-      },
-      {
-        id: 'patterns-folder',
-        label: 'Project' as const,
-        name: 'Patterns',
-        hasChildren: patterns.length > 0,
-        isExpanded: false,
-        children: patterns.map((p) => {
-          const props = p.properties as Record<string, unknown>;
-          return {
-            id: p.id,
-            label: 'Pattern' as const,
-            name: getNodeProp(props, 'name') || getNodeProp(props, 'pattern_id') || p.id,
-            hasChildren: false,
-            properties: p.properties,
-          };
-        }),
-      },
-      {
-        id: 'gotchas-folder',
-        label: 'Project' as const,
-        name: 'Gotchas',
-        hasChildren: gotchas.length > 0,
-        isExpanded: false,
-        children: gotchas.map((g) => {
-          const props = g.properties as Record<string, unknown>;
-          return {
-            id: g.id,
-            label: 'Gotcha' as const,
-            name: getNodeProp(props, 'title') || getNodeProp(props, 'gotcha_id') || g.id,
-            hasChildren: false,
-            properties: g.properties,
-          };
-        }),
-      },
-      {
-        id: 'principles-folder',
-        label: 'Project' as const,
-        name: 'Principles',
-        hasChildren: principles.length > 0,
-        isExpanded: false,
-        children: principles.map((p) => {
-          const props = p.properties as Record<string, unknown>;
-          return {
-            id: p.id,
-            label: 'Principle' as const,
-            name: getNodeProp(props, 'title') || getNodeProp(props, 'principle_id') || p.id,
-            hasChildren: false,
-            properties: p.properties,
-          };
-        }),
+        children: knowledgeChildren,
       },
     ],
   };

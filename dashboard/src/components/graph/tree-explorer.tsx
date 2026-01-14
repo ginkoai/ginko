@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-11
+ * @updated: 2026-01-14
  * @tags: [graph, tree, explorer, visualization, navigation]
  * @related: [tree-node.tsx, types.ts, hooks.ts]
  * @priority: high
@@ -47,8 +47,8 @@ export function TreeExplorer({
   const { data: tree, isLoading, error, refetch } = useGraphTree(graphId);
   const invalidateGraph = useInvalidateGraph();
 
-  // Local state for expanded nodes
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['project-root', 'epics-folder']));
+  // Local state for expanded nodes - default expand root and knowledge folder
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['project-root']));
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');

@@ -1192,10 +1192,23 @@
       "relevance": "critical",
       "created": "2026-01-14T21:35:20.887Z",
       "sessionId": "session-chris-at-watchhill-ai-1768426520756"
+    },
+    {
+      "filename": "pattern-implemented-hierarchical-nav-tree-structure-e011s0.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-14T21:48:59.454Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768427339246"
     }
   ],
-  "lastUpdated": "2026-01-14T21:35:20.890Z",
-  "totalModules": 92,
+  "lastUpdated": "2026-01-14T21:48:59.455Z",
+  "totalModules": 93,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

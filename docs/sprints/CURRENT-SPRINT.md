@@ -9,7 +9,7 @@
 **Prerequisite:** Sprint 0 complete (data model fixes)
 
 **Success Criteria:**
-- [ ] Nav Tree shows nested Epic → Sprint → Task hierarchy
+- [x] Nav Tree shows nested Epic → Sprint → Task hierarchy
 - [ ] Parent link visible at top of detail cards
 - [ ] Child summary cards shown at footer of parent nodes
 - [ ] Referenced nodes (ADRs, Patterns) in separate section
@@ -87,9 +87,9 @@
 ## Sprint Tasks
 
 ### e011_s01_t01: Refactor Nav Tree for Hierarchy (6h)
-**Status:** [ ] Not Started
+**Status:** [@] In Progress
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** Chris Norton
 
 **Goal:** Restructure Nav Tree to show Epic → Sprint → Task nesting
 
@@ -114,11 +114,11 @@
 - `dashboard/src/lib/graph/hooks.ts` - Data fetching
 
 **Acceptance Criteria:**
-- [ ] Epics show as top-level items under "Project"
-- [ ] Sprints nested under their parent Epic
-- [ ] Tasks nested under their parent Sprint (collapsed by default)
-- [ ] Expand/collapse icons work correctly
-- [ ] Selection state preserved when expanding/collapsing
+- [x] Epics show as top-level items under "Project"
+- [x] Sprints nested under their parent Epic
+- [x] Tasks nested under their parent Sprint (collapsed by default)
+- [x] Expand/collapse icons work correctly
+- [x] Selection state preserved when expanding/collapsing
 
 ---
 

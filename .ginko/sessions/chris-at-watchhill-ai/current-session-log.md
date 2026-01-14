@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-14T21-27-36-830Z
-started: 2026-01-14T21:27:36.830Z
+session_id: session-2026-01-14T21-43-10-940Z
+started: 2026-01-14T21:43:10.941Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-14T21-27-36-830Z
+# Session Log: session-2026-01-14T21-43-10-940Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,17 +37,17 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 16:35 - [fix]
-# [FIX] 16:35
+### 16:48 - [feature]
+# [FEATURE] 16:48
 
-Fixed ginko start table display for Claude Code. Added silent mode to suppress loading messages, created compact 8-line table option, updated CLAUDE.md to output table as code block (avoids UI collapse). Updated branding: ginko header now #C0FD77 bold, footer is ginkoai.com.
+Implemented hierarchical Nav Tree structure (e011_s01_t01). Changed buildTreeHierarchy in api-client.ts to nest Sprints under their parent Epic using extractEpicId(). Tasks were already nested under Sprints. Grouped ADRs, PRDs, Patterns, Gotchas, Principles under a 'Knowledge' folder with counts. Removed flat Sprints top-level branch. Updated tree-explorer default expansion to just project-root.
 
 **Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/lib/graph/api-client.ts
+- dashboard/src/components/graph/tree-explorer.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-14T21:35:17.271Z
+**Timestamp:** 2026-01-14T21:48:55.844Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Files: dashboard/src/lib/graph/api-client.ts, dashboard/src/components/graph/tree-explorer.tsx
 Impact: high
