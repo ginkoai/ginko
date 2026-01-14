@@ -224,7 +224,8 @@ export class StartReflectionCommand extends ReflectionCommand {
         initializeQueue({
           syncIntervalMs: 5 * 60 * 1000,  // 5 minutes
           syncThreshold: 5,                 // 5 events
-          maxBatchSize: 20                  // 20 events max
+          maxBatchSize: 20,                 // 20 events max
+          silent: true                      // Suppress logs for clean table output
         });
         spinner.succeed(chalk.dim('Event sync queue started'));
       } catch (error) {
@@ -517,24 +518,10 @@ export class StartReflectionCommand extends ReflectionCommand {
         }
       }
 
-      // 13. Display output based on mode (TASK-P2: Table is now default)
-      if (options.verbose) {
-        // Verbose mode: Full session info (~80 lines)
-        await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
-        console.log(formatVerboseOutput(aiContext));
-        console.log('');
-        console.log(chalk.dim(formatContextSummary(strategyContext)));
-      } else {
-        // Default mode: Table view (use --compact for previous format)
-        this.displayConciseOutput(aiContext, {
-          compact: options.compact,
-          table: options.table
-        });
-      }
-
+      // 13. Complete spinner before display
       spinner.succeed('Session initialized with strategic context!');
 
-      // EPIC-008 Sprint 2: Check team context staleness
+      // EPIC-008 Sprint 2: Check team context staleness (silent - no output)
       await this.checkTeamStaleness();
 
       // EPIC-004: Push real-time cursor update on session start
@@ -549,6 +536,22 @@ export class StartReflectionCommand extends ReflectionCommand {
       this.runScheduledInsights().catch(() => {
         // Insights update is non-critical - don't block session start
       });
+
+      // 14. Display output LAST (after all async operations complete)
+      // Table view should be the final thing the user sees
+      if (options.verbose) {
+        // Verbose mode: Full session info (~80 lines)
+        await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
+        console.log(formatVerboseOutput(aiContext));
+        console.log('');
+        console.log(chalk.dim(formatContextSummary(strategyContext)));
+      } else {
+        // Default mode: Table view (use --compact for previous format)
+        this.displayConciseOutput(aiContext, {
+          compact: options.compact,
+          table: options.table
+        });
+      }
 
     } catch (error) {
       spinner.fail('Session initialization failed');

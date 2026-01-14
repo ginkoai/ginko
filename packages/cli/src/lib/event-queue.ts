@@ -20,6 +20,7 @@ interface QueueConfig {
   maxBatchSize: number;         // 20 events max per sync
   retryAttempts: number;        // 3 retry attempts
   retryDelayMs: number;         // 5 seconds between retries
+  silent: boolean;             // Suppress console output (for clean startup)
 }
 
 const DEFAULT_CONFIG: QueueConfig = {
@@ -27,7 +28,8 @@ const DEFAULT_CONFIG: QueueConfig = {
   syncThreshold: 5,                // 5 events
   maxBatchSize: 20,                // 20 events max
   retryAttempts: 3,                // 3 retries
-  retryDelayMs: 5000               // 5 seconds
+  retryDelayMs: 5000,              // 5 seconds
+  silent: false                    // Default: show logs
 };
 
 /**
@@ -67,15 +69,24 @@ export class EventQueue {
   }
 
   /**
+   * Log message if not in silent mode
+   */
+  private log(message: string): void {
+    if (!this.config.silent) {
+      console.log(message);
+    }
+  }
+
+  /**
    * Start the sync queue
    */
   start(): void {
     if (this.syncTimer) {
-      console.warn('[EventQueue] Queue already started');
+      if (!this.config.silent) console.warn('[EventQueue] Queue already started');
       return;
     }
 
-    console.log(`[EventQueue] Starting sync queue (interval: ${this.config.syncIntervalMs / 1000}s, threshold: ${this.config.syncThreshold} events)`);
+    this.log(`[EventQueue] Starting sync queue (interval: ${this.config.syncIntervalMs / 1000}s, threshold: ${this.config.syncThreshold} events)`);
 
     // Schedule periodic sync
     // Use unref() to allow process to exit if no other work pending
@@ -101,7 +112,7 @@ export class EventQueue {
     if (this.syncTimer) {
       clearInterval(this.syncTimer);
       this.syncTimer = null;
-      console.log('[EventQueue] Sync queue stopped');
+      this.log('[EventQueue] Sync queue stopped');
     }
   }
 
@@ -131,12 +142,12 @@ export class EventQueue {
    */
   async syncToGraph(): Promise<void> {
     if (this.status.isRunning) {
-      console.log('[EventQueue] Sync already in progress, skipping');
+      this.log('[EventQueue] Sync already in progress, skipping');
       return;
     }
 
     if (this.isShuttingDown) {
-      console.log('[EventQueue] Shutting down, skipping sync');
+      this.log('[EventQueue] Shutting down, skipping sync');
       return;
     }
 
@@ -148,7 +159,7 @@ export class EventQueue {
       const unsyncedEvents = await getUnsyncedEvents();
 
       if (unsyncedEvents.length === 0) {
-        console.log('[EventQueue] No events to sync');
+        this.log('[EventQueue] No events to sync');
         return;
       }
 
@@ -242,7 +253,7 @@ export class EventQueue {
    * Flush queue immediately (for handoff/shutdown)
    */
   async flush(): Promise<void> {
-    console.log('[EventQueue] Flushing queue...');
+    this.log('[EventQueue] Flushing queue...');
     this.stop(); // Stop scheduled syncs
     await this.syncToGraph(); // Final sync
   }
@@ -251,7 +262,7 @@ export class EventQueue {
    * Graceful shutdown with pending sync wait
    */
   async shutdown(): Promise<void> {
-    console.log('[EventQueue] Initiating graceful shutdown...');
+    this.log('[EventQueue] Initiating graceful shutdown...');
     this.isShuttingDown = true;
 
     // Stop scheduled syncs
@@ -266,7 +277,7 @@ export class EventQueue {
 
     // Final flush
     await this.flush();
-    console.log('[EventQueue] Shutdown complete');
+    this.log('[EventQueue] Shutdown complete');
   }
 
   /**
