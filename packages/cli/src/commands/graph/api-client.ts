@@ -132,6 +132,10 @@ export interface ExploreResponse {
     similarTo?: Array<{ id: string; type: string; title: string; similarity: number }>;
     appliedPatterns?: Array<{ id: string; type: string; title: string; similarity: number | null }>;
   };
+  hierarchy?: {
+    parent?: { id: string; type: string; title: string };
+    children: Array<{ id: string; type: string; title: string; status?: string }>;
+  };
   totalConnections: number;
   connectionsByType: Record<string, number>;
 }

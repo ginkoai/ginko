@@ -44,7 +44,10 @@ export async function exploreCommand(documentId: string, options: ExploreOptions
       result.document.type === 'PRD' ? '📋' :
       result.document.type === 'Pattern' ? '🎨' :
       result.document.type === 'Gotcha' ? '⚠️' :
-      result.document.type === 'Session' ? '📝' : '📁';
+      result.document.type === 'Session' ? '📝' :
+      result.document.type === 'Epic' ? '🎯' :
+      result.document.type === 'Sprint' ? '🏃' :
+      result.document.type === 'Task' ? '✅' : '📁';
 
     console.log(chalk.green(`\n${emoji} ${result.document.type}: ${result.document.title}`));
     console.log(chalk.gray('─'.repeat(50)));
@@ -103,6 +106,32 @@ export async function exploreCommand(documentId: string, options: ExploreOptions
       result.relationships.appliedPatterns.forEach(rel => {
         console.log(`    ← ${chalk.cyan(`[${rel.type}] ${rel.title}`)} (${rel.id})`);
       });
+    }
+
+    // Hierarchy (for Epic/Sprint/Task nodes)
+    if (result.hierarchy) {
+      console.log(`\n${chalk.bold('Hierarchy')}:`);
+
+      // Parent
+      if (result.hierarchy.parent) {
+        const parentEmoji = result.hierarchy.parent.type === 'Epic' ? '🎯' : '🏃';
+        console.log(`\n  ${chalk.bold('Parent')}:`);
+        console.log(`    ↑ ${parentEmoji} ${chalk.cyan(`[${result.hierarchy.parent.type}] ${result.hierarchy.parent.title}`)} (${result.hierarchy.parent.id})`);
+      }
+
+      // Children
+      if (result.hierarchy.children && result.hierarchy.children.length > 0) {
+        const childType = result.hierarchy.children[0]?.type || 'Unknown';
+        const childEmoji = childType === 'Sprint' ? '🏃' : childType === 'Task' ? '✅' : '📁';
+        console.log(`\n  ${chalk.bold('Children')} (${result.hierarchy.children.length} ${childType}s):`);
+        result.hierarchy.children.slice(0, 20).forEach(child => {
+          const statusBadge = child.status ? chalk.dim(` [${child.status}]`) : '';
+          console.log(`    ↓ ${childEmoji} ${chalk.cyan(child.title || child.id)}${statusBadge}`);
+        });
+        if (result.hierarchy.children.length > 20) {
+          console.log(chalk.dim(`    ... and ${result.hierarchy.children.length - 20} more`));
+        }
+      }
     }
 
     // Connection summary
