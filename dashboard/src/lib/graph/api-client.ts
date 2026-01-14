@@ -294,14 +294,27 @@ function getNodeProp(properties: Record<string, unknown>, key: string): string |
 
 /**
  * Normalize an ID to a canonical form for deduplication
- * Handles: e012, EPIC-012, epic_012, Epic-12, etc. -> e012
+ * Handles:
+ * - e012, EPIC-012, epic_012 -> e012 (epics)
+ * - e008_s04_t08 -> e008_s04_t08 (preserve full task IDs)
+ * - e008_s04 -> e008_s04 (preserve full sprint IDs)
  */
 function normalizeId(id: string): string {
   const lower = id.toLowerCase().trim();
 
-  // Extract numeric part from various formats
+  // If it's a full task ID (e{NNN}_s{NN}_t{NN}), preserve it
+  if (lower.match(/^e\d+_s\d+_t\d+$/)) {
+    return lower;
+  }
+
+  // If it's a full sprint ID (e{NNN}_s{NN}), preserve it
+  if (lower.match(/^e\d+_s\d+$/)) {
+    return lower;
+  }
+
+  // Extract numeric part from epic formats
   // Pattern: e{NNN}, epic-{NNN}, epic_{NNN}
-  const match = lower.match(/^(?:e|epic[-_]?)(\d+)/);
+  const match = lower.match(/^(?:e|epic[-_]?)(\d+)$/);
   if (match) {
     // Pad to 3 digits for consistency
     return `e${match[1].padStart(3, '0')}`;
