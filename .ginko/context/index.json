@@ -1135,10 +1135,34 @@
       "relevance": "critical",
       "created": "2026-01-13T18:15:56.844Z",
       "sessionId": "session-chris-at-watchhill-ai-1768328156801"
+    },
+    {
+      "filename": "gotcha-fixed-roadmapgraph-deep-link-redirect-bug.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-13T23:31:38.013Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768347097980"
+    },
+    {
+      "filename": "decision-revised-epic011-scope-based-on-user-feedback.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-14T16:11:43.593Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768407103496"
     }
   ],
-  "lastUpdated": "2026-01-13T18:15:56.844Z",
-  "totalModules": 87,
+  "lastUpdated": "2026-01-14T16:11:43.594Z",
+  "totalModules": 89,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
