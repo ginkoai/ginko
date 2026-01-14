@@ -87,7 +87,7 @@
 ## Sprint Tasks
 
 ### e011_s01_t01: Refactor Nav Tree for Hierarchy (6h)
-**Status:** [x] Complete
+**Status:** [x] Complete (2026-01-14)
 **Priority:** HIGH
 **Assignee:** Chris Norton
 

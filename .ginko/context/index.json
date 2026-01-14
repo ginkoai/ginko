@@ -1205,10 +1205,21 @@
       "relevance": "critical",
       "created": "2026-01-14T21:48:59.454Z",
       "sessionId": "session-chris-at-watchhill-ai-1768427339246"
+    },
+    {
+      "filename": "gotcha-fixed-sprinttoepic-nesting-in-nav-tree.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-14T22:03:01.174Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768428181138"
     }
   ],
-  "lastUpdated": "2026-01-14T21:48:59.455Z",
-  "totalModules": 93,
+  "lastUpdated": "2026-01-14T22:03:01.175Z",
+  "totalModules": 94,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

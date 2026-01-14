@@ -51,3 +51,32 @@ Implemented hierarchical Nav Tree structure (e011_s01_t01). Changed buildTreeHie
 
 Files: dashboard/src/lib/graph/api-client.ts, dashboard/src/components/graph/tree-explorer.tsx
 Impact: high
+
+### 17:02 - [fix]
+# [FIX] 17:02
+
+Fixed Sprint-to-Epic nesting in Nav Tree. Issue: extractEpicId only matched prefix patterns, but real data has epic refs in middle of IDs like SPRINT-2026-01-epic010-sprint2. Updated extractEpicId to match patterns anywhere: e009-s05, epic010, etc. Also extract from sprint ID, node ID, and title for maximum matching.
+
+**Files:**
+- dashboard/src/lib/graph/api-client.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-14T22:02:57.498Z
+
+Files: dashboard/src/lib/graph/api-client.ts
+Impact: high
+
+### 17:41 - [achievement]
+# [ACHIEVEMENT] 17:41
+
+Completed e011_s01_t01: Nav Tree Hierarchy. Implemented Epic→Sprint→Task nesting in tree-explorer. Key fixes: extractEpicId/extractNormalizedSprintId to handle various ID formats (SPRINT-2026-02-epic008-sprint4 → e008_s04), deduplicate sprints by normalized ID, preserve full task IDs in normalizeId. Knowledge folder groups ADRs/PRDs/Patterns/Gotchas with counts.
+
+**Files:**
+- dashboard/src/lib/graph/api-client.ts
+- dashboard/src/components/graph/tree-explorer.tsx
+
+**Impact:** high
+**Timestamp:** 2026-01-14T22:41:15.586Z
+
+Files: dashboard/src/lib/graph/api-client.ts, dashboard/src/components/graph/tree-explorer.tsx
+Impact: high
