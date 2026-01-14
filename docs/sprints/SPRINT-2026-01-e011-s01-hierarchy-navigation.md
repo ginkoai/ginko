@@ -9,9 +9,9 @@
 **Prerequisite:** Sprint 0 complete (data model fixes)
 
 **Success Criteria:**
-- [ ] Nav Tree shows nested Epic → Sprint → Task hierarchy
-- [ ] Parent link visible at top of detail cards
-- [ ] Child summary cards shown at footer of parent nodes
+- [x] Nav Tree shows nested Epic → Sprint → Task hierarchy
+- [x] Parent link visible at top of detail cards
+- [x] Child summary cards shown at footer of parent nodes
 - [ ] Referenced nodes (ADRs, Patterns) in separate section
 - [ ] Browser back button works with breadcrumbs
 - [ ] BUG-002 fixed (ADR edit modal loads content)
