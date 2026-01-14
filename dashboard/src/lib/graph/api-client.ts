@@ -394,9 +394,48 @@ function extractEpicId(id: string): string | null {
 function extractSprintId(taskId: string): string | null {
   const lower = taskId.toLowerCase();
 
-  // Pattern: e{NNN}_s{NN}_t{NN}
+  // Pattern: e{NNN}_s{NN}_t{NN} or e{NNN}_s{NN}
   const match = lower.match(/^(e\d+_s\d+)/);
   if (match) return match[1];
+
+  return null;
+}
+
+/**
+ * Extract normalized sprint ID from sprint node ID or title
+ * Handles formats:
+ * - SPRINT-2026-02-epic008-sprint4 → e008_s04
+ * - SPRINT: EPIC-010 Sprint 3 → e010_s03
+ * - e009_s05 (already normalized) → e009_s05
+ */
+function extractNormalizedSprintId(id: string, title?: string): string | null {
+  const lower = id.toLowerCase();
+  const titleLower = (title || '').toLowerCase();
+
+  // Pattern 1: Already in e{NNN}_s{NN} format
+  const directMatch = lower.match(/^(e\d+_s\d+)/);
+  if (directMatch) return directMatch[1];
+
+  // Pattern 2: epic{NNN}-sprint{N} or epic{NNN}sprint{N} in ID
+  const epicSprintMatch = lower.match(/epic[-_]?(\d+)[-_]?sprint[-_]?(\d+)/);
+  if (epicSprintMatch) {
+    return `e${epicSprintMatch[1].padStart(3, '0')}_s${epicSprintMatch[2].padStart(2, '0')}`;
+  }
+
+  // Pattern 3: e{NNN}-s{NN} with dash instead of underscore
+  const dashMatch = lower.match(/e(\d+)-s(\d+)/);
+  if (dashMatch) {
+    return `e${dashMatch[1].padStart(3, '0')}_s${dashMatch[2].padStart(2, '0')}`;
+  }
+
+  // Pattern 4: Check title for "Sprint {N}" with epic context
+  const epicId = extractEpicId(id) || extractEpicId(title || '');
+  if (epicId && titleLower) {
+    const sprintNumMatch = titleLower.match(/sprint\s*(\d+)/);
+    if (sprintNumMatch) {
+      return `${epicId}_s${sprintNumMatch[1].padStart(2, '0')}`;
+    }
+  }
 
   return null;
 }
@@ -480,9 +519,19 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
       children: [],
     };
 
-    // Store in sprint map for task grouping
+    // Store in sprint map for task grouping with multiple lookup keys
+    const title = getNodeProp(props, 'title') || '';
     sprintMap.set(sprintId.toLowerCase(), sprintTreeNode);
-    const extractedSprintId = extractSprintId(sprintId + '_t00'); // Reuse extraction
+    sprintMap.set(sprint.id.toLowerCase(), sprintTreeNode);
+
+    // Extract normalized sprint ID (e.g., e008_s04) for task matching
+    const normalizedSprintId = extractNormalizedSprintId(sprint.id, title);
+    if (normalizedSprintId) {
+      sprintMap.set(normalizedSprintId, sprintTreeNode);
+    }
+
+    // Also try the old extraction method for backwards compatibility
+    const extractedSprintId = extractSprintId(sprintId + '_t00');
     if (extractedSprintId) {
       sprintMap.set(extractedSprintId, sprintTreeNode);
     }
