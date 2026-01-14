@@ -30,11 +30,12 @@ import {
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
-import { useNodeAdjacencies, useParentNode, useChildNodes } from '@/lib/graph/hooks';
+import { useNodeAdjacencies, useParentNode, useChildNodes, useReferencedNodes } from '@/lib/graph/hooks';
 import { getChildInfo } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
 import { RelatedNodesSummary } from './RelatedNodesSummary';
 import { ChildrenSection } from './ChildrenSection';
+import { ReferencesSection } from './ReferencesSection';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { cn } from '@/lib/utils';
 
@@ -517,6 +518,12 @@ export function NodeView({
     { graphId }
   );
 
+  // Fetch referenced nodes (ADRs, Patterns, Gotchas)
+  const { data: references, isLoading: loadingReferences } = useReferencedNodes(
+    node.id,
+    { graphId }
+  );
+
   // Determine child type for display
   const childInfo = getChildInfo(node);
 
@@ -552,6 +559,13 @@ export function NodeView({
           onNavigate={onNavigate}
         />
       )}
+
+      {/* References Section (ADRs, Patterns, Gotchas) */}
+      <ReferencesSection
+        adjacencies={references?.adjacencies || []}
+        isLoading={loadingReferences}
+        onNavigate={onNavigate}
+      />
 
       {/* Properties (collapsible) */}
       <NodeProperties node={node} />

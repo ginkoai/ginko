@@ -181,6 +181,35 @@ export function useChildNodes(
 }
 
 // =============================================================================
+// Referenced Nodes Hook
+// =============================================================================
+
+/**
+ * Fetch nodes referenced by the current node via REFERENCES relationship
+ * Used to display ADRs, Patterns, Gotchas linked to a node
+ */
+export function useReferencedNodes(
+  nodeId: string | null,
+  options: { graphId?: string } = {},
+  queryOptions?: Omit<UseQueryOptions<AdjacenciesResponse>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: ['graph', 'references', nodeId, options.graphId] as const,
+    queryFn: ({ signal }) =>
+      getAdjacencies({
+        nodeId: nodeId!,
+        graphId: options.graphId,
+        relationshipTypes: ['REFERENCES'],
+        direction: 'outgoing',
+        signal,
+      }),
+    enabled: !!nodeId,
+    staleTime: 60_000, // References don't change often
+    ...queryOptions,
+  });
+}
+
+// =============================================================================
 // Status Hook
 // =============================================================================
 

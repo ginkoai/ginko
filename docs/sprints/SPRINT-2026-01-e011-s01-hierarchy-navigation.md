@@ -5,14 +5,14 @@
 **Sprint Goal**: Implement tree-based navigation matching user mental model
 **Duration**: 1-2 weeks
 **Type**: Feature sprint
-**Progress:** 43% (3/7 tasks complete)
+**Progress:** 57% (4/7 tasks complete)
 **Prerequisite:** Sprint 0 complete (data model fixes)
 
 **Success Criteria:**
 - [x] Nav Tree shows nested Epic → Sprint → Task hierarchy
 - [x] Parent link visible at top of detail cards
 - [x] Child summary cards shown at footer of parent nodes
-- [ ] Referenced nodes (ADRs, Patterns) in separate section
+- [x] Referenced nodes (ADRs, Patterns) in separate section
 - [ ] Browser back button works with breadcrumbs
 - [ ] BUG-002 fixed (ADR edit modal loads content)
 
@@ -189,7 +189,7 @@
 ---
 
 ### e011_s01_t04: Show Referenced Nodes Section (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assignee:** TBD
 
