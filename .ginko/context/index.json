@@ -1170,10 +1170,21 @@
       "relevance": "critical",
       "created": "2026-01-14T16:42:22.532Z",
       "sessionId": "session-chris-at-watchhill-ai-1768408942459"
+    },
+    {
+      "filename": "gotcha-fixed-bug-in-ginko-start-table-view-tasks-showing-.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-14T20:22:58.847Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768422178721"
     }
   ],
-  "lastUpdated": "2026-01-14T16:42:22.533Z",
-  "totalModules": 90,
+  "lastUpdated": "2026-01-14T20:22:58.853Z",
+  "totalModules": 91,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
