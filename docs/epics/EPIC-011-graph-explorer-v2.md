@@ -1,178 +1,238 @@
 ---
 epic_id: EPIC-011
-status: proposed
+status: active
 created: 2025-12-11
-updated: 2026-01-11
-roadmap_lane: later
+updated: 2026-01-14
+roadmap_lane: now
 roadmap_status: not_started
-decision_factors: [planning, design]
-tags: [graph-explorer, ux, dashboard, visualization]
+tags: [graph-explorer, ux, dashboard, visualization, hierarchy]
 ---
 
-# EPIC-011: Graph Explorer v2 - UX Polish & Advanced Features
+# EPIC-011: Graph Explorer v2 - Hierarchy Navigation & UX Polish
 
-**Status:** Proposed
-**Priority:** Medium
-**Estimated Duration:** 2-3 sprints (4-6 weeks)
-**Prerequisite:** EPIC-005 Sprint 2 complete
-
-> **Note:** Renumbered from EPIC-006 on 2026-01-07 to resolve duplicate ID conflict.
-> Original EPIC-006 is "UX Polish and UAT" (complete).
+**Status:** Active
+**Priority:** High
+**Estimated Duration:** 3 sprints (4-6 weeks)
+**Prerequisite:** EPIC-009 complete (Roadmap Canvas)
 
 ---
 
 ## Vision
 
-Transform the Graph Explorer from a technical data browser into an intuitive knowledge navigation tool that non-technical users can use effectively. Make the graph's power accessible to everyone on the team.
+Transform the Graph Explorer into an intuitive hierarchy navigator that matches users' mental model: **Epics contain Sprints which contain Tasks**. Related knowledge (ADRs, Patterns, Gotchas) surfaces through explicit references, not complex graph topology.
 
 ---
 
 ## Problem Statement
 
-The current Graph Explorer (EPIC-005 Sprint 2) provides solid technical infrastructure but has usability gaps:
+User feedback from EPIC-009 revealed key insights:
 
-1. **Relationships not visible** - Users can't see how nodes connect to each other
-2. **No edit capability** - Project documentation nodes (ADR, Charter, etc.) can't be modified in-place
-3. **Missing hierarchy in tree view** - Sprints aren't nested under Epics
-4. **Limited node visibility** - Only some Epics display; Charter node missing
-5. **UX alien to non-technical users** - Data explorer paradigm vs. knowledge discovery
+### What Works
+- Hierarchy navigation is intuitive (Epic → Sprint → Task)
+- C4-style drill-down pattern resonates with users
+- Breadcrumbs help orientation
 
----
+### What Doesn't Work
+- Box-and-line relationship diagrams are "messy and confusing"
+- Sprints appear in their own top-level Nav Tree branch (should nest under Epics)
+- Parent context missing from detail cards
+- Related nodes (ADRs, Patterns) not visible in context
 
-## Proposed Features
-
-### Sprint 1: Relationship Visualization & Navigation
-
-**Goal:** Make connections visible and navigable
-
-**Tasks:**
-- [ ] Display relationship lines between nodes in card grid view
-- [ ] Add "Connections" tab in detail panel showing all relationships
-- [ ] Implement relationship-based navigation ("Show related nodes")
-- [ ] Add relationship type filtering (IMPLEMENTS, REFERENCES, BELONGS_TO, etc.)
-- [ ] Create mini-map for large graphs
-- [ ] Performance optimization for large relationship sets
-
-**Success Criteria:**
-- Users can see how any node connects to others
-- Clicking a relationship navigates to the connected node
-- Graph remains responsive with 500+ visible relationships
+### Data Model Gaps (Blocking)
+- Sprint nodes lack `epic_id` / parent relationships
+- Only 5 of ~30 sprints synced to graph
+- Task nodes not synced at all
+- Epic nodes not visible via standard nodes API
 
 ---
 
-### Sprint 2: Edit Capability & Node Management
+## Revised Approach
 
-**Goal:** Enable in-place editing of project documentation
+### Design Principles (from User Feedback)
 
-**Tasks:**
-- [ ] Add edit mode toggle for editable node types (ADR, Charter, Pattern, Gotcha)
-- [ ] Implement inline editing for node properties
-- [ ] Add node creation capability (Create ADR, Create Pattern, etc.)
-- [ ] Implement node deletion with confirmation
-- [ ] Add version history / change tracking
-- [ ] Sync edits back to git-native files (CLAUDE.md, docs/*.md)
+1. **Hierarchy over topology** - Users think in trees, not graphs
+2. **One level at a time** - Epic shows Sprints (not Tasks), Sprint shows Tasks
+3. **Parent context always visible** - "Parent: EPIC-009" at top of detail card
+4. **References below children** - ADRs, Patterns shown in separate section
+5. **Browser-native navigation** - Back button works with breadcrumbs
 
-**Editable Node Types:**
-- Charter (purpose, goals, success criteria)
-- ADR (decision, consequences, status)
-- Pattern (description, confidence, example code)
-- Gotcha (description, severity, mitigation)
+### Key UX Patterns
 
-**Non-Editable (Generated):**
-- Event (auto-logged from sessions)
-- Commit (from git)
-- Session (from ginko start/handoff)
+**Detail Card Layout:**
+```
+┌─────────────────────────────────────┐
+│ Parent: EPIC-009                    │  ← Parent link
+├─────────────────────────────────────┤
+│ Sprint: e009_s05 UAT & Polish       │  ← Node title
+│ Status: Complete | 6 tasks          │
+│                                     │
+│ [Description/Content]               │
+│                                     │
+├─────────────────────────────────────┤
+│ Tasks (6)                           │  ← Child summary cards
+│ ┌─────┐ ┌─────┐ ┌─────┐            │
+│ │ t01 │ │ t02 │ │ t03 │ ...        │
+│ └─────┘ └─────┘ └─────┘            │
+├─────────────────────────────────────┤
+│ References                          │  ← Related via REFERENCES edge
+│ ADR-056: Roadmap as Epic View       │
+│ Pattern: DnD Kit Integration        │
+└─────────────────────────────────────┘
+```
 
-**Success Criteria:**
-- Users can edit ADR content directly in the explorer
-- Changes sync bidirectionally with filesystem
-- Audit trail shows who changed what
+**Nav Tree Structure:**
+```
+📁 Project
+├── 📋 EPIC-009: Product Roadmap
+│   ├── 🏃 Sprint 1: Schema Migration
+│   ├── 🏃 Sprint 2: CLI & API
+│   └── 🏃 Sprint 5: UAT & Polish
+├── 📋 EPIC-010: Marketing Strategy
+│   └── 🏃 Sprint 1: Analytics
+└── 📚 Knowledge
+    ├── ADRs (24)
+    ├── Patterns (8)
+    └── Gotchas (5)
+```
 
 ---
 
-### Sprint 3: UX Refinement & Accessibility
+## Sprint Breakdown
 
-**Goal:** Make the explorer intuitive for non-technical users
+| Sprint | ID | Goal | Duration | Status |
+|--------|-----|------|----------|--------|
+| Sprint 0 | e011_s00 | Data Model & Sync Fixes | 1 week | Not Started |
+| Sprint 1 | e011_s01 | Hierarchy Navigation UI | 1-2 weeks | Not Started |
+| Sprint 2 | e011_s02 | Edit Capability & Sync | 1-2 weeks | Not Started |
+| Sprint 3 | e011_s03 | Polish & Accessibility | 1 week | Not Started |
 
-**Tasks:**
-- [ ] Redesign tree view with proper Epic → Sprint → Task hierarchy
-- [ ] Add Charter node to tree (currently missing)
-- [ ] Display all Epics (currently only showing 1)
-- [ ] Add "Getting Started" overlay for first-time users
-- [ ] Implement search with natural language queries
-- [ ] Add keyboard shortcuts with discoverability
-- [ ] Create view presets ("Project Overview", "Active Sprint", "Architecture Decisions")
-- [ ] Add export capability (PDF, Markdown summary)
-- [ ] Mobile-responsive design
+**Total Duration:** ~5 weeks
+**Total Effort:** ~60 hours
 
-**UX Research Questions:**
-- How do product managers expect to use this?
-- What mental model do non-engineers have for "knowledge graph"?
-- What terminology resonates vs. confuses?
+---
+
+## Sprint 0: Data Model & Sync Fixes (Prerequisite)
+
+**Goal:** Fix graph data model so hierarchy navigation has data to display
+
+**Key Tasks:**
+1. Fix nodes API to return Epic nodes (query/label bug)
+2. Sync all Sprint files to graph (currently 5 of ~30)
+3. Add `epic_id` property and `BELONGS_TO` relationship on Sprint nodes
+4. Sync Task nodes from sprint files
+5. Add `sprint_id` property and `BELONGS_TO` relationship on Task nodes
+6. Verify REFERENCES relationships exist for ADR/Pattern/Gotcha links
 
 **Success Criteria:**
-- Product manager can navigate and understand project state in <2 minutes
-- New team member can find relevant ADRs without assistance
-- Mobile users can view (read-only) the graph
+- All 14 Epics visible via nodes API
+- All ~30 Sprints synced with parent Epic relationships
+- Tasks extracted and linked to parent Sprints
+- `ginko graph explore EPIC-009` shows child sprints
+
+---
+
+## Sprint 1: Hierarchy Navigation UI
+
+**Goal:** Implement tree-based navigation matching user mental model
+
+**Key Tasks:**
+1. Refactor Nav Tree to show Epic → Sprint → Task hierarchy
+2. Remove flat "Sprints" top-level branch
+3. Add "Parent: X" link at top of detail cards
+4. Show child summary cards at footer of parent nodes
+5. Show referenced nodes (ADRs, Patterns) in separate section
+6. Ensure breadcrumbs work with browser back button
+7. Fix BUG-002: ADR edit modal not loading content
+
+**Success Criteria:**
+- Nav Tree shows nested Epic/Sprint/Task hierarchy
+- Clicking Epic shows its Sprints as summary cards
+- Clicking Sprint shows its Tasks as summary cards
+- Referenced ADRs/Patterns visible on relevant nodes
+- Browser back button navigates breadcrumb trail
+
+---
+
+## Sprint 2: Edit Capability & Sync
+
+**Goal:** Enable in-place editing with bidirectional git sync
+
+**Key Tasks:**
+1. Implement inline editing for editable node types
+2. Add node creation UI (Create ADR, Create Pattern)
+3. Sync edits back to git-native files
+4. Add change tracking / audit trail
+5. Handle edit conflicts gracefully
+
+**Editable:** Charter, ADR, Pattern, Gotcha, Epic, Sprint
+**Non-Editable:** Event, Commit (auto-generated)
+
+**Success Criteria:**
+- Users can edit ADR content in explorer
+- Changes sync to `docs/adr/*.md` files
+- Edit history visible in node detail
+
+---
+
+## Sprint 3: Polish & Accessibility
+
+**Goal:** Production-ready UX for all users
+
+**Key Tasks:**
+1. Mobile-responsive design (read-only)
+2. Keyboard navigation with shortcuts
+3. View presets ("Active Sprint", "Architecture Decisions")
+4. Search with filtering
+5. First-time user onboarding overlay
+6. WCAG 2.1 AA compliance
+
+**Success Criteria:**
+- Non-technical users can navigate without assistance
+- Mobile users can view project state
+- Keyboard-only operation possible
 
 ---
 
 ## Technical Considerations
 
-### API Additions Needed
-- `PUT /api/v1/graph/nodes/:id` - Update node properties
-- `DELETE /api/v1/graph/nodes/:id` - Delete node
-- `GET /api/v1/graph/relationships` - List relationships with filtering
-- Webhook for file sync on edit
+### API Changes Needed
+- Fix `GET /api/v1/graph/nodes?label=Epic` (returns 0, should return 13)
+- Add parent/child relationship queries
+- Add `BELONGS_TO` relationship creation in sync
 
-### Performance Requirements
-- Lazy load relationships (not all at once)
-- Virtualize tree view for large projects
-- Cache aggressively with smart invalidation
+### Data Model
+```
+(Epic)-[:CONTAINS]->(Sprint)-[:CONTAINS]->(Task)
+(Sprint)-[:REFERENCES]->(ADR)
+(Task)-[:REFERENCES]->(Pattern)
+```
 
-### Accessibility Requirements
-- WCAG 2.1 AA compliance
-- Screen reader support for tree navigation
-- Keyboard-only operation possible
-
----
-
-## Backlog Items (Not Yet Scheduled)
-
-These items emerged from EPIC-005 Sprint 2 polish but weren't in scope:
-
-1. **Green corner brackets missing upper-right and lower-left** - Fixed in Sprint 2
-2. **Padding between brackets and cards too big** - Fixed in Sprint 2
-3. **404 on adjacencies API** - Fixed in Sprint 2 (route was missing)
-4. **Tree-view selection not syncing to grid-view** - Fixed in Sprint 2
-5. **ADR descriptions not displaying** - Fixed in Sprint 2
-
-### Known Issues for v2
-- Minor UI polish items TBD from visual QA
-- Performance with large graphs (>1000 nodes) not tested
-- Real-time collaboration not considered yet
+### Performance
+- Lazy load children (don't fetch all tasks for all sprints)
+- Virtualize Nav Tree for large projects
+- Cache with smart invalidation on sync
 
 ---
 
-## Success Metrics
+## Deferred Items
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Time to find relevant ADR | Unknown | <30 seconds |
-| Non-engineer usability score | Unknown | >4/5 |
-| Edit completion rate | N/A | >90% |
-| Mobile usage | 0% | >10% |
+- Real-time multi-user collaboration
+- ML-based suggestions
+- Export to PDF/Markdown
+- Integration with external tools (Jira, Linear)
 
 ---
 
-## Dependencies
+## Changelog
 
-- EPIC-005 Sprint 2 complete (graph foundation)
-- User research with non-technical stakeholders
-- Design review of proposed UX changes
+### v2.0.0 - 2026-01-14 (Scope Revision)
+- Major scope revision based on user feedback from EPIC-009
+- Removed box-and-line relationship visualization (users found confusing)
+- Added Sprint 0 for data model fixes (blocking issue)
+- Reframed as "Hierarchy Navigation" vs "Relationship Visualization"
+- Added UX patterns from user testing
+- Participants: Chris Norton, Claude
 
----
-
-*Created: 2025-12-11 during EPIC-005 Sprint 2 TASK-8*
-*Author: Chris Norton, Claude Code*
-*Renumbered: 2026-01-07 (was EPIC-006, conflicted with UX Polish epic)*
+### v1.0.0 - 2025-12-11
+- Initial epic creation during EPIC-005 Sprint 2
+- Participants: Chris Norton, Claude
