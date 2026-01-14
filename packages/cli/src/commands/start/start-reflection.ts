@@ -22,13 +22,29 @@ import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
 import { loadContextStrategic, formatContextSummary, StrategyContext } from '../../utils/context-loader.js';
 import { initializeQueue } from '../../lib/event-queue.js';
 import { formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
-import { loadSprintChecklist, formatSprintChecklist, formatCurrentTaskDetails } from '../../lib/sprint-loader.js';
+import {
+  loadSprintChecklist,
+  formatSprintChecklist,
+  formatCurrentTaskDetails,
+  detectSprintProgression,
+  SprintProgressionInfo
+} from '../../lib/sprint-loader.js';
 import {
   AISessionContext,
   formatHumanOutput,
   formatVerboseOutput,
-  formatAIContextJSONL
+  formatAIContextJSONL,
+  formatTableOutput,
+  formatEpicComplete,
+  formatSprintProgressionPrompt
 } from '../../lib/output-formatter.js';
+import {
+  getUserCurrentSprint,
+  setUserCurrentSprint,
+  createAssignmentFromFile,
+  getSprintFileFromAssignment,
+  UserSprintAssignment
+} from '../../lib/user-sprint.js';
 import {
   GraphApiClient,
   TaskPatternsResponse,
@@ -229,70 +245,97 @@ export class StartReflectionCommand extends ReflectionCommand {
       const projectRoot = await getProjectRoot();
 
       // Load sprint checklist for session context
-      // Strategy: Load both local and graph, use the more complete/current one
-      // Local file is authoritative for solo work; graph is authoritative for team collaboration
+      // Strategy: User sprint first, then local/graph
+      // EPIC-012: Per-user sprint tracking enables multiple users on different sprints
       let sprintChecklist: any = null;
-      let sprintSource: 'graph' | 'local' = 'local';
+      let sprintSource: 'graph' | 'local' | 'user' = 'local';
 
-      // Always load local sprint first (fast, authoritative for file-based workflows)
-      const localSprint = await loadSprintChecklist(projectRoot);
+      // First, check if user has a specific sprint assignment
+      const userSprint = await getUserCurrentSprint();
+      let userSprintLoaded = false;
 
-      // Try to load from graph if authenticated
-      let graphSprint: any = null;
-      if (await isAuthenticated() && await isGraphInitialized()) {
+      if (userSprint) {
         try {
-          spinner.text = 'Checking graph for sprint updates...';
-          const graphId = await getGraphId();
-          if (graphId) {
-            const client = new GraphApiClient();
-            const graphResponse = await client.getActiveSprint(graphId);
-            graphSprint = this.convertGraphSprintToChecklist(graphResponse);
+          const userSprintFile = await getSprintFileFromAssignment(userSprint);
+          if (await fs.pathExists(userSprintFile)) {
+            const userSprintChecklist = await loadSprintChecklist(projectRoot, userSprintFile);
+            if (userSprintChecklist) {
+              sprintChecklist = userSprintChecklist;
+              sprintSource = 'user';
+              userSprintLoaded = true;
+            }
           }
-        } catch (error) {
-          // Graph unavailable - use local only
-          spinner.text = 'Graph unavailable, using local sprint file';
+        } catch {
+          // User sprint file may have been deleted - clear the assignment
+          // We'll fall back to global sprint
         }
       }
 
-      // Compare and choose the more complete/current sprint
-      // Priority: Local file is source of truth - it represents what the user is actively working on
-      // Graph data may be stale (e.g., still showing Sprint 1 when user moved to Sprint 2)
-      if (localSprint && graphSprint) {
-        // If the sprints are different (different names), always use local
-        // This handles the case where graph hasn't been synced with new sprint
-        const localName = localSprint.name?.toLowerCase() || '';
-        const graphName = graphSprint.name?.toLowerCase() || '';
-        const sprintsAreDifferent = localName !== graphName &&
-          !localName.includes(graphName) &&
-          !graphName.includes(localName);
+      // If no user sprint, load global sprint (CURRENT-SPRINT.md)
+      let localSprint: any = null;
+      if (!userSprintLoaded) {
+        localSprint = await loadSprintChecklist(projectRoot);
+      }
 
-        if (sprintsAreDifferent) {
-          // Local file is the source of truth for which sprint we're on
-          sprintChecklist = localSprint;
-          sprintSource = 'local';
-        } else {
-          // Same sprint - prefer local if it has more tasks OR higher completion count
-          // This handles case where graph has stale/test data
-          const localTotal = localSprint.progress?.total || 0;
-          const graphTotal = graphSprint.progress?.total || 0;
-          const localProgress = localSprint.progress?.complete || 0;
-          const graphProgress = graphSprint.progress?.complete || 0;
+      // Only check graph/local if user sprint wasn't already loaded
+      if (!userSprintLoaded) {
+        // Try to load from graph if authenticated
+        let graphSprint: any = null;
+        if (await isAuthenticated() && await isGraphInitialized()) {
+          try {
+            spinner.text = 'Checking graph for sprint updates...';
+            const graphId = await getGraphId();
+            if (graphId) {
+              const client = new GraphApiClient();
+              const graphResponse = await client.getActiveSprint(graphId);
+              graphSprint = this.convertGraphSprintToChecklist(graphResponse);
+            }
+          } catch (error) {
+            // Graph unavailable - use local only
+            spinner.text = 'Graph unavailable, using local sprint file';
+          }
+        }
 
-          if (localTotal > graphTotal || localProgress > graphProgress) {
+        // Compare and choose the more complete/current sprint
+        // Priority: Local file is source of truth - it represents what the user is actively working on
+        // Graph data may be stale (e.g., still showing Sprint 1 when user moved to Sprint 2)
+        if (localSprint && graphSprint) {
+          // If the sprints are different (different names), always use local
+          // This handles the case where graph hasn't been synced with new sprint
+          const localName = localSprint.name?.toLowerCase() || '';
+          const graphName = graphSprint.name?.toLowerCase() || '';
+          const sprintsAreDifferent = localName !== graphName &&
+            !localName.includes(graphName) &&
+            !graphName.includes(localName);
+
+          if (sprintsAreDifferent) {
+            // Local file is the source of truth for which sprint we're on
             sprintChecklist = localSprint;
             sprintSource = 'local';
           } else {
-            sprintChecklist = graphSprint;
-            sprintSource = 'graph';
+            // Same sprint - prefer local if it has more tasks OR higher completion count
+            // This handles case where graph has stale/test data
+            const localTotal = localSprint.progress?.total || 0;
+            const graphTotal = graphSprint.progress?.total || 0;
+            const localProgress = localSprint.progress?.complete || 0;
+            const graphProgress = graphSprint.progress?.complete || 0;
+
+            if (localTotal > graphTotal || localProgress > graphProgress) {
+              sprintChecklist = localSprint;
+              sprintSource = 'local';
+            } else {
+              sprintChecklist = graphSprint;
+              sprintSource = 'graph';
+            }
           }
+        } else if (localSprint) {
+          sprintChecklist = localSprint;
+          sprintSource = 'local';
+        } else if (graphSprint) {
+          sprintChecklist = graphSprint;
+          sprintSource = 'graph';
         }
-      } else if (localSprint) {
-        sprintChecklist = localSprint;
-        sprintSource = 'local';
-      } else if (graphSprint) {
-        sprintChecklist = graphSprint;
-        sprintSource = 'graph';
-      }
+      } // end if (!userSprintLoaded)
 
       // Load session log content before archiving
       const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);
@@ -440,7 +483,41 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Store AI context for MCP/external access
       await this.storeAIContext(aiContext, sessionDir);
 
-      // 12. Display output based on mode (TASK-P2: Concise is now default)
+      // 12. Check sprint progression and epic completion (EPIC-012 Sprint 1)
+      let sprintProgression: SprintProgressionInfo | null = null;
+      if (sprintChecklist) {
+        sprintProgression = await detectSprintProgression(sprintChecklist, projectRoot);
+
+        // Display epic completion message if all sprints done
+        if (sprintProgression?.isEpicComplete && sprintProgression.epicName) {
+          console.log(formatEpicComplete(sprintProgression.epicName, sprintProgression.currentEpicId));
+        }
+
+        // Handle sprint progression (current sprint is 100% complete)
+        if (sprintProgression?.isSprintComplete && sprintProgression.nextSprintId && !sprintProgression.isEpicComplete) {
+          console.log(formatSprintProgressionPrompt(
+            sprintProgression.currentSprintId,
+            sprintProgression.nextSprintId,
+            sprintProgression.nextSprintName || 'Next Sprint'
+          ));
+
+          // Auto-progress if flag is set
+          if (options.autoProgress && sprintProgression.nextSprintFile) {
+            spinner.text = 'Auto-advancing to next sprint...';
+            const assignment = await createAssignmentFromFile(
+              sprintProgression.nextSprintFile,
+              sprintProgression.nextSprintName || 'Next Sprint',
+              'auto'
+            );
+            if (assignment) {
+              await setUserCurrentSprint(assignment);
+              spinner.succeed(`Advanced to sprint: ${sprintProgression.nextSprintId}`);
+            }
+          }
+        }
+      }
+
+      // 13. Display output based on mode (TASK-P2: Table is now default)
       if (options.verbose) {
         // Verbose mode: Full session info (~80 lines)
         await this.displaySessionInfo(context, contextLevel, activeSynthesis, strategyContext, eventContext, sprintChecklist);
@@ -448,8 +525,11 @@ export class StartReflectionCommand extends ReflectionCommand {
         console.log('');
         console.log(chalk.dim(formatContextSummary(strategyContext)));
       } else {
-        // Default mode: Concise human-optimized output (≤20 lines)
-        this.displayConciseOutput(aiContext);
+        // Default mode: Table view (use --compact for previous format)
+        this.displayConciseOutput(aiContext, {
+          compact: options.compact,
+          table: options.table
+        });
       }
 
       spinner.succeed('Session initialized with strategic context!');
@@ -1529,12 +1609,26 @@ Example output structure:
   /**
    * Display concise human output (TASK-11)
    *
-   * Shows only essential info for instant productivity (6-8 lines).
-   * Used with --concise flag.
+   * Now uses table view by default (EPIC-012 Sprint 1).
+   * - Default: Table view with branding
+   * - --compact: Previous concise format without borders
+   * - --no-table: Plain text format for piping
    */
-  private displayConciseOutput(aiContext: AISessionContext): void {
+  private displayConciseOutput(
+    aiContext: AISessionContext,
+    options: { compact?: boolean; table?: boolean } = {}
+  ): void {
     console.log('');
-    console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
+
+    // Table view is now the default
+    // --compact uses previous concise format
+    // --no-table (table === false) uses concise format
+    if (options.compact || options.table === false) {
+      console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
+    } else {
+      console.log(formatTableOutput(aiContext));
+    }
+
     console.log('');
   }
 

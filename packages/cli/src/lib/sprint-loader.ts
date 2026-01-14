@@ -723,9 +723,13 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
  * @param projectRoot - Project root directory (defaults to git root)
  * @returns Parsed sprint checklist or null if no sprint found
  */
-export async function loadSprintChecklist(projectRoot?: string): Promise<SprintChecklist | null> {
+export async function loadSprintChecklist(
+  projectRoot?: string,
+  sprintFilePath?: string
+): Promise<SprintChecklist | null> {
   try {
-    const sprintFile = await findActiveSprint(projectRoot);
+    // Use provided file path or find active sprint
+    const sprintFile = sprintFilePath || await findActiveSprint(projectRoot);
 
     if (!sprintFile) {
       return null;
@@ -847,4 +851,271 @@ export function formatCurrentTaskDetails(task: Task): string {
   }
 
   return output;
+}
+
+/**
+ * Sprint progression information
+ */
+export interface SprintProgressionInfo {
+  currentSprintId: string;      // e.g., "e011_s00"
+  currentEpicId: string;        // e.g., "e011"
+  epicFile: string | null;      // Path to epic file if found
+  epicName: string | null;      // Epic title
+  isSprintComplete: boolean;    // Current sprint at 100%
+  nextSprintId: string | null;  // Next sprint in epic, or null if last
+  nextSprintFile: string | null; // Path to next sprint file
+  nextSprintName: string | null; // Next sprint goal/name
+  isEpicComplete: boolean;      // All sprints in epic complete
+  totalSprints: number;         // Total sprints in epic
+  completedSprints: number;     // Number of complete sprints
+}
+
+/**
+ * Extract sprint/epic IDs from filename
+ * Handles patterns like:
+ * - SPRINT-2026-01-e011-s01-feature-name.md → e011_s01
+ * - e011-s01-something.md → e011_s01
+ */
+function extractIdsFromFilename(filename: string): { sprintId: string; epicId: string } | null {
+  const basename = path.basename(filename, '.md');
+
+  // Pattern 1: e{NNN}-s{NN} or e{NNN}_s{NN}
+  const modernPattern = /e(\d{3})[-_]s(\d{2})/i;
+  const modernMatch = basename.match(modernPattern);
+  if (modernMatch) {
+    const epicNum = modernMatch[1];
+    const sprintNum = modernMatch[2];
+    return {
+      sprintId: `e${epicNum}_s${sprintNum}`,
+      epicId: `e${epicNum}`
+    };
+  }
+
+  // Pattern 2: epic{NNN}-sprint{N} (legacy)
+  const legacyPattern = /epic(\d+)-sprint(\d+)/i;
+  const legacyMatch = basename.match(legacyPattern);
+  if (legacyMatch) {
+    const epicNum = legacyMatch[1].padStart(3, '0');
+    const sprintNum = legacyMatch[2].padStart(2, '0');
+    return {
+      sprintId: `e${epicNum}_s${sprintNum}`,
+      epicId: `e${epicNum}`
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Find epic file for a given epic ID
+ */
+async function findEpicFile(epicId: string, projectRoot: string): Promise<string | null> {
+  const epicsDir = path.join(projectRoot, 'docs', 'epics');
+
+  if (!fs.existsSync(epicsDir)) {
+    return null;
+  }
+
+  // Extract numeric part from epicId (e.g., "e011" -> "011")
+  const epicNumMatch = epicId.match(/e(\d+)/i);
+  if (!epicNumMatch) {
+    return null;
+  }
+  const epicNum = epicNumMatch[1];
+
+  const epicFiles = await fs.readdir(epicsDir);
+
+  // Look for EPIC-NNN-*.md pattern
+  for (const file of epicFiles) {
+    if (file.match(new RegExp(`EPIC-0*${parseInt(epicNum)}[^0-9]`, 'i'))) {
+      return path.join(epicsDir, file);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Parse sprint table from epic file content
+ * Expected format:
+ * | Sprint | ID | Goal | Duration | Status |
+ * |--------|-----|------|----------|--------|
+ * | Sprint 0 | e011_s00 | Data Model | 1 week | Complete |
+ */
+interface ParsedSprintRow {
+  sprintName: string;
+  sprintId: string;
+  goal: string;
+  status: string;
+}
+
+function parseSprintTable(content: string): ParsedSprintRow[] {
+  const sprints: ParsedSprintRow[] = [];
+
+  // Find the sprint breakdown table
+  const tableMatch = content.match(/\| Sprint \| ID \| Goal \| Duration \| Status \|[\s\S]*?(?=\n\n|\n---|\n##|$)/i);
+  if (!tableMatch) {
+    return sprints;
+  }
+
+  const tableContent = tableMatch[0];
+  const lines = tableContent.split('\n');
+
+  // Skip header and separator rows
+  for (let i = 2; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line.startsWith('|') || !line.endsWith('|')) {
+      continue;
+    }
+
+    const cells = line.split('|').map(c => c.trim()).filter(c => c);
+    if (cells.length >= 5) {
+      sprints.push({
+        sprintName: cells[0],    // "Sprint 0"
+        sprintId: cells[1],      // "e011_s00"
+        goal: cells[2],          // "Data Model"
+        status: cells[4]         // "Not Started", "Complete", etc.
+      });
+    }
+  }
+
+  return sprints;
+}
+
+/**
+ * Find sprint file by ID
+ */
+async function findSprintFileById(sprintId: string, projectRoot: string): Promise<string | null> {
+  const sprintsDir = path.join(projectRoot, 'docs', 'sprints');
+
+  if (!fs.existsSync(sprintsDir)) {
+    return null;
+  }
+
+  // Convert sprint ID format (e011_s00 -> e011-s00)
+  const searchPattern = sprintId.replace('_', '-');
+
+  const sprintFiles = await fs.readdir(sprintsDir);
+  for (const file of sprintFiles) {
+    if (file.toLowerCase().includes(searchPattern.toLowerCase())) {
+      return path.join(sprintsDir, file);
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Detect sprint progression and epic completion status
+ *
+ * @param sprintChecklist - Current sprint checklist
+ * @param projectRoot - Project root directory
+ * @returns Sprint progression information
+ */
+export async function detectSprintProgression(
+  sprintChecklist: SprintChecklist,
+  projectRoot?: string
+): Promise<SprintProgressionInfo | null> {
+  const root = projectRoot || await findGitRoot();
+
+  // Extract IDs from sprint file
+  const ids = extractIdsFromFilename(sprintChecklist.file);
+  if (!ids) {
+    return null;
+  }
+
+  const { sprintId, epicId } = ids;
+
+  // Check if current sprint is complete
+  const isSprintComplete = sprintChecklist.progress.complete === sprintChecklist.progress.total &&
+                           sprintChecklist.progress.total > 0;
+
+  // Find the epic file
+  const epicFile = await findEpicFile(epicId, root);
+  if (!epicFile) {
+    // No epic file found - can't determine progression
+    return {
+      currentSprintId: sprintId,
+      currentEpicId: epicId,
+      epicFile: null,
+      epicName: null,
+      isSprintComplete,
+      nextSprintId: null,
+      nextSprintFile: null,
+      nextSprintName: null,
+      isEpicComplete: false,
+      totalSprints: 0,
+      completedSprints: 0
+    };
+  }
+
+  // Read and parse epic file
+  const epicContent = await fs.readFile(epicFile, 'utf-8');
+
+  // Extract epic name from title
+  const titleMatch = epicContent.match(/^# (EPIC-\d+: .+)$/m);
+  const epicName = titleMatch ? titleMatch[1] : null;
+
+  // Parse sprint table
+  const sprints = parseSprintTable(epicContent);
+
+  if (sprints.length === 0) {
+    return {
+      currentSprintId: sprintId,
+      currentEpicId: epicId,
+      epicFile,
+      epicName,
+      isSprintComplete,
+      nextSprintId: null,
+      nextSprintFile: null,
+      nextSprintName: null,
+      isEpicComplete: false,
+      totalSprints: 0,
+      completedSprints: 0
+    };
+  }
+
+  // Find current sprint index
+  const currentIndex = sprints.findIndex(s =>
+    s.sprintId.toLowerCase().replace('_', '-') === sprintId.toLowerCase().replace('_', '-')
+  );
+
+  // Count completed sprints
+  const completedSprints = sprints.filter(s =>
+    s.status.toLowerCase().includes('complete')
+  ).length;
+
+  // Determine next sprint
+  let nextSprintId: string | null = null;
+  let nextSprintFile: string | null = null;
+  let nextSprintName: string | null = null;
+
+  if (currentIndex !== -1 && currentIndex < sprints.length - 1) {
+    const nextSprint = sprints[currentIndex + 1];
+    // Only suggest next if it's not complete
+    if (!nextSprint.status.toLowerCase().includes('complete')) {
+      nextSprintId = nextSprint.sprintId;
+      nextSprintName = nextSprint.goal;
+      nextSprintFile = await findSprintFileById(nextSprint.sprintId, root);
+    }
+  }
+
+  // Check if epic is complete (all sprints marked complete, or this is the last sprint and it's complete)
+  const allSprintsComplete = sprints.every(s => s.status.toLowerCase().includes('complete'));
+  const isLastSprint = currentIndex === sprints.length - 1;
+  const isEpicComplete = allSprintsComplete || (isLastSprint && isSprintComplete);
+
+  return {
+    currentSprintId: sprintId,
+    currentEpicId: epicId,
+    epicFile,
+    epicName,
+    isSprintComplete,
+    nextSprintId,
+    nextSprintFile,
+    nextSprintName,
+    isEpicComplete,
+    totalSprints: sprints.length,
+    completedSprints: isSprintComplete ? completedSprints + 1 : completedSprints
+  };
 }

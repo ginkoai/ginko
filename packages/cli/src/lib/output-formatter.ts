@@ -23,6 +23,46 @@
 
 import chalk from 'chalk';
 
+// ============================================================================
+// Ginko Branding Constants (TASK-5)
+// ============================================================================
+
+/**
+ * Ginko brand styling for consistent CLI output
+ */
+export const GINKO_BRAND = {
+  /** Header: Bold green "ginko" */
+  header: chalk.green.bold('ginko'),
+  /** Footer: Dimmed "ginko.ai" */
+  footer: chalk.dim('ginko.ai'),
+  /** Primary accent color (green) */
+  accent: chalk.green,
+  /** Highlight color (cyan) */
+  highlight: chalk.cyan,
+  /** Warning color (yellow) */
+  warning: chalk.yellow,
+  /** Error color (red) */
+  error: chalk.red,
+  /** Success color (green) */
+  success: chalk.green,
+  /** Muted/secondary text */
+  dim: chalk.dim,
+  /** Box drawing characters for table borders */
+  box: {
+    topLeft: '┌',
+    topRight: '┐',
+    bottomLeft: '└',
+    bottomRight: '┘',
+    horizontal: '─',
+    vertical: '│',
+    teeLeft: '├',
+    teeRight: '┤',
+    teeDown: '┬',
+    teeUp: '┴',
+    cross: '┼',
+  },
+};
+
 /**
  * Session output containing both human and AI formats
  */
@@ -515,4 +555,298 @@ export function formatError(message: string, details?: string): string {
  */
 export function formatWarning(message: string): string {
   return chalk.yellow(`⚠️  ${message}`);
+}
+
+// ============================================================================
+// Table View Output (TASK-4)
+// ============================================================================
+
+/**
+ * Table output configuration
+ */
+export interface TableOutputConfig {
+  /** Terminal width (default: 75) */
+  width?: number;
+  /** Show ginko branding header/footer (default: true) */
+  showBranding?: boolean;
+  /** Show task list in sprint section (default: true) */
+  showTasks?: boolean;
+  /** Maximum tasks to show (default: 6) */
+  maxTasks?: number;
+}
+
+/**
+ * Format session output as a bordered table (new default format)
+ *
+ * Layout:
+ * ┌─────────────────────────────────────────────────────────────────────┐
+ * │  ginko                                                              │
+ * ├─────────────────────────────────────────────────────────────────────┤
+ * │  Ready │ Hot (10/10) │ Think & Build                                │
+ * │  Last: EPIC-011 Sprint 0 complete                                   │
+ * ├─────────────────────────────────────────────────────────────────────┤
+ * │  Sprint: e011_s01 Hierarchy Navigation                        0/6  │
+ * ├────┬────────────────────────────────────────────────────┬──────────┤
+ * │ 01 │ Nav Tree shows nested hierarchy                    │ [ ] todo │
+ * │ 02 │ Parent link visible at card top                    │ [ ] todo │
+ * ├────┴────────────────────────────────────────────────────┴──────────┤
+ * │  Next: e011_s01_t01 - Nav Tree (start)                              │
+ * │  Branch: main (2 uncommitted)                                       │
+ * ├─────────────────────────────────────────────────────────────────────┤
+ * │  ginko.ai                                                           │
+ * └─────────────────────────────────────────────────────────────────────┘
+ */
+export function formatTableOutput(
+  context: AISessionContext,
+  config: TableOutputConfig = {}
+): string {
+  const {
+    width = 75,
+    showBranding = true,
+    showTasks = true,
+    maxTasks = 6,
+  } = config;
+
+  const lines: string[] = [];
+  const { box } = GINKO_BRAND;
+
+  // Helper to create a horizontal line
+  const hLine = (left: string, right: string, fill?: string) =>
+    left + (fill || box.horizontal).repeat(width - 2) + right;
+
+  // Helper to pad content within a row
+  const row = (content: string) => {
+    // Strip ANSI codes for length calculation
+    const stripped = content.replace(/\u001b\[[0-9;]*m/g, '');
+    const padding = Math.max(0, width - 4 - stripped.length);
+    return `${box.vertical}  ${content}${' '.repeat(padding)}${box.vertical}`;
+  };
+
+  // Top border
+  lines.push(chalk.dim(hLine(box.topLeft, box.topRight)));
+
+  // Header: ginko branding
+  if (showBranding) {
+    lines.push(row(GINKO_BRAND.header));
+    lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+  }
+
+  // Status row: Ready | Flow | Mode
+  const flowState = getFlowStateLabel(context.session.flowScore);
+  const statusLine =
+    GINKO_BRAND.success('Ready') +
+    GINKO_BRAND.dim(' │ ') +
+    GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`) +
+    GINKO_BRAND.dim(' │ ') +
+    context.session.workMode;
+  lines.push(row(statusLine));
+
+  // Last session line
+  if (context.synthesis?.resumePoint) {
+    const resumeShort = truncate(context.synthesis.resumePoint, width - 12);
+    lines.push(row(GINKO_BRAND.dim('Last: ') + resumeShort));
+  }
+
+  // Separator
+  lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+
+  // Sprint section
+  if (context.sprint) {
+    const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
+    const sprintName = truncate(context.sprint.name || 'Active Sprint', width - 30);
+
+    // Sprint header with progress
+    const progressText = progress >= 100
+      ? GINKO_BRAND.success('Complete')
+      : GINKO_BRAND.dim(`${progress}%`);
+
+    const sprintProgressSuffix = context.sprint.currentTask
+      ? ` ${context.sprint.currentTask.id.split('-').pop() || '0'}/${maxTasks}`
+      : '';
+
+    lines.push(
+      row(
+        GINKO_BRAND.dim('Sprint: ') +
+        GINKO_BRAND.highlight(sprintName) +
+        ' ' +
+        progressText +
+        GINKO_BRAND.dim(sprintProgressSuffix)
+      )
+    );
+
+    // Task list (if available and enabled)
+    if (showTasks && context.sprint.tasks && context.sprint.tasks.length > 0) {
+      lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+
+      const tasks = context.sprint.tasks.slice(0, maxTasks);
+      for (let i = 0; i < tasks.length; i++) {
+        const task = tasks[i];
+        const num = String(i + 1).padStart(2, '0');
+        const title = truncate(task.title || task.id, width - 25);
+        const statusIcon = task.status === 'completed' ? '[x]'
+          : task.status === 'in_progress' ? '[@]'
+          : '[ ]';
+
+        const taskColor = task.status === 'completed' ? GINKO_BRAND.dim
+          : task.status === 'in_progress' ? GINKO_BRAND.highlight
+          : (s: string) => s;
+
+        lines.push(
+          row(
+            GINKO_BRAND.dim(num + ' ') +
+            taskColor(title) +
+            GINKO_BRAND.dim(' ' + statusIcon)
+          )
+        );
+      }
+
+      if (context.sprint.tasks.length > maxTasks) {
+        lines.push(
+          row(GINKO_BRAND.dim(`   ... +${context.sprint.tasks.length - maxTasks} more tasks`))
+        );
+      }
+    }
+
+    // Cognitive scaffolding (patterns, gotchas, constraints)
+    if (context.sprint.currentTask) {
+      const scaffolding: string[] = [];
+
+      if (context.sprint.currentTask.constraints?.length) {
+        const adrList = context.sprint.currentTask.constraints.map(c => c.adr.id).join(', ');
+        scaffolding.push(GINKO_BRAND.dim('Follow: ') + chalk.magenta(adrList));
+      }
+
+      if (context.sprint.currentTask.patterns?.length) {
+        const patternList = context.sprint.currentTask.patterns.slice(0, 2).map(p => {
+          const icon = p.confidence === 'high' ? '★' : p.confidence === 'medium' ? '◐' : '○';
+          return `${p.title} ${icon}`;
+        }).join(', ');
+        scaffolding.push(GINKO_BRAND.dim('Apply: ') + chalk.blue(patternList));
+      }
+
+      if (context.sprint.currentTask.gotchas?.length) {
+        const gotchaList = context.sprint.currentTask.gotchas.slice(0, 2).map(g => {
+          const icon = g.severity === 'critical' ? '🚨' : g.severity === 'high' ? '⚠️' : '💡';
+          return `${icon} ${g.title}`;
+        }).join(', ');
+        scaffolding.push(GINKO_BRAND.dim('Avoid: ') + chalk.red(gotchaList));
+      }
+
+      if (scaffolding.length > 0) {
+        lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+        scaffolding.forEach(s => lines.push(row(s)));
+      }
+    }
+  }
+
+  // Separator
+  lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+
+  // Next up line
+  if (context.sprint?.currentTask) {
+    const task = context.sprint.currentTask;
+    const statusLabel = task.status === 'in_progress' ? 'continue' : 'start';
+    lines.push(
+      row(
+        GINKO_BRAND.dim('Next: ') +
+        GINKO_BRAND.warning(task.id) +
+        GINKO_BRAND.dim(` - ${truncate(task.title, width - 30)} (${statusLabel})`)
+      )
+    );
+  } else {
+    lines.push(row(GINKO_BRAND.dim('Ready for work. What would you like to do?')));
+  }
+
+  // Branch + uncommitted
+  const totalChanges =
+    context.git.uncommittedChanges.modified.length +
+    context.git.uncommittedChanges.created.length +
+    context.git.uncommittedChanges.untracked.length;
+
+  const branchLine = totalChanges > 0
+    ? `${context.git.branch} (${totalChanges} uncommitted)`
+    : `${context.git.branch} (clean)`;
+
+  lines.push(row(GINKO_BRAND.dim('Branch: ') + GINKO_BRAND.highlight(branchLine)));
+
+  // Warnings
+  const warnings: string[] = [];
+  if (context.synthesis?.blockedItems?.length) {
+    warnings.push(GINKO_BRAND.error(`⚠️  Blocked: ${truncate(context.synthesis.blockedItems[0], width - 20)}`));
+  }
+  if (context.git.warnings.length > 0 && warnings.length < 1) {
+    warnings.push(GINKO_BRAND.warning(`⚠️  ${context.git.warnings[0]}`));
+  }
+
+  if (warnings.length > 0) {
+    lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+    warnings.forEach(w => lines.push(row(w)));
+  }
+
+  // Footer: ginko.ai branding
+  if (showBranding) {
+    lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
+    lines.push(row(GINKO_BRAND.footer));
+  }
+
+  // Bottom border
+  lines.push(chalk.dim(hLine(box.bottomLeft, box.bottomRight)));
+
+  return lines.join('\n');
+}
+
+/**
+ * Format epic completion message (TASK-3)
+ */
+export function formatEpicComplete(epicName: string, epicId: string): string {
+  const lines: string[] = [];
+  const { box } = GINKO_BRAND;
+  const width = 75;
+
+  const hLine = (left: string, right: string) =>
+    left + box.horizontal.repeat(width - 2) + right;
+
+  const row = (content: string) => {
+    const stripped = content.replace(/\u001b\[[0-9;]*m/g, '');
+    const padding = Math.max(0, width - 4 - stripped.length);
+    return `${box.vertical}  ${content}${' '.repeat(padding)}${box.vertical}`;
+  };
+
+  lines.push('');
+  lines.push(GINKO_BRAND.success(hLine(box.topLeft, box.topRight)));
+  lines.push(GINKO_BRAND.success(row('')));
+  lines.push(GINKO_BRAND.success(row('🎉  EPIC COMPLETE')));
+  lines.push(GINKO_BRAND.success(row('')));
+  lines.push(GINKO_BRAND.success(row(epicName)));
+  lines.push(GINKO_BRAND.success(row('')));
+  lines.push(GINKO_BRAND.success(row('All sprints completed successfully.')));
+  lines.push(GINKO_BRAND.success(row('')));
+  lines.push(row(GINKO_BRAND.dim('Next steps:')));
+  lines.push(row(GINKO_BRAND.dim(`  • Run \`ginko epic close ${epicId}\` to mark complete`)));
+  lines.push(row(GINKO_BRAND.dim(`  • Review docs/epics/${epicId.toUpperCase()}-*.md`)));
+  lines.push(GINKO_BRAND.success(row('')));
+  lines.push(GINKO_BRAND.success(hLine(box.bottomLeft, box.bottomRight)));
+  lines.push('');
+
+  return lines.join('\n');
+}
+
+/**
+ * Format sprint progression prompt
+ */
+export function formatSprintProgressionPrompt(
+  currentSprintId: string,
+  nextSprintId: string,
+  nextSprintName: string
+): string {
+  const lines: string[] = [];
+
+  lines.push('');
+  lines.push(GINKO_BRAND.success('✓ Sprint complete: ') + currentSprintId);
+  lines.push('');
+  lines.push(GINKO_BRAND.highlight('Next sprint available:'));
+  lines.push(`  ${nextSprintId} - ${nextSprintName}`);
+  lines.push('');
+
+  return lines.join('\n');
 }
