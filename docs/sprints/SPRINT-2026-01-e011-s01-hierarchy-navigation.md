@@ -87,7 +87,7 @@
 ## Sprint Tasks
 
 ### e011_s01_t01: Refactor Nav Tree for Hierarchy (6h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
 **Assignee:** TBD
 
