@@ -464,8 +464,26 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
 
   // Deduplicate by semantic ID to avoid showing duplicates
   const epics = deduplicateByProperty(rawEpics, 'epic_id');
-  const sprints = deduplicateByProperty(rawSprints, 'sprint_id');
   const tasks = deduplicateByProperty(rawTasks, 'task_id');
+
+  // Deduplicate sprints by normalized sprint ID (e.g., e006_s03)
+  // Multiple sprint nodes may represent the same logical sprint
+  const seenNormalizedSprintIds = new Set<string>();
+  const sprints = rawSprints.filter((sprint) => {
+    const props = sprint.properties as Record<string, unknown>;
+    const title = getNodeProp(props, 'title') || '';
+    const normalizedId = extractNormalizedSprintId(sprint.id, title);
+
+    // If we can normalize this sprint and we've seen it before, skip it
+    if (normalizedId) {
+      if (seenNormalizedSprintIds.has(normalizedId)) {
+        return false;
+      }
+      seenNormalizedSprintIds.add(normalizedId);
+    }
+
+    return true;
+  });
 
   // Build epic tree nodes with a map for fast lookup
   const epicMap = new Map<string, TreeNode>();
