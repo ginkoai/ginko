@@ -1,7 +1,7 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2025-12-17
+ * @updated: 2026-01-14
  * @tags: [graph, visualization, dashboard, exploration, c4-navigation]
  * @related: [tree-explorer.tsx, card-grid.tsx, node-detail-panel.tsx, ProjectView.tsx]
  * @priority: high
@@ -108,23 +108,102 @@ function GraphPageContent() {
   });
   const [selectedCategory, setSelectedCategory] = useState<NodeLabel | null>(typeParam);
 
-  // Track if initial URL params have been processed
-  const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
+  // Track last processed URL to detect browser back/forward navigation
+  const lastProcessedUrlRef = useRef<string>('');
 
-  // Sync state from URL params (handles deep links and initial render)
+  // Track if current navigation is from browser back/forward button
+  const isPopStateNavigationRef = useRef(false);
+
+  // Listen for browser back/forward navigation
   useEffect(() => {
-    if (nodeParam && !urlParamsProcessed) {
-      setSelectedNodeId(nodeParam);
-      setViewMode('detail');
-      setUrlParamsProcessed(true);
-    } else if (viewParam === 'category' && typeParam && !urlParamsProcessed) {
-      setSelectedCategory(typeParam);
-      setViewMode('category');
-      setUrlParamsProcessed(true);
-    } else if (!nodeParam && !viewParam && !urlParamsProcessed) {
-      setUrlParamsProcessed(true);
+    const handlePopState = () => {
+      // Mark that the next URL change is from popstate (back/forward button)
+      isPopStateNavigationRef.current = true;
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Sync state from URL params (handles deep links, initial render, AND browser back/forward)
+  useEffect(() => {
+    // Build current URL signature to detect changes
+    const currentUrlSignature = `${nodeParam || ''}-${viewParam || ''}-${typeParam || ''}`;
+
+    // Skip if we've already processed this exact URL (prevents loops from our own navigation)
+    if (currentUrlSignature === lastProcessedUrlRef.current) {
+      isPopStateNavigationRef.current = false;
+      return;
     }
-  }, [searchParams, nodeParam, viewParam, typeParam, urlParamsProcessed]);
+
+    // Check if this is browser back/forward navigation
+    const isPopStateNavigation = isPopStateNavigationRef.current;
+    isPopStateNavigationRef.current = false; // Reset flag
+
+    // Determine what the URL is telling us
+    const urlWantsDetail = !!nodeParam;
+    const urlWantsCategory = viewParam === 'category' && !!typeParam;
+    const urlWantsProject = !nodeParam && !viewParam;
+
+    // Detect backward navigation (URL has less specificity than current state)
+    // Only applies when triggered by browser back/forward button
+    const isBackwardNavigation = isPopStateNavigation && (
+      (urlWantsProject && (viewMode !== 'project' || isPanelOpen)) ||
+      (urlWantsCategory && isPanelOpen)
+    );
+
+    // Update state to match URL
+    if (urlWantsDetail) {
+      // URL wants a specific node
+      const nodeChanged = selectedNodeId !== nodeParam;
+      if (nodeChanged) {
+        setSelectedNodeId(nodeParam);
+      }
+      if (!isPanelOpen) {
+        setIsPanelOpen(true);
+      }
+      navigateToView('detail');
+
+      // If navigating between nodes via back button, trim breadcrumbs
+      // Find if the new node is in our breadcrumb history
+      if (isPopStateNavigation && nodeChanged) {
+        setBreadcrumbs((prev) => {
+          const nodeIndex = prev.findIndex((b) => b.id === nodeParam);
+          if (nodeIndex >= 0) {
+            // Node is in history - trim to before that node
+            return prev.slice(0, nodeIndex);
+          }
+          // Node not in history - clear all breadcrumbs (navigating to unrelated node)
+          return [];
+        });
+      }
+    } else if (urlWantsCategory && typeParam) {
+      // URL wants category view
+      setSelectedCategory(typeParam);
+      navigateToView('category');
+      // Clear node state when going back to category
+      if (isBackwardNavigation) {
+        setSelectedNodeId(null);
+        setSelectedNode(null);
+        setIsPanelOpen(false);
+        setBreadcrumbs([]);
+      }
+    } else if (urlWantsProject) {
+      // URL wants project view
+      navigateToView('project');
+      // Clear all state when going back to project
+      if (isBackwardNavigation) {
+        setSelectedCategory(null);
+        setSelectedNodeId(null);
+        setSelectedNode(null);
+        setIsPanelOpen(false);
+        setBreadcrumbs([]);
+      }
+    }
+
+    // Remember this URL so we don't reprocess it
+    lastProcessedUrlRef.current = currentUrlSignature;
+  }, [nodeParam, viewParam, typeParam, viewMode, isPanelOpen, selectedNodeId, navigateToView]);
 
   // Track navigation direction for transitions
   const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('forward');

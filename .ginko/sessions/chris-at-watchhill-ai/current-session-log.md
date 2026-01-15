@@ -71,3 +71,18 @@ Implemented e011_s01_t04: Show Referenced Nodes Section. Created ReferencesSecti
 
 Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/components/graph/NodeView.tsx
 Impact: medium
+
+### 19:06 - [fix]
+# [FIX] 19:06
+
+Fixed browser back button navigation (e011_s01_t05). Added popstate event listener to detect back/forward button presses. URL params now properly sync state when browser navigates. Breadcrumbs trim correctly when navigating back through node history.
+
+**Files:**
+- dashboard/src/app/dashboard/graph/page.tsx
+- docs/sprints/SPRINT-2026-01-e011-s01-hierarchy-navigation.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-15T00:06:39.109Z
+
+Files: dashboard/src/app/dashboard/graph/page.tsx, docs/sprints/SPRINT-2026-01-e011-s01-hierarchy-navigation.md
+Impact: medium

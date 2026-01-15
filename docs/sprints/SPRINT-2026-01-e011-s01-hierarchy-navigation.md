@@ -5,7 +5,7 @@
 **Sprint Goal**: Implement tree-based navigation matching user mental model
 **Duration**: 1-2 weeks
 **Type**: Feature sprint
-**Progress:** 57% (4/7 tasks complete)
+**Progress:** 71% (5/7 tasks complete)
 **Prerequisite:** Sprint 0 complete (data model fixes)
 
 **Success Criteria:**
@@ -13,7 +13,7 @@
 - [x] Parent link visible at top of detail cards
 - [x] Child summary cards shown at footer of parent nodes
 - [x] Referenced nodes (ADRs, Patterns) in separate section
-- [ ] Browser back button works with breadcrumbs
+- [x] Browser back button works with breadcrumbs
 - [ ] BUG-002 fixed (ADR edit modal loads content)
 
 ---
@@ -230,7 +230,7 @@ References
 ---
 
 ### e011_s01_t05: Fix Breadcrumb Back Button Navigation (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assignee:** TBD
 
