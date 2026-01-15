@@ -108,6 +108,28 @@ function GraphPageContent() {
   });
   const [selectedCategory, setSelectedCategory] = useState<NodeLabel | null>(typeParam);
 
+  // Track navigation direction for transitions
+  const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('forward');
+  const previousViewRef = useRef<ViewMode>(viewMode);
+
+  // Ref for scrolling content to top on navigation
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // UI state - defined before callbacks/effects that use them
+  const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeParam);
+  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string; name: string }[]>([]);
+
+  // Helper to change view with direction tracking
+  const navigateToView = useCallback((newView: ViewMode) => {
+    const direction = getTransitionDirection(previousViewRef.current as ViewKey, newView as ViewKey);
+    setTransitionDirection(direction);
+    previousViewRef.current = newView;
+    setViewMode(newView);
+  }, []);
+
   // Track last processed URL to detect browser back/forward navigation
   const lastProcessedUrlRef = useRef<string>('');
 
@@ -204,28 +226,6 @@ function GraphPageContent() {
     // Remember this URL so we don't reprocess it
     lastProcessedUrlRef.current = currentUrlSignature;
   }, [nodeParam, viewParam, typeParam, viewMode, isPanelOpen, selectedNodeId, navigateToView]);
-
-  // Track navigation direction for transitions
-  const [transitionDirection, setTransitionDirection] = useState<TransitionDirection>('forward');
-  const previousViewRef = useRef<ViewMode>(viewMode);
-
-  // Ref for scrolling content to top on navigation
-  const contentRef = useRef<HTMLDivElement>(null);
-
-  // Helper to change view with direction tracking
-  const navigateToView = useCallback((newView: ViewMode) => {
-    const direction = getTransitionDirection(previousViewRef.current as ViewKey, newView as ViewKey);
-    setTransitionDirection(direction);
-    previousViewRef.current = newView;
-    setViewMode(newView);
-  }, []);
-
-  // UI state
-  const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeParam);
-  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string; name: string }[]>([]);
 
   // Edit modal state
   const [editingNode, setEditingNode] = useState<GraphNode | null>(null);
