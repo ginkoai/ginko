@@ -164,7 +164,7 @@ export function TreeExplorer({
   // Collapsed state
   if (isCollapsed) {
     return (
-      <div className={cn('w-10 border-r border-border bg-card flex flex-col rounded-l-none rounded-r-xl my-2 -ml-6', className)}>
+      <div className={cn('w-10 border-r border-border bg-card flex flex-col', className)}>
         <button
           onClick={onToggleCollapse}
           className="p-2 hover:bg-white/5 transition-colors"
@@ -179,7 +179,7 @@ export function TreeExplorer({
   return (
     <div
       ref={resizeRef}
-      className={cn('border-r border-border bg-card flex flex-col relative rounded-l-none rounded-r-xl overflow-hidden my-2 -ml-6', className)}
+      className={cn('border-r border-border bg-card flex flex-col relative overflow-hidden', className)}
       style={{ width: `${width}px` }}
     >
       {/* Header */}

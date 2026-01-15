@@ -507,7 +507,7 @@ function GraphPageContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] relative overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] relative overflow-hidden -mx-6 -mt-6 w-[calc(100%+3rem)]">
       {/* Tree Explorer Sidebar */}
       <TreeExplorer
         graphId={DEFAULT_GRAPH_ID}
