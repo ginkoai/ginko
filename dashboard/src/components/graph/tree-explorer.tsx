@@ -54,7 +54,7 @@ export function TreeExplorer({
   const [searchQuery, setSearchQuery] = useState('');
 
   // Resizable panel state
-  const [width, setWidth] = useState(280);
+  const [width, setWidth] = useState(420);
   const [isResizing, setIsResizing] = useState(false);
   const resizeRef = useRef<HTMLDivElement>(null);
 
@@ -132,8 +132,8 @@ export function TreeExplorer({
       if (!isResizing) return;
 
       const newWidth = e.clientX;
-      // Constrain width between 200px and 400px
-      if (newWidth >= 200 && newWidth <= 400) {
+      // Constrain width between 280px and 560px
+      if (newWidth >= 280 && newWidth <= 560) {
         setWidth(newWidth);
       }
     };
