@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-29
+ * @updated: 2026-01-16
  * @tags: [editor, modal, dialog, knowledge-editing, crud]
  * @related: [NodeEditorForm.tsx, NodeEditor.tsx, dialog.tsx, NodeView.tsx, CondensedNodeCard.tsx]
  * @priority: medium
@@ -135,6 +135,7 @@ export function NodeEditorModal({
   const [loading, setLoading] = useState(false);
   const [loadingNode, setLoadingNode] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const initialDataRef = useRef<Record<string, unknown>>({});
   const [fullNode, setFullNode] = useState<GraphNode | null>(null);
@@ -178,6 +179,7 @@ export function NodeEditorModal({
       // Reset state when opening
       setErrors({});
       setSaveError(null);
+      setLoadError(null);
       setShowUnsavedWarning(false);
 
       // Fetch full node data to ensure all properties are loaded
@@ -216,6 +218,8 @@ export function NodeEditorModal({
           initialDataRef.current = mappedProps;
         } catch (error) {
           console.error('Failed to fetch full node:', error);
+          // Show error to user but still allow editing with available data
+          setLoadError('Could not load full content. Some fields may be missing or incomplete.');
           // Fall back to using the passed node
           setFullNode(node);
           const props = node.properties as Record<string, unknown>;
@@ -374,7 +378,17 @@ export function NodeEditorModal({
             </div>
           )}
 
-          {/* General Error */}
+          {/* Load Error Warning */}
+          {!loadingNode && loadError && (
+            <Alert variant="warning" className="mb-4">
+              <div>
+                <p className="font-semibold">Content Load Warning</p>
+                <p className="text-sm">{loadError}</p>
+              </div>
+            </Alert>
+          )}
+
+          {/* Save Error */}
           {!loadingNode && saveError && (
             <Alert variant="destructive" className="mb-4">
               <div>

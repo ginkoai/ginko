@@ -1,7 +1,7 @@
 /**
  * @fileType: model
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2026-01-16
  * @tags: [validation, schemas, knowledge-nodes, forms]
  * @related: [graph/types.ts, NodeEditor.tsx]
  * @priority: high
@@ -120,6 +120,8 @@ export const ADR_SCHEMA: NodeSchema = {
 };
 
 // PRD Schema
+// Note: PRDs synced from git have a single 'content' field with full markdown.
+// This schema uses 'content' to match how PRDs are stored in the graph.
 export const PRD_SCHEMA: NodeSchema = {
   type: 'PRD',
   displayName: 'Product Requirements Document',
@@ -153,28 +155,12 @@ export const PRD_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'overview',
-      label: 'Overview',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: true,
-      placeholder: 'What is this feature/product about?',
-      helperText: 'High-level description of the feature',
-    },
-    {
-      name: 'requirements',
-      label: 'Requirements',
-      type: 'markdown',
-      required: true,
-      placeholder: 'Functional and non-functional requirements',
-      helperText: 'List all requirements, user stories, and acceptance criteria',
-    },
-    {
-      name: 'success_criteria',
-      label: 'Success Criteria',
-      type: 'markdown',
-      required: true,
-      placeholder: 'How will we measure success?',
-      helperText: 'Define measurable success metrics',
+      placeholder: '## Overview\n\nWhat is this feature/product about?\n\n## Requirements\n\nFunctional and non-functional requirements...\n\n## Success Criteria\n\nHow will success be measured?',
+      helperText: 'Full PRD content in markdown format (Overview, Requirements, Success Criteria sections)',
     },
   ],
   validate: (data) => {
@@ -192,16 +178,8 @@ export const PRD_SCHEMA: NodeSchema = {
       errors.push('Status is required');
     }
 
-    if (!data.overview || data.overview.trim().length < 20) {
-      errors.push('Overview must be at least 20 characters');
-    }
-
-    if (!data.requirements || data.requirements.trim().length < 20) {
-      errors.push('Requirements must be at least 20 characters');
-    }
-
-    if (!data.success_criteria || data.success_criteria.trim().length < 20) {
-      errors.push('Success criteria must be at least 20 characters');
+    if (!data.content || data.content.trim().length < 50) {
+      errors.push('Content must be at least 50 characters');
     }
 
     return { valid: errors.length === 0, errors };

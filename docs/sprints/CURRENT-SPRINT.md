@@ -5,7 +5,7 @@
 **Sprint Goal**: Enable in-place editing with bidirectional git sync
 **Duration**: 1-2 weeks
 **Type**: Feature sprint
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 17% (1/6 tasks complete)
 **Prerequisite:** Sprint 1 complete (Hierarchy Navigation UI)
 
 **Success Criteria:**
@@ -91,9 +91,9 @@
 ## Sprint Tasks
 
 ### e011_s02_t01: Fix Edit Modal Content Loading (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete (2026-01-16)
 **Priority:** HIGH - Carries over BUG-002 fix verification
-**Assignee:** TBD
+**Assignee:** Chris Norton
 
 **Goal:** Ensure edit modal loads existing content correctly for all node types
 
@@ -111,11 +111,12 @@ BUG-002 was addressed in Sprint 1 (t06), but this task verifies the fix works ac
 - `dashboard/src/lib/graph/api-client.ts`
 
 **Acceptance Criteria:**
-- [ ] Edit modal shows existing content for ADRs
-- [ ] Edit modal shows existing content for Patterns
-- [ ] Edit modal shows existing content for Gotchas
-- [ ] Loading spinner shown while fetching
-- [ ] Error toast if fetch fails
+- [x] Edit modal shows existing content for ADRs
+- [x] Edit modal shows existing content for Patterns
+- [x] Edit modal shows existing content for Gotchas
+- [x] Edit modal shows existing content for PRDs
+- [x] Loading spinner shown while fetching
+- [x] Error warning shown if fetch fails
 
 ---
 
