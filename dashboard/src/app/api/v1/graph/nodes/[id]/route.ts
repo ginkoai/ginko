@@ -56,12 +56,26 @@ function computeContentHash(content: string): string {
 }
 
 /**
- * Extract user ID from Bearer token
- * TODO: Replace with Supabase auth verification
+ * Extract user email from Supabase JWT token
+ * JWT format: header.payload.signature (base64url encoded)
  */
 function extractUserId(authHeader: string): string {
-  const token = authHeader.substring(7); // Remove 'Bearer '
-  return 'user_' + Buffer.from(token).toString('base64').substring(0, 8);
+  try {
+    const token = authHeader.substring(7); // Remove 'Bearer '
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return 'unknown';
+    }
+    // Decode the payload (second part) - base64url to JSON
+    const payload = JSON.parse(
+      Buffer.from(parts[1], 'base64url').toString('utf-8')
+    );
+    // Supabase JWT contains email in the payload
+    return payload.email || payload.sub || 'unknown';
+  } catch (error) {
+    console.error('[Nodes API] Failed to extract user from token:', error);
+    return 'unknown';
+  }
 }
 
 /**
