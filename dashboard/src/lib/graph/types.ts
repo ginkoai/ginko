@@ -364,6 +364,8 @@ export interface TreeRoot {
 export interface NodeFilters {
   labels?: NodeLabel[];
   search?: string;
+  status?: string[];      // Filter by node status (e.g., 'accepted', 'proposed', 'in_progress')
+  author?: string;        // Filter by author/assignee
   sortBy?: 'name' | 'created_at' | 'updated_at';
   sortOrder?: 'asc' | 'desc';
 }
@@ -376,4 +378,24 @@ export interface SelectionState {
   selectedNodeId: string | null;
   viewMode: ViewMode;
   filters: NodeFilters;
+}
+
+// =============================================================================
+// View Preset Types
+// =============================================================================
+
+/** View preset for quick-access filtered views */
+export interface ViewPreset {
+  /** Unique identifier for the preset */
+  id: string;
+  /** Display name for the preset */
+  name: string;
+  /** Optional description of what this preset shows */
+  description?: string;
+  /** Filter configuration for this preset */
+  filters: NodeFilters;
+  /** Whether this is a built-in preset (cannot be deleted) */
+  isBuiltIn: boolean;
+  /** Creation timestamp for custom presets */
+  createdAt?: string;
 }

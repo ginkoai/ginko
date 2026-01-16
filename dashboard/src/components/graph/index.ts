@@ -1,9 +1,9 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-12-15
- * @tags: [graph, exports, barrel, editing]
- * @related: [tree-explorer.tsx, node-card.tsx, card-grid.tsx, NodeEditor.tsx]
+ * @updated: 2026-01-16
+ * @tags: [graph, exports, barrel, editing, responsive, mobile]
+ * @related: [tree-explorer.tsx, node-card.tsx, card-grid.tsx, NodeEditor.tsx, MobileNavToggle.tsx]
  * @priority: high
  * @complexity: low
  * @dependencies: []
@@ -17,6 +17,9 @@ export { CardGrid, type CardGridProps } from './card-grid';
 export { FilterBar, type FilterBarProps } from './filter-bar';
 export { NodeDetailPanel, type NodeDetailPanelProps } from './node-detail-panel';
 export { AdjacencyList, type AdjacencyListProps } from './adjacency-list';
+
+// Mobile/responsive components
+export { MobileNavToggle, type MobileNavToggleProps } from './MobileNavToggle';
 
 // C4-style navigation components
 export { SummaryCard, type SummaryCardProps } from './SummaryCard';

@@ -1,9 +1,9 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-11
- * @tags: [graph, tree, node, visualization]
- * @related: [tree-explorer.tsx, types.ts]
+ * @updated: 2026-01-16
+ * @tags: [graph, tree, node, visualization, accessibility, a11y]
+ * @related: [tree-explorer.tsx, types.ts, useRovingTabindex.ts]
  * @priority: high
  * @complexity: medium
  * @dependencies: [lucide-react, framer-motion]
@@ -41,6 +41,12 @@ export interface TreeNodeProps {
   isSelected: boolean;
   onSelect: (nodeId: string, node?: TreeNodeType) => void;
   onToggle: (nodeId: string) => void;
+  /** TabIndex for roving tabindex pattern (0 for focused, -1 for others) */
+  tabIndex?: 0 | -1;
+  /** Callback when this node receives focus */
+  onFocus?: (nodeId: string) => void;
+  /** Unique index for this node in the flattened tree */
+  nodeIndex?: number;
 }
 
 // =============================================================================
@@ -89,6 +95,9 @@ function TreeNodeComponent({
   isSelected,
   onSelect,
   onToggle,
+  tabIndex = 0,
+  onFocus,
+  nodeIndex,
 }: TreeNodeProps) {
   const hasChildren = node.hasChildren || (node.children && node.children.length > 0);
   const isExpanded = node.isExpanded ?? false;
@@ -112,17 +121,39 @@ function TreeNodeComponent({
     }
   };
 
+  const handleFocus = () => {
+    onFocus?.(node.id);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Enter or Space: select node
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
-    } else if (e.key === 'ArrowRight' && hasChildren && !isExpanded) {
-      e.preventDefault();
-      onToggle(node.id);
-    } else if (e.key === 'ArrowLeft' && isExpanded) {
-      e.preventDefault();
-      onToggle(node.id);
+      return;
     }
+    // ArrowRight: expand if collapsed, or do nothing (let parent handle navigation)
+    if (e.key === 'ArrowRight') {
+      if (hasChildren && !isExpanded) {
+        e.preventDefault();
+        e.stopPropagation();
+        onToggle(node.id);
+      }
+      // If already expanded, allow the event to bubble for navigation
+      return;
+    }
+    // ArrowLeft: collapse if expanded, or do nothing (let parent handle navigation)
+    if (e.key === 'ArrowLeft') {
+      if (isExpanded) {
+        e.preventDefault();
+        e.stopPropagation();
+        onToggle(node.id);
+      }
+      // If already collapsed, allow the event to bubble for navigation
+      return;
+    }
+    // ArrowUp/ArrowDown: let parent handle tree navigation
+    // Home/End: let parent handle tree navigation
   };
 
   return (
@@ -132,16 +163,22 @@ function TreeNodeComponent({
         role="treeitem"
         aria-expanded={hasChildren ? isExpanded : undefined}
         aria-selected={isSelected}
-        tabIndex={0}
+        aria-label={`${node.label}: ${node.name}${hasChildren ? (isExpanded ? ', expanded' : ', collapsed') : ''}`}
+        tabIndex={tabIndex}
+        data-tree-item
+        data-node-id={node.id}
+        data-node-index={nodeIndex}
         className={cn(
           'flex items-center gap-1 py-1 rounded cursor-pointer',
           'hover:bg-white/5 transition-colors',
-          'focus:outline-none focus:ring-1 focus:ring-ginko-500/50',
+          // Enhanced focus ring for WCAG compliance
+          'focus:outline-none focus:ring-2 focus:ring-ginko-500 focus:ring-offset-1 focus:ring-offset-background',
           isSelected && 'bg-ginko-500/10 text-ginko-400'
         )}
         style={{ paddingLeft: `${depth * 16}px` }}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
       >
         {/* Expand/Collapse Toggle */}
         <button
@@ -152,6 +189,8 @@ function TreeNodeComponent({
           )}
           onClick={handleToggle}
           tabIndex={-1}
+          aria-label={hasChildren ? (isExpanded ? `Collapse ${node.name}` : `Expand ${node.name}`) : undefined}
+          aria-hidden={!hasChildren}
         >
           {hasChildren && (
             <motion.div
@@ -159,13 +198,13 @@ function TreeNodeComponent({
               animate={{ rotate: isExpanded ? 90 : 0 }}
               transition={{ duration: 0.15 }}
             >
-              <ChevronRight className="w-3 h-3" />
+              <ChevronRight className="w-3 h-3" aria-hidden="true" />
             </motion.div>
           )}
         </button>
 
-        {/* Icon */}
-        <span className={cn('w-4 h-4 flex-shrink-0', iconColor)}>
+        {/* Icon (decorative - node type is announced via aria-label) */}
+        <span className={cn('w-4 h-4 flex-shrink-0', iconColor)} aria-hidden="true">
           {isFolder ? (
             <FolderIcon className="w-4 h-4" />
           ) : (
@@ -199,6 +238,7 @@ function TreeNodeComponent({
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
             role="group"
+            aria-label={`Children of ${node.name}`}
           >
             {node.children.map((child) => (
               <TreeNodeComponent
@@ -208,6 +248,8 @@ function TreeNodeComponent({
                 isSelected={isSelected && child.id === node.id}
                 onSelect={onSelect}
                 onToggle={onToggle}
+                tabIndex={-1}
+                onFocus={onFocus}
               />
             ))}
           </motion.div>

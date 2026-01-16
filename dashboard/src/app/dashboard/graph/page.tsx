@@ -1,9 +1,9 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2026-01-14
- * @tags: [graph, visualization, dashboard, exploration, c4-navigation]
- * @related: [tree-explorer.tsx, card-grid.tsx, node-detail-panel.tsx, ProjectView.tsx]
+ * @updated: 2026-01-16
+ * @tags: [graph, visualization, dashboard, exploration, c4-navigation, responsive, mobile]
+ * @related: [tree-explorer.tsx, card-grid.tsx, node-detail-panel.tsx, ProjectView.tsx, MobileNavToggle.tsx]
  * @priority: high
  * @complexity: high
  * @dependencies: [@tanstack/react-query, lucide-react]
@@ -11,11 +11,17 @@
 
 'use client';
 
-import { useState, useCallback, useEffect, useMemo, useRef, RefObject, Suspense } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Loader2, AlertCircle } from 'lucide-react';
+
+// Import responsive styles for mobile layout
+import '@/styles/explorer-responsive.css';
+
 import { TreeExplorer } from '@/components/graph/tree-explorer';
+import { MobileNavToggle } from '@/components/graph/MobileNavToggle';
+import { GraphExplorerSkipLinks } from '@/components/common/SkipLink';
 import { CardGrid } from '@/components/graph/card-grid';
 import { NodeDetailPanel } from '@/components/graph/node-detail-panel';
 import { ProjectView } from '@/components/graph/ProjectView';
@@ -23,6 +29,9 @@ import { CategoryView } from '@/components/graph/CategoryView';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
 import { NodeView } from '@/components/graph/NodeView';
 import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
+import { OnboardingOverlay } from '@/components/graph/OnboardingOverlay';
+import { HelpButton } from '@/components/graph/HelpButton';
+import { useOnboarding } from '@/hooks/useOnboarding';
 import { useGraphNodes, useNodeAncestry, graphQueryKeys } from '@/lib/graph/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -132,6 +141,54 @@ function GraphPageContent() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(nodeParam);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<{ id: string; name: string }[]>([]);
+
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+
+  // Onboarding tour state
+  const [showTour, setShowTour] = useState(false);
+  const { restartOnboarding } = useOnboarding();
+
+  const handleStartTour = useCallback(() => {
+    setShowTour(true);
+    restartOnboarding();
+  }, [restartOnboarding]);
+
+  const handleTourComplete = useCallback(() => {
+    setShowTour(false);
+  }, []);
+
+  // Detect mobile breakpoint (< 768px)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Listen for resize
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close mobile nav when switching to desktop
+  useEffect(() => {
+    if (!isMobile && isMobileNavOpen) {
+      setIsMobileNavOpen(false);
+    }
+  }, [isMobile, isMobileNavOpen]);
+
+  // Toggle mobile nav
+  const handleToggleMobileNav = useCallback(() => {
+    setIsMobileNavOpen((prev) => !prev);
+  }, []);
+
+  // Close mobile nav
+  const handleCloseMobileNav = useCallback(() => {
+    setIsMobileNavOpen(false);
+  }, []);
 
   // Helper to change view with direction tracking
   const navigateToView = useCallback((newView: ViewMode) => {
@@ -529,18 +586,52 @@ function GraphPageContent() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] relative overflow-hidden -mx-6 -mt-6 w-[calc(100%+3rem)]">
-      {/* Tree Explorer Sidebar */}
-      <TreeExplorer
-        graphId={DEFAULT_GRAPH_ID}
-        selectedNodeId={selectedNodeId}
-        onSelectNode={handleSelectNode}
-        isCollapsed={isTreeCollapsed}
-        onToggleCollapse={handleToggleTree}
-      />
+    <>
+      {/* Skip Links for Keyboard Navigation */}
+      <GraphExplorerSkipLinks />
+
+      <div className={cn(
+        'flex h-[calc(100vh-4rem)] relative overflow-hidden -mx-6 -mt-6 w-[calc(100%+3rem)]',
+        'no-horizontal-scroll'
+      )}>
+      {/* Mobile: Tree Explorer as overlay */}
+      {isMobile && (
+        <TreeExplorer
+          graphId={DEFAULT_GRAPH_ID}
+          selectedNodeId={selectedNodeId}
+          onSelectNode={handleSelectNode}
+          isMobileOverlay={true}
+          isMobileOpen={isMobileNavOpen}
+          onMobileClose={handleCloseMobileNav}
+        />
+      )}
+
+      {/* Desktop/Tablet: Tree Explorer Sidebar */}
+      {!isMobile && (
+        <TreeExplorer
+          graphId={DEFAULT_GRAPH_ID}
+          selectedNodeId={selectedNodeId}
+          onSelectNode={handleSelectNode}
+          isCollapsed={isTreeCollapsed}
+          onToggleCollapse={handleToggleTree}
+        />
+      )}
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
+        {/* Mobile Header with Hamburger Menu */}
+        {isMobile && (
+          <div className="graph-mobile-header flex items-center gap-3 p-3 border-b border-border bg-card">
+            <MobileNavToggle
+              isOpen={isMobileNavOpen}
+              onToggle={handleToggleMobileNav}
+            />
+            <h1 className="text-sm font-mono font-medium text-foreground">
+              Graph Explorer
+            </h1>
+          </div>
+        )}
+
         {/* Breadcrumb Navigation */}
         {(viewMode !== 'project' || isPanelOpen) && (
           <Breadcrumbs
@@ -628,7 +719,17 @@ function GraphPageContent() {
         onOpenChange={setIsCreateModalOpen}
         onCreate={handleCreateSave}
       />
+
+      {/* Help Button with Tour Option */}
+      <HelpButton
+        onStartTour={handleStartTour}
+        className="fixed bottom-6 right-6 z-50"
+      />
+
+      {/* First-Time User Onboarding */}
+      <OnboardingOverlay onComplete={handleTourComplete} />
     </div>
+    </>
   );
 }
 

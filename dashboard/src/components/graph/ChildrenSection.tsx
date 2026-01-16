@@ -1,8 +1,8 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2026-01-14
- * @tags: [graph, children-section, navigation, hierarchy]
+ * @updated: 2026-01-16
+ * @tags: [graph, children-section, navigation, hierarchy, accessibility, a11y]
  * @related: [NodeView.tsx, ChildCard.tsx]
  * @priority: medium
  * @complexity: low
@@ -52,19 +52,20 @@ export function ChildrenSection({
   className,
 }: ChildrenSectionProps) {
   const [showAll, setShowAll] = useState(false);
+  const sectionLabel = childTypeLabels[childType] || 'Children';
 
   // Loading state
   if (isLoading) {
     return (
-      <div className={cn('', className)}>
-        <h3 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
-          {childTypeLabels[childType] || 'Children'}
-        </h3>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span>Loading {childTypeLabels[childType]?.toLowerCase() || 'children'}...</span>
+      <section className={cn('', className)} aria-label={sectionLabel}>
+        <h2 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
+          {sectionLabel}
+        </h2>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground" role="status" aria-label={`Loading ${sectionLabel.toLowerCase()}`}>
+          <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+          <span>Loading {sectionLabel.toLowerCase()}...</span>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -75,16 +76,21 @@ export function ChildrenSection({
 
   const visibleChildren = showAll ? children : children.slice(0, MAX_VISIBLE);
   const hasMore = children.length > MAX_VISIBLE;
+  const hiddenCount = children.length - MAX_VISIBLE;
 
   return (
-    <div className={cn('', className)}>
+    <section className={cn('', className)} aria-label={sectionLabel}>
       {/* Header */}
-      <h3 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
-        {childTypeLabels[childType] || 'Children'} ({children.length})
-      </h3>
+      <h2 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
+        {sectionLabel} ({children.length})
+      </h2>
 
       {/* Grid of cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+        role="list"
+        aria-label={`List of ${sectionLabel.toLowerCase()}`}
+      >
         {visibleChildren.map((child) => (
           <ChildCard
             key={child.id}
@@ -100,23 +106,29 @@ export function ChildrenSection({
           onClick={() => setShowAll(!showAll)}
           className={cn(
             'mt-3 flex items-center gap-1 text-sm text-muted-foreground',
-            'hover:text-foreground transition-colors'
+            'hover:text-foreground transition-colors',
+            'focus:outline-none focus:ring-2 focus:ring-ginko-500 rounded px-2 py-1 -ml-2'
           )}
+          aria-expanded={showAll}
+          aria-label={showAll
+            ? `Show fewer ${sectionLabel.toLowerCase()}`
+            : `Show all ${children.length} ${sectionLabel.toLowerCase()} (${hiddenCount} more hidden)`
+          }
         >
           {showAll ? (
             <>
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUp className="w-4 h-4" aria-hidden="true" />
               Show less
             </>
           ) : (
             <>
-              <ChevronDown className="w-4 h-4" />
-              Show all {children.length} {childTypeLabels[childType]?.toLowerCase() || 'items'}
+              <ChevronDown className="w-4 h-4" aria-hidden="true" />
+              Show all {children.length} {sectionLabel.toLowerCase()}
             </>
           )}
         </button>
       )}
-    </div>
+    </section>
   );
 }
 

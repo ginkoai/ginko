@@ -1,8 +1,8 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-17
- * @tags: [graph, node-view, detail, c4-navigation]
+ * @updated: 2026-01-16
+ * @tags: [graph, node-view, detail, c4-navigation, accessibility, a11y]
  * @related: [RelatedNodesSummary.tsx, node-detail-panel.tsx, CategoryView.tsx]
  * @priority: high
  * @complexity: high
@@ -312,10 +312,10 @@ function NodeHeader({
   const status = getNodeProp(props, 'status') || getNodeProp(props, 'severity') || getNodeProp(props, 'confidence');
 
   return (
-    <div className={cn('p-6 rounded-xl border', colors.bg, colors.border)}>
+    <header className={cn('p-6 rounded-xl border', colors.bg, colors.border)}>
       <div className="flex items-start gap-4">
-        {/* Icon */}
-        <div className={cn('p-3 rounded-lg', colors.bg)}>
+        {/* Icon (decorative) */}
+        <div className={cn('p-3 rounded-lg', colors.bg)} aria-hidden="true">
           <Icon className={cn('w-6 h-6', colors.text)} />
         </div>
 
@@ -332,37 +332,44 @@ function NodeHeader({
               </span>
             )}
             {status && (
-              <span className={cn(
-                'text-xs px-2 py-0.5 rounded-full font-mono',
-                statusColors[status] || 'bg-slate-500/20 text-slate-400'
-              )}>
+              <span
+                className={cn(
+                  'text-xs px-2 py-0.5 rounded-full font-mono',
+                  statusColors[status] || 'bg-slate-500/20 text-slate-400'
+                )}
+                role="status"
+                aria-label={`Status: ${status.replace('_', ' ')}`}
+              >
                 {status.replace('_', ' ')}
               </span>
             )}
           </div>
 
-          {/* Title */}
+          {/* Title - h1 for the main page heading */}
           <h1 className="text-xl font-semibold text-foreground">
             {title}
           </h1>
 
           {/* Metadata row */}
-          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground" aria-label="Node metadata">
             {props.assignee && (
               <span className="flex items-center gap-1">
-                <User className="w-3.5 h-3.5" />
+                <User className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only">Assigned to: </span>
                 {props.assignee as string}
               </span>
             )}
             {props.created_at && (
               <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only">Created: </span>
                 {formatDate(props.created_at as string)}
               </span>
             )}
             {props.editedAt && (
               <span className="flex items-center gap-1">
-                <Pencil className="w-3.5 h-3.5" />
+                <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only">Last edited: </span>
                 Edited {formatRelativeTime(props.editedAt)}
                 {props.editedBy && ` by ${formatEditedBy(props.editedBy as string)}`}
               </span>
@@ -374,14 +381,15 @@ function NodeHeader({
         {onEdit && (
           <button
             onClick={() => onEdit(node.id)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-            aria-label="Edit node"
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-ginko-500"
+            aria-label={`Edit ${node.label}: ${title}`}
+            data-onboarding="edit-button"
           >
-            <Pencil className="w-4 h-4 text-muted-foreground" />
+            <Pencil className="w-4 h-4 text-muted-foreground" aria-hidden="true" />
           </button>
         )}
       </div>
-    </div>
+    </header>
   );
 }
 
@@ -425,16 +433,16 @@ function NodeContent({ node }: { node: GraphNode }) {
   }
 
   return (
-    <div className="space-y-6">
+    <section className="space-y-6" aria-label="Node content">
       {sections.map((section) => (
-        <div key={section.label}>
-          <h3 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-2">
+        <article key={section.label}>
+          <h2 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-2">
             {section.label}
-          </h3>
+          </h2>
           <MarkdownRenderer content={section.content} />
-        </div>
+        </article>
       ))}
-    </div>
+    </section>
   );
 }
 
@@ -467,22 +475,26 @@ function NodeProperties({ node }: { node: GraphNode }) {
   }
 
   return (
-    <div>
+    <section aria-label="Node properties">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3 hover:text-foreground transition-colors"
+        className="flex items-center gap-2 text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3 hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ginko-500 rounded"
+        aria-expanded={isExpanded}
+        aria-controls="node-properties-content"
       >
         {isExpanded ? (
-          <ChevronDown className="w-4 h-4" />
+          <ChevronDown className="w-4 h-4" aria-hidden="true" />
         ) : (
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4" aria-hidden="true" />
         )}
-        Properties ({formattedProps.length})
+        <h2 className="text-sm font-mono font-medium uppercase tracking-wider">
+          Properties ({formattedProps.length})
+        </h2>
       </button>
       {isExpanded && (
-        <div className="grid grid-cols-2 gap-3">
+        <div id="node-properties-content" className="grid grid-cols-2 gap-3" role="list" aria-label="Property list">
           {formattedProps.map(({ key, formatted }) => (
-            <div key={key} className="p-3 bg-card border border-border rounded-lg">
+            <div key={key} className="p-3 bg-card border border-border rounded-lg" role="listitem">
               <p className="text-xs text-muted-foreground mb-1">
                 {key.replace(/_/g, ' ')}
               </p>
@@ -493,7 +505,7 @@ function NodeProperties({ node }: { node: GraphNode }) {
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -530,26 +542,30 @@ function ParentLink({
   const Icon = nodeIcons[parentNode.label] || FileText;
 
   return (
-    <button
-      onClick={() => onNavigate(parentNode.id)}
-      className={cn(
-        'flex items-center gap-2 px-3 py-2 rounded-lg mb-4',
-        'text-sm font-medium transition-colors',
-        'hover:bg-white/10 border',
-        colors.border,
-        colors.text
-      )}
-    >
-      <ArrowLeft className="w-4 h-4" />
-      <Icon className="w-4 h-4" />
-      <span>Parent:</span>
-      <span className="font-mono">{parentTypeId || parentNode.label}</span>
-      {parentTitle && parentTitle !== parentTypeId && (
-        <span className="text-muted-foreground truncate max-w-[200px]">
-          — {parentTitle}
-        </span>
-      )}
-    </button>
+    <nav aria-label="Parent navigation" className="mb-4">
+      <button
+        onClick={() => onNavigate(parentNode.id)}
+        className={cn(
+          'flex items-center gap-2 px-3 py-2 rounded-lg',
+          'text-sm font-medium transition-colors',
+          'hover:bg-white/10 border',
+          'focus:outline-none focus:ring-2 focus:ring-ginko-500',
+          colors.border,
+          colors.text
+        )}
+        aria-label={`Navigate to parent: ${parentTitle}`}
+      >
+        <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+        <Icon className="w-4 h-4" aria-hidden="true" />
+        <span>Parent:</span>
+        <span className="font-mono">{parentTypeId || parentNode.label}</span>
+        {parentTitle && parentTitle !== parentTypeId && (
+          <span className="text-muted-foreground truncate max-w-[200px]">
+            - {parentTitle}
+          </span>
+        )}
+      </button>
+    </nav>
   );
 }
 
@@ -595,7 +611,11 @@ export function NodeView({
   const colors = nodeColors[node.label] || nodeColors.Event;
 
   return (
-    <div className={cn('p-6 space-y-6 max-w-4xl mx-auto', className)}>
+    <article
+      className={cn('p-6 space-y-6 max-w-4xl mx-auto', className)}
+      id="main-content"
+      aria-labelledby="node-title"
+    >
       {/* Parent Link (for Tasks and Sprints) */}
       <ParentLink
         parentNode={parentNode}
@@ -635,24 +655,24 @@ export function NodeView({
       <NodeProperties node={node} />
 
       {/* Related Nodes */}
-      <div>
-        <h3 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
+      <section aria-label="Related nodes">
+        <h2 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-3">
           Related Nodes
-        </h3>
+        </h2>
         <RelatedNodesSummary
           adjacencies={adjacencies?.adjacencies || []}
           onNavigate={onNavigate}
           isLoading={loadingAdjacencies}
         />
-      </div>
+      </section>
 
       {/* Footer */}
-      <div className="pt-4 border-t border-border">
+      <footer className="pt-4 border-t border-border">
         <p className="text-xs text-muted-foreground font-mono">
           Node ID: {node.id}
         </p>
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 }
 
