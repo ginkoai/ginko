@@ -231,7 +231,7 @@ export function NodeDetailPanel({
             {nodeProps.editedAt && (
               <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
                 <span>
-                  Edited: {formatRelativeTime(nodeProps.editedAt as string)}
+                  Edited: {formatRelativeTime(nodeProps.editedAt)}
                   {nodeProps.editedBy && ` by ${formatEditedBy(nodeProps.editedBy as string)}`}
                 </span>
                 {nodeProps.synced === false && (
@@ -528,10 +528,29 @@ function formatDate(dateStr: string): string {
 
 /**
  * Format a date as relative time (e.g., "2 hours ago")
+ * Handles both string dates and Neo4j DateTime objects
  */
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateValue: unknown): string {
   try {
-    const date = new Date(dateStr);
+    let date: Date;
+
+    // Handle Neo4j DateTime objects
+    if (isNeo4jTemporal(dateValue)) {
+      const neo4jDate = dateValue as Record<string, { low: number }>;
+      date = new Date(
+        neo4jDate.year?.low || 0,
+        (neo4jDate.month?.low || 1) - 1,
+        neo4jDate.day?.low || 1,
+        neo4jDate.hour?.low || 0,
+        neo4jDate.minute?.low || 0,
+        neo4jDate.second?.low || 0
+      );
+    } else if (typeof dateValue === 'string') {
+      date = new Date(dateValue);
+    } else {
+      return '';
+    }
+
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMinutes = Math.floor(diffMs / 60000);
@@ -548,7 +567,7 @@ function formatRelativeTime(dateStr: string): string {
       return `${days}d ago`;
     }
   } catch {
-    return dateStr;
+    return '';
   }
 }
 
