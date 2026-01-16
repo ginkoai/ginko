@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, getSession } from '../../_neo4j';
 import crypto from 'crypto';
+import { syncToGit, isSyncableType, type SyncableNode } from '@/lib/github';
 
 interface NodeData {
   id: string;
@@ -50,6 +51,47 @@ function computeContentHash(content: string): string {
 function extractUserId(authHeader: string): string {
   const token = authHeader.substring(7); // Remove 'Bearer '
   return 'user_' + Buffer.from(token).toString('base64').substring(0, 8);
+}
+
+/**
+ * Get project settings for git sync
+ * Returns null if project not found or doesn't have git sync configured
+ */
+async function getProjectGitSettings(graphId: string): Promise<{ repoUrl: string; token: string } | null> {
+  // Try to find project by graphId in Neo4j
+  const session = getSession();
+  try {
+    const result = await session.executeRead(async (tx) => {
+      // Query project node that matches this graphId
+      return tx.run(
+        `MATCH (p:Project)
+         WHERE p.graphId = $graphId OR p.id = $graphId OR p.projectId = $graphId
+         RETURN p.github_repo_url as repoUrl`,
+        { graphId }
+      );
+    });
+
+    if (result.records.length === 0) {
+      return null;
+    }
+
+    const repoUrl = result.records[0].get('repoUrl');
+    if (!repoUrl) {
+      return null;
+    }
+
+    // Use environment variable for GitHub token
+    // Projects can override via project-level token in settings (future enhancement)
+    const token = process.env.GITHUB_TOKEN;
+    if (!token) {
+      console.warn('[Git Sync] GITHUB_TOKEN not configured');
+      return null;
+    }
+
+    return { repoUrl, token };
+  } finally {
+    await session.close();
+  }
 }
 
 /**
@@ -242,8 +284,9 @@ export async function PATCH(
 
       const updatedNode = result.get('n').properties;
       const nodeLabels = result.get('nodeLabels') as string[];
+      const nodeType = nodeLabels[0] || 'Unknown';
 
-      // Build response
+      // Build initial sync status
       const syncStatus: SyncStatus = {
         synced: updatedNode.synced || false,
         syncedAt: updatedNode.syncedAt ? updatedNode.syncedAt.toString() : null,
@@ -253,10 +296,78 @@ export async function PATCH(
         gitHash: updatedNode.gitHash || null,
       };
 
+      // Attempt git sync for syncable node types (graceful degradation)
+      if (isSyncableType(nodeType)) {
+        try {
+          const gitSettings = await getProjectGitSettings(graphId);
+          if (gitSettings) {
+            const syncableNode: SyncableNode = {
+              id: updatedNode.id,
+              type: nodeType as SyncableNode['type'],
+              title: updatedNode.title || updatedNode.name || updatedNode.id,
+              content: updatedNode.content,
+              status: updatedNode.status,
+              tags: updatedNode.tags,
+              slug: updatedNode.slug,
+            };
+
+            const syncResult = await syncToGit(
+              syncableNode,
+              gitSettings.repoUrl,
+              gitSettings.token,
+              {
+                author: {
+                  name: 'Chris Norton',
+                  email: 'chris@watchhill.ai',
+                },
+              }
+            );
+
+            if (syncResult.success) {
+              // Update sync status to reflect successful sync
+              syncStatus.synced = true;
+              syncStatus.gitHash = syncResult.commitSha || null;
+              syncStatus.syncedAt = new Date().toISOString();
+
+              // Update the node in Neo4j with sync info
+              const syncSession = getSession();
+              try {
+                await syncSession.executeWrite(async (tx) => {
+                  return tx.run(
+                    `MATCH (n {id: $id})
+                     WHERE n.graph_id = $graphId OR n.graphId = $graphId
+                     SET n.synced = true,
+                         n.syncedAt = datetime($syncedAt),
+                         n.gitHash = $gitHash`,
+                    {
+                      id: nodeId,
+                      graphId,
+                      syncedAt: syncStatus.syncedAt,
+                      gitHash: syncStatus.gitHash,
+                    }
+                  );
+                });
+              } finally {
+                await syncSession.close();
+              }
+
+              console.log('[Git Sync] Node synced successfully:', nodeId, syncResult.commitSha);
+            } else {
+              console.warn('[Git Sync] Sync failed (non-blocking):', syncResult.error);
+            }
+          } else {
+            console.log('[Git Sync] Skipped - project not configured for git sync');
+          }
+        } catch (error) {
+          // Git sync failure should NOT fail the save request
+          console.warn('[Git Sync] Error (non-blocking):', error);
+        }
+      }
+
       const response: PatchNodeResponse = {
         node: {
           id: updatedNode.id,
-          label: nodeLabels[0] || 'Unknown',
+          label: nodeType,
           properties: { ...updatedNode },
         },
         syncStatus,

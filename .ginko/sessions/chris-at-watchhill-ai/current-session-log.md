@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-16T20-10-12-276Z
-started: 2026-01-16T20:10:12.276Z
+session_id: session-2026-01-16T20-11-11-013Z
+started: 2026-01-16T20:11:11.013Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-16T20-10-12-276Z
+# Session Log: session-2026-01-16T20-11-11-013Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -36,3 +36,20 @@ flow_state: hot
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 15:23 - [feature]
+# [FEATURE] 15:23
+
+Implemented e011_s02_t03: Git Sync on Save. Created GitHub module (client.ts, git-sync-service.ts, types.ts) in dashboard/src/lib/github/ that uses GitHub Contents API to sync dashboard node edits to git-native markdown files. Integrated with Node Update API - after successful Neo4j update, syncable nodes (ADR, PRD, Pattern, Gotcha, Charter) are automatically synced to the corresponding markdown file in the repo. Sync is graceful degradation - failures don't block the save.
+
+**Files:**
+- dashboard/src/lib/github/client.ts
+- dashboard/src/lib/github/git-sync-service.ts
+- dashboard/src/lib/github/types.ts
+- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-16T20:23:00.985Z
+
+Files: dashboard/src/lib/github/client.ts, dashboard/src/lib/github/git-sync-service.ts, dashboard/src/lib/github/types.ts, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
+Impact: high
