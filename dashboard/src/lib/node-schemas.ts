@@ -195,6 +195,7 @@ export const PRD_SCHEMA: NodeSchema = {
 
 // Pattern Schema
 // Note: Patterns synced from git have a 'content' field with full markdown.
+// Uses 'title' for consistency with other node types (ADR, Gotcha, etc.)
 export const PATTERN_SCHEMA: NodeSchema = {
   type: 'Pattern',
   displayName: 'Pattern',
@@ -209,11 +210,11 @@ export const PATTERN_SCHEMA: NodeSchema = {
       readOnly: true,
     },
     {
-      name: 'name',
-      label: 'Name',
+      name: 'title',
+      label: 'Title',
       type: 'text',
       required: true,
-      placeholder: 'Pattern name (e.g., retry-with-backoff)',
+      placeholder: 'Pattern title (e.g., Retry with Exponential Backoff)',
     },
     {
       name: 'confidence',
@@ -238,8 +239,8 @@ export const PATTERN_SCHEMA: NodeSchema = {
   validate: (data) => {
     const errors: string[] = [];
 
-    if (!data.name || data.name.trim().length < 3) {
-      errors.push('Name must be at least 3 characters');
+    if (!data.title || data.title.trim().length < 3) {
+      errors.push('Title must be at least 3 characters');
     }
 
     if (!data.content || data.content.trim().length < 20) {
@@ -249,7 +250,7 @@ export const PATTERN_SCHEMA: NodeSchema = {
     return { valid: errors.length === 0, errors };
   },
   getFilePath: (data) => {
-    const slug = data.name
+    const slug = data.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
