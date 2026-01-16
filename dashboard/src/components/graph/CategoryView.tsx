@@ -45,6 +45,7 @@ export interface CategoryViewProps {
   onSelectNode: (nodeId: string) => void;
   onViewDetails: (nodeId: string, node: GraphNode) => void;
   onEdit?: (nodeId: string, node?: GraphNode) => void;
+  onCreateNode?: (label: NodeLabel) => void;
   className?: string;
 }
 
@@ -128,6 +129,14 @@ function getNodeTitle(node: GraphNode): string {
   );
 }
 
+/**
+ * Check if a node type supports creation from the UI
+ * Only knowledge types (ADR, Pattern, Gotcha) can be created via dashboard
+ */
+function isCreatableType(label: NodeLabel): boolean {
+  return ['ADR', 'Pattern', 'Gotcha'].includes(label);
+}
+
 // =============================================================================
 // Status Filter Options by Node Type
 // =============================================================================
@@ -186,6 +195,7 @@ export function CategoryView({
   onSelectNode,
   onViewDetails,
   onEdit,
+  onCreateNode,
   className,
 }: CategoryViewProps) {
   // Filter/sort state
@@ -407,6 +417,22 @@ export function CategoryView({
               <SortDesc className="w-4 h-4" />
             )}
           </button>
+
+          {/* Create Button */}
+          {onCreateNode && isCreatableType(label) && (
+            <button
+              onClick={() => onCreateNode(label)}
+              className={cn(
+                'ml-auto px-3 py-2 text-sm font-mono rounded-lg',
+                'bg-ginko-500 text-black hover:bg-ginko-400',
+                'transition-colors font-semibold flex items-center gap-1'
+              )}
+              title={`Create new ${displayNames.singular.toLowerCase()}`}
+            >
+              <span className="text-lg leading-none">+</span>
+              <span>New</span>
+            </button>
+          )}
         </div>
       </div>
 

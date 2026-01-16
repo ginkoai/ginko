@@ -209,6 +209,161 @@ export async function updateNode(
 }
 
 // =============================================================================
+// Node Create Operations
+// =============================================================================
+
+export interface CreateNodeOptions extends FetchOptions {
+  /** Node type/label (e.g., 'ADR', 'Pattern', 'Gotcha') */
+  label: NodeLabel;
+  /** Properties for the new node */
+  properties: Record<string, unknown>;
+}
+
+export interface CreateNodeResponse {
+  node: GraphNode;
+  syncStatus: {
+    synced: boolean;
+    syncedAt: string | null;
+    editedAt: string;
+    editedBy: string;
+    contentHash: string;
+    gitHash: string | null;
+  };
+}
+
+/**
+ * Create a new node in the graph
+ *
+ * - Creates node with specified label and properties
+ * - Sets synced=false to indicate pending git sync
+ * - Auto-generates ID if not provided
+ * - Sets createdAt/editedAt timestamps
+ *
+ * @param options - Create options including label and properties
+ * @returns Created node with sync status
+ * @throws Error if authentication fails or creation fails
+ */
+export async function createNode(
+  options: CreateNodeOptions
+): Promise<CreateNodeResponse> {
+  const { label, properties, ...fetchOptions } = options;
+
+  return graphFetch<CreateNodeResponse>(
+    `${API_BASE}/nodes`,
+    {
+      ...fetchOptions,
+      method: 'POST',
+      body: JSON.stringify({ label, data: properties }),
+    }
+  );
+}
+
+/**
+ * Get the next available ADR number
+ * Queries existing ADRs and returns the next sequential number
+ */
+export async function getNextADRNumber(options: FetchOptions = {}): Promise<string> {
+  const { graphId = defaultGraphId } = options;
+
+  if (!graphId) {
+    throw new Error('Graph ID required');
+  }
+
+  // Fetch all ADRs to find the highest number
+  const response = await listNodes({
+    ...options,
+    graphId,
+    labels: ['ADR'],
+    limit: 1000, // Should be enough for most projects
+  });
+
+  let maxNumber = 0;
+  for (const node of response.nodes) {
+    const props = node.properties as Record<string, unknown>;
+    const adrId = (props.adr_id || props.id || '') as string;
+    const match = adrId.match(/ADR-(\d+)/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  }
+
+  // Return next number formatted as ADR-XXX
+  const nextNum = maxNumber + 1;
+  return `ADR-${nextNum.toString().padStart(3, '0')}`;
+}
+
+/**
+ * Get the next available Pattern ID
+ */
+export async function getNextPatternId(options: FetchOptions = {}): Promise<string> {
+  const { graphId = defaultGraphId } = options;
+
+  if (!graphId) {
+    throw new Error('Graph ID required');
+  }
+
+  const response = await listNodes({
+    ...options,
+    graphId,
+    labels: ['Pattern'],
+    limit: 1000,
+  });
+
+  let maxNumber = 0;
+  for (const node of response.nodes) {
+    const props = node.properties as Record<string, unknown>;
+    const patternId = (props.pattern_id || props.id || '') as string;
+    const match = patternId.match(/PATTERN-(\d+)/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  }
+
+  const nextNum = maxNumber + 1;
+  return `PATTERN-${nextNum.toString().padStart(3, '0')}`;
+}
+
+/**
+ * Get the next available Gotcha ID
+ */
+export async function getNextGotchaId(options: FetchOptions = {}): Promise<string> {
+  const { graphId = defaultGraphId } = options;
+
+  if (!graphId) {
+    throw new Error('Graph ID required');
+  }
+
+  const response = await listNodes({
+    ...options,
+    graphId,
+    labels: ['Gotcha'],
+    limit: 1000,
+  });
+
+  let maxNumber = 0;
+  for (const node of response.nodes) {
+    const props = node.properties as Record<string, unknown>;
+    const gotchaId = (props.gotcha_id || props.id || '') as string;
+    const match = gotchaId.match(/GOTCHA-(\d+)/i);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  }
+
+  const nextNum = maxNumber + 1;
+  return `GOTCHA-${nextNum.toString().padStart(3, '0')}`;
+}
+
+// =============================================================================
 // Search Operations
 // =============================================================================
 
@@ -958,6 +1113,10 @@ export const graphApi = {
   getNodesByLabel,
   getNodeById,
   updateNode,
+  createNode,
+  getNextADRNumber,
+  getNextPatternId,
+  getNextGotchaId,
   searchNodes,
   getAdjacencies,
   getGraphStatus,

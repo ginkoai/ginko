@@ -34,6 +34,15 @@ const NodeEditorModal = dynamic(
     ssr: false, // No need for SSR on modal
   }
 );
+
+// Lazy load the CreateNodeModal for performance (only loaded when creating)
+const CreateNodeModal = dynamic(
+  () => import('@/components/graph/CreateNodeModal').then((mod) => mod.CreateNodeModal),
+  {
+    loading: () => null,
+    ssr: false,
+  }
+);
 import { setDefaultGraphId, getNodeById } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel, TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { useSupabase } from '@/components/providers';
@@ -233,6 +242,10 @@ function GraphPageContent() {
   const [editingNode, setEditingNode] = useState<GraphNode | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // Create modal state
+  const [creatingNodeType, setCreatingNodeType] = useState<NodeLabel | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   // Track if we're fetching a node by ID (for deep links)
   const [isFetchingNode, setIsFetchingNode] = useState(false);
 
@@ -358,6 +371,20 @@ function GraphPageContent() {
     // Invalidate React Query cache to refresh data across the UI
     queryClient.invalidateQueries({ queryKey: graphQueryKeys.all });
   }, [selectedNode, queryClient]);
+
+  // Handle create node (open create modal)
+  const handleCreateNode = useCallback((nodeType: NodeLabel) => {
+    setCreatingNodeType(nodeType);
+    setIsCreateModalOpen(true);
+  }, []);
+
+  // Handle save from create modal
+  const handleCreateSave = useCallback((newNode: GraphNode) => {
+    // Invalidate React Query cache to refresh data across the UI
+    queryClient.invalidateQueries({ queryKey: graphQueryKeys.all });
+    // Navigate to the new node
+    handleSelectNode(newNode.id);
+  }, [queryClient, handleSelectNode]);
 
   // Close detail panel
   const handleClosePanel = useCallback(() => {
@@ -547,6 +574,7 @@ function GraphPageContent() {
                 onSelectNode={handleSelectNode}
                 onViewDetails={handleViewDetails}
                 onEdit={handleEditNode}
+                onCreateNode={handleCreateNode}
               />
             )}
 
@@ -590,6 +618,15 @@ function GraphPageContent() {
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         onSave={handleEditSave}
+      />
+
+      {/* Create Node Modal */}
+      <CreateNodeModal
+        nodeType={creatingNodeType}
+        graphId={DEFAULT_GRAPH_ID}
+        open={isCreateModalOpen}
+        onOpenChange={setIsCreateModalOpen}
+        onCreate={handleCreateSave}
       />
     </div>
   );

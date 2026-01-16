@@ -53,3 +53,13 @@ Implemented e011_s02_t03: Git Sync on Save. Created GitHub module (client.ts, gi
 
 Files: dashboard/src/lib/github/client.ts, dashboard/src/lib/github/git-sync-service.ts, dashboard/src/lib/github/types.ts, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
 Impact: high
+
+### 16:06 - [decision]
+# [DECISION] 16:06
+
+Architecture decision: Git sync defaults to eventual consistency via ginko sync. Immediate sync via GITHUB_TOKEN left dormant - customers expressed concern about granting third-party write access to repos. PR-based flow considered but rejected as adding complexity without proportional value. Current flow: Dashboard edit → Graph (synced:false) → ginko sync pulls to local git → customer commits.
+
+**Impact:** medium
+**Timestamp:** 2026-01-16T21:06:56.545Z
+
+Impact: medium
