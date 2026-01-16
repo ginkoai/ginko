@@ -282,6 +282,25 @@ export async function PATCH(
 }
 
 /**
+ * PUT /api/v1/graph/nodes/:id
+ * Full update of an existing node (alias to PATCH for API compatibility)
+ *
+ * Per REST semantics, PUT typically replaces the entire resource,
+ * but we treat it as a partial update like PATCH for convenience.
+ *
+ * Body: { title?, content?, status?, tags?, ... } or { properties: { ... } }
+ * Query params: graphId (required)
+ * Response: { node: Node, syncStatus: SyncStatus }
+ */
+export async function PUT(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
+  // Delegate to PATCH handler
+  return PATCH(request, context);
+}
+
+/**
  * GET /api/v1/graph/nodes/:id
  * Get a specific node by ID
  *

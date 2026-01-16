@@ -36,7 +36,7 @@ import { Alert } from '@/components/ui/alert';
 import { NodeEditorForm } from './NodeEditorForm';
 import { getNodeSchema } from '@/lib/node-schemas';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
-import { getNodeById } from '@/lib/graph/api-client';
+import { getNodeById, updateNode } from '@/lib/graph/api-client';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import {
   FileText,
@@ -102,22 +102,6 @@ interface NodeEditorModalProps {
   /** Callback when save succeeds */
   onSave?: (updatedNode: GraphNode) => void;
 }
-
-// =============================================================================
-// Helper
-// =============================================================================
-
-const getAuthToken = async (): Promise<string> => {
-  if (typeof window !== 'undefined') {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    return session?.access_token || '';
-  }
-  return '';
-};
 
 // =============================================================================
 // Component
@@ -271,24 +255,11 @@ export function NodeEditorModal({
     setSaveError(null);
 
     try {
-      const token = await getAuthToken();
-      const response = await fetch(`/api/v1/graph/nodes/${node.id}?graphId=${encodeURIComponent(graphId)}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          properties: formData,
-        }),
+      const result = await updateNode(node.id, {
+        graphId,
+        properties: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to save node');
-      }
-
-      const result = await response.json();
       onSave?.(result.node);
       onOpenChange(false);
     } catch (error) {

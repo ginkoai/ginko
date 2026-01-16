@@ -159,6 +159,56 @@ export async function getNodeById(
 }
 
 // =============================================================================
+// Node Update Operations
+// =============================================================================
+
+export interface UpdateNodeOptions extends FetchOptions {
+  /** Properties to update (partial update supported) */
+  properties: Record<string, unknown>;
+}
+
+export interface UpdateNodeResponse {
+  node: GraphNode;
+  syncStatus: {
+    synced: boolean;
+    syncedAt: string | null;
+    editedAt: string;
+    editedBy: string;
+    contentHash: string;
+    gitHash: string | null;
+  };
+}
+
+/**
+ * Update a node's properties in the graph
+ *
+ * - Performs partial update (only specified properties are changed)
+ * - Sets synced=false to indicate pending git sync
+ * - Updates editedAt timestamp and editedBy user
+ * - Computes contentHash if content field is updated
+ *
+ * @param nodeId - The ID of the node to update
+ * @param options - Update options including properties to change
+ * @returns Updated node with sync status
+ * @throws Error if authentication fails, node not found, or update fails
+ */
+export async function updateNode(
+  nodeId: string,
+  options: UpdateNodeOptions
+): Promise<UpdateNodeResponse> {
+  const { properties, ...fetchOptions } = options;
+
+  return graphFetch<UpdateNodeResponse>(
+    `${API_BASE}/nodes/${encodeURIComponent(nodeId)}`,
+    {
+      ...fetchOptions,
+      method: 'PATCH',
+      body: JSON.stringify({ properties }),
+    }
+  );
+}
+
+// =============================================================================
 // Search Operations
 // =============================================================================
 
@@ -907,6 +957,7 @@ export const graphApi = {
   listNodes,
   getNodesByLabel,
   getNodeById,
+  updateNode,
   searchNodes,
   getAdjacencies,
   getGraphStatus,
