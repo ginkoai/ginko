@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-14T23-46-44-473Z
-started: 2026-01-14T23:46:44.473Z
+session_id: session-2026-01-16T15-44-36-025Z
+started: 2026-01-16T15:44:36.025Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-14T23-46-44-473Z
+# Session Log: session-2026-01-16T15-44-36-025Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,52 +37,84 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 18:48 - [achievement]
-# [ACHIEVEMENT] 18:48
+### 10:47 - [feature]
+# [FEATURE] 10:47
 
-Updated sprint file e011_s01: marked t01, t02, t03 as complete. Fixed t01 status inconsistency. Sprint now at 43% (3/7 tasks).
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-- docs/sprints/SPRINT-2026-01-e011-s01-hierarchy-navigation.md
-
-**Impact:** medium
-**Timestamp:** 2026-01-14T23:48:53.641Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, docs/sprints/SPRINT-2026-01-e011-s01-hierarchy-navigation.md
-Impact: medium
-
-### 18:56 - [feature]
-# [FEATURE] 18:56
-
-Implemented e011_s01_t04: Show Referenced Nodes Section. Created ReferencesSection component that displays ADRs, Patterns, Gotchas referenced by the current node via REFERENCES relationships. Added useReferencedNodes hook to fetch references. Integrated into NodeView between children and properties sections.
+Starting e011_s01_t02: Add Parent Link to Detail Cards. Will add navigation link showing parent node in detail view.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 - .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-- dashboard/src/components/graph/NodeView.tsx
 
 **Impact:** medium
-**Timestamp:** 2026-01-14T23:56:09.077Z
+**Timestamp:** 2026-01-16T15:47:29.491Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json, dashboard/src/components/graph/NodeView.tsx
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
 Impact: medium
 
-### 19:06 - [fix]
-# [FIX] 19:06
+### 11:07 - [feature]
+# [FEATURE] 11:07
 
-Fixed browser back button navigation (e011_s01_t05). Added popstate event listener to detect back/forward button presses. URL params now properly sync state when browser navigates. Breadcrumbs trim correctly when navigating back through node history.
+Implemented ancestry-based breadcrumbs (t05 fix). Added useNodeAncestry hook to fetch full parent chain (Task→Sprint→Epic). Breadcrumbs now show complete hierarchy when clicking any node in tree. Replaced manual navigation history tracking with automatic ancestry fetching.
 
 **Files:**
+- dashboard/src/lib/graph/hooks.ts
 - dashboard/src/app/dashboard/graph/page.tsx
-- docs/sprints/SPRINT-2026-01-e011-s01-hierarchy-navigation.md
+
+**Impact:** high
+**Timestamp:** 2026-01-16T16:07:02.138Z
+
+Files: dashboard/src/lib/graph/hooks.ts, dashboard/src/app/dashboard/graph/page.tsx
+Impact: high
+
+### 11:09 - [decision]
+# [DECISION] 11:09
+
+Confirmed t05 breadcrumb fix working. Moving to t06: BUG-002 ADR Edit Modal Content.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
 
 **Impact:** medium
-**Timestamp:** 2026-01-15T00:06:39.109Z
+**Timestamp:** 2026-01-16T16:09:48.421Z
 
-Files: dashboard/src/app/dashboard/graph/page.tsx, docs/sprints/SPRINT-2026-01-e011-s01-hierarchy-navigation.md
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
 Impact: medium
+
+### 11:13 - [fix]
+# [FIX] 11:13
+
+Fixed BUG-002: ADR edit modal content loading. Root cause: Modal received partial node data from listing API which doesn't include full content fields (context, decision, consequences). Solution: Modal now fetches complete node data via getNodeById when opening, ensuring all properties are loaded. Added loading indicator while fetching.
+
+**Files:**
+- dashboard/src/components/graph/NodeEditorModal.tsx
+
+**Impact:** high
+**Timestamp:** 2026-01-16T16:13:42.247Z
+
+Files: dashboard/src/components/graph/NodeEditorModal.tsx
+Impact: high
+
+### 11:25 - [achievement]
+# [ACHIEVEMENT] 11:25
+
+Session handoff: Completed e011_s01 tasks t05 (breadcrumb hierarchy fix using useNodeAncestry hook) and t06 (edit modal content loading fix with schema updates to use content field). Sprint at 86% - only t07 (integration testing) remains. Deployed to production.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+
+**Impact:** high
+**Timestamp:** 2026-01-16T16:25:48.378Z
+
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Impact: high

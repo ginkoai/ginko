@@ -1228,10 +1228,34 @@
       "relevance": "critical",
       "created": "2026-01-14T23:03:49.183Z",
       "sessionId": "session-chris-at-watchhill-ai-1768431829139"
+    },
+    {
+      "filename": "pattern-implemented-ancestrybased-breadcrumbs-t05-fix.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-16T16:07:06.680Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768579626615"
+    },
+    {
+      "filename": "gotcha-fixed-bug002-adr-edit-modal-content-loading.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-16T16:13:48.265Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768580028162"
     }
   ],
-  "lastUpdated": "2026-01-14T23:03:49.185Z",
-  "totalModules": 95,
+  "lastUpdated": "2026-01-16T16:13:48.267Z",
+  "totalModules": 97,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
