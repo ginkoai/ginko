@@ -575,12 +575,11 @@ function formatRelativeTime(dateValue: unknown): string {
  * Format editedBy field for display
  */
 function formatEditedBy(editedBy: string): string {
-  if (editedBy.includes('@')) {
-    return editedBy.split('@')[0];
-  }
+  // Handle user_xxx format (legacy)
   if (editedBy.startsWith('user_')) {
     return editedBy.substring(5, 13);
   }
+  // Return as-is (email or other identifier)
   return editedBy;
 }
 

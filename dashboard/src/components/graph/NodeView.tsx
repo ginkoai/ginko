@@ -201,17 +201,14 @@ function formatRelativeTime(dateValue: unknown): string {
 }
 
 /**
- * Format editedBy field for display (extract username from user ID)
+ * Format editedBy field for display
  */
 function formatEditedBy(editedBy: string): string {
-  // Handle email format
-  if (editedBy.includes('@')) {
-    return editedBy.split('@')[0];
-  }
-  // Handle user_xxx format
+  // Handle user_xxx format (legacy)
   if (editedBy.startsWith('user_')) {
     return editedBy.substring(5, 13);
   }
+  // Return as-is (email or other identifier)
   return editedBy;
 }
 
