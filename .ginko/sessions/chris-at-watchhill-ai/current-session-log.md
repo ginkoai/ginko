@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-16T17-52-09-442Z
-started: 2026-01-16T17:52:09.442Z
+session_id: session-2026-01-16T18-52-26-561Z
+started: 2026-01-16T18:52:26.561Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-16T17-52-09-442Z
+# Session Log: session-2026-01-16T18-52-26-561Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,80 +37,33 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 13:24 - [feature]
-# [FEATURE] 13:24
+### 13:59 - [feature]
+# [FEATURE] 13:59
 
-Working on e011_s02_t01 (Edit Modal Content Loading). Reviewed NodeEditorModal implementation - found it already has loading state, fetch logic, and fallback. Added loadError state to show user-visible warning when content fetch fails instead of silent fallback. Implementation already supports ADR, Pattern, Gotcha content fields via getNodeById API.
+Starting e011_s02_t02: Implement Save to Graph API. Will add save functionality to edit modal.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/components/graph/NodeEditorModal.tsx
-- docs/sprints/CURRENT-SPRINT.md
 
 **Impact:** medium
-**Timestamp:** 2026-01-16T18:24:04.562Z
+**Timestamp:** 2026-01-16T18:59:29.015Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/components/graph/NodeEditorModal.tsx, docs/sprints/CURRENT-SPRINT.md
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: medium
 
-### 13:49 - [achievement]
-# [ACHIEVEMENT] 13:49
+### 14:11 - [achievement]
+# [ACHIEVEMENT] 14:11
 
-Completed e011_s02_t01: Edit Modal Content Loading. Verified content loads correctly for ADR, Pattern, Gotcha, PRD. Added loadError state for user-visible warning on fetch failures. Fixed PRD schema to use single content field (was expecting 3 separate fields). UAT passed - edit, preview, save all work.
+Completed e011_s02_t02: Save to Graph API. Added updateNode() to api-client.ts with full sync status tracking. Refactored NodeEditorModal to use api-client pattern instead of raw fetch. Added PUT endpoint as alias to PATCH for REST compatibility. API returns node + syncStatus with editedAt, editedBy, contentHash for sync tracking.
 
 **Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/lib/graph/api-client.ts
 - dashboard/src/components/graph/NodeEditorModal.tsx
-- dashboard/src/lib/node-schemas.ts
+- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-16T18:49:19.524Z
+**Timestamp:** 2026-01-16T19:11:09.069Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/components/graph/NodeEditorModal.tsx, dashboard/src/lib/node-schemas.ts
+Files: dashboard/src/lib/graph/api-client.ts, dashboard/src/components/graph/NodeEditorModal.tsx, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
 Impact: high
-
----
-
-## Session Handoff
-
-**Model:** Claude Opus 4.5 (claude-opus-4-5-20251101)
-**Session End:** 2026-01-16T18:55:00Z
-**Branch:** main (clean, pushed)
-
-### Completed This Session
-
-1. **e011_s01 marked complete** - All 7 tasks in Hierarchy Navigation UI sprint
-2. **e011_s02 sprint file created** - Edit Capability & Sync (6 tasks, 24h)
-3. **e011_s02_t01 completed** - Fix Edit Modal Content Loading
-   - Added `loadError` state to NodeEditorModal for user-visible warnings
-   - Fixed PRD schema to use single `content` field (was 3 separate fields)
-   - UAT passed for ADR, Pattern, Gotcha, PRD - all load/edit/save correctly
-
-### Files Changed
-- `dashboard/src/components/graph/NodeEditorModal.tsx` - Added loadError state
-- `dashboard/src/lib/node-schemas.ts` - Fixed PRD schema
-- `docs/sprints/CURRENT-SPRINT.md` - Now points to e011_s02
-- `docs/sprints/SPRINT-2026-01-e011-s02-edit-capability.md` - New sprint file
-
-### Commits Pushed
-- `84e9cab` fix(dashboard): Complete e011_s02_t01 - Edit modal content loading
-- `4af05d9` docs(sprint): Complete e011_s01, create e011_s02 Edit Capability sprint
-
-### Sprint Progress
-- **e011_s02:** 17% (1/6 tasks complete)
-
-### Next Steps
-1. **t02** - Implement Save to Graph API (4h) - Add PUT endpoint for node updates
-2. **t03** - Implement Git Sync on Save (6h) - Sync edits back to markdown files
-3. Review Vercel preview env vars - Preview deployments fail due to missing Supabase config
-
-### Known Issues
-- Vercel preview deployments fail (Supabase env vars only configured for Production)
-- Pre-existing TypeScript errors in billing/stripe routes (not blocking)
-
-### Environment
-- Production deployed: https://app.ginkoai.com
-- All changes pushed to origin/main
