@@ -145,6 +145,29 @@ export async function PATCH(
       ];
       systemFields.forEach(field => delete updateProps[field]);
 
+      // Filter out non-primitive values (Neo4j DateTime objects get serialized as complex Maps)
+      // Neo4j can only store primitives (string, number, boolean, null) or arrays of primitives
+      const isPrimitive = (value: unknown): boolean => {
+        if (value === null || value === undefined) return true;
+        const type = typeof value;
+        if (type === 'string' || type === 'number' || type === 'boolean') return true;
+        if (Array.isArray(value)) {
+          // Arrays of primitives are OK
+          return value.every(item => {
+            const itemType = typeof item;
+            return item === null || itemType === 'string' || itemType === 'number' || itemType === 'boolean';
+          });
+        }
+        return false;
+      };
+
+      // Remove any non-primitive properties
+      Object.keys(updateProps).forEach(key => {
+        if (!isPrimitive(updateProps[key])) {
+          delete updateProps[key];
+        }
+      });
+
       const now = new Date().toISOString();
 
       const result = await session.executeWrite(async (tx) => {

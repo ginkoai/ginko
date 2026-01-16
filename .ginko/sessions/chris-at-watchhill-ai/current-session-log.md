@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-16T15-44-36-025Z
-started: 2026-01-16T15:44:36.025Z
+session_id: session-2026-01-16T16-26-43-909Z
+started: 2026-01-16T16:26:43.909Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-16T15-44-36-025Z
+# Session Log: session-2026-01-16T16-26-43-909Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -37,84 +37,19 @@ flow_state: hot
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 10:47 - [feature]
-# [FEATURE] 10:47
+### 11:58 - [fix]
+# [FIX] 11:58
 
-Starting e011_s01_t02: Add Parent Link to Detail Cards. Will add navigation link showing parent node in detail view.
+Fixed Graph edit modal: (1) Neo4j DateTime objects were being serialized as complex Maps on save - added isPrimitive filter to PATCH endpoint. (2) View wasn't updating after modal close - added React Query cache invalidation on save.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-
-**Impact:** medium
-**Timestamp:** 2026-01-16T15:47:29.491Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-Impact: medium
-
-### 11:07 - [feature]
-# [FEATURE] 11:07
-
-Implemented ancestry-based breadcrumbs (t05 fix). Added useNodeAncestry hook to fetch full parent chain (Task→Sprint→Epic). Breadcrumbs now show complete hierarchy when clicking any node in tree. Replaced manual navigation history tracking with automatic ancestry fetching.
-
-**Files:**
-- dashboard/src/lib/graph/hooks.ts
+- dashboard/src/app/api/v1/graph/nodes/[id]/route.ts
 - dashboard/src/app/dashboard/graph/page.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-16T16:07:02.138Z
+**Timestamp:** 2026-01-16T16:58:01.699Z
 
-Files: dashboard/src/lib/graph/hooks.ts, dashboard/src/app/dashboard/graph/page.tsx
-Impact: high
-
-### 11:09 - [decision]
-# [DECISION] 11:09
-
-Confirmed t05 breadcrumb fix working. Moving to t06: BUG-002 ADR Edit Modal Content.
-
-**Files:**
-- .ginko/context/index.json
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-
-**Impact:** medium
-**Timestamp:** 2026-01-16T16:09:48.421Z
-
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-Impact: medium
-
-### 11:13 - [fix]
-# [FIX] 11:13
-
-Fixed BUG-002: ADR edit modal content loading. Root cause: Modal received partial node data from listing API which doesn't include full content fields (context, decision, consequences). Solution: Modal now fetches complete node data via getNodeById when opening, ensuring all properties are loaded. Added loading indicator while fetching.
-
-**Files:**
-- dashboard/src/components/graph/NodeEditorModal.tsx
-
-**Impact:** high
-**Timestamp:** 2026-01-16T16:13:42.247Z
-
-Files: dashboard/src/components/graph/NodeEditorModal.tsx
-Impact: high
-
-### 11:25 - [achievement]
-# [ACHIEVEMENT] 11:25
-
-Session handoff: Completed e011_s01 tasks t05 (breadcrumb hierarchy fix using useNodeAncestry hook) and t06 (edit modal content loading fix with schema updates to use content field). Sprint at 86% - only t07 (integration testing) remains. Deployed to production.
-
-**Files:**
-- .ginko/context/index.json
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
-
-**Impact:** high
-**Timestamp:** 2026-01-16T16:25:48.378Z
-
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/[id]/route.ts, dashboard/src/app/dashboard/graph/page.tsx
 Impact: high

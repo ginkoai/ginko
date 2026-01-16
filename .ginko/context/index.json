@@ -1252,10 +1252,22 @@
       "relevance": "critical",
       "created": "2026-01-16T16:13:48.265Z",
       "sessionId": "session-chris-at-watchhill-ai-1768580028162"
+    },
+    {
+      "filename": "gotcha-fixed-graph-edit-modal-1-neo4j-datetime-objects-we.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "react"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-16T16:58:05.213Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768582685136"
     }
   ],
-  "lastUpdated": "2026-01-16T16:13:48.267Z",
-  "totalModules": 97,
+  "lastUpdated": "2026-01-16T16:58:05.214Z",
+  "totalModules": 98,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

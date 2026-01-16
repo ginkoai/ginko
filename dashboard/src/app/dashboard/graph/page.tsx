@@ -23,7 +23,8 @@ import { CategoryView } from '@/components/graph/CategoryView';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
 import { NodeView } from '@/components/graph/NodeView';
 import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
-import { useGraphNodes, useNodeAncestry } from '@/lib/graph/hooks';
+import { useGraphNodes, useNodeAncestry, graphQueryKeys } from '@/lib/graph/hooks';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Lazy load the NodeEditorModal for performance (only loaded when editing)
 const NodeEditorModal = dynamic(
@@ -88,6 +89,7 @@ function NodeNotFound({ onBackToProject }: NodeNotFoundProps) {
 function GraphPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const { user, loading: authLoading } = useSupabase();
 
   // Initialize graph ID
@@ -353,8 +355,9 @@ function GraphPageContent() {
     if (selectedNode?.id === updatedNode.id) {
       setSelectedNode(updatedNode);
     }
-    // Note: React Query will refetch on next navigation
-  }, [selectedNode]);
+    // Invalidate React Query cache to refresh data across the UI
+    queryClient.invalidateQueries({ queryKey: graphQueryKeys.all });
+  }, [selectedNode, queryClient]);
 
   // Close detail panel
   const handleClosePanel = useCallback(() => {
