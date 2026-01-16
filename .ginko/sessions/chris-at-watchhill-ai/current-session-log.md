@@ -63,3 +63,13 @@ Architecture decision: Git sync defaults to eventual consistency via ginko sync.
 **Timestamp:** 2026-01-16T21:06:56.545Z
 
 Impact: medium
+
+### 16:17 - [feature]
+# [FEATURE] 16:17
+
+Completed e011_s02_t04: Node Creation UI. Added CreateNodeModal component, [+ New] button in CategoryView for ADR/Pattern/Gotcha types, createNode API client function, and auto-increment ID generation. Users can now create new knowledge nodes directly from the dashboard.
+
+**Impact:** high
+**Timestamp:** 2026-01-16T21:17:31.728Z
+
+Impact: high

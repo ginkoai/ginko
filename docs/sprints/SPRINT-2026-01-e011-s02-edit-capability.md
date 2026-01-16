@@ -5,7 +5,7 @@
 **Sprint Goal**: Enable in-place editing with bidirectional git sync
 **Duration**: 1-2 weeks
 **Type**: Feature sprint
-**Progress:** 50% (3/6 tasks complete)
+**Progress:** 67% (4/6 tasks complete)
 **Prerequisite:** Sprint 1 complete (Hierarchy Navigation UI)
 
 **Success Criteria:**
@@ -214,7 +214,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ---
 
 ### e011_s02_t04: Add Node Creation UI (5h)
-**Status:** [@] In Progress
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assignee:** TBD
 
