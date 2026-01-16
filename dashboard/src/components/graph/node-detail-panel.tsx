@@ -228,6 +228,17 @@ export function NodeDetailPanel({
                 <span>Created: {formatDate(nodeProps.created_at as string)}</span>
               )}
             </div>
+            {nodeProps.editedAt && (
+              <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                <span>
+                  Edited: {formatRelativeTime(nodeProps.editedAt as string)}
+                  {nodeProps.editedBy && ` by ${formatEditedBy(nodeProps.editedBy as string)}`}
+                </span>
+                {nodeProps.synced === false && (
+                  <span className="text-amber-400">Pending sync</span>
+                )}
+              </div>
+            )}
           </div>
         </motion.div>
       )}
@@ -513,6 +524,45 @@ function formatDate(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+/**
+ * Format a date as relative time (e.g., "2 hours ago")
+ */
+function formatRelativeTime(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+
+    if (diffMinutes < 1) {
+      return 'just now';
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes}m ago`;
+    } else if (diffMinutes < 1440) {
+      const hours = Math.floor(diffMinutes / 60);
+      return `${hours}h ago`;
+    } else {
+      const days = Math.floor(diffMinutes / 1440);
+      return `${days}d ago`;
+    }
+  } catch {
+    return dateStr;
+  }
+}
+
+/**
+ * Format editedBy field for display
+ */
+function formatEditedBy(editedBy: string): string {
+  if (editedBy.includes('@')) {
+    return editedBy.split('@')[0];
+  }
+  if (editedBy.startsWith('user_')) {
+    return editedBy.substring(5, 13);
+  }
+  return editedBy;
 }
 
 // =============================================================================

@@ -156,6 +156,47 @@ function formatDate(dateStr: string): string {
 }
 
 /**
+ * Format a date as relative time (e.g., "2 hours ago")
+ */
+function formatRelativeTime(dateStr: string): string {
+  try {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+
+    if (diffMinutes < 1) {
+      return 'just now';
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes}m ago`;
+    } else if (diffMinutes < 1440) {
+      const hours = Math.floor(diffMinutes / 60);
+      return `${hours}h ago`;
+    } else {
+      const days = Math.floor(diffMinutes / 1440);
+      return `${days}d ago`;
+    }
+  } catch {
+    return dateStr;
+  }
+}
+
+/**
+ * Format editedBy field for display (extract username from user ID)
+ */
+function formatEditedBy(editedBy: string): string {
+  // Handle email format
+  if (editedBy.includes('@')) {
+    return editedBy.split('@')[0];
+  }
+  // Handle user_xxx format
+  if (editedBy.startsWith('user_')) {
+    return editedBy.substring(5, 13);
+  }
+  return editedBy;
+}
+
+/**
  * Check if value is a Neo4j temporal type (date/datetime)
  * Neo4j returns dates as: { year: { low: 2025, high: 0 }, month: { low: 12, high: 0 }, day: { low: 17, high: 0 }, ... }
  */
@@ -301,6 +342,13 @@ function NodeHeader({
               <span className="flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
                 {formatDate(props.created_at as string)}
+              </span>
+            )}
+            {props.editedAt && (
+              <span className="flex items-center gap-1">
+                <Pencil className="w-3.5 h-3.5" />
+                Edited {formatRelativeTime(props.editedAt as string)}
+                {props.editedBy && ` by ${formatEditedBy(props.editedBy as string)}`}
               </span>
             )}
           </div>

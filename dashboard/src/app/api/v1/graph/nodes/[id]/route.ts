@@ -21,6 +21,17 @@ interface NodeData {
 
 interface PatchNodeRequest {
   [key: string]: any;  // Partial update
+  baselineHash?: string;  // Hash when editing started (for conflict detection)
+  conflictStrategy?: 'skip' | 'use-incoming' | 'force';  // How to handle conflicts
+}
+
+interface ConflictInfo {
+  type: 'content-modified-externally';
+  currentHash: string;
+  incomingHash: string;
+  baselineHash: string;
+  lastModifiedBy: string;
+  lastModifiedAt: string;
 }
 
 interface SyncStatus {
@@ -164,6 +175,10 @@ export async function PATCH(
 
     console.log('[Nodes API] Updating node:', { nodeId, graphId, updateKeys: Object.keys(body) });
 
+    // Extract conflict handling parameters
+    const baselineHash = body.baselineHash;
+    const conflictStrategy = body.conflictStrategy;
+
     // Compute content hash if content is being updated
     let contentHash: string | undefined;
     if (body.content) {
@@ -177,6 +192,10 @@ export async function PATCH(
       const updateProps: Record<string, any> = body.properties
         ? { ...body.properties }
         : { ...body };
+
+      // Remove conflict handling fields from properties
+      delete updateProps.baselineHash;
+      delete updateProps.conflictStrategy;
 
       // Remove system-managed fields that shouldn't be client-editable
       // These are either query params or auto-managed by the API
@@ -226,6 +245,43 @@ export async function PATCH(
         }
 
         const currentNode = checkResult.records[0].get('n').properties;
+        const nodeLabels = checkResult.records[0].get('nodeLabels') as string[];
+
+        // Conflict detection: Check if node was modified since editing started
+        if (baselineHash && currentNode.contentHash && body.content) {
+          const currentHash = currentNode.contentHash;
+
+          // Conflict exists if:
+          // 1. Current hash differs from baseline (someone else changed it)
+          // 2. AND incoming hash differs from current (we're not saving the same content)
+          if (currentHash !== baselineHash && contentHash !== currentHash) {
+            // Strategy: 'force' allows overwrite, 'skip' keeps current, otherwise return conflict
+            if (conflictStrategy === 'force') {
+              console.log('[Nodes API] Conflict detected but force strategy applied');
+              // Continue with save
+            } else if (conflictStrategy === 'skip') {
+              console.log('[Nodes API] Conflict detected, skip strategy - keeping current');
+              // Return marker indicating skip
+              return {
+                type: 'skip' as const,
+                currentNode,
+                nodeLabels,
+                currentHash,
+              };
+            } else {
+              // No strategy provided - return marker indicating conflict
+              console.log('[Nodes API] Conflict detected, returning 409');
+              return {
+                type: 'conflict' as const,
+                currentHash,
+                incomingHash: contentHash || '',
+                baselineHash,
+                lastModifiedBy: currentNode.editedBy || 'unknown',
+                lastModifiedAt: currentNode.editedAt?.toString() || '',
+              };
+            }
+          }
+        }
 
         // Build SET clause dynamically
         const setStatements: string[] = [];
@@ -280,6 +336,51 @@ export async function PATCH(
           },
           { status: 404 }
         );
+      }
+
+      // Handle conflict markers returned from transaction
+      if (result && typeof result === 'object' && 'type' in result) {
+        if (result.type === 'skip') {
+          // Skip strategy - return current node without changes
+          const skipResult = result as { currentNode: any; nodeLabels: string[]; currentHash: string };
+          const skipResponse: PatchNodeResponse = {
+            node: {
+              id: skipResult.currentNode.id,
+              label: skipResult.nodeLabels[0] || 'Unknown',
+              properties: { ...skipResult.currentNode },
+            },
+            syncStatus: {
+              synced: skipResult.currentNode.synced || false,
+              syncedAt: skipResult.currentNode.syncedAt ? skipResult.currentNode.syncedAt.toString() : null,
+              editedAt: skipResult.currentNode.editedAt?.toString() || '',
+              editedBy: skipResult.currentNode.editedBy || '',
+              contentHash: skipResult.currentHash,
+              gitHash: skipResult.currentNode.gitHash || null,
+            },
+          };
+          return NextResponse.json(skipResponse);
+        } else if (result.type === 'conflict') {
+          // Conflict detected - return 409
+          const conflictResult = result as ConflictInfo & { type: string };
+          const conflictInfo: ConflictInfo = {
+            type: 'content-modified-externally',
+            currentHash: conflictResult.currentHash,
+            incomingHash: conflictResult.incomingHash,
+            baselineHash: conflictResult.baselineHash,
+            lastModifiedBy: conflictResult.lastModifiedBy,
+            lastModifiedAt: conflictResult.lastModifiedAt,
+          };
+          return NextResponse.json(
+            {
+              error: {
+                code: 'CONTENT_CONFLICT',
+                message: 'Node was modified by another user since you started editing',
+                conflict: conflictInfo,
+              },
+            },
+            { status: 409 }
+          );
+        }
       }
 
       const updatedNode = result.get('n').properties;
@@ -498,12 +599,24 @@ export async function GET(
       const node = result.records[0].get('n').properties;
       const nodeLabels = result.records[0].get('nodeLabels') as string[];
 
+      // Build sync status for edit session (includes baselineHash for conflict detection)
+      const syncStatus: SyncStatus = {
+        synced: node.synced || false,
+        syncedAt: node.syncedAt ? node.syncedAt.toString() : null,
+        editedAt: node.editedAt ? node.editedAt.toString() : '',
+        editedBy: node.editedBy || '',
+        contentHash: node.contentHash || '',
+        gitHash: node.gitHash || null,
+      };
+
       const response = {
         node: {
           id: node.id,
           label: nodeLabels[0] || 'Unknown',
           properties: { ...node },
         },
+        // Include syncStatus so clients can track baseline for conflict detection
+        syncStatus,
       };
 
       console.log('[Nodes API] Node fetched successfully:', nodeId);

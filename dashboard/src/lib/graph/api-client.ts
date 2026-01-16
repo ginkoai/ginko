@@ -86,8 +86,20 @@ async function graphFetch<T>(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(error.error?.message || error.message || `API error: ${response.status}`);
+    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+
+    // Special handling for 409 Conflict - include conflict info in error
+    if (response.status === 409 && errorData.error?.conflict) {
+      const conflictError = new Error(errorData.error.message || 'Content conflict detected') as Error & {
+        status: number;
+        conflict: unknown;
+      };
+      conflictError.status = 409;
+      conflictError.conflict = errorData.error.conflict;
+      throw conflictError;
+    }
+
+    throw new Error(errorData.error?.message || errorData.message || `API error: ${response.status}`);
   }
 
   return response.json();
@@ -140,19 +152,33 @@ export async function getNodesByLabel(
   return response.nodes;
 }
 
+/** Response from getNodeById including sync status */
+export interface GetNodeResponse {
+  node: GraphNode;
+  syncStatus?: {
+    synced: boolean;
+    syncedAt: string | null;
+    editedAt: string;
+    editedBy: string;
+    contentHash: string;
+    gitHash: string | null;
+  };
+}
+
 /**
  * Get a single node by ID
+ * Returns full response including syncStatus for conflict detection
  */
 export async function getNodeById(
   nodeId: string,
   options: FetchOptions = {}
-): Promise<GraphNode | null> {
+): Promise<GetNodeResponse | null> {
   try {
-    const response = await graphFetch<{ node: GraphNode }>(
+    const response = await graphFetch<GetNodeResponse>(
       `${API_BASE}/nodes/${encodeURIComponent(nodeId)}`,
       options
     );
-    return response.node;
+    return response;
   } catch {
     return null;
   }
@@ -165,6 +191,10 @@ export async function getNodeById(
 export interface UpdateNodeOptions extends FetchOptions {
   /** Properties to update (partial update supported) */
   properties: Record<string, unknown>;
+  /** Content hash when editing started (for conflict detection) */
+  baselineHash?: string;
+  /** How to handle conflicts if detected */
+  conflictStrategy?: 'skip' | 'force';
 }
 
 export interface UpdateNodeResponse {
@@ -196,14 +226,18 @@ export async function updateNode(
   nodeId: string,
   options: UpdateNodeOptions
 ): Promise<UpdateNodeResponse> {
-  const { properties, ...fetchOptions } = options;
+  const { properties, baselineHash, conflictStrategy, ...fetchOptions } = options;
 
   return graphFetch<UpdateNodeResponse>(
     `${API_BASE}/nodes/${encodeURIComponent(nodeId)}`,
     {
       ...fetchOptions,
       method: 'PATCH',
-      body: JSON.stringify({ properties }),
+      body: JSON.stringify({
+        properties,
+        ...(baselineHash && { baselineHash }),
+        ...(conflictStrategy && { conflictStrategy }),
+      }),
     }
   );
 }

@@ -5,7 +5,7 @@
 **Sprint Goal**: Enable in-place editing with bidirectional git sync
 **Duration**: 1-2 weeks
 **Type**: Feature sprint
-**Progress:** 67% (4/6 tasks complete)
+**Progress:** 100% (6/6 tasks complete)
 **Prerequisite:** Sprint 1 complete (Hierarchy Navigation UI)
 
 **Success Criteria:**
@@ -258,7 +258,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ---
 
 ### e011_s02_t05: Add Edit History Display (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assignee:** TBD
 
@@ -303,7 +303,7 @@ interface NodeEdit {
 ---
 
 ### e011_s02_t06: Handle Edit Conflicts (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
 **Assignee:** TBD
 

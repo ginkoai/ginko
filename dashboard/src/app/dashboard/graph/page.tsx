@@ -275,9 +275,9 @@ function GraphPageContent() {
         // Node not in cache - fetch it directly (for deep links or parent navigation)
         setIsFetchingNode(true);
         getNodeById(selectedNodeId, { graphId: DEFAULT_GRAPH_ID })
-          .then(node => {
-            if (node) {
-              setSelectedNode(node);
+          .then(response => {
+            if (response?.node) {
+              setSelectedNode(response.node);
               setIsPanelOpen(true);
             }
           })

@@ -36,7 +36,8 @@ import { Alert } from '@/components/ui/alert';
 import { NodeEditorForm } from './NodeEditorForm';
 import { getNodeSchema } from '@/lib/node-schemas';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
-import { getNodeById, updateNode } from '@/lib/graph/api-client';
+import { getNodeById, updateNode, type UpdateNodeResponse } from '@/lib/graph/api-client';
+import { ConflictDialog, type ConflictInfo, type ConflictResolution } from './ConflictDialog';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import {
   FileText,
@@ -121,7 +122,10 @@ export function NodeEditorModal({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+  const [conflictInfo, setConflictInfo] = useState<ConflictInfo | null>(null);
   const initialDataRef = useRef<Record<string, unknown>>({});
+  const baselineHashRef = useRef<string>('');
   const [fullNode, setFullNode] = useState<GraphNode | null>(null);
 
   const schema = node ? getNodeSchema(node.label as NodeLabel) : null;
@@ -170,10 +174,19 @@ export function NodeEditorModal({
       // The node prop may only have partial data from listing API
       const fetchFullNode = async () => {
         setLoadingNode(true);
+        setConflictInfo(null);
+        setShowConflictDialog(false);
         try {
-          const fetchedNode = await getNodeById(node.id, { graphId });
-          const nodeToUse = fetchedNode || node;
+          const response = await getNodeById(node.id, { graphId });
+          const nodeToUse = response?.node || node;
           setFullNode(nodeToUse);
+
+          // Store baseline hash for conflict detection
+          if (response?.syncStatus?.contentHash) {
+            baselineHashRef.current = response.syncStatus.contentHash;
+          } else {
+            baselineHashRef.current = '';
+          }
 
           const props = nodeToUse.properties as Record<string, unknown>;
 
@@ -246,7 +259,7 @@ export function NodeEditorModal({
     return true;
   }, [schema, formData]);
 
-  const handleSave = useCallback(async () => {
+  const handleSave = useCallback(async (conflictStrategy?: 'force' | 'skip') => {
     if (!node || !handleValidate()) {
       return;
     }
@@ -258,16 +271,41 @@ export function NodeEditorModal({
       const result = await updateNode(node.id, {
         graphId,
         properties: formData,
+        baselineHash: baselineHashRef.current || undefined,
+        conflictStrategy,
       });
 
       onSave?.(result.node);
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: unknown) {
+      // Check if this is a conflict error (409)
+      if (error && typeof error === 'object' && 'status' in error && (error as { status: number }).status === 409) {
+        const conflictError = error as { conflict?: ConflictInfo };
+        if (conflictError.conflict) {
+          setConflictInfo(conflictError.conflict);
+          setShowConflictDialog(true);
+          return;
+        }
+      }
       setSaveError(error instanceof Error ? error.message : 'Failed to save node');
     } finally {
       setLoading(false);
     }
   }, [node, graphId, formData, handleValidate, onSave, onOpenChange]);
+
+  // Handle conflict resolution
+  const handleConflictResolution = useCallback((resolution: ConflictResolution) => {
+    setShowConflictDialog(false);
+
+    if (resolution === 'cancel') {
+      // User cancelled - do nothing
+      setConflictInfo(null);
+      return;
+    }
+
+    // Retry save with the chosen strategy
+    handleSave(resolution);
+  }, [handleSave]);
 
   // Handle attempts to close the modal
   const handleRequestClose = useCallback(() => {
@@ -393,7 +431,7 @@ export function NodeEditorModal({
           <Button variant="outline" onClick={handleCancel} disabled={loading || loadingNode}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading || loadingNode}>
+          <Button onClick={() => handleSave()} disabled={loading || loadingNode}>
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
             ) : (
@@ -424,6 +462,15 @@ export function NodeEditorModal({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+
+    {/* Conflict Resolution Dialog */}
+    <ConflictDialog
+      open={showConflictDialog}
+      onOpenChange={setShowConflictDialog}
+      conflict={conflictInfo}
+      nodeTitle={getNodeTitle()}
+      onResolve={handleConflictResolution}
+    />
     </>
   );
 }
