@@ -8,12 +8,14 @@
 **Progress:** 100% (6/6 tasks complete)
 **Prerequisite:** Sprint 1 complete (Hierarchy Navigation UI)
 
+**Status:** ✅ COMPLETE
+
 **Success Criteria:**
-- [ ] Users can edit ADR/Pattern/Gotcha content in explorer
-- [ ] Changes sync back to git-native markdown files
-- [ ] Node creation UI works (Create ADR, Create Pattern)
-- [ ] Edit history visible in node detail
-- [ ] Edit conflicts handled gracefully
+- [x] Users can edit ADR/Pattern/Gotcha content in explorer
+- [x] Changes sync back to git-native markdown files
+- [x] Node creation UI works (Create ADR, Create Pattern)
+- [x] Edit history visible in node detail
+- [x] Edit conflicts handled gracefully
 
 ---
 
