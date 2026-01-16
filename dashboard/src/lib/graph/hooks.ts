@@ -181,6 +181,49 @@ export function useChildNodes(
 }
 
 // =============================================================================
+// Node Ancestry Hook
+// =============================================================================
+
+/**
+ * Fetch the full ancestry chain for a node (Task → Sprint → Epic)
+ * Returns an array of ancestor nodes from root to immediate parent
+ * Used for building breadcrumb trails
+ */
+export function useNodeAncestry(
+  node: GraphNode | null,
+  options: { graphId?: string } = {},
+  queryOptions?: Omit<UseQueryOptions<GraphNode[]>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: ['graph', 'ancestry', node?.id || '', options.graphId] as const,
+    queryFn: async () => {
+      if (!node) return [];
+
+      const ancestors: GraphNode[] = [];
+      let currentNode: GraphNode | null = node;
+
+      // Walk up the hierarchy (max 10 levels to prevent infinite loops)
+      for (let i = 0; i < 10; i++) {
+        const parentInfo = getParentInfo(currentNode);
+        if (!parentInfo) break;
+
+        const parent = await getParentNode(currentNode, options);
+        if (!parent) break;
+
+        // Add to front of array (we want root → leaf order)
+        ancestors.unshift(parent);
+        currentNode = parent;
+      }
+
+      return ancestors;
+    },
+    enabled: !!node,
+    staleTime: 60_000, // Ancestry doesn't change often
+    ...queryOptions,
+  });
+}
+
+// =============================================================================
 // Referenced Nodes Hook
 // =============================================================================
 

@@ -10,7 +10,7 @@
  */
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,7 @@ import { Alert } from '@/components/ui/alert';
 import { NodeEditorForm } from './NodeEditorForm';
 import { getNodeSchema } from '@/lib/node-schemas';
 import type { GraphNode, NodeLabel } from '@/lib/graph/types';
+import { getNodeById } from '@/lib/graph/api-client';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import {
   FileText,
@@ -132,9 +133,11 @@ export function NodeEditorModal({
   const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [loadingNode, setLoadingNode] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
   const initialDataRef = useRef<Record<string, unknown>>({});
+  const [fullNode, setFullNode] = useState<GraphNode | null>(null);
 
   const schema = node ? getNodeSchema(node.label as NodeLabel) : null;
   const Icon = node ? nodeIcons[node.label as NodeLabel] : null;
@@ -169,39 +172,66 @@ export function NodeEditorModal({
     return false;
   }, [formData]);
 
-  // Reset form when node changes
+  // Fetch full node data and reset form when node/modal changes
   useEffect(() => {
     if (node && open) {
-      const props = node.properties as Record<string, unknown>;
-
-      // Map 'id' property to the schema's expected ID field name
-      // e.g., Task expects 'task_id', Sprint expects 'sprint_id', etc.
-      const idFieldMap: Record<string, string> = {
-        Task: 'task_id',
-        Sprint: 'sprint_id',
-        Epic: 'epic_id',
-        ADR: 'adr_id',
-        PRD: 'prd_id',
-        Pattern: 'pattern_id',
-        Gotcha: 'gotcha_id',
-        Principle: 'principle_id',
-      };
-
-      const idFieldName = idFieldMap[node.label];
-      const mappedProps = { ...props };
-
-      // If schema expects a specific ID field and node has 'id', map it
-      if (idFieldName && props.id && !props[idFieldName]) {
-        mappedProps[idFieldName] = props.id;
-      }
-
-      setFormData(mappedProps);
-      initialDataRef.current = mappedProps;
+      // Reset state when opening
       setErrors({});
       setSaveError(null);
       setShowUnsavedWarning(false);
+
+      // Fetch full node data to ensure all properties are loaded
+      // The node prop may only have partial data from listing API
+      const fetchFullNode = async () => {
+        setLoadingNode(true);
+        try {
+          const fetchedNode = await getNodeById(node.id, { graphId });
+          const nodeToUse = fetchedNode || node;
+          setFullNode(nodeToUse);
+
+          const props = nodeToUse.properties as Record<string, unknown>;
+
+          // Map 'id' property to the schema's expected ID field name
+          // e.g., Task expects 'task_id', Sprint expects 'sprint_id', etc.
+          const idFieldMap: Record<string, string> = {
+            Task: 'task_id',
+            Sprint: 'sprint_id',
+            Epic: 'epic_id',
+            ADR: 'adr_id',
+            PRD: 'prd_id',
+            Pattern: 'pattern_id',
+            Gotcha: 'gotcha_id',
+            Principle: 'principle_id',
+          };
+
+          const idFieldName = idFieldMap[nodeToUse.label];
+          const mappedProps = { ...props };
+
+          // If schema expects a specific ID field and node has 'id', map it
+          if (idFieldName && props.id && !props[idFieldName]) {
+            mappedProps[idFieldName] = props.id;
+          }
+
+          setFormData(mappedProps);
+          initialDataRef.current = mappedProps;
+        } catch (error) {
+          console.error('Failed to fetch full node:', error);
+          // Fall back to using the passed node
+          setFullNode(node);
+          const props = node.properties as Record<string, unknown>;
+          setFormData({ ...props });
+          initialDataRef.current = { ...props };
+        } finally {
+          setLoadingNode(false);
+        }
+      };
+
+      fetchFullNode();
+    } else if (!open) {
+      // Reset when closing
+      setFullNode(null);
     }
-  }, [node, open]);
+  }, [node, open, graphId]);
 
   const handleValidate = useCallback((): boolean => {
     if (!schema) return false;
@@ -336,8 +366,16 @@ export function NodeEditorModal({
         </DialogHeader>
 
         <DialogBody>
+          {/* Loading State */}
+          {loadingNode && (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-ginko-500" />
+              <span className="ml-3 text-muted-foreground">Loading content...</span>
+            </div>
+          )}
+
           {/* General Error */}
-          {saveError && (
+          {!loadingNode && saveError && (
             <Alert variant="destructive" className="mb-4">
               <div>
                 <p className="font-semibold">Save Failed</p>
@@ -346,7 +384,7 @@ export function NodeEditorModal({
             </Alert>
           )}
 
-          {errors._general && (
+          {!loadingNode && errors._general && (
             <Alert variant="destructive" className="mb-4">
               <div>
                 <p className="font-semibold">Validation Error</p>
@@ -356,19 +394,21 @@ export function NodeEditorModal({
           )}
 
           {/* Form */}
-          <NodeEditorForm
-            schema={schema}
-            data={formData}
-            onChange={setFormData}
-            errors={errors}
-          />
+          {!loadingNode && (
+            <NodeEditorForm
+              schema={schema}
+              data={formData}
+              onChange={setFormData}
+              errors={errors}
+            />
+          )}
         </DialogBody>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel} disabled={loading}>
+          <Button variant="outline" onClick={handleCancel} disabled={loading || loadingNode}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={loading}>
+          <Button onClick={handleSave} disabled={loading || loadingNode}>
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
             ) : (

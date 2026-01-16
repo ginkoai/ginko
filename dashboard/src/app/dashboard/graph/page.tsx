@@ -23,7 +23,7 @@ import { CategoryView } from '@/components/graph/CategoryView';
 import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs';
 import { NodeView } from '@/components/graph/NodeView';
 import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
-import { useGraphNodes } from '@/lib/graph/hooks';
+import { useGraphNodes, useNodeAncestry } from '@/lib/graph/hooks';
 
 // Lazy load the NodeEditorModal for performance (only loaded when editing)
 const NodeEditorModal = dynamic(
@@ -240,6 +240,12 @@ function GraphPageContent() {
     limit: 100,
   });
 
+  // Fetch the ancestry chain for the selected node (for breadcrumbs)
+  const { data: ancestryNodes } = useNodeAncestry(
+    selectedNode,
+    { graphId: DEFAULT_GRAPH_ID }
+  );
+
   // Update selected node when ID or data changes
   // Note: This effect handles nodes from the 100-node cache first,
   // then fetches directly if not found (for deep links to nodes outside cache)
@@ -266,14 +272,8 @@ function GraphPageContent() {
     }
   }, [selectedNodeId, nodesData, selectedNode, isFetchingNode]);
 
-  // Clean up stale breadcrumbs when nodes data changes
-  useEffect(() => {
-    if (nodesData?.nodes && breadcrumbs.length > 0) {
-      setBreadcrumbs((prev) =>
-        prev.filter((crumb) => nodesData.nodes?.some((n) => n.id === crumb.id))
-      );
-    }
-  }, [nodesData, breadcrumbs.length]);
+  // Note: breadcrumbs state is legacy - we now use ancestry-based breadcrumbs
+  // The state is kept for NodeDetailPanel compatibility but not used for display
 
   // Scroll content to top when selected node changes
   useEffect(() => {
@@ -322,21 +322,10 @@ function GraphPageContent() {
   }, [router, searchParams]);
 
   // Handle navigation in detail panel (clicking related node)
+  // Ancestry-based breadcrumbs are recalculated automatically when node changes
   const handleNavigate = useCallback((nodeId: string) => {
-    // Add current node to breadcrumbs if we have one and it's not already the last item
-    if (selectedNode) {
-      const props = selectedNode.properties as Record<string, unknown>;
-      const name = (props.title || props.name || selectedNode.id) as string;
-      setBreadcrumbs((prev) => {
-        // Don't add duplicate if it's already the last breadcrumb
-        if (prev.length > 0 && prev[prev.length - 1].id === selectedNode.id) {
-          return prev;
-        }
-        return [...prev, { id: selectedNode.id, name }];
-      });
-    }
     handleSelectNode(nodeId);
-  }, [selectedNode, handleSelectNode]);
+  }, [handleSelectNode]);
 
   // Handle breadcrumb navigation
   const handleBreadcrumbClick = useCallback((nodeId: string) => {
@@ -423,37 +412,40 @@ function GraphPageContent() {
     router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
   }, [router, navigateToView]);
 
-  // Build breadcrumb items based on current navigation state + history
+  // Build breadcrumb items based on node ancestry (hierarchy-aware)
   const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
     const items: BreadcrumbItem[] = [
       { type: 'project', label: 'Project' },
     ];
 
-    if (selectedCategory) {
+    // For category view without a selected node, show the category
+    if (selectedCategory && !isPanelOpen) {
       items.push({
         type: 'category',
         label: `${selectedCategory}s`,
         nodeLabel: selectedCategory,
       });
+      return items;
     }
 
-    // Add accumulated node breadcrumbs from navigation history
-    // Filter out stale breadcrumbs (nodes that no longer exist)
-    breadcrumbs.forEach((crumb) => {
-      const historyNode = nodesData?.nodes?.find((n) => n.id === crumb.id);
-      if (historyNode) {
+    // Add ancestry nodes (Epic → Sprint chain)
+    // This provides the full hierarchy for the current node
+    if (ancestryNodes && ancestryNodes.length > 0) {
+      ancestryNodes.forEach((ancestor) => {
+        const props = ancestor.properties as unknown as Record<string, unknown>;
+        const title = (props.title || props.name || props.epic_id || props.sprint_id || ancestor.id) as string;
         items.push({
           type: 'node',
-          label: crumb.name,
-          nodeLabel: historyNode.label,
-          nodeId: crumb.id,
+          label: title,
+          nodeLabel: ancestor.label,
+          nodeId: ancestor.id,
         });
-      }
-    });
+      });
+    }
 
     // Add current node
     if (selectedNode && isPanelOpen) {
-      const props = selectedNode.properties as Record<string, unknown>;
+      const props = selectedNode.properties as unknown as Record<string, unknown>;
       const title = (props.title || props.name || props.adr_id || props.task_id || selectedNode.id) as string;
       items.push({
         type: 'node',
@@ -464,7 +456,7 @@ function GraphPageContent() {
     }
 
     return items;
-  }, [selectedCategory, selectedNode, isPanelOpen, breadcrumbs, nodesData]);
+  }, [selectedCategory, selectedNode, isPanelOpen, ancestryNodes]);
 
   // Handle breadcrumb navigation
   const handleBreadcrumbNavigate = useCallback((item: BreadcrumbItem, index: number) => {
@@ -473,10 +465,10 @@ function GraphPageContent() {
     } else if (item.type === 'category' && item.nodeLabel) {
       handleGoToCategory(item.nodeLabel);
     } else if (item.type === 'node' && item.nodeId) {
-      // Navigate to a node in history - trim breadcrumbs after this point
-      handleBreadcrumbClick(item.nodeId);
+      // Navigate to an ancestor node - ancestry will be recalculated automatically
+      handleSelectNode(item.nodeId);
     }
-  }, [handleGoToProject, handleGoToCategory, handleBreadcrumbClick]);
+  }, [handleGoToProject, handleGoToCategory, handleSelectNode]);
 
   // Auth check
   if (authLoading) {

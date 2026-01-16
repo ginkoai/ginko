@@ -5,7 +5,7 @@
 **Sprint Goal**: Implement tree-based navigation matching user mental model
 **Duration**: 1-2 weeks
 **Type**: Feature sprint
-**Progress:** 71% (5/7 tasks complete)
+**Progress:** 86% (6/7 tasks complete)
 **Prerequisite:** Sprint 0 complete (data model fixes)
 
 **Success Criteria:**
@@ -14,7 +14,7 @@
 - [x] Child summary cards shown at footer of parent nodes
 - [x] Referenced nodes (ADRs, Patterns) in separate section
 - [x] Browser back button works with breadcrumbs
-- [ ] BUG-002 fixed (ADR edit modal loads content)
+- [x] BUG-002 fixed (ADR edit modal loads content)
 
 ---
 
@@ -236,56 +236,55 @@ References
 
 **Goal:** Ensure browser back button works with breadcrumb navigation
 
-**Current Issue:**
-- Breadcrumbs track navigation path
-- But browser back may not match breadcrumb state
+**Original Issue:**
+- Breadcrumbs only tracked manual navigation history (clicking related nodes)
+- Clicking nodes in tree showed incomplete breadcrumb trail
+- Browser back didn't sync properly with breadcrumb state
 
-**Implementation:**
-1. Ensure each navigation pushes to browser history
-2. Use `router.push()` not `router.replace()` for navigation
-3. Handle `popstate` event to sync breadcrumb state
-4. Clear breadcrumbs appropriately on back navigation
-
-**Test Scenarios:**
-1. Navigate: Epic → Sprint → Task
-2. Click back: Should return to Sprint (breadcrumb updates)
-3. Click back: Should return to Epic (breadcrumb updates)
-4. Click back: Should return to Project view
+**Solution Implemented (2026-01-16):**
+1. Added `useNodeAncestry` hook to fetch full parent chain (Task→Sprint→Epic)
+2. Breadcrumbs now built from node ancestry, not manual navigation history
+3. Any node selection shows complete hierarchy automatically
+4. Browser back works naturally since ancestry is recalculated on node change
 
 **Files:**
-- `dashboard/src/app/dashboard/graph/page.tsx`
-- `dashboard/src/components/graph/Breadcrumbs.tsx`
+- `dashboard/src/lib/graph/hooks.ts` - Added useNodeAncestry hook
+- `dashboard/src/app/dashboard/graph/page.tsx` - Replaced breadcrumbs state with ancestry
 
 **Acceptance Criteria:**
-- [ ] Browser back button navigates to previous node
-- [ ] Breadcrumbs update to reflect back navigation
-- [ ] URL stays in sync with displayed node
-- [ ] No "flash" of wrong content on back
+- [x] Browser back button navigates to previous node
+- [x] Breadcrumbs update to reflect back navigation
+- [x] URL stays in sync with displayed node
+- [x] No "flash" of wrong content on back
+- [x] Full hierarchy shown (Project > Epic > Sprint > Task)
 
 ---
 
 ### e011_s01_t06: Fix BUG-002 - ADR Edit Modal Content (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH - Deferred from EPIC-009
 **Assignee:** TBD
 
 **Bug Description:**
 ADR edit modal opens but doesn't load existing content for editing. The content field is empty.
 
-**Investigation Areas:**
-1. NodeEditorModal component - How is content loaded?
-2. API call to fetch full node content
-3. State management - Is content being set correctly?
-4. Timing - Does modal open before content loads?
+**Root Cause (2026-01-16):**
+Modal received partial node data from listing API (`listNodes`) which doesn't include full content fields (context, decision, consequences) for performance reasons.
+
+**Solution Implemented:**
+1. Modal now fetches complete node data via `getNodeById` when opening
+2. Added `loadingNode` state and loading indicator while fetching
+3. Disabled Save button during fetch to prevent premature submission
+4. Falls back to passed node if fetch fails
 
 **Files:**
 - `dashboard/src/components/graph/NodeEditorModal.tsx`
-- `dashboard/src/lib/graph/api-client.ts`
 
 **Acceptance Criteria:**
-- [ ] Edit modal loads existing ADR content
-- [ ] Content is editable and can be saved
-- [ ] Works for all editable node types (ADR, Pattern, Gotcha)
+- [x] Edit modal loads existing ADR content
+- [x] Content is editable and can be saved
+- [x] Works for all editable node types (ADR, Pattern, Gotcha)
+- [x] Loading indicator shown while fetching full content
 
 ---
 

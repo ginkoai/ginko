@@ -44,6 +44,8 @@ export interface NodeSchema {
 }
 
 // ADR Schema
+// Note: ADRs synced from git have a single 'content' field with full markdown.
+// This schema uses 'content' to match how ADRs are stored in the graph.
 export const ADR_SCHEMA: NodeSchema = {
   type: 'ADR',
   displayName: 'Architecture Decision Record',
@@ -74,31 +76,17 @@ export const ADR_SCHEMA: NodeSchema = {
         { value: 'accepted', label: 'Accepted' },
         { value: 'deprecated', label: 'Deprecated' },
         { value: 'superseded', label: 'Superseded' },
+        { value: 'active', label: 'Active' },
+        { value: 'draft', label: 'Draft' },
       ],
     },
     {
-      name: 'context',
-      label: 'Context',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: true,
-      placeholder: 'What is the context of this decision?',
-      helperText: 'Describe the problem, constraints, and forces at play',
-    },
-    {
-      name: 'decision',
-      label: 'Decision',
-      type: 'markdown',
-      required: true,
-      placeholder: 'What was decided?',
-      helperText: 'Describe the decision clearly and concisely',
-    },
-    {
-      name: 'consequences',
-      label: 'Consequences',
-      type: 'markdown',
-      required: true,
-      placeholder: 'What are the consequences of this decision?',
-      helperText: 'List positive, negative, and neutral consequences',
+      placeholder: '## Context\n\nDescribe the context...\n\n## Decision\n\nWhat was decided...\n\n## Consequences\n\nList consequences...',
+      helperText: 'Full ADR content in markdown format (Context, Decision, Consequences sections)',
     },
   ],
   validate: (data) => {
@@ -116,16 +104,8 @@ export const ADR_SCHEMA: NodeSchema = {
       errors.push('Status is required');
     }
 
-    if (!data.context || data.context.trim().length < 20) {
-      errors.push('Context must be at least 20 characters');
-    }
-
-    if (!data.decision || data.decision.trim().length < 20) {
-      errors.push('Decision must be at least 20 characters');
-    }
-
-    if (!data.consequences || data.consequences.trim().length < 20) {
-      errors.push('Consequences must be at least 20 characters');
+    if (!data.content || data.content.trim().length < 50) {
+      errors.push('Content must be at least 50 characters');
     }
 
     return { valid: errors.length === 0, errors };
@@ -236,6 +216,7 @@ export const PRD_SCHEMA: NodeSchema = {
 };
 
 // Pattern Schema
+// Note: Patterns synced from git have a 'content' field with full markdown.
 export const PATTERN_SCHEMA: NodeSchema = {
   type: 'Pattern',
   displayName: 'Pattern',
@@ -244,9 +225,9 @@ export const PATTERN_SCHEMA: NodeSchema = {
       name: 'pattern_id',
       label: 'Pattern ID',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'PATTERN-001',
-      helperText: 'Format: PATTERN-XXX (e.g., PATTERN-001)',
+      helperText: 'Format: PATTERN-XXX (auto-generated if empty)',
       readOnly: true,
     },
     {
@@ -260,7 +241,7 @@ export const PATTERN_SCHEMA: NodeSchema = {
       name: 'confidence',
       label: 'Confidence',
       type: 'select',
-      required: true,
+      required: false,
       options: [
         { value: 'low', label: 'Low ○' },
         { value: 'medium', label: 'Medium ◐' },
@@ -268,51 +249,23 @@ export const PATTERN_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'description',
-      label: 'Description',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: true,
-      placeholder: 'What is this pattern?',
-      helperText: 'Describe the pattern and its purpose',
-    },
-    {
-      name: 'example',
-      label: 'Example',
-      type: 'markdown',
-      required: false,
-      placeholder: 'Code example or usage scenario',
-      helperText: 'Show how to use this pattern (optional)',
-    },
-    {
-      name: 'when_to_use',
-      label: 'When to Use',
-      type: 'markdown',
-      required: true,
-      placeholder: 'When should this pattern be applied?',
-      helperText: 'Describe the scenarios where this pattern is appropriate',
+      placeholder: 'Describe the pattern, when to use it, and provide examples...',
+      helperText: 'Full pattern content in markdown format',
     },
   ],
   validate: (data) => {
     const errors: string[] = [];
 
-    if (!data.pattern_id || !data.pattern_id.match(/^PATTERN-\d{3}$/)) {
-      errors.push('Pattern ID must follow format: PATTERN-XXX (e.g., PATTERN-001)');
-    }
-
     if (!data.name || data.name.trim().length < 3) {
       errors.push('Name must be at least 3 characters');
     }
 
-    if (!data.confidence) {
-      errors.push('Confidence level is required');
-    }
-
-    if (!data.description || data.description.trim().length < 20) {
-      errors.push('Description must be at least 20 characters');
-    }
-
-    if (!data.when_to_use || data.when_to_use.trim().length < 20) {
-      errors.push('When to use must be at least 20 characters');
+    if (!data.content || data.content.trim().length < 20) {
+      errors.push('Content must be at least 20 characters');
     }
 
     return { valid: errors.length === 0, errors };
@@ -327,6 +280,7 @@ export const PATTERN_SCHEMA: NodeSchema = {
 };
 
 // Gotcha Schema
+// Note: Gotchas synced from git have a 'content' field with full markdown.
 export const GOTCHA_SCHEMA: NodeSchema = {
   type: 'Gotcha',
   displayName: 'Gotcha / Warning',
@@ -335,9 +289,9 @@ export const GOTCHA_SCHEMA: NodeSchema = {
       name: 'gotcha_id',
       label: 'Gotcha ID',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'GOTCHA-001',
-      helperText: 'Format: GOTCHA-XXX (e.g., GOTCHA-001)',
+      helperText: 'Format: GOTCHA-XXX (auto-generated if empty)',
       readOnly: true,
     },
     {
@@ -351,7 +305,7 @@ export const GOTCHA_SCHEMA: NodeSchema = {
       name: 'severity',
       label: 'Severity',
       type: 'select',
-      required: true,
+      required: false,
       options: [
         { value: 'low', label: 'Low 💡' },
         { value: 'medium', label: 'Medium 💡' },
@@ -360,43 +314,23 @@ export const GOTCHA_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'description',
-      label: 'Description',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: true,
-      placeholder: 'What is the gotcha or pitfall?',
-      helperText: 'Describe the problem in detail',
-    },
-    {
-      name: 'mitigation',
-      label: 'Mitigation / Solution',
-      type: 'markdown',
-      required: true,
-      placeholder: 'How to avoid or fix this issue?',
-      helperText: 'Provide clear steps to prevent or resolve the problem',
+      placeholder: 'Describe the gotcha and how to avoid/mitigate it...',
+      helperText: 'Full gotcha content including description and mitigation',
     },
   ],
   validate: (data) => {
     const errors: string[] = [];
 
-    if (!data.gotcha_id || !data.gotcha_id.match(/^GOTCHA-\d{3}$/)) {
-      errors.push('Gotcha ID must follow format: GOTCHA-XXX (e.g., GOTCHA-001)');
-    }
-
     if (!data.title || data.title.trim().length < 5) {
       errors.push('Title must be at least 5 characters');
     }
 
-    if (!data.severity) {
-      errors.push('Severity is required');
-    }
-
-    if (!data.description || data.description.trim().length < 20) {
-      errors.push('Description must be at least 20 characters');
-    }
-
-    if (!data.mitigation || data.mitigation.trim().length < 20) {
-      errors.push('Mitigation must be at least 20 characters');
+    if (!data.content || data.content.trim().length < 20) {
+      errors.push('Content must be at least 20 characters');
     }
 
     return { valid: errors.length === 0, errors };
