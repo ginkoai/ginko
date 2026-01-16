@@ -1264,10 +1264,23 @@
       "relevance": "critical",
       "created": "2026-01-16T16:58:05.213Z",
       "sessionId": "session-chris-at-watchhill-ai-1768582685136"
+    },
+    {
+      "filename": "decision-created-adr060-contentstate-separation-and-epic015.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "git",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-16T17:44:40.866Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768585480819"
     }
   ],
-  "lastUpdated": "2026-01-16T16:58:05.214Z",
-  "totalModules": 98,
+  "lastUpdated": "2026-01-16T17:44:40.867Z",
+  "totalModules": 99,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

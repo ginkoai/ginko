@@ -1,85 +1,53 @@
 ---
-session_id: session-2026-01-16T16-58-59-685Z
-started: 2026-01-16T16:58:59.685Z
+session_id: session-2026-01-16T17-07-06-616Z
+started: 2026-01-16T17:07:06.616Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
-model: claude-opus-4-5-20251101
 ---
 
-# Session Log: session-2026-01-16T16-58-59-685Z
+# Session Log: session-2026-01-16T17-07-06-616Z
 
 ## Timeline
-
-### 2026-01-16 16:30 - Graph Edit Modal UAT
-
-**Issue Reported:** ADR edit modal content not loading after previous BUG-002 fix.
-
-**Investigation:**
-1. Added console logging to trace data flow in NodeEditorModal and api-client
-2. Deployed debug build to production
-3. User confirmed content IS loading now
-
-**New Issue Found:** Save failed with Neo4j error about Map property types.
-
-**Root Cause:** Neo4j DateTime objects (stored as `datetime()` in Cypher) get serialized as complex JavaScript Maps with `{month: {low, high}, hour: {low, high}, ...}` structure when returned from the API. When sent back on PATCH, Neo4j rejects them since it can only store primitives.
-
-**Fix Applied:**
-1. Added `isPrimitive()` helper function to PATCH endpoint (`dashboard/src/app/api/v1/graph/nodes/[id]/route.ts`)
-2. Filter out any non-primitive properties before saving to Neo4j
-3. System-managed datetime fields (`editedAt`, `updatedAt`) are set by the API anyway
-
-### 2026-01-16 16:45 - Stale View After Modal Close
-
-**Issue Reported:** After saving and closing modal, ADR view shows old content until manual refresh.
-
-**Root Cause:** React Query cache not invalidated after save. The `setSelectedNode(updatedNode)` only updates local state, but NodeView and other components use React Query cached data.
-
-**Fix Applied:**
-1. Added `useQueryClient` hook to graph page
-2. Import `graphQueryKeys` from hooks
-3. Call `queryClient.invalidateQueries({ queryKey: graphQueryKeys.all })` in `handleEditSave` callback
-
-### 2026-01-16 16:51 - Cleanup & Commit
-
-- Removed debug console.log statements
-- Committed: `fix(dashboard): Fix graph edit modal save and cache refresh`
-- Pushed to main
+<!-- Complete chronological log of all session events -->
+<!-- Includes: fixes, features, achievements, and categorized entries (decisions/insights/git also appear in their sections) -->
+<!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
+<!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
 ## Key Decisions
-
-- **Broad cache invalidation:** Chose to invalidate all graph queries (`graphQueryKeys.all`) rather than specific ones. Simpler and ensures UI consistency. Can narrow down later if performance becomes an issue.
+<!-- Important decisions made during session with alternatives considered -->
+<!-- These entries also appear in Timeline for narrative coherence -->
+<!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
+<!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
 
 ## Insights
-
-- **Neo4j DateTime serialization:** When Neo4j returns DateTime objects via the driver, they serialize to complex Maps in JavaScript. Always filter these out before sending data back to Neo4j for updates.
-- **React Query + local state:** When using both local state (`setSelectedNode`) and React Query cache, remember to invalidate the cache on mutations to keep the UI in sync.
+<!-- Patterns, gotchas, learnings discovered -->
+<!-- These entries also appear in Timeline for narrative coherence -->
+<!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
+<!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
 
 ## Git Operations
-
-- `23c5eb0` - fix(dashboard): Fix graph edit modal save and cache refresh
+<!-- Commits, merges, branch changes -->
+<!-- These entries also appear in Timeline for narrative coherence -->
+<!-- Log significant commits with: ginko log "Committed feature X" --category=git -->
 
 ## Gotchas
+<!-- Pitfalls, traps, and "lessons learned the hard way" -->
+<!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
+<!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
+<!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-- **Neo4j DateTime → JavaScript Map:** Neo4j `datetime()` values serialize as `{month: {low, high}, year: {low, high}, ...}` objects. These MUST be filtered out before PATCH operations or Neo4j will reject with "Property values can only be of primitive types or arrays thereof."
+### 12:44 - [decision]
+# [DECISION] 12:44
 
----
+Created ADR-060 (Content/State Separation) and EPIC-015 (Graph-Authoritative State). Decision: Graph is authoritative for operational state (task/sprint/epic status), Git remains authoritative for content (definitions, descriptions). Eliminates dual-write sync bugs by establishing single source of truth.
 
-## Session Handoff
+**Files:**
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 
-**Completed:**
-- [x] Graph edit modal content loading (verified working)
-- [x] Save functionality (Neo4j DateTime filtering)
-- [x] Cache refresh after save (React Query invalidation)
-- [x] Deployed to production
-- [x] Committed and pushed
+**Impact:** high
+**Timestamp:** 2026-01-16T17:44:37.505Z
 
-**Sprint Status:** e011_s01 - Tasks t02-t06 marked complete in sprint file, only t07 (Integration Testing & Polish) remains.
-
-**Next Steps:**
-1. Continue UAT on other node types (Pattern, Gotcha, Sprint, Task, Epic)
-2. Complete t07 - Integration Testing & Polish
-3. Address the 68 Dependabot vulnerabilities (35 high) when time permits
-
-**Branch:** main (clean)
-**Last Commit:** 23c5eb0
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: high
