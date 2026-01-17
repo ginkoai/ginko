@@ -1,9 +1,9 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
- * @tags: [sessions, events, dashboard, TASK-6]
- * @related: [session-timeline.tsx, use-sessions-data.ts]
+ * @updated: 2026-01-17
+ * @tags: [sessions, events, dashboard, TASK-6, filtering, search]
+ * @related: [session-timeline.tsx, use-sessions-data.ts, CategoryView.tsx]
  * @priority: high
  * @complexity: medium
  * @dependencies: [react, date-fns, heroicons]
@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -27,6 +27,8 @@ import {
   SparklesIcon,
   WrenchScrewdriverIcon,
   LightBulbIcon,
+  MagnifyingGlassIcon,
+  AdjustmentsHorizontalIcon,
 } from '@heroicons/react/24/outline';
 
 interface SessionsWithScoresProps {
@@ -41,14 +43,55 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   achievement: FireIcon,
 };
 
+// =============================================================================
+// Filter & Sort Types
+// =============================================================================
+
+type ImpactFilter = 'all' | 'high' | 'medium' | 'low';
+type CategoryFilter = 'all' | 'fix' | 'feature' | 'decision' | 'insight' | 'git' | 'achievement';
+type SortOption = 'newest' | 'oldest' | 'most_events';
+
+const impactFilterOptions: { value: ImpactFilter; label: string }[] = [
+  { value: 'all', label: 'All Impacts' },
+  { value: 'high', label: 'High Impact' },
+  { value: 'medium', label: 'Medium Impact' },
+  { value: 'low', label: 'Low Impact' },
+];
+
+const categoryFilterOptions: { value: CategoryFilter; label: string }[] = [
+  { value: 'all', label: 'All Categories' },
+  { value: 'fix', label: 'Fixes' },
+  { value: 'feature', label: 'Features' },
+  { value: 'decision', label: 'Decisions' },
+  { value: 'insight', label: 'Insights' },
+  { value: 'git', label: 'Git' },
+  { value: 'achievement', label: 'Achievements' },
+];
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'newest', label: 'Newest First' },
+  { value: 'oldest', label: 'Oldest First' },
+  { value: 'most_events', label: 'Most Events' },
+];
+
+// =============================================================================
+// Component
+// =============================================================================
+
 export function SessionsWithScores({ userId, graphId }: SessionsWithScoresProps) {
   const { data, loading, error } = useSessionsData({
     userId,
     graphId,
-    limit: 10,
+    limit: 50, // Fetch more sessions to allow for filtering
     days: 30,
   });
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
+
+  // Filter & Sort state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [impactFilter, setImpactFilter] = useState<ImpactFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [sortOption, setSortOption] = useState<SortOption>('newest');
 
   const toggleExpanded = (sessionId: string) => {
     const newExpanded = new Set(expandedSessions);
@@ -58,6 +101,69 @@ export function SessionsWithScores({ userId, graphId }: SessionsWithScoresProps)
       newExpanded.add(sessionId);
     }
     setExpandedSessions(newExpanded);
+  };
+
+  // Filter and sort sessions
+  const filteredSessions = useMemo(() => {
+    let sessions = data?.sessions || [];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      sessions = sessions.filter((session) => {
+        // Search in session title and description
+        const titleMatch = session.title.toLowerCase().includes(query);
+        const descMatch = session.description.toLowerCase().includes(query);
+        // Search in event descriptions
+        const eventMatch = session.events.some((event) =>
+          event.description.toLowerCase().includes(query)
+        );
+        return titleMatch || descMatch || eventMatch;
+      });
+    }
+
+    // Apply impact filter
+    if (impactFilter !== 'all') {
+      sessions = sessions.filter((session) => {
+        // Check if session has events with the selected impact level
+        return session.events.some((event) => event.impact === impactFilter);
+      });
+    }
+
+    // Apply category filter
+    if (categoryFilter !== 'all') {
+      sessions = sessions.filter((session) => {
+        // Check if session has events with the selected category
+        return session.events.some((event) => event.category === categoryFilter);
+      });
+    }
+
+    // Apply sorting
+    sessions = [...sessions].sort((a, b) => {
+      switch (sortOption) {
+        case 'newest':
+          return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+        case 'oldest':
+          return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+        case 'most_events':
+          return b.eventCount - a.eventCount;
+        default:
+          return 0;
+      }
+    });
+
+    return sessions;
+  }, [data?.sessions, searchQuery, impactFilter, categoryFilter, sortOption]);
+
+  // Check if any filters are active
+  const isFiltered = searchQuery.trim() || impactFilter !== 'all' || categoryFilter !== 'all';
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchQuery('');
+    setImpactFilter('all');
+    setCategoryFilter('all');
+    setSortOption('newest');
   };
 
   if (loading) {
@@ -78,9 +184,9 @@ export function SessionsWithScores({ userId, graphId }: SessionsWithScoresProps)
     );
   }
 
-  const sessions = data?.sessions || [];
+  const totalSessions = data?.sessions?.length || 0;
 
-  if (sessions.length === 0) {
+  if (totalSessions === 0) {
     return (
       <Card className="p-6 text-center">
         <div className="text-center py-8">
@@ -97,13 +203,100 @@ export function SessionsWithScores({ userId, graphId }: SessionsWithScoresProps)
 
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-foreground">Recent Sessions</h2>
-        <Badge variant="secondary">{data?.totalCount || sessions.length} sessions</Badge>
+        <Badge variant="secondary">
+          {isFiltered
+            ? `${filteredSessions.length} of ${totalSessions} sessions`
+            : `${totalSessions} sessions`}
+        </Badge>
       </div>
 
+      {/* Filter Controls */}
+      <div className="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-border">
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-[200px] max-w-[320px]">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search sessions..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+          />
+        </div>
+
+        {/* Impact Filter */}
+        <select
+          value={impactFilter}
+          onChange={(e) => setImpactFilter(e.target.value as ImpactFilter)}
+          className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          {impactFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Category Filter */}
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value as CategoryFilter)}
+          className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          {categoryFilterOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Sort Dropdown */}
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as SortOption)}
+          className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          {sortOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Clear Filters Button */}
+        {isFiltered && (
+          <button
+            onClick={clearFilters}
+            className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+          >
+            Clear filters
+          </button>
+        )}
+      </div>
+
+      {/* Empty State for Filtered Results */}
+      {filteredSessions.length === 0 && isFiltered && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <AdjustmentsHorizontalIcon className="h-10 w-10 text-muted-foreground mb-3" />
+          <h3 className="text-lg font-medium text-foreground mb-1">No matching sessions</h3>
+          <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+            No sessions match your current filters. Try adjusting your search criteria.
+          </p>
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
+      {/* Sessions List */}
       <div className="space-y-4">
-        {sessions.map((session) => {
+        {filteredSessions.map((session) => {
           const isExpanded = expandedSessions.has(session.id);
 
           return (
