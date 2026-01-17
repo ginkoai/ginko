@@ -7,7 +7,7 @@
 
 **Duration**: 5-6 days
 **Type**: Foundation + Polish sprint
-**Progress:** 100% (4/4 tasks complete) ✓
+**Progress:** 75% (3/4 tasks complete)
 
 **Success Criteria:**
 - [x] Dialog component created (Radix-based)
@@ -41,7 +41,7 @@
 ---
 
 ### TASK-2: Evidence Timestamps + Detail Modal (3h)
-**Status:** [x] Complete
+**Status:** [ ] Pending
 **Priority:** MEDIUM
 **ID:** e006_s01_t02
 

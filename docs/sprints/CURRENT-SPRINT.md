@@ -1,429 +1,289 @@
-# SPRINT: Graph Explorer v2 Sprint 2 - Edit Capability & Sync
+# SPRINT: EPIC-005 Sprint 2 - Graph Visualization
+
+**Epic**: EPIC-005 Market Readiness
 
 ## Sprint Overview
 
-**Sprint Goal**: Enable in-place editing with bidirectional git sync
-**Duration**: 1-2 weeks
+**Sprint Goal**: Build the graph visualization layer that demonstrates ginko's unique value - showing how knowledge compounds and connections emerge across AI collaboration sessions.
+
+**Duration**: 2 weeks
 **Type**: Feature sprint
-**Progress:** 17% (1/6 tasks complete)
-**Prerequisite:** Sprint 1 complete (Hierarchy Navigation UI)
+**Progress:** 0% (0/7 tasks complete)
 
 **Success Criteria:**
-- [ ] Users can edit ADR/Pattern/Gotcha content in explorer
-- [ ] Changes sync back to git-native markdown files
-- [ ] Node creation UI works (Create ADR, Create Pattern)
-- [ ] Edit history visible in node detail
-- [ ] Edit conflicts handled gracefully
-
----
-
-## Design Specifications
-
-### Editable Node Types
-
-| Type | Editable Fields | Sync Target |
-|------|-----------------|-------------|
-| ADR | title, status, content | `docs/adr/ADR-{NNN}-*.md` |
-| Pattern | title, content | `docs/patterns/*.md` |
-| Gotcha | title, content | `docs/gotchas/*.md` |
-| Charter | title, content | `docs/PROJECT-CHARTER.md` |
-| Epic | title, description | `docs/epics/EPIC-{NNN}-*.md` |
-| Sprint | title, goal, tasks | `docs/sprints/SPRINT-*.md` |
-
-**Non-Editable:** Event, Commit (auto-generated from git)
-
-### Edit Modal Flow
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Edit ADR-056: Roadmap as Epic View                    [x]   │
-├─────────────────────────────────────────────────────────────┤
-│ Title: [Roadmap as Epic View                           ]    │
-│                                                             │
-│ Status: [Accepted ▼]                                        │
-│                                                             │
-│ Content:                                                    │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ ## Context                                              │ │
-│ │                                                         │ │
-│ │ The roadmap canvas needs a way to visualize epics...    │ │
-│ │                                                         │ │
-│ │ ## Decision                                             │ │
-│ │ ...                                                     │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-│ Last edited: 2026-01-10 by chris@watchhill.ai               │
-├─────────────────────────────────────────────────────────────┤
-│                              [Cancel]  [Save to Graph+Git]  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Create Node Flow
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Create New ADR                                        [x]   │
-├─────────────────────────────────────────────────────────────┤
-│ ADR Number: [061] (auto-incremented)                        │
-│                                                             │
-│ Title: [                                               ]    │
-│                                                             │
-│ Status: [Proposed ▼]                                        │
-│                                                             │
-│ Content:                                                    │
-│ ┌─────────────────────────────────────────────────────────┐ │
-│ │ ## Context                                              │ │
-│ │                                                         │ │
-│ │ [Describe the context and problem...]                   │ │
-│ │                                                         │ │
-│ │ ## Decision                                             │ │
-│ │                                                         │ │
-│ │ [Describe the decision...]                              │ │
-│ └─────────────────────────────────────────────────────────┘ │
-│                                                             │
-├─────────────────────────────────────────────────────────────┤
-│                                    [Cancel]  [Create ADR]   │
-└─────────────────────────────────────────────────────────────┘
-```
+- [x] Collapsible tree explorer for hierarchical elements
+- [x] Card-based exploration for multi-relation nodes
+- [x] C4-style zoom: summary cards → focused view with adjacencies
+- [x] Graph data fetching and caching layer
 
 ---
 
 ## Sprint Tasks
 
-### e011_s02_t01: Fix Edit Modal Content Loading (2h)
-**Status:** [x] Complete (2026-01-16)
-**Priority:** HIGH - Carries over BUG-002 fix verification
-**Assignee:** Chris Norton
+### TASK-1: Graph Data Architecture (3h)
+**Status:** [ ] Todo
+**Priority:** HIGH
+**ID:** e005_s02_t01
 
-**Goal:** Ensure edit modal loads existing content correctly for all node types
+**Goal:** Design the data fetching and caching layer for graph visualization.
 
 **Context:**
-BUG-002 was addressed in Sprint 1 (t06), but this task verifies the fix works across all editable types and adds any missing functionality.
+- Dashboard currently fetches from `/api/v1/graph/` endpoints
+- Need efficient caching for graph traversal
+- Support both tree hierarchy and card-based views
 
-**Implementation:**
-1. Verify NodeEditorModal loads content for ADR, Pattern, Gotcha
-2. Verify content field is populated before modal opens
-3. Add loading state while fetching full node content
-4. Handle error case if content fetch fails
+**Deliverables:**
+- Data fetching hooks (`useGraphNodes`, `useNodeAdjacencies`)
+- Caching strategy (React Query or SWR)
+- Type definitions for graph entities
+- API client consolidation
 
 **Files:**
-- `dashboard/src/components/graph/NodeEditorModal.tsx`
-- `dashboard/src/lib/graph/api-client.ts`
-
-**Acceptance Criteria:**
-- [x] Edit modal shows existing content for ADRs
-- [x] Edit modal shows existing content for Patterns
-- [x] Edit modal shows existing content for Gotchas
-- [x] Edit modal shows existing content for PRDs
-- [x] Loading spinner shown while fetching
-- [x] Error warning shown if fetch fails
+- `dashboard/src/lib/graph/` (new directory)
+- `dashboard/src/hooks/useGraph.ts` (new)
 
 ---
 
-### e011_s02_t02: Implement Save to Graph API (4h)
-**Status:** [ ] Not Started
+### TASK-2: Tree Explorer Component (4h)
+**Status:** [ ] Pending
 **Priority:** HIGH
-**Assignee:** TBD
+**ID:** e005_s02_t02
 
-**Goal:** Save edited content back to Neo4j graph
+**Goal:** Build collapsible tree explorer for hierarchical navigation.
 
-**Implementation:**
-1. Add PUT endpoint for node updates: `PUT /api/v1/graph/nodes/:id`
-2. Update node properties in Neo4j
-3. Return updated node with new `updated_at` timestamp
-4. Handle validation errors (required fields, etc.)
-
-**API Design:**
-```typescript
-// PUT /api/v1/graph/nodes/:id
-{
-  title: string;
-  content: string;
-  status?: string;  // For ADRs
-  metadata?: Record<string, unknown>;
-}
-
-// Response
-{
-  success: true;
-  node: GraphNode;
-  updated_at: string;
-}
+**Hierarchy Structure:**
+```
+Project (root)
+├── Charter
+├── Epics
+│   └── Epic
+│       └── Sprints
+│           └── Sprint
+│               └── Tasks
+│                   └── Task
+├── ADRs
+├── Patterns
+└── Gotchas
 ```
 
-**Files:**
-- `packages/api/src/routes/graph/nodes.ts` (or equivalent)
-- `dashboard/src/lib/graph/api-client.ts` - Add updateNode method
+**Deliverables:**
+- TreeExplorer component with expand/collapse
+- TreeNode component with type-specific icons
+- Selection state management
+- Keyboard navigation (up/down/left/right/enter)
 
-**Acceptance Criteria:**
-- [ ] PUT endpoint accepts node updates
-- [ ] Neo4j node properties updated correctly
-- [ ] Updated timestamp reflects save time
-- [ ] Validation errors return 400 with details
-- [ ] Non-existent node returns 404
+**Files:**
+- `dashboard/src/components/graph/tree-explorer.tsx` (new)
+- `dashboard/src/components/graph/tree-node.tsx` (new)
+
+Follow: Marketing site aesthetic (dark theme, ginko green highlights)
 
 ---
 
-### e011_s02_t03: Implement Git Sync on Save (6h)
-**Status:** [ ] Not Started
+### TASK-3: Node Card Component (3h)
+**Status:** [ ] Pending
 **Priority:** HIGH
-**Assignee:** TBD
+**ID:** e005_s02_t03
 
-**Goal:** Sync graph edits back to git-native markdown files
+**Goal:** Create card component for displaying node summaries.
 
-**Implementation:**
-1. After graph save, trigger git file sync
-2. Map node type to file path pattern
-3. Update markdown file with new content
-4. Preserve frontmatter structure
-5. Auto-commit with descriptive message
+**Card Variants:**
+- ADR card (title, status, summary)
+- Pattern card (name, confidence, description)
+- Gotcha card (title, severity, description)
+- Task card (title, status, assignee)
+- Sprint card (name, progress, dates)
 
-**File Path Mapping:**
-```typescript
-const FILE_PATTERNS = {
-  ADR: (node) => `docs/adr/ADR-${node.number}-${slugify(node.title)}.md`,
-  Pattern: (node) => `docs/patterns/${slugify(node.title)}.md`,
-  Gotcha: (node) => `docs/gotchas/${slugify(node.title)}.md`,
-  Charter: () => `docs/PROJECT-CHARTER.md`,
-  Epic: (node) => `docs/epics/EPIC-${node.number}-${slugify(node.title)}.md`,
-  Sprint: (node) => `docs/sprints/SPRINT-${node.id}.md`,
-};
-```
-
-**Commit Message Format:**
-```
-docs(adr): Update ADR-056 - Roadmap as Epic View
-
-Updated via Graph Explorer dashboard.
-
-Co-Authored-By: Chris Norton <chris@watchhill.ai>
-Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
-```
+**Deliverables:**
+- NodeCard base component
+- Type-specific card variants
+- Hover/selected states
+- Connection indicators
 
 **Files:**
-- New: `packages/api/src/lib/git-sync.ts`
-- `packages/api/src/routes/graph/nodes.ts` - Call git sync after save
+- `dashboard/src/components/graph/node-card.tsx` (new)
+- `dashboard/src/components/graph/card-variants/` (new directory)
 
-**Acceptance Criteria:**
-- [ ] ADR edits sync to `docs/adr/*.md`
-- [ ] Pattern edits sync to `docs/patterns/*.md`
-- [ ] Gotcha edits sync to `docs/gotchas/*.md`
-- [ ] Frontmatter preserved in synced files
-- [ ] Auto-commit created with proper message
-- [ ] Sync failure doesn't break graph save (graceful degradation)
+Follow: Corner brackets aesthetic for cards
 
 ---
 
-### e011_s02_t04: Add Node Creation UI (5h)
-**Status:** [ ] Not Started
-**Priority:** MEDIUM
-**Assignee:** TBD
+### TASK-4: Card Grid View (3h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e005_s02_t04
 
-**Goal:** Allow users to create new ADRs, Patterns, and Gotchas from the dashboard
+**Goal:** Build card grid for exploring non-hierarchical nodes.
 
-**Implementation:**
-1. Add "Create" button to Nav Tree sections
-2. Open creation modal with empty template
-3. Auto-increment ADR numbers
-4. Create node in graph + git file
-5. Navigate to new node after creation
+**Features:**
+- Filterable by node type (ADR, Pattern, Gotcha, etc.)
+- Searchable by name/content
+- Sortable by date, name, relevance
+- Responsive grid layout
 
-**UI Placement:**
-```
-📚 Knowledge
-├── ADRs (24) [+]      ← Create button
-│   ├── ADR-001
-│   └── ...
-├── Patterns (8) [+]   ← Create button
-└── Gotchas (5) [+]    ← Create button
-```
-
-**Templates:**
-- ADR: Standard ADR template with Context/Decision/Consequences
-- Pattern: Title + Description + Example
-- Gotcha: Title + Problem + Solution
+**Deliverables:**
+- CardGrid component
+- Filter bar component
+- Search input with debounce
+- Sort controls
 
 **Files:**
-- `dashboard/src/components/graph/tree-explorer.tsx` - Add create buttons
-- New: `dashboard/src/components/graph/CreateNodeModal.tsx`
-- `dashboard/src/lib/graph/api-client.ts` - Add createNode method
-
-**Acceptance Criteria:**
-- [ ] Create button visible on ADR/Pattern/Gotcha sections
-- [ ] Creation modal opens with appropriate template
-- [ ] ADR number auto-incremented from highest existing
-- [ ] New node created in graph and git
-- [ ] User navigated to new node after creation
-- [ ] Validation prevents empty title
+- `dashboard/src/components/graph/card-grid.tsx` (new)
+- `dashboard/src/components/graph/filter-bar.tsx` (new)
 
 ---
 
-### e011_s02_t05: Add Edit History Display (3h)
-**Status:** [ ] Not Started
-**Priority:** MEDIUM
-**Assignee:** TBD
+### TASK-5: Node Detail Panel (4h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e005_s02_t05
 
-**Goal:** Show edit history on node detail cards
+**Goal:** Build the focused view panel for selected nodes.
 
-**Implementation:**
-1. Track edits with timestamp and author
-2. Display "Last edited" line on detail cards
-3. Add "History" expandable section for full audit trail
-4. Query git log for file history as fallback
+**Panel Features:**
+- Full node content display
+- 1-hop adjacencies (related nodes)
+- Breadcrumb navigation
+- Action buttons (edit, sync status)
 
-**Display:**
-```
-Last edited: 2026-01-15 by chris@watchhill.ai
+**C4-Style Zoom Pattern:**
+1. User clicks card in grid → Panel slides in
+2. Panel shows full content + immediate connections
+3. Clicking connection zooms to that node
 
-▼ History (3 edits)
-  2026-01-15 - chris@watchhill.ai - Updated decision section
-  2026-01-10 - chris@watchhill.ai - Added consequences
-  2026-01-05 - chris@watchhill.ai - Initial creation
-```
-
-**Data Model:**
-```typescript
-interface NodeEdit {
-  timestamp: string;
-  author: string;
-  summary?: string;
-}
-```
+**Deliverables:**
+- NodeDetailPanel component
+- AdjacencyList component
+- Breadcrumb navigation
+- Panel animations
 
 **Files:**
-- `dashboard/src/components/graph/NodeView.tsx` - Add history section
-- New: `dashboard/src/components/graph/EditHistory.tsx`
-- `packages/api/src/routes/graph/nodes.ts` - Add history endpoint
-
-**Acceptance Criteria:**
-- [ ] "Last edited" shown on detail cards
-- [ ] History section expandable
-- [ ] Edit history fetched from graph or git
-- [ ] Author and timestamp displayed for each edit
+- `dashboard/src/components/graph/node-detail-panel.tsx` (new)
+- `dashboard/src/components/graph/adjacency-list.tsx` (new)
 
 ---
 
-### e011_s02_t06: Handle Edit Conflicts (4h)
-**Status:** [ ] Not Started
+### TASK-6: Graph Page Layout (3h)
+**Status:** [ ] Pending
 **Priority:** MEDIUM
-**Assignee:** TBD
+**ID:** e005_s02_t06
 
-**Goal:** Gracefully handle conflicts when git file was modified externally
+**Goal:** Create the main graph exploration page layout.
 
-**Conflict Scenarios:**
-1. User edits in dashboard while file changed in git
-2. Two users edit same node simultaneously
-3. Graph state diverges from git state
-
-**Implementation:**
-1. Check file hash before saving
-2. If hash mismatch, show conflict dialog
-3. Offer options: Overwrite, Merge, Cancel
-4. For merge, show diff view
-5. Track "last_synced_hash" on node
-
-**Conflict Dialog:**
+**Layout Structure:**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Edit Conflict Detected                                [x]   │
-├─────────────────────────────────────────────────────────────┤
-│ This file was modified externally since you started         │
-│ editing.                                                    │
-│                                                             │
-│ External change: 2026-01-16 10:30 (git commit abc123)       │
-│ Your edit started: 2026-01-16 10:15                         │
-│                                                             │
-│ Options:                                                    │
-│ • Overwrite - Replace external changes with yours           │
-│ • View Diff - See what changed                              │
-│ • Cancel - Discard your changes                             │
-├─────────────────────────────────────────────────────────────┤
-│                    [Cancel]  [View Diff]  [Overwrite]       │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│ Header (existing nav)                               │
+├──────────────┬──────────────────────────────────────┤
+│ Tree Explorer│ Card Grid / Detail Panel             │
+│ (collapsible)│                                      │
+│              │                                      │
+│              │                                      │
+└──────────────┴──────────────────────────────────────┘
 ```
+
+**Features:**
+- Resizable sidebar (tree explorer)
+- Toggle between grid/detail views
+- Maintain selection state across views
+
+**Deliverables:**
+- Graph page layout component
+- Resizable panel implementation
+- View state management
 
 **Files:**
-- New: `dashboard/src/components/graph/ConflictDialog.tsx`
-- `dashboard/src/components/graph/NodeEditorModal.tsx` - Add conflict check
-- `packages/api/src/lib/git-sync.ts` - Add hash comparison
+- `dashboard/src/app/dashboard/graph/page.tsx` (new)
+- `dashboard/src/app/dashboard/graph/layout.tsx` (new)
 
-**Acceptance Criteria:**
-- [ ] Conflict detected when file changed externally
-- [ ] User shown clear conflict dialog
-- [ ] Overwrite option works correctly
-- [ ] Cancel discards user changes safely
-- [ ] View Diff shows meaningful comparison
+---
+
+### TASK-7: Graph Navigation Integration (2h)
+**Status:** [ ] Pending
+**Priority:** MEDIUM
+**ID:** e005_s02_t07
+
+**Goal:** Integrate graph explorer into dashboard navigation.
+
+**Navigation Updates:**
+- Add "Graph" to sidebar navigation
+- Update dashboard home to link to graph
+- Add breadcrumbs for deep navigation
+- URL-based node selection (shareable links)
+
+**Deliverables:**
+- Sidebar nav update
+- Route configuration
+- URL state management
+- Deep linking support
+
+**Files:**
+- `dashboard/src/components/dashboard/dashboard-sidebar.tsx`
+- `dashboard/src/app/dashboard/graph/[nodeId]/page.tsx` (new)
+
+---
+
+### TASK-8: Sprint 2 Polish and Documentation (2h)
+**Status:** [ ] Pending
+**Priority:** LOW
+**ID:** e005_s02_t08
+
+**Goal:** Polish, test, and document the graph visualization features.
+
+**Deliverables:**
+- [x] Component documentation
+- [x] Visual QA against marketing site
+- [x] Performance testing with sample data
+- [x] Sprint retrospective
+- [x] Bug fixes (corner brackets, adjacencies API, description display, tree-grid sync)
+- [x] Created EPIC-006 backlog for future enhancements
+
+**Files:**
+- Sprint file updates
+- `docs/epics/EPIC-006-graph-explorer-v2.md` (new)
+
+**Bug Fixes Completed (2025-12-11):**
+1. Fixed missing corner brackets on grid cards (all 4 corners now display)
+2. Reduced excessive padding between brackets and cards
+3. Created missing `/api/v1/graph/adjacencies/[nodeId]` route (was causing 404)
+4. Fixed tree-view selection not scrolling to card in grid-view
+5. Added more property fallbacks for node descriptions (content, context, purpose)
 
 ---
 
 ## Technical Notes
 
-### API Endpoints
+### Graph API Endpoints (existing)
+- `GET /api/v1/graph/nodes` - List nodes by type
+- `GET /api/v1/graph/query` - Semantic search
+- `GET /api/v1/graph/adjacencies/:nodeId` - Get related nodes
 
-```typescript
-// Update existing node
-PUT /api/v1/graph/nodes/:id
-Body: { title, content, status?, metadata? }
-Response: { success, node, updated_at }
+### State Management
+- Use React Query for server state (caching, refetching)
+- Zustand or context for UI state (selection, view mode)
+- URL params for shareable state (selected node, filters)
 
-// Create new node
-POST /api/v1/graph/nodes
-Body: { type, title, content, metadata? }
-Response: { success, node, file_path }
-
-// Get node history
-GET /api/v1/graph/nodes/:id/history
-Response: { edits: NodeEdit[] }
-
-// Check for conflicts
-GET /api/v1/graph/nodes/:id/sync-status
-Response: { in_sync: boolean, local_hash, remote_hash }
-```
-
-### Git Sync Architecture
-
-```
-Dashboard Edit
-      │
-      ▼
-┌─────────────┐
-│ Graph API   │ ──► Update Neo4j
-└─────────────┘
-      │
-      ▼
-┌─────────────┐
-│ Git Sync    │ ──► Update markdown file
-└─────────────┘     ──► Auto-commit
-      │
-      ▼
-┌─────────────┐
-│ Response    │ ──► { success, node, commit_sha }
-└─────────────┘
-```
-
-### Error Handling
-
-| Error | User Message | Recovery |
-|-------|--------------|----------|
-| Graph save failed | "Failed to save changes" | Retry button |
-| Git sync failed | "Saved to graph, git sync pending" | Background retry |
-| Conflict detected | Conflict dialog | User choice |
-| Validation error | Field-specific error | Fix and retry |
+### Performance Considerations
+- Lazy load adjacencies on node selection
+- Virtualize long lists (tree nodes, card grids)
+- Debounce search input
+- Cache traversed paths
 
 ---
 
-## Dependencies
+## Blockers
 
-- Sprint 1 complete (hierarchy navigation working)
-- Git repository accessible from API server
-- Neo4j write permissions configured
-- File system write access for markdown files
+None yet.
 
 ---
 
-## Sprint Metadata
+## Next Steps
 
-**Epic:** EPIC-011 (Graph Explorer v2)
-**Sprint ID:** e011_s02
-**Created:** 2026-01-16
-**Participants:** TBD
+After Sprint 2:
+- Sprint 3: Coaching Insights Engine
+- Sprint 4: Knowledge Editing + Beta Polish
+
+---
+
+**Sprint Status: NOT STARTED**
+**Sprint Start: 2025-12-11**
