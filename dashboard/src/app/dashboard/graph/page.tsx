@@ -323,6 +323,12 @@ function GraphPageContent() {
   // then fetches directly if not found (for deep links to nodes outside cache)
   useEffect(() => {
     if (selectedNodeId && nodesData?.nodes) {
+      // Skip fetching for virtual folder nodes (they only exist in UI, not in database)
+      if (selectedNodeId.endsWith('-folder')) {
+        setIsFetchingNode(false);
+        return;
+      }
+
       const node = nodesData.nodes.find((n) => n.id === selectedNodeId);
       if (node) {
         setSelectedNode(node);
