@@ -113,11 +113,11 @@ BUG-002 was addressed in Sprint 1 (t06), but this task verifies the fix works ac
 - `dashboard/src/lib/graph/api-client.ts`
 
 **Acceptance Criteria:**
-- [ ] Edit modal shows existing content for ADRs
-- [ ] Edit modal shows existing content for Patterns
-- [ ] Edit modal shows existing content for Gotchas
-- [ ] Loading spinner shown while fetching
-- [ ] Error toast if fetch fails
+- [x] Edit modal shows existing content for ADRs
+- [x] Edit modal shows existing content for Patterns
+- [x] Edit modal shows existing content for Gotchas
+- [x] Loading spinner shown while fetching
+- [x] Error toast if fetch fails
 
 ---
 
@@ -157,11 +157,11 @@ BUG-002 was addressed in Sprint 1 (t06), but this task verifies the fix works ac
 - `dashboard/src/lib/graph/api-client.ts` - Add updateNode method
 
 **Acceptance Criteria:**
-- [ ] PUT endpoint accepts node updates
-- [ ] Neo4j node properties updated correctly
-- [ ] Updated timestamp reflects save time
-- [ ] Validation errors return 400 with details
-- [ ] Non-existent node returns 404
+- [x] PUT endpoint accepts node updates
+- [x] Neo4j node properties updated correctly
+- [x] Updated timestamp reflects save time
+- [x] Validation errors return 400 with details
+- [x] Non-existent node returns 404
 
 ---
 
@@ -206,12 +206,12 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 - `packages/api/src/routes/graph/nodes.ts` - Call git sync after save
 
 **Acceptance Criteria:**
-- [ ] ADR edits sync to `docs/adr/*.md`
-- [ ] Pattern edits sync to `docs/patterns/*.md`
-- [ ] Gotcha edits sync to `docs/gotchas/*.md`
-- [ ] Frontmatter preserved in synced files
-- [ ] Auto-commit created with proper message
-- [ ] Sync failure doesn't break graph save (graceful degradation)
+- [x] ADR edits sync to `docs/adr/*.md`
+- [x] Pattern edits sync to `docs/patterns/*.md`
+- [x] Gotcha edits sync to `docs/gotchas/*.md`
+- [x] Frontmatter preserved in synced files
+- [x] Auto-commit created with proper message
+- [x] Sync failure doesn't break graph save (graceful degradation)
 
 ---
 
@@ -250,12 +250,12 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 - `dashboard/src/lib/graph/api-client.ts` - Add createNode method
 
 **Acceptance Criteria:**
-- [ ] Create button visible on ADR/Pattern/Gotcha sections
-- [ ] Creation modal opens with appropriate template
-- [ ] ADR number auto-incremented from highest existing
-- [ ] New node created in graph and git
-- [ ] User navigated to new node after creation
-- [ ] Validation prevents empty title
+- [x] Create button visible on ADR/Pattern/Gotcha sections
+- [x] Creation modal opens with appropriate template
+- [x] ADR number auto-incremented from highest existing
+- [x] New node created in graph and git
+- [x] User navigated to new node after creation
+- [x] Validation prevents empty title
 
 ---
 
@@ -297,10 +297,10 @@ interface NodeEdit {
 - `packages/api/src/routes/graph/nodes.ts` - Add history endpoint
 
 **Acceptance Criteria:**
-- [ ] "Last edited" shown on detail cards
-- [ ] History section expandable
-- [ ] Edit history fetched from graph or git
-- [ ] Author and timestamp displayed for each edit
+- [x] "Last edited" shown on detail cards
+- [x] History section expandable
+- [x] Edit history fetched from graph or git
+- [x] Author and timestamp displayed for each edit
 
 ---
 
@@ -349,11 +349,11 @@ interface NodeEdit {
 - `packages/api/src/lib/git-sync.ts` - Add hash comparison
 
 **Acceptance Criteria:**
-- [ ] Conflict detected when file changed externally
-- [ ] User shown clear conflict dialog
-- [ ] Overwrite option works correctly
-- [ ] Cancel discards user changes safely
-- [ ] View Diff shows meaningful comparison
+- [x] Conflict detected when file changed externally
+- [x] User shown clear conflict dialog
+- [x] Overwrite option works correctly
+- [x] Cancel discards user changes safely
+- [x] View Diff shows meaningful comparison
 
 ---
 
