@@ -1326,10 +1326,60 @@
       "relevance": "critical",
       "created": "2026-01-16T22:37:44.361Z",
       "sessionId": "session-chris-at-watchhill-ai-1768603064320"
+    },
+    {
+      "filename": "gotcha-created-maintenance-sprint-adhoc260117s01-for-crit.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T22:47:46.807Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768690066757"
+    },
+    {
+      "filename": "pattern-completed-task-1-created-graph-access-verification.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T22:54:22.275Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768690462225"
+    },
+    {
+      "filename": "gotcha-fixed-graph-query-and-nodes-endpoints-with-access-.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T22:55:17.555Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768690517514"
+    },
+    {
+      "filename": "gotcha-created-user-graph-context-and-api-endpoint-to-fix.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "supabase",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T22:59:59.327Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768690799279"
     }
   ],
-  "lastUpdated": "2026-01-16T22:37:44.362Z",
-  "totalModules": 103,
+  "lastUpdated": "2026-01-17T22:59:59.328Z",
+  "totalModules": 107,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

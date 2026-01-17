@@ -30,6 +30,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, getSession } from '../_neo4j';
 import { getVoyageClient, VoyageAPIError, RateLimitError } from '@/lib/embeddings/voyage-client';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 import neo4j from 'neo4j-driver';
 
 interface QueryRequest {
@@ -114,6 +115,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Graph Query API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
+      );
+    }
+    console.log(`[Graph Query API] Access granted for graphId: ${graphId}, role: ${access.role}`);
 
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return NextResponse.json(

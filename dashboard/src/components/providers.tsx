@@ -15,6 +15,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { UserGraphProvider } from '@/contexts/UserGraphContext'
 import type { User } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
@@ -99,7 +100,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Context.Provider value={{ supabase, user, loading }}>
-          {children}
+          <UserGraphProvider>
+            {children}
+          </UserGraphProvider>
         </Context.Provider>
       </ThemeProvider>
     </QueryClientProvider>

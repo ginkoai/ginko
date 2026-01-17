@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, getSession } from '../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 import neo4j from 'neo4j-driver';
 
 interface NodeData {
@@ -103,6 +104,22 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Nodes API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
+      );
+    }
+    console.log(`[Nodes API] Access granted for graphId: ${graphId}, role: ${access.role}`);
 
     // Build property filters from remaining query params
     const reservedParams = ['graphId', 'labels', 'limit', 'offset'];
@@ -252,6 +269,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Verify user has write access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, body.graphId, 'write');
+    if (!access.hasAccess) {
+      console.log(`[Nodes API] Write access denied for graphId: ${body.graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have write access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
+      );
+    }
+    console.log(`[Nodes API] Write access granted for graphId: ${body.graphId}, role: ${access.role}`);
 
     if (!body.label) {
       return NextResponse.json(

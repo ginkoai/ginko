@@ -1,30 +1,67 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2025-12-15
- * @tags: [dashboard, focus, react, nextjs, supabase, auth, server-component, ginko-branding]
+ * @updated: 2026-01-17
+ * @tags: [dashboard, focus, react, nextjs, supabase, auth, client-component, ginko-branding, adhoc_260117_s01]
  * @related: [SprintProgressCard.tsx, MyTasksList.tsx, RecentCompletions.tsx, LastSessionSummary.tsx, ActionItems.tsx]
  * @priority: critical
  * @complexity: medium
  * @dependencies: [next, supabase-ssr]
  */
 
-import { createServerClient } from '@/lib/supabase/server'
+'use client';
+
 import { SprintProgressCard, MyTasksList, LastSessionSummary, RecentCompletions, ActionItems } from '@/components/focus'
+import { useUserGraph } from '@/contexts/UserGraphContext'
+import { useSupabase } from '@/components/providers'
+import { Skeleton } from '@/components/ui/skeleton'
 
-// Default graph ID for beta - all users share this graph
-const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
+export default function FocusPage() {
+  const { user, loading: userLoading } = useSupabase()
+  const { graphId, isLoading: graphLoading, error: graphError, source } = useUserGraph()
 
-export default async function FocusPage() {
-  const supabase = await createServerClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  // Show loading state
+  if (userLoading || graphLoading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="pb-4 border-b border-border">
+          <Skeleton className="h-8 w-32" />
+          <Skeleton className="h-4 w-48 mt-2" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+        </div>
+      </div>
+    )
+  }
 
   if (!user) {
     return null
   }
 
-  const graphId = DEFAULT_GRAPH_ID
+  // Show message if no project
+  if (!graphId) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="pb-4 border-b border-border">
+          <h1 className="text-2xl font-mono font-bold text-foreground">Focus</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Your current work at a glance.</p>
+        </div>
+        <div className="rounded-lg border border-border bg-card p-8 text-center">
+          <h2 className="text-lg font-semibold text-foreground mb-2">No Project Found</h2>
+          <p className="text-muted-foreground mb-4">
+            {graphError || "You don't have any projects yet. Use the CLI to create one:"}
+          </p>
+          <pre className="bg-muted rounded p-4 text-sm font-mono text-left inline-block">
+            ginko login{'\n'}
+            ginko init
+          </pre>
+        </div>
+      </div>
+    )
+  }
+
   const userId = user.email || user.id
 
   return (
