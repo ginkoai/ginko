@@ -1414,10 +1414,33 @@
       "relevance": "critical",
       "created": "2026-01-17T23:59:28.124Z",
       "sessionId": "session-chris-at-watchhill-ai-1768694368087"
+    },
+    {
+      "filename": "gotcha-completed-t10-fixed-focus-page-access-errors.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-18T01:00:10.664Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768698010611"
+    },
+    {
+      "filename": "gotcha-completed-t11-added-access-checks-to-6-graph-api-e.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-18T01:05:58.027Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768698357989"
     }
   ],
-  "lastUpdated": "2026-01-17T23:59:28.125Z",
-  "totalModules": 110,
+  "lastUpdated": "2026-01-18T01:05:58.028Z",
+  "totalModules": 112,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
