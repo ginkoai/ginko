@@ -22,14 +22,29 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Lazy initialization to avoid build-time errors when env vars aren't available
+let stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!stripe) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  }
+  return stripe;
+}
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+let _supabaseAdmin: ReturnType<typeof createClient> | null = null;
+function getSupabaseAdmin() {
+  if (!_supabaseAdmin) {
+    _supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+  }
+  return _supabaseAdmin;
+}
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+function getWebhookSecret(): string {
+  return process.env.STRIPE_WEBHOOK_SECRET!;
+}
 
 /**
  * POST /api/webhooks/stripe
@@ -47,7 +62,7 @@ export async function POST(request: NextRequest) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = getStripe().webhooks.constructEvent(body, signature, getWebhookSecret());
   } catch (err: any) {
     console.error('[WEBHOOK] Signature verification failed:', err.message);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
@@ -104,7 +119,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   console.log(`  Status: ${status}, Seats: ${seatCount}`);
 
   // Find organization by Stripe customer ID
-  const { data: org, error: orgError } = await supabaseAdmin
+  const { data: org, error: orgError } = await getSupabaseAdmin()
     .from('organizations')
     .select('id, name')
     .eq('stripe_customer_id', customerId)
@@ -116,7 +131,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   // Update organization subscription info
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await getSupabaseAdmin()
     .from('organizations')
     .update({
       stripe_subscription_id: subscriptionId,
@@ -159,7 +174,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   console.log(`[WEBHOOK] Subscription deleted: ${subscriptionId}`);
 
   // Find organization
-  const { data: org, error: orgError } = await supabaseAdmin
+  const { data: org, error: orgError } = await getSupabaseAdmin()
     .from('organizations')
     .select('id, name')
     .eq('stripe_customer_id', customerId)
@@ -171,7 +186,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   }
 
   // Downgrade to free tier
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await getSupabaseAdmin()
     .from('organizations')
     .update({
       stripe_subscription_id: null,
@@ -208,7 +223,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   console.log(`  Customer: ${customerId}, Attempt: ${attemptCount}`);
 
   // Find organization
-  const { data: org, error: orgError } = await supabaseAdmin
+  const { data: org, error: orgError } = await getSupabaseAdmin()
     .from('organizations')
     .select('id, name')
     .eq('stripe_customer_id', customerId)
@@ -229,7 +244,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   });
 
   // Update organization payment status
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await getSupabaseAdmin()
     .from('organizations')
     .update({
       payment_status: 'failed',
@@ -259,7 +274,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   console.log(`[WEBHOOK] Payment succeeded for invoice ${invoice.id}`);
 
   // Find organization
-  const { data: org, error: orgError } = await supabaseAdmin
+  const { data: org, error: orgError } = await getSupabaseAdmin()
     .from('organizations')
     .select('id, name')
     .eq('stripe_customer_id', customerId)
@@ -271,7 +286,7 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   }
 
   // Clear any payment failure status
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await getSupabaseAdmin()
     .from('organizations')
     .update({
       payment_status: 'succeeded',
@@ -312,11 +327,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // Get subscription details
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+  const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
   const seatCount = subscription.items.data[0]?.quantity || 1;
 
   // Find organization by Stripe customer ID
-  const { data: org, error: orgError } = await supabaseAdmin
+  const { data: org, error: orgError } = await getSupabaseAdmin()
     .from('organizations')
     .select('id, name')
     .eq('stripe_customer_id', customerId)
@@ -326,7 +341,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     // Try to find by metadata
     const orgId = session.metadata?.organizationId;
     if (orgId) {
-      await supabaseAdmin
+      await getSupabaseAdmin()
         .from('organizations')
         .update({
           stripe_customer_id: customerId,
@@ -346,7 +361,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   }
 
   // Update organization
-  const { error: updateError } = await supabaseAdmin
+  const { error: updateError } = await getSupabaseAdmin()
     .from('organizations')
     .update({
       stripe_subscription_id: subscriptionId,
@@ -379,7 +394,7 @@ async function handlePastDue(orgId: string, subscription: Stripe.Subscription) {
   console.log(`[WEBHOOK] Subscription past due for org ${orgId}`);
 
   // Update organization status
-  await supabaseAdmin
+  await getSupabaseAdmin()
     .from('organizations')
     .update({
       subscription_status: 'past_due',
@@ -425,7 +440,7 @@ async function logBillingEvent(
   metadata: Record<string, any>
 ) {
   try {
-    await supabaseAdmin.from('billing_events').insert({
+    await getSupabaseAdmin().from('billing_events').insert({
       organization_id: orgId,
       event_type: eventType,
       metadata,

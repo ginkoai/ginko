@@ -120,6 +120,17 @@ Data is leaking between dashboards of unrelated projects. Users can see Epics, S
   - Fix: Created migration `20260117_cleanup_e2e_test_teams.sql` to delete teams with 'e2e', 'test', or 'uat' in name/graph_id
   - File: `dashboard/supabase/migrations/20260117_cleanup_e2e_test_teams.sql`
 
+- [x] **adhoc_260117_s01_t15** - Fix checkTeamAccess failing on multiple teams with same graph_id
+  - Root cause: `.single()` in checkTeamAccess throws error when multiple teams have same graph_id
+  - This caused access checks to fail for all users, returning "User does not have access to this graph"
+  - Fix: Changed to `.limit(1)` with `.order('created_at', { ascending: true })` to select oldest team
+  - File: `dashboard/src/lib/graph/access.ts:170-177`
+
+- [x] **adhoc_260117_s01_t16** - Fix Stripe webhook build error
+  - Root cause: Module-level Stripe initialization failed during build when env vars unavailable
+  - Fix: Changed to lazy initialization via getter functions (getStripe, getSupabaseAdmin, getWebhookSecret)
+  - File: `dashboard/src/app/api/webhooks/stripe/route.ts`
+
 ---
 
 ## Success Criteria
@@ -168,7 +179,7 @@ curl /api/activity/team-b-id -H "Authorization: Bearer <UserA_Token>"
 ## Progress
 
 **Status:** Complete
-**Progress:** 100% (14/14 tasks complete)
+**Progress:** 100% (16/16 tasks complete)
 
 ## Notes
 

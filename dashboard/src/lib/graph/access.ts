@@ -168,16 +168,20 @@ async function checkTeamAccess(
     const supabase = createServiceRoleClient();
 
     // Find team that owns this graph
-    const { data: team, error: teamError } = await supabase
+    // Use .limit(1) instead of .single() to avoid error when multiple teams exist
+    const { data: teams, error: teamError } = await supabase
       .from('teams')
       .select('id, name')
       .eq('graph_id', graphId)
-      .single();
+      .order('created_at', { ascending: true })
+      .limit(1);
 
-    if (teamError || !team) {
+    if (teamError || !teams || teams.length === 0) {
       // No team owns this graph, that's OK - fall through to other checks
       return { hasAccess: false };
     }
+
+    const team = teams[0];
 
     // Check if user is a member of this team
     const { data: membership, error: memberError } = await supabase
