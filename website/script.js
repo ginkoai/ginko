@@ -393,6 +393,36 @@ const initCursorEasterEgg = () => {
 // ============================================================================
 // INITIALIZATION
 // ============================================================================
+// FAQ ACCORDION
+// ============================================================================
+
+const initFaqAccordion = () => {
+  const faqItems = document.querySelectorAll('.faq-item');
+
+  if (!faqItems.length) return;
+
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+
+    question.addEventListener('click', () => {
+      const isActive = item.classList.contains('active');
+
+      // Close all other items
+      faqItems.forEach(otherItem => {
+        otherItem.classList.remove('active');
+        otherItem.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+      });
+
+      // Toggle current item
+      if (!isActive) {
+        item.classList.add('active');
+        question.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+};
+
+// ============================================================================
 
 // Wait for DOM to be ready
 if (document.readyState === 'loading') {
@@ -410,6 +440,7 @@ function init() {
   initTerminalAnimation();
   initCopyButtons();
   initCursorEasterEgg();
+  initFaqAccordion();
 
   // Log initialization in development
   if (window.location.hostname === 'localhost' ||
