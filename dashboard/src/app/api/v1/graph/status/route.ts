@@ -131,10 +131,11 @@ export async function GET(request: NextRequest) {
 
     // Query 1: Node counts by type
     // Note: Standard properties are graphId (Project/Epic) and graph_id (other nodes)
-    // Removed projectId fallback as it was matching unintended nodes
+    // The graphId parameter MUST match exactly - we filter for non-empty property values
     const nodeStatsQuery = `
       MATCH (n)
-      WHERE n.graphId = $graphId OR n.graph_id = $graphId
+      WHERE (n.graphId IS NOT NULL AND n.graphId = $graphId)
+         OR (n.graph_id IS NOT NULL AND n.graph_id = $graphId)
       WITH labels(n)[0] as nodeType
       RETURN nodeType as type, count(*) as count
     `;
@@ -142,7 +143,8 @@ export async function GET(request: NextRequest) {
     // Query 2: Relationship counts by type
     const relStatsQuery = `
       MATCH (n)-[r]->()
-      WHERE n.graphId = $graphId OR n.graph_id = $graphId
+      WHERE (n.graphId IS NOT NULL AND n.graphId = $graphId)
+         OR (n.graph_id IS NOT NULL AND n.graph_id = $graphId)
       RETURN type(r) as type, count(r) as count
     `;
 

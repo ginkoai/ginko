@@ -132,7 +132,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Build the Cypher query
-    let whereClause = 'WHERE e.graph_id = $graphId';
+    // Note: Epic nodes use graphId (camelCase), not graph_id (snake_case)
+    let whereClause = 'WHERE (e.graphId = $graphId OR e.graph_id = $graphId)';
 
     // Filter by lane
     if (laneFilter) {

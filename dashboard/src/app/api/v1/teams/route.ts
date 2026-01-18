@@ -134,20 +134,39 @@ export async function GET(request: NextRequest) {
       const offset = parseInt(searchParams.get('offset') || '0', 10);
       const graphId = searchParams.get('graphId'); // Filter by specific project
 
-      // Get teams where user is a member
+      // If graphId filter is provided, first find the team(s) with that graph_id
+      let teamIdsToFilter: string[] | null = null;
+      if (graphId) {
+        const { data: teamsWithGraphId, error: teamLookupError } = await supabase
+          .from('teams')
+          .select('id')
+          .eq('graph_id', graphId);
+
+        if (teamLookupError) {
+          console.error('[Teams API] Team lookup by graphId error:', teamLookupError);
+        } else {
+          teamIdsToFilter = teamsWithGraphId?.map(t => t.id) || [];
+          console.log(`[Teams API] Found ${teamIdsToFilter.length} teams with graph_id: ${graphId}`);
+        }
+      }
+
+      // Get teams where user is a member, optionally filtered by graphId
       let query = supabase
         .from('team_members')
         .select('team_id, role, teams(*)')
         .eq('user_id', user.id);
 
-      // If graphId filter is provided, filter teams by graph_id
-      if (graphId) {
-        // Use a subquery to filter teams by graph_id
-        query = supabase
-          .from('team_members')
-          .select('team_id, role, teams!inner(*)')
-          .eq('user_id', user.id)
-          .eq('teams.graph_id', graphId);
+      // Apply team ID filter if graphId was specified
+      if (teamIdsToFilter !== null) {
+        if (teamIdsToFilter.length === 0) {
+          // No teams match this graphId, return empty result
+          return NextResponse.json({
+            teams: [],
+            totalCount: 0,
+            filters: { limit: Math.min(limit, 100), offset },
+          });
+        }
+        query = query.in('team_id', teamIdsToFilter);
       }
 
       const { data: memberships, error: memberError } = await query
