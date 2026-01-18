@@ -131,6 +131,26 @@ Data is leaking between dashboards of unrelated projects. Users can see Epics, S
   - Fix: Changed to lazy initialization via getter functions (getStripe, getSupabaseAdmin, getWebhookSecret)
   - File: `dashboard/src/app/api/webhooks/stripe/route.ts`
 
+- [x] **adhoc_260117_s01_t17** - Fix Roadmap API not finding Epic nodes
+  - Root cause: Query used `e.graph_id` but Epic nodes use `e.graphId` (camelCase)
+  - Fix: Changed WHERE clause to check both `graphId` and `graph_id` properties
+  - File: `dashboard/src/app/api/v1/graph/roadmap/route.ts:135-136`
+
+- [x] **adhoc_260117_s01_t18** - Fix status API node count query
+  - Added `IS NOT NULL` checks to ensure only valid graphId matches
+  - File: `dashboard/src/app/api/v1/graph/status/route.ts:135-148`
+
+- [x] **adhoc_260117_s01_t19** - Fix Teams API graphId filter not working
+  - Root cause: Supabase join filter `.eq('teams.graph_id', graphId)` unreliable
+  - Fix: Two-step approach - first find team IDs by graph_id, then filter members
+  - File: `dashboard/src/app/api/v1/teams/route.ts:137-170`
+
+- [x] **adhoc_260117_s01_t20** - Add admin cleanup endpoint for test teams
+  - Created DELETE /api/v1/admin/cleanup-test-teams endpoint
+  - Removes teams with 'e2e', 'test', or 'uat' in name/graph_id
+  - Also supports GET for preview mode
+  - File: `dashboard/src/app/api/v1/admin/cleanup-test-teams/route.ts`
+
 ---
 
 ## Success Criteria
@@ -179,7 +199,7 @@ curl /api/activity/team-b-id -H "Authorization: Bearer <UserA_Token>"
 ## Progress
 
 **Status:** Complete
-**Progress:** 100% (16/16 tasks complete)
+**Progress:** 100% (20/20 tasks complete)
 
 ## Notes
 
