@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-17
+ * @updated: 2026-01-17
  * @tags: [focus, tasks, user-tasks, dashboard, list, quick-look]
  * @related: [graph/node-card.tsx, dashboard/focus-page.tsx, TaskQuickLookModal.tsx]
  * @priority: high
@@ -28,7 +28,7 @@ import { TaskQuickLookModal } from './TaskQuickLookModal';
 
 interface MyTasksListProps {
   userId: string;
-  graphId?: string;
+  graphId: string;
   className?: string;
 }
 
@@ -91,9 +91,6 @@ function groupTasksByStatus(tasks: TaskNode[]): TaskGroup[] {
 // Component
 // =============================================================================
 
-// Default graph ID fallback
-const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
-
 export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
   const [tasks, setTasks] = useState<TaskNode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -112,14 +109,11 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
         setLoading(true);
         setError(null);
 
-        // Get effective graphId
-        const effectiveGraphId = graphId || DEFAULT_GRAPH_ID;
-
-        // Fetch all Task nodes
+        // Fetch all Task nodes for this user's project
         const response = await listNodes({
           labels: ['Task'],
-          limit: 100, // Adjust as needed
-          graphId: effectiveGraphId,
+          limit: 100,
+          graphId,
         });
 
         // Filter tasks by assignee matching userId
@@ -148,7 +142,7 @@ export function MyTasksList({ userId, graphId, className }: MyTasksListProps) {
     }
 
     fetchTasks();
-  }, [userId]);
+  }, [userId, graphId]);
 
   // Loading state
   if (loading) {

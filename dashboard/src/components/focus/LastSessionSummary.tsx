@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2026-01-17
  * @tags: [focus, session, summary, dashboard]
  * @related: [RecentCompletions.tsx, sessions-with-scores.tsx, use-sessions-data.ts]
  * @priority: medium
@@ -19,7 +19,7 @@ import { ClockIcon, SparklesIcon } from '@heroicons/react/24/outline';
 
 interface LastSessionSummaryProps {
   userId?: string;
-  graphId?: string;
+  graphId: string;
 }
 
 export function LastSessionSummary({ userId, graphId }: LastSessionSummaryProps) {

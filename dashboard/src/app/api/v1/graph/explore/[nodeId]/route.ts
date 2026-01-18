@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-14
- * @tags: [api, graph, explore, document, relationships, EPIC-011]
+ * @updated: 2026-01-17
+ * @tags: [api, graph, explore, document, relationships, EPIC-011, adhoc_260117_s01]
  * @related: [../../_neo4j.ts, ../hierarchy/route.ts, ../../adjacencies/[nodeId]/route.ts]
  * @priority: high
  * @complexity: medium
@@ -29,6 +29,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, runQuery } from '../../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 
 interface DocumentInfo {
   id: string;
@@ -127,6 +128,21 @@ export async function GET(
           },
         },
         { status: 400 }
+      );
+    }
+
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Explore API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
       );
     }
 

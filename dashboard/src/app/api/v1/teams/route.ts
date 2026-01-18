@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-07
- * @tags: [teams, crud, rest-api, task-022, multi-tenancy]
+ * @updated: 2026-01-17
+ * @tags: [teams, crud, rest-api, task-022, multi-tenancy, adhoc_260117_s01]
  * @related: [projects/route.ts, middleware.ts]
  * @priority: high
  * @complexity: medium
@@ -132,12 +132,25 @@ export async function GET(request: NextRequest) {
       const searchParams = request.nextUrl.searchParams;
       const limit = parseInt(searchParams.get('limit') || '50', 10);
       const offset = parseInt(searchParams.get('offset') || '0', 10);
+      const graphId = searchParams.get('graphId'); // Filter by specific project
 
       // Get teams where user is a member
-      const { data: memberships, error: memberError } = await supabase
+      let query = supabase
         .from('team_members')
         .select('team_id, role, teams(*)')
-        .eq('user_id', user.id)
+        .eq('user_id', user.id);
+
+      // If graphId filter is provided, filter teams by graph_id
+      if (graphId) {
+        // Use a subquery to filter teams by graph_id
+        query = supabase
+          .from('team_members')
+          .select('team_id, role, teams!inner(*)')
+          .eq('user_id', user.id)
+          .eq('teams.graph_id', graphId);
+      }
+
+      const { data: memberships, error: memberError } = await query
         .limit(Math.min(limit, 100))
         .range(offset, offset + Math.min(limit, 100) - 1);
 

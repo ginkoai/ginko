@@ -1,7 +1,7 @@
 /**
  * @fileType: hook
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2026-01-17
  * @tags: [sessions, events, react-hook, dashboard]
  * @related: [use-collaboration-data.ts, ../app/api/v1/sessions/route.ts]
  * @priority: high
@@ -12,7 +12,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { getDefaultGraphId } from '@/lib/graph/api-client';
 import { createClient } from '@/lib/supabase/client';
 
 export interface SessionEvent {
@@ -50,23 +49,19 @@ export interface SessionsData {
 }
 
 interface UseSessionsDataOptions {
-  graphId?: string;
+  graphId: string;
   userId?: string;
   limit?: number;
   days?: number;
 }
 
-// Default graph ID fallback
-const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
-
-export function useSessionsData(options: UseSessionsDataOptions = {}) {
+export function useSessionsData(options: UseSessionsDataOptions) {
   const [data, setData] = useState<SessionsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSessions = useCallback(async () => {
-    // Get graphId from options, global default, or fallback
-    const graphId = options.graphId || getDefaultGraphId() || DEFAULT_GRAPH_ID;
+    const { graphId } = options;
 
     try {
       setLoading(true);

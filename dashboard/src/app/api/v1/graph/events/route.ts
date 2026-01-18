@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-05
- * @tags: [api, graph, events, adr-043, neo4j]
+ * @updated: 2026-01-17
+ * @tags: [api, graph, events, adr-043, neo4j, adhoc_260117_s01]
  * @related: [../_neo4j.ts, ../documents/batch/route.ts]
  * @priority: critical
  * @complexity: medium
@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection, getSession } from '../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 
 /**
  * Extract task IDs from event descriptions (TASK-4)
@@ -122,6 +123,21 @@ export async function POST(request: NextRequest) {
           },
         },
         { status: 400 }
+      );
+    }
+
+    // Verify user has write access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, body.graphId, 'write');
+    if (!access.hasAccess) {
+      console.log(`[Events API] Access denied for graphId: ${body.graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
       );
     }
 

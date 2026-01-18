@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2026-01-17
  * @tags: [focus, completions, timeline, dashboard, tasks]
  * @related: [LastSessionSummary.tsx, sessions-with-scores.tsx, use-sessions-data.ts]
  * @priority: medium
@@ -29,12 +29,9 @@ import {
   UserIcon,
 } from '@heroicons/react/24/outline';
 
-// Default graph ID fallback
-const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
-
 interface RecentCompletionsProps {
   userId?: string;
-  graphId?: string;
+  graphId: string;
 }
 
 interface CompletionItem {
@@ -73,14 +70,12 @@ export function RecentCompletions({ userId, graphId }: RecentCompletionsProps) {
         setLoading(true);
         setError(null);
 
-        const effectiveGraphId = graphId || DEFAULT_GRAPH_ID;
-
         // Fetch completed tasks from last 7 days
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
         const tasksResponse = await listNodes({
-          graphId: effectiveGraphId,
+          graphId,
           labels: ['Task'],
           limit: 50,
         });

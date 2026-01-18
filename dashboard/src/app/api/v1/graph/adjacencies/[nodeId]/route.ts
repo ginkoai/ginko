@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-12-11
- * @tags: [api, graph, adjacencies, relationships, neo4j]
+ * @updated: 2026-01-17
+ * @tags: [api, graph, adjacencies, relationships, neo4j, adhoc_260117_s01]
  * @related: [../_neo4j.ts, ../nodes/route.ts]
  * @priority: high
  * @complexity: medium
@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, getSession } from '../../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 import neo4j from 'neo4j-driver';
 
 interface AdjacencyResponse {
@@ -96,6 +97,21 @@ export async function GET(
           },
         },
         { status: 400 }
+      );
+    }
+
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Adjacencies API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
       );
     }
 

@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-14
- * @tags: [api, graph, hierarchy, epic, sprint, task, EPIC-011]
+ * @updated: 2026-01-17
+ * @tags: [api, graph, hierarchy, epic, sprint, task, EPIC-011, adhoc_260117_s01]
  * @related: [../nodes/route.ts, ../_neo4j.ts]
  * @priority: high
  * @complexity: medium
@@ -35,6 +35,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, runQuery } from '../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 
 type NodeType = 'Epic' | 'Sprint' | 'Task' | 'Unknown';
 
@@ -126,6 +127,21 @@ export async function GET(request: NextRequest) {
           },
         },
         { status: 400 }
+      );
+    }
+
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Hierarchy API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
       );
     }
 

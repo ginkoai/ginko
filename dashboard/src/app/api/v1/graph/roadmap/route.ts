@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-11
- * @tags: [api, graph, roadmap, epic, ADR-056, now-next-later]
+ * @updated: 2026-01-17
+ * @tags: [api, graph, roadmap, epic, ADR-056, now-next-later, adhoc_260117_s01]
  * @related: [../nodes/route.ts, ../../migrations/009-epic-roadmap/route.ts]
  * @priority: high
  * @complexity: medium
@@ -37,6 +37,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, runQuery } from '../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 
 type RoadmapLane = 'now' | 'next' | 'later' | 'done' | 'dropped';
 type RoadmapStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled';
@@ -112,6 +113,21 @@ export async function GET(request: NextRequest) {
           },
         },
         { status: 400 }
+      );
+    }
+
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Roadmap API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
       );
     }
 

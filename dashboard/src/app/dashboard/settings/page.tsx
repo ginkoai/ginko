@@ -1,8 +1,8 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2025-12-10
- * @tags: [dashboard, settings, api-key, react, nextjs]
+ * @updated: 2026-01-17
+ * @tags: [dashboard, settings, api-key, react, nextjs, adhoc_260117_s01]
  * @related: [dashboard/page.tsx, server.ts]
  * @priority: high
  * @complexity: medium
@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 import { KeyIcon, UserIcon, BoltIcon, UsersIcon, CreditCardIcon } from '@heroicons/react/24/outline'
 import { TeamMemberList } from '@/components/team'
+import { useUserGraph } from '@/contexts/UserGraphContext'
 
 interface Team {
   id: string;
@@ -36,6 +37,7 @@ interface UserProfile {
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { graphId } = useUserGraph()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [teams, setTeams] = useState<Team[]>([])
@@ -57,11 +59,12 @@ export default function SettingsPage() {
 
           setProfile(profile)
 
-          // Fetch user's teams
+          // Fetch user's teams for current project
           const { data: { session } } = await supabase.auth.getSession()
-          if (session?.access_token) {
+          if (session?.access_token && graphId) {
             try {
-              const teamsRes = await fetch('/api/v1/teams', {
+              // Filter teams by current project's graphId
+              const teamsRes = await fetch(`/api/v1/teams?graphId=${encodeURIComponent(graphId)}`, {
                 headers: { Authorization: `Bearer ${session.access_token}` }
               })
               if (teamsRes.ok) {
@@ -81,7 +84,7 @@ export default function SettingsPage() {
     }
 
     loadUserData()
-  }, [supabase])
+  }, [supabase, graphId])
 
 
   if (loading) {

@@ -1,7 +1,7 @@
 /**
  * @fileType: component
  * @status: current
- * @updated: 2025-12-15
+ * @updated: 2026-01-17
  * @tags: [focus, sprint, progress, dashboard, ginko-branding]
  * @related: [../ui/card.tsx, use-sprint-data.ts, /api/v1/sprint/active/route.ts]
  * @priority: high
@@ -16,13 +16,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { createClient } from '@/lib/supabase/client';
-import { getDefaultGraphId } from '@/lib/graph/api-client';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { ClockIcon, CalendarIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { clsx } from 'clsx';
 
 interface SprintProgressCardProps {
-  graphId?: string;
+  graphId: string;
 }
 
 interface SprintData {
@@ -51,8 +50,6 @@ interface ActiveSprintResponse {
   };
 }
 
-// Default graph ID fallback
-const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
 
 /**
  * Safely parse a date value that may come from Neo4j or as an ISO string.
@@ -119,9 +116,6 @@ export function SprintProgressCard({ graphId }: SprintProgressCardProps) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchActiveSprint = useCallback(async () => {
-    // Get graphId from props, global default, or fallback
-    const effectiveGraphId = graphId || getDefaultGraphId() || DEFAULT_GRAPH_ID;
-
     try {
       setLoading(true);
       setError(null);
@@ -136,7 +130,7 @@ export function SprintProgressCard({ graphId }: SprintProgressCardProps) {
       }
 
       const params = new URLSearchParams({
-        graphId: effectiveGraphId,
+        graphId,
       });
 
       const response = await fetch(`/api/v1/sprint/active?${params}`, {

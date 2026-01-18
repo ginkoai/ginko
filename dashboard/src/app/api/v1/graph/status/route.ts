@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-17
- * @tags: [api, graph, status, neo4j, statistics]
+ * @updated: 2026-01-17
+ * @tags: [api, graph, status, neo4j, statistics, adhoc_260117_s01]
  * @related: [../_neo4j.ts, ../init/route.ts]
  * @priority: high
  * @complexity: medium
@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '../_neo4j';
+import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
 
 interface GraphStatusResponse {
   namespace: string;
@@ -90,6 +91,22 @@ export async function GET(request: NextRequest) {
 
     console.log('[Graph Status API] Fetching status for graphId:', graphId);
 
+    // Verify user has access to this graph (ADR-060: Data Isolation)
+    const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
+    if (!access.hasAccess) {
+      console.log(`[Graph Status API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      return NextResponse.json(
+        {
+          error: {
+            code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
+            message: access.error || 'You do not have access to this graph',
+          },
+        },
+        { status: access.error === 'Graph not found' ? 404 : 403 }
+      );
+    }
+    console.log(`[Graph Status API] Access granted for graphId: ${graphId}, role: ${access.role}`);
+
     // Get project node
     const projectQuery = `
       MATCH (p:Project {graphId: $graphId})
@@ -112,11 +129,12 @@ export async function GET(request: NextRequest) {
 
     const project = projectResults[0].p.properties;
 
-    // Simplified queries to avoid complex aggregation issues
     // Query 1: Node counts by type
+    // Note: Standard properties are graphId (Project/Epic) and graph_id (other nodes)
+    // Removed projectId fallback as it was matching unintended nodes
     const nodeStatsQuery = `
       MATCH (n)
-      WHERE n.graphId = $graphId OR n.graph_id = $graphId OR n.projectId = $graphId
+      WHERE n.graphId = $graphId OR n.graph_id = $graphId
       WITH labels(n)[0] as nodeType
       RETURN nodeType as type, count(*) as count
     `;
@@ -124,7 +142,7 @@ export async function GET(request: NextRequest) {
     // Query 2: Relationship counts by type
     const relStatsQuery = `
       MATCH (n)-[r]->()
-      WHERE n.graphId = $graphId OR n.graph_id = $graphId OR n.projectId = $graphId
+      WHERE n.graphId = $graphId OR n.graph_id = $graphId
       RETURN type(r) as type, count(r) as count
     `;
 
