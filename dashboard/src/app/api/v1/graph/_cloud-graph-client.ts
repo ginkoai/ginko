@@ -270,9 +270,10 @@ export class CloudGraphClient {
     console.log('[verifyAccess] User context:', this.context.userId);
 
     try {
+      // Check for Project node (correct label) or Graph node (legacy)
       const result = await runQuery<{ count: number }>(
-        `MATCH (g:Graph {graphId: $graphId})
-         RETURN count(g) as count`,
+        `MATCH (p:Project {graphId: $graphId})
+         RETURN count(p) as count`,
         { graphId: this.context.graphId }
       );
 

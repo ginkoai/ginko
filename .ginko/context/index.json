@@ -1376,10 +1376,48 @@
       "relevance": "critical",
       "created": "2026-01-17T22:59:59.327Z",
       "sessionId": "session-chris-at-watchhill-ai-1768690799279"
+    },
+    {
+      "filename": "pattern-implemented-supabase-team-creation-on-ginko-init-a.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "supabase",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T23:34:23.390Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768692863349"
+    },
+    {
+      "filename": "gotcha-created-admin-migration-endpoint-and-ran-team-back.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "supabase",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T23:45:56.021Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768693555982"
+    },
+    {
+      "filename": "gotcha-fixed-critical-data-isolation-bug-in-graph-and-roa.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-17T23:59:28.124Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768694368087"
     }
   ],
-  "lastUpdated": "2026-01-17T22:59:59.328Z",
-  "totalModules": 107,
+  "lastUpdated": "2026-01-17T23:59:28.125Z",
+  "totalModules": 110,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

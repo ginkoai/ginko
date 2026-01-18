@@ -80,11 +80,36 @@ Data is leaking between dashboards of unrelated projects. Users can see Epics, S
   - Test: User A cannot see User B's team activity
   - Test: Unauthenticated requests are rejected
 
-- [ ] **adhoc_260117_s01_t09** - Create Supabase team on ginko init
-  - Gap: `ginko init` creates Neo4j Project but no Supabase team
-  - User cannot invite team members without a Supabase team
-  - Fix: Create team in Supabase with `graph_id` linked to project
-  - Add user as team owner in `team_members` table
+- [x] **adhoc_260117_s01_t09** - Create Supabase team on ginko init
+
+- [ ] **adhoc_260117_s01_t10** - Fix Focus page access errors
+  - My Tasks: "User does not have access to this graph"
+  - Recent Completions: "Unable to load completions"
+  - Root cause: APIs not passing graphId correctly or access check failing
+  - Files: `dashboard/src/components/dashboard/ActionItems.tsx`, `RecentCompletions.tsx`
+
+- [ ] **adhoc_260117_s01_t11** - Fix Graph page loading failures
+  - Nav Tree: "Failed to load tree"
+  - Project: "No Charter Found" (but charter exists)
+  - Summary Cards (Epics, Sprints, etc): "Failed to load"
+  - Root cause: CloudGraphClient.verifyAccess() or API access checks
+  - Files: `dashboard/src/components/graph/tree-explorer.tsx`, `ProjectView.tsx`
+
+- [ ] **adhoc_260117_s01_t12** - Fix node counts aggregating across all projects
+  - Shows 7150 nodes, 2119 sprints (way too high)
+  - Root cause: Query not filtering by graphId, aggregating all accessible graphs
+  - File: `dashboard/src/components/graph/ProjectView.tsx` or related API
+
+- [ ] **adhoc_260117_s01_t13** - Fix Settings > Team showing 20 teams
+  - Should only show teams for current project (1 team)
+  - Shows all 20 teams user belongs to (including e2e test projects)
+  - Root cause: Team list not filtered by current graphId
+  - File: `dashboard/src/app/dashboard/settings/page.tsx` or team API
+
+- [ ] **adhoc_260117_s01_t14** - Clean up orphaned e2e test teams
+  - Migration created teams for e2e test projects
+  - These clutter the team list and inflate node counts
+  - Action: Delete teams where name matches `ginko-e2e-*` pattern
 
 ---
 
@@ -134,7 +159,7 @@ curl /api/activity/team-b-id -H "Authorization: Bearer <UserA_Token>"
 ## Progress
 
 **Status:** In Progress
-**Progress:** 78% (7/9 tasks complete)
+**Progress:** 57% (8/14 tasks complete)
 
 ## Notes
 

@@ -154,13 +154,29 @@ export async function GET(request: NextRequest) {
       console.error('[User Graph API] Error querying team memberships:', error);
     }
 
-    // Determine default graphId (first owned, then first team membership)
+    // Determine default graphId
+    // Priority: 1. Non-test owned projects, 2. Non-test team projects, 3. Any project
     let defaultGraphId: string | null = null;
     let source: 'owner' | 'team_member' | 'none' = 'none';
 
-    const ownedProject = projects.find(p => p.source === 'owner');
-    if (ownedProject) {
-      defaultGraphId = ownedProject.graphId;
+    // Filter out test/e2e projects for default selection
+    const isRealProject = (p: UserGraph) =>
+      !p.projectName.includes('e2e') &&
+      !p.projectName.includes('test') &&
+      !p.projectName.includes('uat');
+
+    const realOwnedProject = projects.find(p => p.source === 'owner' && isRealProject(p));
+    const realTeamProject = projects.find(p => p.source === 'team_member' && isRealProject(p));
+    const anyOwnedProject = projects.find(p => p.source === 'owner');
+
+    if (realOwnedProject) {
+      defaultGraphId = realOwnedProject.graphId;
+      source = 'owner';
+    } else if (realTeamProject) {
+      defaultGraphId = realTeamProject.graphId;
+      source = 'team_member';
+    } else if (anyOwnedProject) {
+      defaultGraphId = anyOwnedProject.graphId;
       source = 'owner';
     } else if (projects.length > 0) {
       defaultGraphId = projects[0].graphId;

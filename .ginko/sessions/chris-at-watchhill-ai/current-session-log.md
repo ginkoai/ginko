@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-17T22-13-16-508Z
-started: 2026-01-17T22:13:16.508Z
+session_id: session-2026-01-17T23-26-18-805Z
+started: 2026-01-17T23:26:18.805Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-17T22-13-16-508Z
+# Session Log: session-2026-01-17T23-26-18-805Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,16 +14,28 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 18:05 - [achievement]
-Deployed and verified data isolation fix. Tests passed: 1) /api/v1/user/graph returns user's owned graphs + team memberships correctly. 2) /api/v1/graph/query returns 403 GRAPH_NOT_FOUND for unauthorized graphs. 3) /api/v1/graph/nodes returns 403 GRAPH_NOT_FOUND for unauthorized graphs. 4) Authorized access (via team membership) works correctly. Production URL: https://app.ginkoai.com
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/route.ts
+### 18:34 - [feature]
+Implemented Supabase team creation on ginko init (adhoc_260117_s01_t09). Modified /api/v1/graph/init endpoint to create a Supabase team with graph_id linked when a new project is initialized. Uses createServiceRoleClient() to bypass RLS. Added user as team owner in team_members table. This enables team collaboration features like invites and access control for new projects.
+Files: dashboard/src/app/api/v1/graph/init/route.ts
 Impact: high
 
 
-### 18:20 - [achievement]
-Sprint adhoc_260117_s01 at 78% - data isolation fix deployed and verified. Remaining: t08 (integration tests), t09 (create Supabase team on ginko init - Ed cannot invite members without this). Ed's vschool project confirmed in Neo4j with correct ownership.
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/route.ts
+### 18:45 - [fix]
+Created admin migration endpoint and ran team backfill for existing projects. Migration created Supabase teams for 19 projects that were missing team linkage, including Ed's vschool project. This fixes the dashboard visibility issue for projects created before the team-linking fix. Endpoint: /api/v1/admin/migrate-teams
+Files: dashboard/src/app/api/v1/admin/migrate-teams/route.ts
 Impact: high
+
+
+### 18:59 - [fix]
+Fixed critical data isolation bug in graph and roadmap pages. Root cause: hardcoded DEFAULT_GRAPH_ID fallback showing ginko project data to all users. Fix: Both pages now use useUserGraph hook to get user's own graphId from context, with proper loading and no-project states. Also removed NEXT_PUBLIC_GRAPH_ID env var from production. Ed's vschool project should now be visible.
+Files: dashboard/src/app/dashboard/graph/page.tsx, dashboard/src/app/dashboard/roadmap/page.tsx
+Impact: high
+
+
+### 19:50 - [decision]
+Added 5 new tasks to adhoc_260117_s01 sprint for remaining dashboard data isolation issues: t10 (Focus page access errors), t11 (Graph page loading failures), t12 (node counts aggregating across projects), t13 (Settings showing 20 teams), t14 (cleanup e2e test teams). Sprint now at 57% (8/14 tasks).
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/_cloud-graph-client.ts
+Impact: medium
 
 
 ## Key Decisions
@@ -31,6 +43,12 @@ Impact: high
 <!-- These entries also appear in Timeline for narrative coherence -->
 <!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
 <!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
+
+### 19:50 - [decision]
+Added 5 new tasks to adhoc_260117_s01 sprint for remaining dashboard data isolation issues: t10 (Focus page access errors), t11 (Graph page loading failures), t12 (node counts aggregating across projects), t13 (Settings showing 20 teams), t14 (cleanup e2e test teams). Sprint now at 57% (8/14 tasks).
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/_cloud-graph-client.ts
+Impact: medium
+
 
 ## Insights
 <!-- Patterns, gotchas, learnings discovered -->
@@ -49,100 +67,63 @@ Impact: high
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 17:47 - [fix]
-# [FIX] 17:47
+### 18:34 - [feature]
+# [FEATURE] 18:34
 
-Created maintenance sprint adhoc_260117_s01 for critical data isolation bug. Investigation found 6 vulnerable endpoints where cross-project data can leak. Root cause: API endpoints verify auth tokens but don't verify user has access to the specific graphId/teamId being queried. 8 tasks created to fix.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-
-**Impact:** high
-**Timestamp:** 2026-01-17T22:47:43.057Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-Impact: high
-
-### 17:54 - [feature]
-# [FEATURE] 17:54
-
-Completed task 1: Created graph access verification helper at dashboard/src/lib/graph/access.ts. Implements verifyGraphAccess() that checks: 1) direct ownership (graph.userId === userId), 2) team membership (teams.graph_id lookup), 3) public visibility for read access. Exports verifyGraphAccessFromRequest() convenience wrapper for API routes.
+Implemented Supabase team creation on ginko init (adhoc_260117_s01_t09). Modified /api/v1/graph/init endpoint to create a Supabase team with graph_id linked when a new project is initialized. Uses createServiceRoleClient() to bypass RLS. Added user as team owner in team_members table. This enables team collaboration features like invites and access control for new projects.
 
 **Files:**
-- dashboard/src/lib/graph/access.ts
+- dashboard/src/app/api/v1/graph/init/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-17T22:54:19.831Z
+**Timestamp:** 2026-01-17T23:34:20.031Z
 
-Files: dashboard/src/lib/graph/access.ts
+Files: dashboard/src/app/api/v1/graph/init/route.ts
 Impact: high
 
-### 17:55 - [fix]
-# [FIX] 17:55
+### 18:45 - [fix]
+# [FIX] 18:45
 
-Fixed Graph Query and Nodes endpoints with access verification. Added verifyGraphAccessFromRequest() calls to: 1) GET /api/v1/graph/query - semantic search (read access), 2) GET /api/v1/graph/nodes - list nodes (read access), 3) POST /api/v1/graph/nodes - create node (write access). Returns 403 ACCESS_DENIED or 404 GRAPH_NOT_FOUND as appropriate.
+Created admin migration endpoint and ran team backfill for existing projects. Migration created Supabase teams for 19 projects that were missing team linkage, including Ed's vschool project. This fixes the dashboard visibility issue for projects created before the team-linking fix. Endpoint: /api/v1/admin/migrate-teams
 
 **Files:**
-- dashboard/src/app/api/v1/graph/query/route.ts
-- dashboard/src/app/api/v1/graph/nodes/route.ts
+- dashboard/src/app/api/v1/admin/migrate-teams/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-17T22:55:15.101Z
+**Timestamp:** 2026-01-17T23:45:53.058Z
 
-Files: dashboard/src/app/api/v1/graph/query/route.ts, dashboard/src/app/api/v1/graph/nodes/route.ts
+Files: dashboard/src/app/api/v1/admin/migrate-teams/route.ts
 Impact: high
 
-### 17:59 - [fix]
-# [FIX] 17:59
+### 18:59 - [fix]
+# [FIX] 18:59
 
-Created user graph context and API endpoint to fix data isolation in dashboard. ROOT CAUSE: Dashboard used hardcoded graphId for all users ('gin_1762125961056_dg4bsd'). SOLUTION: 1) Created /api/v1/user/graph endpoint that looks up user's graphId from Neo4j ownership or Supabase team membership. 2) Created UserGraphContext that fetches and provides user's graphId. 3) Updated providers.tsx to include UserGraphProvider. 4) Updated dashboard/page.tsx to use context instead of hardcoded value. Now users only see their own project data.
+Fixed critical data isolation bug in graph and roadmap pages. Root cause: hardcoded DEFAULT_GRAPH_ID fallback showing ginko project data to all users. Fix: Both pages now use useUserGraph hook to get user's own graphId from context, with proper loading and no-project states. Also removed NEXT_PUBLIC_GRAPH_ID env var from production. Ed's vschool project should now be visible.
 
 **Files:**
-- dashboard/src/app/api/v1/user/graph/route.ts
-- dashboard/src/contexts/UserGraphContext.tsx
-- dashboard/src/components/providers.tsx
-- dashboard/src/app/dashboard/page.tsx
+- dashboard/src/app/dashboard/graph/page.tsx
+- dashboard/src/app/dashboard/roadmap/page.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-17T22:59:57.023Z
+**Timestamp:** 2026-01-17T23:59:25.231Z
 
-Files: dashboard/src/app/api/v1/user/graph/route.ts, dashboard/src/contexts/UserGraphContext.tsx, dashboard/src/components/providers.tsx, dashboard/src/app/dashboard/page.tsx
+Files: dashboard/src/app/dashboard/graph/page.tsx, dashboard/src/app/dashboard/roadmap/page.tsx
 Impact: high
 
-### 18:05 - [achievement]
-# [ACHIEVEMENT] 18:05
+### 19:50 - [decision]
+# [DECISION] 19:50
 
-Deployed and verified data isolation fix. Tests passed: 1) /api/v1/user/graph returns user's owned graphs + team memberships correctly. 2) /api/v1/graph/query returns 403 GRAPH_NOT_FOUND for unauthorized graphs. 3) /api/v1/graph/nodes returns 403 GRAPH_NOT_FOUND for unauthorized graphs. 4) Authorized access (via team membership) works correctly. Production URL: https://app.ginkoai.com
+Added 5 new tasks to adhoc_260117_s01 sprint for remaining dashboard data isolation issues: t10 (Focus page access errors), t11 (Graph page loading failures), t12 (node counts aggregating across projects), t13 (Settings showing 20 teams), t14 (cleanup e2e test teams). Sprint now at 57% (8/14 tasks).
 
 **Files:**
 - .ginko/context/index.json
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/graph/nodes/route.ts
+- dashboard/src/app/api/v1/graph/_cloud-graph-client.ts
 
-**Impact:** high
-**Timestamp:** 2026-01-17T23:05:30.375Z
+**Impact:** medium
+**Timestamp:** 2026-01-18T00:50:57.562Z
 
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/route.ts
-Impact: high
-
-### 18:20 - [achievement]
-# [ACHIEVEMENT] 18:20
-
-Sprint adhoc_260117_s01 at 78% - data isolation fix deployed and verified. Remaining: t08 (integration tests), t09 (create Supabase team on ginko init - Ed cannot invite members without this). Ed's vschool project confirmed in Neo4j with correct ownership.
-
-**Files:**
-- .ginko/context/index.json
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/graph/nodes/route.ts
-
-**Impact:** high
-**Timestamp:** 2026-01-17T23:20:59.243Z
-
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/nodes/route.ts
-Impact: high
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/_cloud-graph-client.ts
+Impact: medium

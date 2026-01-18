@@ -1,7 +1,7 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2025-11-17
+ * @updated: 2026-01-17
  * @tags: [api, graph, init, neo4j, onboarding]
  * @related: [../_neo4j.ts, ../events/route.ts]
  * @priority: critical
@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '../_neo4j';
 import { randomUUID } from 'crypto';
 import { extractUserIdFromToken } from '../_cloud-graph-client';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 interface GraphInitRequest {
   projectPath: string;
@@ -157,6 +158,59 @@ export async function POST(request: NextRequest) {
     } catch (indexError) {
       // Indexes might already exist, log but don't fail
       console.warn('[Graph Init API] Index creation warning:', indexError);
+    }
+
+    // Create Supabase team linked to this graph (TASK adhoc_260117_s01_t09)
+    // This enables team collaboration features like invites and access control
+    try {
+      const supabase = createServiceRoleClient();
+
+      // Generate slug from project name
+      const slug = body.projectName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .substring(0, 100);
+
+      // Create team with graph_id linked
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .insert({
+          name: body.projectName,
+          slug: `${slug}-${Date.now().toString(36)}`, // Add timestamp to ensure uniqueness
+          graph_id: graphId,
+          created_by: userId,
+        })
+        .select()
+        .single();
+
+      if (teamError) {
+        // Log but don't fail the overall init - Neo4j project is created
+        console.error('[Graph Init API] Failed to create Supabase team:', teamError);
+      } else {
+        console.log('[Graph Init API] Supabase team created:', team.id);
+
+        // Add user as team owner
+        const { error: memberError } = await supabase
+          .from('team_members')
+          .insert({
+            team_id: team.id,
+            user_id: userId,
+            role: 'owner',
+          });
+
+        if (memberError) {
+          console.error('[Graph Init API] Failed to add team owner:', memberError);
+          // Rollback team creation if we can't add owner
+          await supabase.from('teams').delete().eq('id', team.id);
+        } else {
+          console.log('[Graph Init API] User added as team owner');
+        }
+      }
+    } catch (supabaseError) {
+      // Don't fail the init if Supabase team creation fails
+      // Neo4j project is already created and functional
+      console.error('[Graph Init API] Supabase team creation error:', supabaseError);
     }
 
     const response: GraphInitResponse = {

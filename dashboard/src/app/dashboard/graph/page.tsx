@@ -1,7 +1,7 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2026-01-16
+ * @updated: 2026-01-17
  * @tags: [graph, visualization, dashboard, exploration, c4-navigation, responsive, mobile]
  * @related: [tree-explorer.tsx, card-grid.tsx, node-detail-panel.tsx, ProjectView.tsx, MobileNavToggle.tsx]
  * @priority: high
@@ -55,6 +55,7 @@ const CreateNodeModal = dynamic(
 import { setDefaultGraphId, getNodeById } from '@/lib/graph/api-client';
 import type { GraphNode, NodeLabel, TreeNode as TreeNodeType } from '@/lib/graph/types';
 import { useSupabase } from '@/components/providers';
+import { useUserGraph } from '@/contexts/UserGraphContext';
 import { cn } from '@/lib/utils';
 
 // =============================================================================
@@ -62,13 +63,6 @@ import { cn } from '@/lib/utils';
 // =============================================================================
 
 type ViewMode = 'project' | 'category' | 'detail';
-
-// =============================================================================
-// Config
-// =============================================================================
-
-// Default graph ID - in production this would come from user settings or env
-const DEFAULT_GRAPH_ID = (process.env.NEXT_PUBLIC_GRAPH_ID || 'gin_1762125961056_dg4bsd').trim();
 
 // =============================================================================
 // NodeNotFound Component
@@ -110,10 +104,15 @@ function GraphPageContent() {
   const queryClient = useQueryClient();
   const { user, loading: authLoading } = useSupabase();
 
-  // Initialize graph ID
+  // Get user's graphId from context (data isolation fix - adhoc_260117_s01)
+  const { graphId, isLoading: graphLoading, error: graphError, projects } = useUserGraph();
+
+  // Initialize graph ID when it changes
   useEffect(() => {
-    setDefaultGraphId(DEFAULT_GRAPH_ID);
-  }, []);
+    if (graphId) {
+      setDefaultGraphId(graphId);
+    }
+  }, [graphId]);
 
   // Check if we have URL params for deep linking
   const nodeParam = searchParams.get('node');
@@ -308,14 +307,14 @@ function GraphPageContent() {
 
   // Fetch the selected node details when ID changes
   const { data: nodesData, isLoading: nodesLoading } = useGraphNodes({
-    graphId: DEFAULT_GRAPH_ID,
+    graphId: graphId!,
     limit: 100,
   });
 
   // Fetch the ancestry chain for the selected node (for breadcrumbs)
   const { data: ancestryNodes } = useNodeAncestry(
     selectedNode,
-    { graphId: DEFAULT_GRAPH_ID }
+    { graphId: graphId! }
   );
 
   // Update selected node when ID or data changes
@@ -337,7 +336,7 @@ function GraphPageContent() {
       } else if ((!selectedNode || selectedNode.id !== selectedNodeId) && !isFetchingNode) {
         // Node not in cache - fetch it directly (for deep links or parent navigation)
         setIsFetchingNode(true);
-        getNodeById(selectedNodeId, { graphId: DEFAULT_GRAPH_ID })
+        getNodeById(selectedNodeId, { graphId: graphId! })
           .then(response => {
             if (response?.node) {
               setSelectedNode(response.node);
@@ -591,6 +590,37 @@ function GraphPageContent() {
     );
   }
 
+  // Graph loading check (data isolation - adhoc_260117_s01)
+  if (graphLoading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
+      </div>
+    );
+  }
+
+  // No project available
+  if (!graphId) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] text-center p-4">
+        <h2 className="text-lg font-mono font-medium text-foreground mb-2">
+          No project found
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4 max-w-md">
+          {graphError
+            ? `Error: ${graphError}`
+            : 'You don\'t have any projects yet. Initialize a project with the Ginko CLI to get started.'}
+        </p>
+        <code className="px-3 py-2 bg-muted rounded-md font-mono text-sm mb-4">
+          ginko login && ginko init
+        </code>
+        <p className="text-xs text-muted-foreground">
+          This will create a new project and link it to your account.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Skip Links for Keyboard Navigation */}
@@ -603,7 +633,7 @@ function GraphPageContent() {
       {/* Mobile: Tree Explorer as overlay */}
       {isMobile && (
         <TreeExplorer
-          graphId={DEFAULT_GRAPH_ID}
+          graphId={graphId!}
           selectedNodeId={selectedNodeId}
           onSelectNode={handleSelectNode}
           isMobileOverlay={true}
@@ -615,7 +645,7 @@ function GraphPageContent() {
       {/* Desktop/Tablet: Tree Explorer Sidebar */}
       {!isMobile && (
         <TreeExplorer
-          graphId={DEFAULT_GRAPH_ID}
+          graphId={graphId!}
           selectedNodeId={selectedNodeId}
           onSelectNode={handleSelectNode}
           isCollapsed={isTreeCollapsed}
@@ -658,14 +688,14 @@ function GraphPageContent() {
           >
             {viewMode === 'project' && !isPanelOpen && (
               <ProjectView
-                graphId={DEFAULT_GRAPH_ID}
+                graphId={graphId!}
                 onSelectCategory={handleSelectCategory}
               />
             )}
 
             {viewMode === 'category' && selectedCategory && !isPanelOpen && (
               <CategoryView
-                graphId={DEFAULT_GRAPH_ID}
+                graphId={graphId!}
                 label={selectedCategory}
                 selectedNodeId={selectedNodeId}
                 onSelectNode={handleSelectNode}
@@ -685,7 +715,7 @@ function GraphPageContent() {
             {/* Full-page NodeView when panel is open */}
             {isPanelOpen && selectedNode && (
               <NodeView
-                graphId={DEFAULT_GRAPH_ID}
+                graphId={graphId!}
                 node={selectedNode}
                 onNavigate={handleNavigate}
                 onEdit={handleEditNode}
@@ -698,7 +728,7 @@ function GraphPageContent() {
         {/* Detail Panel (overlay) - hidden when NodeView is shown in main area */}
         {/* Can be toggled back for mobile/quick-view in future */}
         <NodeDetailPanel
-          graphId={DEFAULT_GRAPH_ID}
+          graphId={graphId!}
           node={selectedNode}
           isOpen={false} // Disabled - using NodeView instead
           onClose={handleClosePanel}
@@ -711,7 +741,7 @@ function GraphPageContent() {
       {/* Edit Node Modal */}
       <NodeEditorModal
         node={editingNode}
-        graphId={DEFAULT_GRAPH_ID}
+        graphId={graphId!}
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         onSave={handleEditSave}
@@ -720,7 +750,7 @@ function GraphPageContent() {
       {/* Create Node Modal */}
       <CreateNodeModal
         nodeType={creatingNodeType}
-        graphId={DEFAULT_GRAPH_ID}
+        graphId={graphId!}
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
         onCreate={handleCreateSave}
