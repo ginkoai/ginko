@@ -119,12 +119,26 @@ export async function GET(request: NextRequest) {
     // Verify user has access to this graph (ADR-060: Data Isolation)
     const access = await verifyGraphAccessFromRequest(request, graphId, 'read');
     if (!access.hasAccess) {
-      console.log(`[Roadmap API] Access denied for graphId: ${graphId}, error: ${access.error}`);
+      console.log(`[Roadmap API] Access denied for graphId: ${graphId}`);
+      console.log(`[Roadmap API] Access check result:`, JSON.stringify({
+        error: access.error,
+        userId: access.userId,
+        graphOwnerId: access.graphOwnerId,
+        teamId: access.teamId,
+      }));
       return NextResponse.json(
         {
           error: {
             code: access.error === 'Graph not found' ? 'GRAPH_NOT_FOUND' : 'ACCESS_DENIED',
             message: access.error || 'You do not have access to this graph',
+            // Include debug info in development
+            ...(process.env.NODE_ENV !== 'production' && {
+              debug: {
+                userId: access.userId,
+                graphOwnerId: access.graphOwnerId,
+                requestedGraphId: graphId,
+              }
+            }),
           },
         },
         { status: access.error === 'Graph not found' ? 404 : 403 }

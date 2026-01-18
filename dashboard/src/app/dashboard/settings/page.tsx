@@ -19,10 +19,20 @@ import { KeyIcon, UserIcon, BoltIcon, UsersIcon, CreditCardIcon } from '@heroico
 import { TeamMemberList } from '@/components/team'
 import { useUserGraph } from '@/contexts/UserGraphContext'
 
+/**
+ * Get project name for a team by looking up its graph_id in the projects list
+ */
+function getProjectNameForTeam(graphId: string | undefined, projects: { graphId: string; projectName: string }[]): string | undefined {
+  if (!graphId) return undefined;
+  const project = projects.find(p => p.graphId === graphId);
+  return project?.projectName;
+}
+
 interface Team {
   id: string;
   name: string;
   role: string;
+  graph_id?: string;
 }
 
 interface UserProfile {
@@ -37,7 +47,7 @@ interface UserProfile {
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { graphId } = useUserGraph()
+  const { graphId, projects } = useUserGraph()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [teams, setTeams] = useState<Team[]>([])
@@ -231,15 +241,27 @@ export default function SettingsPage() {
               Manage your team members and invite collaborators
             </p>
           </div>
-          {teams.map((team) => (
-            <TeamMemberList
-              key={team.id}
-              teamId={team.id}
-              currentUserId={user?.id}
-              showInviteButton={team.role === 'owner'}
-              className="mb-4"
-            />
-          ))}
+          {teams.map((team) => {
+            const projectName = getProjectNameForTeam(team.graph_id, projects);
+            return (
+              <div key={team.id} className="mb-6">
+                {/* Show project name for clarity when multiple teams exist */}
+                {teams.length > 1 && (
+                  <div className="mb-2 text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{projectName || team.name}</span>
+                    {projectName && projectName !== team.name && (
+                      <span className="ml-2">({team.name})</span>
+                    )}
+                  </div>
+                )}
+                <TeamMemberList
+                  teamId={team.id}
+                  currentUserId={user?.id}
+                  showInviteButton={team.role === 'owner'}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
 

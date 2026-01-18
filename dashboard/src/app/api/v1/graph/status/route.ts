@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
     // Get graphId from query params
     const { searchParams } = new URL(request.url);
     const graphId = searchParams.get('graphId');
+    const debug = searchParams.get('debug') === 'true';
 
     if (!graphId) {
       return NextResponse.json(
@@ -203,13 +204,57 @@ export async function GET(request: NextRequest) {
     const averageConnections = 0;
     const mostConnected = { id: 'none', connections: 0 };
 
+    // Debug info - only fetch if requested
+    let debugInfo: Record<string, any> | undefined;
+    if (debug) {
+      try {
+        // Get unique graphIds in database to detect data leakage
+        const uniqueGraphIdsQuery = `
+          MATCH (n)
+          WHERE n.graphId IS NOT NULL OR n.graph_id IS NOT NULL
+          WITH COALESCE(n.graphId, n.graph_id) as gid
+          RETURN DISTINCT gid as graphId, count(*) as count
+          ORDER BY count DESC
+          LIMIT 10
+        `;
+        const uniqueGraphIds = await runQuery<{ graphId: string; count: number }>(uniqueGraphIdsQuery, {});
+
+        // Get sample nodes for each type in this graphId
+        const sampleNodesQuery = `
+          MATCH (n)
+          WHERE (n.graphId = $graphId OR n.graph_id = $graphId)
+          WITH labels(n)[0] as nodeType, n.id as nodeId, n.title as title
+          RETURN nodeType, collect({id: nodeId, title: title})[0..3] as samples
+        `;
+        const sampleNodes = await runQuery<{ nodeType: string; samples: any[] }>(sampleNodesQuery, { graphId });
+
+        // Count nodes without any graphId
+        const orphanCountQuery = `
+          MATCH (n)
+          WHERE n.graphId IS NULL AND n.graph_id IS NULL
+          RETURN count(n) as orphanCount
+        `;
+        const orphanResult = await runQuery<{ orphanCount: number }>(orphanCountQuery, {});
+
+        debugInfo = {
+          uniqueGraphIds,
+          sampleNodes,
+          orphanCount: orphanResult[0]?.orphanCount || 0,
+          requestedGraphId: graphId,
+        };
+      } catch (debugError) {
+        console.error('[Graph Status API] Debug query error:', debugError);
+        debugInfo = { error: 'Failed to fetch debug info' };
+      }
+    }
+
     // Convert Neo4j DateTime to ISO string
     const lastSyncValue = project.updatedAt || project.createdAt;
     const lastSyncStr = lastSyncValue?.toString
       ? lastSyncValue.toString()
       : new Date().toISOString();
 
-    const response: GraphStatusResponse = {
+    const response: GraphStatusResponse & { debug?: Record<string, any> } = {
       namespace: project.namespace || '',
       graphId: project.graphId,
       visibility: project.visibility || 'private',
@@ -228,6 +273,7 @@ export async function GET(request: NextRequest) {
         averageConnections,
         mostConnected,
       },
+      ...(debugInfo && { debug: debugInfo }),
     };
 
     console.log('[Graph Status API] Returning status:', response);

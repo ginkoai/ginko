@@ -122,9 +122,11 @@ async function fetchRoadmap(graphId: string): Promise<RoadmapResponse> {
   // Always fetch all lanes - visibility is controlled client-side
   const params = new URLSearchParams({ graphId, all: 'true' });
 
-  const response = await fetch(`/api/v1/graph/roadmap?${params}`);
+  const headers = await getAuthHeaders();
+  const response = await fetch(`/api/v1/graph/roadmap?${params}`, { headers });
   if (!response.ok) {
-    throw new Error('Failed to fetch roadmap');
+    const error = await response.json().catch(() => ({ error: { message: 'Failed to fetch roadmap' } }));
+    throw new Error(error.error?.message || 'Failed to fetch roadmap');
   }
   return response.json();
 }
