@@ -12,10 +12,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+import { HeroButton } from '@/components/ui/hero-button'
 import { CornerBrackets } from '@/components/ui/corner-brackets'
 import {
-  ArrowRightIcon,
   CheckIcon,
   LockOpenIcon,
   ScaleIcon
@@ -106,15 +105,14 @@ export function HeroSection() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-4">
           <Link href="/auth/signup" onClick={() => handleCTAClick('primary', 'hero')}>
-            <Button size="lg" className="w-full sm:w-auto" data-hero-cta-primary>
-              {heroVariant.primaryCta}
-              <ArrowRightIcon className="ml-2 h-4 w-4" />
-            </Button>
+            <HeroButton variant="primary" data-hero-cta-primary>
+              FIX IT NOW
+            </HeroButton>
           </Link>
           <Link href="https://docs.ginko.ai" target="_blank" onClick={() => handleCTAClick('secondary', 'hero')}>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto" data-hero-cta-secondary>
-              {heroVariant.secondaryCta}
-            </Button>
+            <HeroButton variant="secondary" data-hero-cta-secondary>
+              VIEW DOCS
+            </HeroButton>
           </Link>
         </div>
 
