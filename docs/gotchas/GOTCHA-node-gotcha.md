@@ -1,10 +1,10 @@
 ---
-type: adr
+type: gotcha
 status: draft
 updated: 2026-01-19
 synced-from: dashboard
-synced-at: 2026-01-19T19:03:01.160Z
+synced-at: 2026-01-19T19:03:01.158Z
 ---
 
-# ADR-043
+# node-gotcha
 
