@@ -1476,10 +1476,22 @@
       "relevance": "critical",
       "created": "2026-01-19T19:41:47.192Z",
       "sessionId": "session-chris-at-watchhill-ai-1768851707133"
+    },
+    {
+      "filename": "decision-planned-epic015-sprint-0a-task-node-extraction.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-19T20:21:27.728Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768854087666"
     }
   ],
-  "lastUpdated": "2026-01-19T19:41:47.193Z",
-  "totalModules": 115,
+  "lastUpdated": "2026-01-19T20:21:27.729Z",
+  "totalModules": 116,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

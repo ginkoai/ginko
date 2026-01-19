@@ -26,11 +26,21 @@ Files: .ginko/graph/config.json
 Impact: high
 
 
+### 15:21 - [decision]
+Planned EPIC-015 Sprint 0a: Task Node Extraction. Critical prerequisite identified - without separate Task nodes, graph-authoritative state requires markdown parsing on every update. Sprint 0a adds task parser, Task node creation, BELONGS_TO relationships, and integration with ginko graph load. 5 tasks, ~14h estimated.
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
 <!-- GOOD: "Chose JWT over sessions. Alternatives: server sessions (harder to scale), OAuth (vendor lock-in). JWT selected for stateless mobile support." -->
 <!-- BAD: "Chose JWT for auth" (missing alternatives and rationale) -->
+
+### 15:21 - [decision]
+Planned EPIC-015 Sprint 0a: Task Node Extraction. Critical prerequisite identified - without separate Task nodes, graph-authoritative state requires markdown parsing on every update. Sprint 0a adds task parser, Task node creation, BELONGS_TO relationships, and integration with ginko graph load. 5 tasks, ~14h estimated.
+Impact: high
+
 
 ## Insights
 <!-- Patterns, gotchas, learnings discovered -->
@@ -76,4 +86,14 @@ Implemented EPIC-015 Sprint 0 tasks 1-5: Created PATCH endpoints for task/sprint
 **Timestamp:** 2026-01-19T19:41:44.737Z
 
 Files: .ginko/graph/config.json
+Impact: high
+
+### 15:21 - [decision]
+# [DECISION] 15:21
+
+Planned EPIC-015 Sprint 0a: Task Node Extraction. Critical prerequisite identified - without separate Task nodes, graph-authoritative state requires markdown parsing on every update. Sprint 0a adds task parser, Task node creation, BELONGS_TO relationships, and integration with ginko graph load. 5 tasks, ~14h estimated.
+
+**Impact:** high
+**Timestamp:** 2026-01-19T20:21:22.979Z
+
 Impact: high
