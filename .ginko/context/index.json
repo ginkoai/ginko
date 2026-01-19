@@ -1449,10 +1449,24 @@
       "relevance": "critical",
       "created": "2026-01-19T17:57:45.640Z",
       "sessionId": "session-chris-at-watchhill-ai-1768845465583"
+    },
+    {
+      "filename": "pattern-created-epic015-sprint-files-for-graphauthoritativ.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-19T19:19:14.558Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768850354484"
     }
   ],
-  "lastUpdated": "2026-01-19T17:57:45.641Z",
-  "totalModules": 113,
+  "lastUpdated": "2026-01-19T19:19:14.559Z",
+  "totalModules": 114,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
