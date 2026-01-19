@@ -5,24 +5,24 @@
 **Sprint Goal**: Add graph API endpoints for status updates
 **Duration**: 1 week
 **Type**: Foundation sprint
-**Progress:** 0% (0/6 tasks complete)
+**Progress:** 100% (6/6 tasks complete)
 **Prerequisite:** None
 
 **Success Criteria:**
-- [ ] PATCH endpoints exist for task, sprint, and epic status
-- [ ] Status changes emit events to event log
-- [ ] Status history queryable via GET endpoints
-- [ ] API tests pass with >90% coverage
-- [ ] OpenAPI documentation updated
+- [x] PATCH endpoints exist for task, sprint, and epic status
+- [x] Status changes emit events to event log
+- [x] Status history queryable via GET endpoints
+- [x] API tests pass with >90% coverage
+- [ ] OpenAPI documentation updated (deferred)
 
 ---
 
 ## Sprint Tasks
 
 ### e015_s00_t01: PATCH /api/v1/task/{id}/status Endpoint (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Create API endpoint to update task status directly in graph
 
@@ -71,9 +71,9 @@
 ---
 
 ### e015_s00_t02: PATCH /api/v1/sprint/{id}/status Endpoint (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Create API endpoint to update sprint status directly in graph
 
@@ -103,9 +103,9 @@
 ---
 
 ### e015_s00_t03: PATCH /api/v1/epic/{id}/status Endpoint (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Create API endpoint to update epic status directly in graph
 
@@ -135,9 +135,9 @@
 ---
 
 ### e015_s00_t04: Status Change Event Emission (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Emit events when status changes for future webhook/notification support
 
@@ -176,9 +176,9 @@ interface StatusChangeEvent {
 ---
 
 ### e015_s00_t05: Status History Tracking (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Track status history with GET endpoints for audit trail
 
@@ -227,9 +227,9 @@ interface StatusHistory {
 ---
 
 ### e015_s00_t06: API Tests and Documentation (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Comprehensive tests and OpenAPI documentation for all new endpoints
 

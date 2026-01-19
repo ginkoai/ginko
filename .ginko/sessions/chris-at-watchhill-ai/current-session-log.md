@@ -20,6 +20,12 @@ Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessi
 Impact: high
 
 
+### 14:41 - [feature]
+Implemented EPIC-015 Sprint 0 tasks 1-5: Created PATCH endpoints for task/sprint/epic status updates at /api/v1/{entity}/[id]/status. Added status-events.ts utility for event emission. Created GET history endpoints at /api/v1/{entity}/[id]/status/history. All endpoints follow project patterns with Neo4j, auth validation, and error handling.
+Files: .ginko/graph/config.json
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
@@ -56,4 +62,18 @@ Created EPIC-015 sprint files for Graph-Authoritative Operational State. 4 sprin
 **Timestamp:** 2026-01-19T19:19:10.630Z
 
 Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: high
+
+### 14:41 - [feature]
+# [FEATURE] 14:41
+
+Implemented EPIC-015 Sprint 0 tasks 1-5: Created PATCH endpoints for task/sprint/epic status updates at /api/v1/{entity}/[id]/status. Added status-events.ts utility for event emission. Created GET history endpoints at /api/v1/{entity}/[id]/status/history. All endpoints follow project patterns with Neo4j, auth validation, and error handling.
+
+**Files:**
+- .ginko/graph/config.json
+
+**Impact:** high
+**Timestamp:** 2026-01-19T19:41:44.737Z
+
+Files: .ginko/graph/config.json
 Impact: high
