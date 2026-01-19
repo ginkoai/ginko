@@ -137,6 +137,8 @@ api/_lib/
 .ginko/config.json
 .ginko/local.json
 .ginko/.temp/
+.ginko/state-cache.json
+.ginko/pending-updates.json
 
 # Ginko session archives (local-only, accumulate rapidly)
 .ginko/sessions/*/archive/

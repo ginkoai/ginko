@@ -1,25 +1,31 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-11-21
- * @tags: [sprint, task-checklist, epic-001, session-context]
- * @related: [charter-loader.ts, start-reflection.ts, context-loader-events.ts]
+ * @updated: 2026-01-19
+ * @tags: [sprint, task-content, epic-015, session-context]
+ * @related: [charter-loader.ts, start-reflection.ts, context-loader-events.ts, task-extractor.ts]
  * @priority: high
  * @complexity: medium
  * @dependencies: [fs-extra, path]
  */
 
 /**
- * Sprint Loader (EPIC-001 TASK-5)
+ * Sprint Loader (EPIC-001 TASK-5, EPIC-015 Sprint 2)
  *
  * Loads active sprint from filesystem (docs/sprints/SPRINT-*.md)
- * and parses into task checklist with [@] symbol support.
+ * and parses task content (ID, title, metadata).
+ *
+ * EPIC-015 Sprint 2 Changes:
+ * - Status now comes from graph API, not file parsing
+ * - Removed checkbox status parsing ([x], [ ], [@], [Z])
+ * - Added content-only interfaces (TaskContent, SprintContent)
+ * - Backward compatibility: existing functions default state to 'todo'
  *
  * Provides AI partners with:
- * - Clear task progress ([ ] / [@] / [x] states)
- * - Current task identification (first [@] or [ ])
- * - Progress visibility (N/M complete, X in progress)
- * - Eliminates task priority ambiguity
+ * - Task identification (ID, title)
+ * - Task metadata (effort, priority, files, dependencies)
+ * - Related knowledge (ADRs, patterns, gotchas)
+ * - Acceptance criteria
  */
 
 import fs from 'fs-extra';
@@ -27,13 +33,48 @@ import path from 'path';
 import { execSync } from 'child_process';
 
 /**
- * Task state enumeration
+ * Task state enumeration (kept for backward compatibility)
+ * NOTE: As of EPIC-015 Sprint 2, status comes from the graph API.
+ * File parsing defaults all tasks to 'todo'. Merge with graph status at runtime.
  * - todo: [ ] Not started
  * - in_progress: [@] Currently being worked on
  * - paused: [Z] Temporarily on hold (sleeping)
  * - complete: [x] Finished
  */
 export type TaskState = 'todo' | 'in_progress' | 'paused' | 'complete';
+
+// ============================================================================
+// Content-Only Interfaces (EPIC-015 Sprint 2)
+// These interfaces represent content extracted from files without status.
+// ============================================================================
+
+/**
+ * Task content extracted from sprint markdown (no status)
+ * Status comes from graph API and is merged at runtime.
+ */
+export interface TaskContent {
+  id: string;                           // e.g., "e008_s02_t01"
+  title: string;                        // Task description
+  files?: string[];                     // Files mentioned in task
+  effort?: string;                      // Time estimate (e.g., "4-6h")
+  priority?: string;                    // Priority level
+  relatedADRs?: string[];               // ADR references (e.g., ["ADR-002"])
+  relatedPatterns?: string[];           // Pattern references
+  relatedGotchas?: string[];            // Gotcha warnings
+  acceptanceCriteria?: AcceptanceCriterion[];  // Verification criteria
+  dependsOn?: string[];                 // Task dependencies
+}
+
+/**
+ * Sprint content extracted from markdown (no status-based progress)
+ * Status/progress comes from graph API and is merged at runtime.
+ */
+export interface SprintContent {
+  name: string;                         // Sprint name from title
+  file: string;                         // Sprint file path
+  tasks: TaskContent[];                 // All tasks in order
+  dependencyWarnings?: string[];        // Missing or circular dependency warnings
+}
 
 /**
  * Acceptance criterion type - auto-detected from description (EPIC-004 Sprint 3)
@@ -58,12 +99,14 @@ export interface AcceptanceCriterion {
 }
 
 /**
- * Individual task from sprint checklist
+ * Individual task from sprint checklist (backward compatible interface)
+ * NOTE: As of EPIC-015 Sprint 2, state defaults to 'todo' from file parsing.
+ * Actual status should be merged from graph API at runtime.
  */
 export interface Task {
-  id: string;           // e.g., "TASK-5"
+  id: string;           // e.g., "e008_s02_t01"
   title: string;        // Task description
-  state: TaskState;     // [ ], [@], [Z], or [x]
+  state: TaskState;     // Defaults to 'todo' - merge with graph API for actual status
   files?: string[];     // Files mentioned in task
   pattern?: string;     // Pattern reference (e.g., "log.ts:45-67")
   effort?: string;      // Time estimate (e.g., "4-6h")
@@ -76,21 +119,23 @@ export interface Task {
 }
 
 /**
- * Sprint checklist with task states and progress
+ * Sprint checklist with task states and progress (backward compatible interface)
+ * NOTE: As of EPIC-015 Sprint 2, progress values will be zeroed from file parsing.
+ * Actual progress should be calculated from graph API status at runtime.
  */
 export interface SprintChecklist {
   name: string;                    // Sprint name
   file: string;                    // Sprint file path
   progress: {
-    complete: number;              // Count of [x] tasks
-    inProgress: number;            // Count of [@] tasks
-    paused: number;                // Count of [Z] tasks
-    todo: number;                  // Count of [ ] tasks
+    complete: number;              // Count of complete tasks (0 from file parsing - use graph)
+    inProgress: number;            // Count of in_progress tasks (0 from file parsing - use graph)
+    paused: number;                // Count of paused tasks (0 from file parsing - use graph)
+    todo: number;                  // Count of todo tasks (all tasks from file parsing)
     total: number;                 // Total tasks
   };
-  tasks: Task[];                   // All tasks in order
-  currentTask?: Task;              // First [@] or first [ ] task
-  recentCompletions: Task[];       // Last 3 completed tasks
+  tasks: Task[];                   // All tasks in order (state defaults to 'todo')
+  currentTask?: Task;              // First task (no status-based selection - use graph)
+  recentCompletions: Task[];       // Empty from file parsing - populate from graph
   dependencyWarnings?: string[];   // Missing or circular dependency warnings - EPIC-004 Sprint 4
 }
 
@@ -303,19 +348,8 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
   }
 }
 
-/**
- * Parse task state from checkbox symbol
- *
- * @param symbol - Checkbox content: ' ', '@', 'Z', or 'x'
- * @returns Task state enum
- */
-function parseTaskState(symbol: string): TaskState {
-  const trimmed = symbol.trim();
-  if (trimmed === 'x' || trimmed === 'X') return 'complete';
-  if (trimmed === '@') return 'in_progress';
-  if (trimmed === 'Z' || trimmed === 'z') return 'paused';
-  return 'todo';
-}
+// NOTE: parseTaskState function removed in EPIC-015 Sprint 2
+// Status now comes from graph API, not markdown checkbox parsing
 
 /**
  * Detect acceptance criterion type from description (EPIC-004 Sprint 3 TASK-1)
@@ -458,17 +492,21 @@ function parseAcceptanceCriteria(lines: string[], startIndex: number): Acceptanc
 }
 
 /**
- * Parse sprint markdown into task checklist
+ * Parse sprint markdown into task checklist (backward compatible)
+ *
+ * EPIC-015 Sprint 2: Status parsing removed. All tasks default to 'todo'.
+ * Status should be merged from graph API at runtime.
  *
  * Looks for:
  * - Sprint name from title (# SPRINT: ...)
  * - Tasks from ## Sprint Tasks or ### TASK-N sections
- * - Checkbox states: [ ], [@], [Z], [x]
- * - Task metadata (files, priority, effort)
+ * - Task metadata (files, priority, effort, dependencies)
+ * - Related knowledge (ADRs, patterns, gotchas)
+ * - Acceptance criteria
  *
  * @param markdown - Sprint markdown content
  * @param filePath - Path to sprint file
- * @returns Parsed sprint checklist
+ * @returns Parsed sprint checklist (all tasks with state: 'todo')
  */
 export function parseSprintChecklist(markdown: string, filePath: string): SprintChecklist {
   const lines = markdown.split('\n');
@@ -492,21 +530,21 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
         tasks.push(parsingTask as Task);
       }
 
-      // Start new task
+      // Start new task - state defaults to 'todo' (status comes from graph API)
       parsingTask = {
         id: taskHeaderMatch[1],
         title: taskHeaderMatch[2].trim(),
         effort: taskHeaderMatch[3]?.trim(),
-        state: 'todo', // Default, will update from Status line
+        state: 'todo', // EPIC-015: Status comes from graph API, not file
         files: [],
       };
       continue;
     }
 
-    // Match task status: **Status:** [@] In Progress
-    const statusMatch = line.match(/\*\*Status:\*\*\s*\[([x@\s])\]\s*(.+)/i);
-    if (statusMatch && parsingTask) {
-      parsingTask.state = parseTaskState(statusMatch[1]);
+    // NOTE: Status line parsing removed in EPIC-015 Sprint 2
+    // Status now comes from graph API, not markdown checkboxes
+    // Skip **Status:** lines but don't parse them
+    if (line.match(/\*\*Status:\*\*/i)) {
       continue;
     }
 
@@ -628,20 +666,22 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
     tasks.push(parsingTask as Task);
   }
 
-  // Calculate progress
-  const complete = tasks.filter(t => t.state === 'complete').length;
-  const inProgress = tasks.filter(t => t.state === 'in_progress').length;
-  const paused = tasks.filter(t => t.state === 'paused').length;
-  const todo = tasks.filter(t => t.state === 'todo').length;
+  // EPIC-015 Sprint 2: Progress calculation removed from file parsing
+  // All tasks default to 'todo' - actual status comes from graph API
+  // Progress should be calculated at runtime after merging with graph status
+  const complete = 0;     // Will be calculated from graph status
+  const inProgress = 0;   // Will be calculated from graph status
+  const paused = 0;       // Will be calculated from graph status
+  const todo = tasks.length;  // All tasks default to todo
 
-  // Find current task: first [@], or first [ ] if no [@] exists
-  const firstInProgress = tasks.find(t => t.state === 'in_progress');
-  const firstTodo = tasks.find(t => t.state === 'todo');
-  const currentTask = firstInProgress || firstTodo;
+  // EPIC-015 Sprint 2: Current task selection simplified
+  // Without status, we just pick the first task (or undefined if none)
+  // Actual current task should be determined from graph status at runtime
+  const currentTask = tasks.length > 0 ? tasks[0] : undefined;
 
-  // Recent completions: last 3 completed tasks
-  const completedTasks = tasks.filter(t => t.state === 'complete');
-  const recentCompletions = completedTasks.slice(-3).reverse();
+  // EPIC-015 Sprint 2: Recent completions empty from file parsing
+  // Should be populated from graph status at runtime
+  const recentCompletions: Task[] = [];
 
   // Validate dependencies (EPIC-004 Sprint 4)
   const dependencyWarnings: string[] = [];
@@ -715,12 +755,265 @@ export function parseSprintChecklist(markdown: string, filePath: string): Sprint
   };
 }
 
+// ============================================================================
+// Content-Only Functions (EPIC-015 Sprint 2)
+// These functions extract content without status - status comes from graph API
+// ============================================================================
+
 /**
- * Load active sprint checklist
+ * Parse sprint markdown into content-only structure (no status)
+ *
+ * EPIC-015 Sprint 2: New content-focused parsing function.
+ * Extracts task content (ID, title, metadata, relationships) without status.
+ * Status should be fetched from graph API and merged separately.
+ *
+ * @param markdown - Sprint markdown content
+ * @param filePath - Path to sprint file
+ * @returns Parsed sprint content (no status information)
+ */
+export function parseSprintContent(markdown: string, filePath: string): SprintContent {
+  const lines = markdown.split('\n');
+  const tasks: TaskContent[] = [];
+
+  // Extract sprint name from title
+  const titleMatch = markdown.match(/^#\s+SPRINT:\s*(.+?)$/m);
+  const sprintName = titleMatch ? titleMatch[1].trim() : path.basename(filePath, '.md');
+
+  let parsingTask: Partial<TaskContent> | null = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Match task headers: ### TASK-N: Title OR ### e008_s02_t01: Title (ADR-052)
+    const taskHeaderMatch = line.match(/^###\s+((?:TASK-\d+|e\d+_s\d+_t\d+|adhoc_\d+_s\d+_t\d+)):\s*(.+?)(?:\s*\((.+?)\))?$/i);
+    if (taskHeaderMatch) {
+      // Save previous task if exists
+      if (parsingTask?.id && parsingTask?.title) {
+        tasks.push(parsingTask as TaskContent);
+      }
+
+      // Start new task (content only - no status)
+      parsingTask = {
+        id: taskHeaderMatch[1],
+        title: taskHeaderMatch[2].trim(),
+        effort: taskHeaderMatch[3]?.trim(),
+        files: [],
+      };
+      continue;
+    }
+
+    // Skip status lines - status comes from graph API
+    if (line.match(/\*\*Status:\*\*/i)) {
+      continue;
+    }
+
+    // Match task priority
+    const priorityMatch = line.match(/\*\*Priority:\*\*\s*(.+)/i);
+    if (priorityMatch && parsingTask) {
+      parsingTask.priority = priorityMatch[1].trim();
+      continue;
+    }
+
+    // Match task dependencies
+    const dependsMatch = line.match(/\*\*Depends:\*\*\s*(.+)/i);
+    if (dependsMatch && parsingTask) {
+      const depsString = dependsMatch[1].trim();
+      const deps = depsString.split(/[,\s]+/)
+        .map(d => d.trim())
+        .filter(d => /^(?:TASK-\d+|t\d+|e\d+_s\d+_t\d+|adhoc_\d+_s\d+_t\d+)$/i.test(d));
+      if (deps.length > 0) {
+        parsingTask.dependsOn = deps;
+      }
+      continue;
+    }
+
+    // Match files section
+    if (line.match(/^\*\*Files:\*\*/) && parsingTask) {
+      let j = i + 1;
+      while (j < lines.length && lines[j].match(/^-\s+(Create|Modify):/)) {
+        const fileMatch = lines[j].match(/^-\s+(?:Create|Modify):\s+`([^`]+)`/);
+        if (fileMatch) {
+          parsingTask.files = parsingTask.files || [];
+          parsingTask.files.push(fileMatch[1]);
+        }
+        j++;
+      }
+      continue;
+    }
+
+    // Match acceptance criteria section
+    if (line.match(/^\*\*Acceptance:\*\*/) && parsingTask) {
+      const criteria = parseAcceptanceCriteria(lines, i + 1);
+      if (criteria.length > 0) {
+        parsingTask.acceptanceCriteria = criteria;
+      }
+      continue;
+    }
+
+    // Extract ADR references
+    if (parsingTask) {
+      const adrMatches = line.matchAll(/ADR-(\d+)/gi);
+      for (const match of adrMatches) {
+        const adrId = `ADR-${match[1].padStart(3, '0')}`;
+        parsingTask.relatedADRs = parsingTask.relatedADRs || [];
+        if (!parsingTask.relatedADRs.includes(adrId)) {
+          parsingTask.relatedADRs.push(adrId);
+        }
+      }
+
+      // Extract pattern references
+      const patternFromFileMatches = line.matchAll(/(?:use|apply|see|follow)\s+(?:the\s+)?(?:pattern|example)\s+(?:from|in)\s+[`"]?([a-zA-Z0-9_\-./]+\.[a-zA-Z]+)[`"]?/gi);
+      for (const match of patternFromFileMatches) {
+        const patternId = match[1];
+        parsingTask.relatedPatterns = parsingTask.relatedPatterns || [];
+        if (!parsingTask.relatedPatterns.includes(patternId)) {
+          parsingTask.relatedPatterns.push(patternId);
+        }
+      }
+
+      const explicitPatternMatches = line.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-pattern)\b/gi);
+      for (const match of explicitPatternMatches) {
+        const patternId = match[1].toLowerCase();
+        parsingTask.relatedPatterns = parsingTask.relatedPatterns || [];
+        if (!parsingTask.relatedPatterns.includes(patternId)) {
+          parsingTask.relatedPatterns.push(patternId);
+        }
+      }
+
+      // Extract gotcha references
+      const explicitGotchaMatches = line.matchAll(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha)\b/gi);
+      for (const match of explicitGotchaMatches) {
+        const gotchaId = match[1].toLowerCase();
+        parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
+        if (!parsingTask.relatedGotchas.includes(gotchaId)) {
+          parsingTask.relatedGotchas.push(gotchaId);
+        }
+      }
+
+      if (!line.match(/[a-z][a-z0-9]*(?:-[a-z0-9]+)*-gotcha/i)) {
+        const gotchaWarningMatches = line.matchAll(/(?:avoid|watch out for|beware of|gotcha:)\s+[`"]?([^`".\n]+)[`"]?/gi);
+        for (const match of gotchaWarningMatches) {
+          if (match[1].toLowerCase().includes('gotcha')) continue;
+          const gotchaId = match[1].trim().toLowerCase().replace(/\s+/g, '-');
+          if (gotchaId.length <= 40) {
+            parsingTask.relatedGotchas = parsingTask.relatedGotchas || [];
+            if (!parsingTask.relatedGotchas.includes(gotchaId)) {
+              parsingTask.relatedGotchas.push(gotchaId);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Save last task
+  if (parsingTask?.id && parsingTask?.title) {
+    tasks.push(parsingTask as TaskContent);
+  }
+
+  // Validate dependencies
+  const dependencyWarnings: string[] = [];
+  const taskIds = new Set(tasks.map(t => t.id));
+
+  for (const task of tasks) {
+    if (task.dependsOn) {
+      for (const depId of task.dependsOn) {
+        if (!taskIds.has(depId)) {
+          dependencyWarnings.push(`${task.id} depends on non-existent task: ${depId}`);
+        }
+      }
+    }
+  }
+
+  // Check for circular dependencies
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+
+  function detectCycle(taskId: string, pathArr: string[]): string[] | null {
+    if (inStack.has(taskId)) {
+      const cycleStart = pathArr.indexOf(taskId);
+      return [...pathArr.slice(cycleStart), taskId];
+    }
+    if (visited.has(taskId)) return null;
+
+    visited.add(taskId);
+    inStack.add(taskId);
+    pathArr.push(taskId);
+
+    const task = tasks.find(t => t.id === taskId);
+    if (task?.dependsOn) {
+      for (const depId of task.dependsOn) {
+        if (taskIds.has(depId)) {
+          const cycle = detectCycle(depId, pathArr);
+          if (cycle) return cycle;
+        }
+      }
+    }
+
+    pathArr.pop();
+    inStack.delete(taskId);
+    return null;
+  }
+
+  for (const task of tasks) {
+    if (!visited.has(task.id)) {
+      const cycle = detectCycle(task.id, []);
+      if (cycle) {
+        dependencyWarnings.push(`Circular dependency: ${cycle.join(' -> ')}`);
+        break;
+      }
+    }
+  }
+
+  return {
+    name: sprintName,
+    file: filePath,
+    tasks,
+    dependencyWarnings: dependencyWarnings.length > 0 ? dependencyWarnings : undefined,
+  };
+}
+
+/**
+ * Load active sprint content (no status)
+ *
+ * EPIC-015 Sprint 2: New content-focused loading function.
+ * Finds active sprint file and parses content without status.
+ * Status should be fetched from graph API and merged separately.
+ *
+ * @param projectRoot - Project root directory (defaults to git root)
+ * @param sprintFilePath - Optional specific sprint file path
+ * @returns Parsed sprint content or null if no sprint found
+ */
+export async function loadSprintContent(
+  projectRoot?: string,
+  sprintFilePath?: string
+): Promise<SprintContent | null> {
+  try {
+    const sprintFile = sprintFilePath || await findActiveSprint(projectRoot);
+
+    if (!sprintFile) {
+      return null;
+    }
+
+    const content = await fs.readFile(sprintFile, 'utf-8');
+    return parseSprintContent(content, sprintFile);
+
+  } catch (error) {
+    console.error('Failed to load sprint content:', (error as Error).message);
+    return null;
+  }
+}
+
+/**
+ * Load active sprint checklist (backward compatible)
+ *
+ * EPIC-015 Sprint 2: This function maintained for backward compatibility.
+ * All tasks will have state: 'todo'. Merge with graph API status at runtime.
  *
  * Finds active sprint file and parses into structured checklist
  *
  * @param projectRoot - Project root directory (defaults to git root)
+ * @param sprintFilePath - Optional specific sprint file path
  * @returns Parsed sprint checklist or null if no sprint found
  */
 export async function loadSprintChecklist(

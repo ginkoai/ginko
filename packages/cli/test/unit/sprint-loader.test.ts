@@ -1,21 +1,38 @@
 /**
  * @fileType: test
  * @status: current
- * @updated: 2025-11-21
- * @tags: [test, sprint-loader, checklist, task-5, epic-001]
+ * @updated: 2026-01-19
+ * @tags: [test, sprint-loader, checklist, epic-001, epic-015]
  * @related: [../../src/lib/sprint-loader.ts]
  * @priority: high
  * @complexity: medium
  * @dependencies: [jest]
  */
 
+/**
+ * EPIC-015 Sprint 2 Note:
+ * Status parsing has been removed from sprint-loader.ts.
+ * All tasks now default to state: 'todo'.
+ * Actual status comes from the graph API and should be merged at runtime.
+ *
+ * Tests updated to reflect new behavior:
+ * - All tasks have state: 'todo' regardless of markdown checkbox
+ * - progress.complete, inProgress, paused are always 0
+ * - progress.todo equals total task count
+ * - currentTask is always the first task
+ * - recentCompletions is always empty
+ */
+
 import { describe, it, expect } from '@jest/globals';
 import {
   parseSprintChecklist,
+  parseSprintContent,
   formatSprintChecklist,
   formatCurrentTaskDetails,
   type TaskState,
   type Task,
+  type TaskContent,
+  type SprintContent,
   type SprintChecklist
 } from '../../src/lib/sprint-loader.js';
 
@@ -147,7 +164,8 @@ const sprintMultipleInProgress = `# SPRINT: Parallel Work Sprint
 `;
 
 /**
- * Task State Parsing Tests
+ * Task State Parsing Tests (EPIC-015 Sprint 2)
+ * Status no longer parsed from markdown - all tasks default to 'todo'
  */
 describe('Task State Parsing', () => {
   it('should parse [ ] as todo state', () => {
@@ -158,24 +176,30 @@ describe('Task State Parsing', () => {
     expect(checklist.progress.inProgress).toBe(0);
   });
 
-  it('should parse [@] as in_progress state', () => {
+  it('should default all tasks to todo state (EPIC-015)', () => {
+    // Even tasks with [@] or [x] in markdown now default to 'todo'
+    // Status comes from graph API, not file parsing
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
-    const inProgressTask = checklist.tasks.find(t => t.id === 'TASK-4');
-    expect(inProgressTask?.state).toBe('in_progress');
-    expect(checklist.progress.inProgress).toBe(1);
+    expect(checklist.tasks.every(t => t.state === 'todo')).toBe(true);
+    expect(checklist.progress.todo).toBe(5);
+    expect(checklist.progress.inProgress).toBe(0);
+    expect(checklist.progress.complete).toBe(0);
   });
 
-  it('should parse [x] as complete state', () => {
+  it('should default [x] tasks to todo state (EPIC-015)', () => {
+    // Status parsing removed - all tasks default to 'todo'
     const checklist = parseSprintChecklist(sprintAllComplete, 'test.md');
-    expect(checklist.tasks.every(t => t.state === 'complete')).toBe(true);
-    expect(checklist.progress.complete).toBe(2);
+    expect(checklist.tasks.every(t => t.state === 'todo')).toBe(true);
+    expect(checklist.progress.complete).toBe(0);
+    expect(checklist.progress.todo).toBe(2);
   });
 
-  it('should handle mixed task states correctly', () => {
+  it('should set progress correctly with no status parsing (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
-    expect(checklist.progress.complete).toBe(3);
-    expect(checklist.progress.inProgress).toBe(1);
-    expect(checklist.progress.todo).toBe(1);
+    expect(checklist.progress.complete).toBe(0);
+    expect(checklist.progress.inProgress).toBe(0);
+    expect(checklist.progress.paused).toBe(0);
+    expect(checklist.progress.todo).toBe(5);
     expect(checklist.progress.total).toBe(5);
   });
 });
@@ -228,13 +252,15 @@ describe('Sprint Metadata Parsing', () => {
 });
 
 /**
- * Current Task Detection Tests
+ * Current Task Detection Tests (EPIC-015 Sprint 2)
+ * Without status parsing, currentTask is always the first task
  */
 describe('Current Task Detection', () => {
-  it('should identify first [@] task as current', () => {
+  it('should return first task as current (EPIC-015)', () => {
+    // Without status parsing, we always return the first task
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
-    expect(checklist.currentTask?.id).toBe('TASK-4');
-    expect(checklist.currentTask?.state).toBe('in_progress');
+    expect(checklist.currentTask?.id).toBe('TASK-1');
+    expect(checklist.currentTask?.state).toBe('todo');
   });
 
   it('should fall back to first [ ] task if no [@]', () => {
@@ -243,39 +269,41 @@ describe('Current Task Detection', () => {
     expect(checklist.currentTask?.state).toBe('todo');
   });
 
-  it('should have no current task if all complete', () => {
+  it('should return first task even with [x] markers (EPIC-015)', () => {
+    // Status not parsed - first task is always current
     const checklist = parseSprintChecklist(sprintAllComplete, 'test.md');
-    expect(checklist.currentTask).toBeUndefined();
+    expect(checklist.currentTask?.id).toBe('TASK-1');
+    expect(checklist.currentTask?.state).toBe('todo');
   });
 
-  it('should prefer [@] over [ ] even if [@] comes later', () => {
+  it('should return first task regardless of markdown state (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
-    // TASK-4 is [@] and TASK-5 is [ ]
-    expect(checklist.currentTask?.id).toBe('TASK-4');
+    // First task in file is TASK-1
+    expect(checklist.currentTask?.id).toBe('TASK-1');
   });
 
-  it('should handle multiple [@] tasks (return first)', () => {
+  it('should return first task with multiple [@] markers (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintMultipleInProgress, 'test.md');
-    expect(checklist.currentTask?.id).toBe('TASK-2');
-    expect(checklist.progress.inProgress).toBe(2);
+    expect(checklist.currentTask?.id).toBe('TASK-1');
+    expect(checklist.progress.inProgress).toBe(0); // No status parsing
   });
 });
 
 /**
- * Recent Completions Tests
+ * Recent Completions Tests (EPIC-015 Sprint 2)
+ * Without status parsing, recentCompletions is always empty
  */
 describe('Recent Completions', () => {
-  it('should return last 3 completed tasks', () => {
+  it('should return empty array - no status parsing (EPIC-015)', () => {
+    // Without status parsing, we can't identify completed tasks from file
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
-    expect(checklist.recentCompletions).toHaveLength(3);
-    expect(checklist.recentCompletions[0].id).toBe('TASK-3'); // Most recent first
-    expect(checklist.recentCompletions[1].id).toBe('TASK-2');
-    expect(checklist.recentCompletions[2].id).toBe('TASK-1');
+    expect(checklist.recentCompletions).toHaveLength(0);
   });
 
-  it('should return all completions if less than 3', () => {
+  it('should return empty array even with [x] markers (EPIC-015)', () => {
+    // Status not parsed from file - populate from graph at runtime
     const checklist = parseSprintChecklist(sprintAllComplete, 'test.md');
-    expect(checklist.recentCompletions).toHaveLength(2);
+    expect(checklist.recentCompletions).toHaveLength(0);
   });
 
   it('should return empty array if no completions', () => {
@@ -285,21 +313,24 @@ describe('Recent Completions', () => {
 });
 
 /**
- * Progress Calculation Tests
+ * Progress Calculation Tests (EPIC-015 Sprint 2)
+ * Without status parsing, progress always shows 0% complete
  */
 describe('Progress Calculation', () => {
-  it('should calculate progress percentages correctly', () => {
+  it('should default progress to 0% complete (EPIC-015)', () => {
+    // Without status parsing, all tasks default to todo
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
-    expect(checklist.progress.complete).toBe(3);
+    expect(checklist.progress.complete).toBe(0);
+    expect(checklist.progress.todo).toBe(5);
     expect(checklist.progress.total).toBe(5);
-    // 3/5 = 60%
   });
 
-  it('should handle 100% completion', () => {
+  it('should not calculate 100% from [x] markers (EPIC-015)', () => {
+    // Status not parsed - always 0% complete from file
     const checklist = parseSprintChecklist(sprintAllComplete, 'test.md');
-    expect(checklist.progress.complete).toBe(2);
+    expect(checklist.progress.complete).toBe(0);
+    expect(checklist.progress.todo).toBe(2);
     expect(checklist.progress.total).toBe(2);
-    // 2/2 = 100%
   });
 
   it('should handle 0% completion', () => {
@@ -310,32 +341,35 @@ describe('Progress Calculation', () => {
 });
 
 /**
- * Formatting Tests
+ * Formatting Tests (EPIC-015 Sprint 2)
+ * Without status parsing, formatting reflects all-todo state
  */
 describe('Sprint Checklist Formatting', () => {
-  it('should format sprint header with progress', () => {
+  it('should format sprint header with 0% progress (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
     const output = formatSprintChecklist(checklist, 10);
 
     expect(output).toContain('📋 Active Sprint: Graph Infrastructure');
-    expect(output).toContain('Progress: 3/5 complete, 1 in progress (60%)');
+    expect(output).toContain('Progress: 0/5 complete (0%)');
   });
 
-  it('should mark current task with RESUME HERE', () => {
+  it('should mark first task with RESUME HERE (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
     const output = formatSprintChecklist(checklist, 10);
 
-    expect(output).toContain('[@] TASK-4: Task → Event Relationships ← RESUME HERE');
+    // Without status parsing, first task is always current
+    expect(output).toContain('[ ] TASK-1: Charter → Graph Nodes ← RESUME HERE');
   });
 
-  it('should display correct checkbox symbols', () => {
+  it('should display all tasks as [ ] todo (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintWithMixedStates, 'test.md');
     const output = formatSprintChecklist(checklist, 10);
 
-    expect(output).toContain('[x] TASK-1');
-    expect(output).toContain('[x] TASK-2');
-    expect(output).toContain('[x] TASK-3');
-    expect(output).toContain('[@] TASK-4');
+    // Without status parsing, all tasks show as [ ]
+    expect(output).toContain('[ ] TASK-1');
+    expect(output).toContain('[ ] TASK-2');
+    expect(output).toContain('[ ] TASK-3');
+    expect(output).toContain('[ ] TASK-4');
     expect(output).toContain('[ ] TASK-5');
   });
 
@@ -346,20 +380,23 @@ describe('Sprint Checklist Formatting', () => {
     expect(output).toContain('... (2 more tasks)');
   });
 
-  it('should show celebration when 100% complete', () => {
+  it('should not show celebration without status parsing (EPIC-015)', () => {
+    // Without status parsing, we can't detect 100% complete
     const checklist = parseSprintChecklist(sprintAllComplete, 'test.md');
     const output = formatSprintChecklist(checklist, 10);
 
-    expect(output).toContain('🎉 Sprint Complete! All tasks done.');
+    // Complete detection needs graph status - file parsing shows tasks list
+    expect(output).not.toContain('🎉 Sprint Complete! All tasks done.');
+    expect(output).toContain('Tasks:');
   });
 
-  it('should warn about multiple in-progress tasks', () => {
+  it('should not warn about multiple in-progress without status parsing (EPIC-015)', () => {
     const checklist = parseSprintChecklist(sprintMultipleInProgress, 'test.md');
     const output = formatSprintChecklist(checklist, 10);
 
-    expect(output).toContain('⚠️  Multiple tasks in progress (2)');
-    expect(output).toContain('Primary: TASK-2');
-    expect(output).toContain('Also active: TASK-3');
+    // Without status parsing, no in-progress detection
+    expect(output).not.toContain('⚠️  Multiple tasks in progress');
+    expect(output).toContain('Progress: 0/3 complete (0%)');
   });
 });
 
@@ -466,9 +503,51 @@ describe('Edge Cases', () => {
     expect(checklist.tasks[0].state).toBe('todo');
   });
 
-  it('should handle case-insensitive [X] for completion', () => {
+  it('should default [X] to todo - no status parsing (EPIC-015)', () => {
+    // Status parsing removed - all tasks default to 'todo'
     const upperX = '### TASK-1: Test\n**Status:** [X] Complete';
     const checklist = parseSprintChecklist(upperX, 'test.md');
-    expect(checklist.tasks[0].state).toBe('complete');
+    expect(checklist.tasks[0].state).toBe('todo');
+  });
+});
+
+/**
+ * Content-Only Interface Tests (EPIC-015 Sprint 2)
+ */
+describe('Content-Only Interfaces', () => {
+  it('should parse sprint content without status', () => {
+    const content = parseSprintContent(sprintWithMixedStates, 'test.md');
+
+    expect(content.name).toBe('Graph Infrastructure & Core Relationships (EPIC-001 Sprint 1)');
+    expect(content.file).toBe('test.md');
+    expect(content.tasks).toHaveLength(5);
+  });
+
+  it('should extract task content correctly', () => {
+    const content = parseSprintContent(sprintWithMixedStates, 'test.md');
+    const task1 = content.tasks.find(t => t.id === 'TASK-1');
+
+    expect(task1?.title).toBe('Charter → Graph Nodes');
+    expect(task1?.effort).toBe('4-6h');
+    expect(task1?.priority).toBe('CRITICAL');
+    expect(task1?.files).toContain('packages/cli/src/lib/charter-loader.ts');
+  });
+
+  it('should not include state field in TaskContent', () => {
+    const content = parseSprintContent(sprintWithMixedStates, 'test.md');
+    const task1 = content.tasks.find(t => t.id === 'TASK-1');
+
+    // TaskContent interface has no 'state' field
+    expect(task1).toBeDefined();
+    expect('state' in (task1 as object)).toBe(false);
+  });
+
+  it('should validate dependencies in content', () => {
+    const contentWithBadDeps = `# SPRINT: Test
+### TASK-1: First
+**Depends:** TASK-99
+`;
+    const content = parseSprintContent(contentWithBadDeps, 'test.md');
+    expect(content.dependencyWarnings).toContain('TASK-1 depends on non-existent task: TASK-99');
   });
 });

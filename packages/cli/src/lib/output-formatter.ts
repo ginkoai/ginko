@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2026-01-05
- * @tags: [output, formatting, human-ux, ai-ux, task-11, dual-output, onboarding-optimization]
+ * @updated: 2026-01-19
+ * @tags: [output, formatting, human-ux, ai-ux, task-11, dual-output, onboarding-optimization, offline-mode]
  * @related: [start-reflection.ts, context-loader-events.ts]
  * @priority: high
  * @complexity: medium
@@ -87,6 +87,12 @@ export interface AISessionContext {
     workMode: string;
     /** True if this is a first-time team member (no prior session history) */
     isFirstTimeMember?: boolean;
+    /** True if using cached state (offline mode) */
+    isOffline?: boolean;
+    /** Human-readable cache age (e.g., "15 min ago") */
+    cacheAge?: string;
+    /** Staleness level of cached state */
+    cacheStaleness?: 'fresh' | 'stale' | 'expired';
   };
   /** Project charter (mission, goals, success criteria) */
   charter?: {
@@ -558,6 +564,62 @@ export function formatWarning(message: string): string {
 }
 
 // ============================================================================
+// Offline Mode Helpers (EPIC-015 Sprint 2 Task 5)
+// ============================================================================
+
+/**
+ * Format offline header line based on staleness level
+ *
+ * @param context - AI session context with offline metadata
+ * @returns Formatted header string for offline mode
+ *
+ * Examples:
+ * - Stale: "⚠️ Offline │ Using cached state (15 min ago)"
+ * - Expired: "🚨 Offline │ Cached state expired (2 days ago)"
+ */
+function formatOfflineHeader(context: AISessionContext): string {
+  const { cacheAge, cacheStaleness } = context.session;
+
+  if (cacheStaleness === 'expired') {
+    return (
+      GINKO_BRAND.error('🚨 Offline') +
+      GINKO_BRAND.dim(' │ ') +
+      GINKO_BRAND.error(`Cached state expired (${cacheAge || 'unknown'})`)
+    );
+  }
+
+  // Default to stale display for 'stale' or undefined staleness
+  return (
+    GINKO_BRAND.warning('⚠️ Offline') +
+    GINKO_BRAND.dim(' │ ') +
+    GINKO_BRAND.dim(`Using cached state (${cacheAge || 'unknown'})`)
+  );
+}
+
+/**
+ * Format staleness warning message for display in table
+ *
+ * @param staleness - Staleness level ('fresh', 'stale', or 'expired')
+ * @returns Warning message string or null if fresh/no warning needed
+ *
+ * Examples:
+ * - Stale: "⚠️ Status may be outdated. Run `ginko sync` when online."
+ * - Expired: "🚨 Status is outdated. Run `ginko sync` when online to refresh."
+ */
+function formatStalenessWarning(staleness: 'fresh' | 'stale' | 'expired' | undefined): string | null {
+  if (!staleness || staleness === 'fresh') {
+    return null;
+  }
+
+  if (staleness === 'expired') {
+    return GINKO_BRAND.error('🚨 Status is outdated. Run `ginko sync` when online to refresh.');
+  }
+
+  // Default to stale warning
+  return GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko sync` when online.');
+}
+
+// ============================================================================
 // Table View Output (TASK-4)
 // ============================================================================
 
@@ -608,16 +670,26 @@ function formatCompactTable(context: AISessionContext, width: number = 75): stri
   // Line 1: Top border
   lines.push(chalk.dim(hLine(box.topLeft, box.topRight)));
 
-  // Line 2: Header + Status combined
-  const flowState = getFlowStateLabel(context.session.flowScore);
-  const headerStatus =
-    GINKO_BRAND.header +
-    GINKO_BRAND.dim('     ') +
-    GINKO_BRAND.success('Ready') +
-    GINKO_BRAND.dim(' │ ') +
-    GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`) +
-    GINKO_BRAND.dim(' │ ') +
-    context.session.workMode;
+  // Line 2: Header + Status combined (or offline header when using cached state)
+  let headerStatus: string;
+  if (context.session.isOffline) {
+    // Offline mode: show offline indicator with cache age
+    headerStatus =
+      GINKO_BRAND.header +
+      GINKO_BRAND.dim('     ') +
+      formatOfflineHeader(context);
+  } else {
+    // Online mode: show normal Ready status
+    const flowState = getFlowStateLabel(context.session.flowScore);
+    headerStatus =
+      GINKO_BRAND.header +
+      GINKO_BRAND.dim('     ') +
+      GINKO_BRAND.success('Ready') +
+      GINKO_BRAND.dim(' │ ') +
+      GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`) +
+      GINKO_BRAND.dim(' │ ') +
+      context.session.workMode;
+  }
   lines.push(row(headerStatus));
 
   // Line 3: Separator
@@ -678,6 +750,15 @@ function formatCompactTable(context: AISessionContext, width: number = 75): stri
   }
 
   lines.push(row(branchLine));
+
+  // Add staleness warning row if offline and stale/expired
+  const stalenessWarning = context.session.isOffline
+    ? formatStalenessWarning(context.session.cacheStaleness)
+    : null;
+
+  if (stalenessWarning) {
+    lines.push(row(stalenessWarning));
+  }
 
   // Line 7: Separator
   lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
@@ -753,14 +834,21 @@ export function formatTableOutput(
     lines.push(chalk.dim(hLine(box.teeLeft, box.teeRight)));
   }
 
-  // Status row: Ready | Flow | Mode
-  const flowState = getFlowStateLabel(context.session.flowScore);
-  const statusLine =
-    GINKO_BRAND.success('Ready') +
-    GINKO_BRAND.dim(' │ ') +
-    GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`) +
-    GINKO_BRAND.dim(' │ ') +
-    context.session.workMode;
+  // Status row: Ready | Flow | Mode (or offline status when using cached state)
+  let statusLine: string;
+  if (context.session.isOffline) {
+    // Offline mode: show offline indicator with cache age
+    statusLine = formatOfflineHeader(context);
+  } else {
+    // Online mode: show normal Ready status
+    const flowState = getFlowStateLabel(context.session.flowScore);
+    statusLine =
+      GINKO_BRAND.success('Ready') +
+      GINKO_BRAND.dim(' │ ') +
+      GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`) +
+      GINKO_BRAND.dim(' │ ') +
+      context.session.workMode;
+  }
   lines.push(row(statusLine));
 
   // Last session line
@@ -898,6 +986,14 @@ export function formatTableOutput(
   }
   if (context.git.warnings.length > 0 && warnings.length < 1) {
     warnings.push(GINKO_BRAND.warning(`⚠️  ${context.git.warnings[0]}`));
+  }
+
+  // Add staleness warning if offline and stale/expired
+  const stalenessWarning = context.session.isOffline
+    ? formatStalenessWarning(context.session.cacheStaleness)
+    : null;
+  if (stalenessWarning) {
+    warnings.push(stalenessWarning);
   }
 
   if (warnings.length > 0) {

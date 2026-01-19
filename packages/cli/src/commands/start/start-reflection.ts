@@ -24,11 +24,24 @@ import { initializeQueue } from '../../lib/event-queue.js';
 import { formatContextSummary as formatEventContextSummary, LoadedContext } from '../../lib/context-loader-events.js';
 import {
   loadSprintChecklist,
+  loadSprintContent,
   formatSprintChecklist,
   formatCurrentTaskDetails,
   detectSprintProgression,
-  SprintProgressionInfo
+  SprintProgressionInfo,
+  SprintChecklist,
+  Task,
+  TaskState,
+  SprintContent,
+  TaskContent
 } from '../../lib/sprint-loader.js';
+import {
+  loadStateCache,
+  saveStateCache,
+  checkCacheStaleness,
+  CacheStalenessResult,
+  ActiveSprintData
+} from '../../lib/state-cache.js';
 import {
   AISessionContext,
   formatHumanOutput,
@@ -209,6 +222,179 @@ export class StartReflectionCommand extends ReflectionCommand {
   }
 
   /**
+   * Load sprint state from graph API with cache fallback (EPIC-015 Sprint 2 Task 3)
+   *
+   * Data flow:
+   * 1. Try to fetch from graph API first
+   * 2. On success: save to cache for offline use
+   * 3. On failure: load from cache
+   *
+   * @param graphId - The graph namespace ID
+   * @returns Sprint data and source indicator ('graph' | 'cache' | null)
+   */
+  private async loadSprintStateFromGraph(graphId: string): Promise<{
+    data: ActiveSprintData | null;
+    source: 'graph' | 'cache';
+    staleness?: CacheStalenessResult;
+  }> {
+    const client = new GraphApiClient();
+
+    try {
+      // Try to fetch from graph API first
+      const graphResponse = await client.getActiveSprint(graphId);
+
+      // Convert API response to cache format
+      const activeSprintData: ActiveSprintData = {
+        sprintId: graphResponse.sprint.id,
+        sprintName: graphResponse.sprint.name,
+        epicId: graphResponse.sprint.id.split('_s')[0] || 'unknown', // Extract epic from e011_s01
+        progress: {
+          completed: graphResponse.stats.completedTasks,
+          total: graphResponse.stats.totalTasks,
+          percentage: graphResponse.stats.progressPercentage,
+        },
+        currentTask: graphResponse.nextTask ? {
+          taskId: graphResponse.nextTask.id,
+          taskName: graphResponse.nextTask.title,
+          status: this.mapGraphStatusToTaskStatus(graphResponse.nextTask.status),
+        } : undefined,
+        nextTask: graphResponse.nextTask ? {
+          taskId: graphResponse.nextTask.id,
+          taskName: graphResponse.nextTask.title,
+        } : undefined,
+      };
+
+      // Save to cache for offline use
+      await saveStateCache(activeSprintData, graphId);
+
+      return {
+        data: activeSprintData,
+        source: 'graph',
+      };
+    } catch (error) {
+      // Graph unavailable - try to load from cache
+      const cache = await loadStateCache();
+
+      if (cache && cache.graph_id === graphId) {
+        const staleness = checkCacheStaleness(cache);
+        return {
+          data: cache.active_sprint,
+          source: 'cache',
+          staleness,
+        };
+      }
+
+      // No cache available
+      return {
+        data: null,
+        source: 'cache',
+      };
+    }
+  }
+
+  /**
+   * Map graph API status string to TaskStatus enum
+   */
+  private mapGraphStatusToTaskStatus(status: string): 'pending' | 'in_progress' | 'completed' {
+    switch (status?.toLowerCase()) {
+      case 'complete':
+      case 'completed':
+        return 'completed';
+      case 'in_progress':
+      case 'in-progress':
+        return 'in_progress';
+      default:
+        return 'pending';
+    }
+  }
+
+  /**
+   * Map graph status to TaskState enum for SprintChecklist
+   */
+  private mapStatusToTaskState(status: string): TaskState {
+    switch (status?.toLowerCase()) {
+      case 'complete':
+      case 'completed':
+        return 'complete';
+      case 'in_progress':
+      case 'in-progress':
+        return 'in_progress';
+      case 'paused':
+      case 'sleeping':
+        return 'paused';
+      case 'blocked':
+        return 'in_progress'; // Treat blocked as in_progress for display
+      default:
+        return 'todo';
+    }
+  }
+
+  /**
+   * Merge graph status with local file content (EPIC-015 Sprint 2 Task 3)
+   *
+   * Graph API is authoritative for STATUS (progress, task states).
+   * Local file provides CONTENT (descriptions, acceptance criteria, ADRs).
+   *
+   * @param graphData - Status data from graph API (or cache)
+   * @param fileContent - Content from local sprint file
+   * @returns Merged SprintChecklist with graph status + file content
+   */
+  private mergeGraphStatusWithContent(
+    graphData: ActiveSprintData,
+    fileContent: SprintContent,
+    graphTasks?: Array<{ id: string; title: string; status: string; priority?: string; files?: string[] }>
+  ): SprintChecklist {
+    // Build task list: merge graph status with file content
+    const tasks: Task[] = fileContent.tasks.map((fileTask: TaskContent) => {
+      // Find matching task in graph data
+      const graphTask = graphTasks?.find(gt => gt.id === fileTask.id);
+      const status = graphTask?.status || 'not_started';
+
+      return {
+        id: fileTask.id,
+        title: fileTask.title,
+        state: this.mapStatusToTaskState(status),
+        files: fileTask.files || graphTask?.files || [],
+        effort: fileTask.effort,
+        priority: fileTask.priority || graphTask?.priority,
+        relatedADRs: fileTask.relatedADRs,
+        relatedPatterns: fileTask.relatedPatterns,
+        relatedGotchas: fileTask.relatedGotchas,
+        acceptanceCriteria: fileTask.acceptanceCriteria,
+        dependsOn: fileTask.dependsOn,
+      };
+    });
+
+    // Calculate progress from graph data
+    const progress = {
+      complete: graphData.progress.completed,
+      inProgress: tasks.filter(t => t.state === 'in_progress').length,
+      paused: tasks.filter(t => t.state === 'paused').length,
+      todo: graphData.progress.total - graphData.progress.completed - tasks.filter(t => t.state === 'in_progress').length,
+      total: graphData.progress.total,
+    };
+
+    // Determine current task (first in_progress or first todo)
+    const currentTask = tasks.find(t => t.state === 'in_progress') ||
+                       tasks.find(t => t.state === 'todo');
+
+    // Recent completions (completed tasks from the end of list)
+    const recentCompletions = tasks
+      .filter(t => t.state === 'complete')
+      .slice(-3);
+
+    return {
+      name: graphData.sprintName,
+      file: fileContent.file,
+      progress,
+      tasks,
+      currentTask,
+      recentCompletions,
+      dependencyWarnings: fileContent.dependencyWarnings,
+    };
+  }
+
+  /**
    * Override execute to process handoff and display session info
    */
   async execute(intent: string, options: any = {}): Promise<void> {
@@ -244,26 +430,29 @@ export class StartReflectionCommand extends ReflectionCommand {
       const sessionDir = path.join(ginkoDir, 'sessions', userSlug);
       const projectRoot = await getProjectRoot();
 
-      // Load sprint checklist for session context
-      // Strategy: User sprint first, then local/graph
-      // EPIC-012: Per-user sprint tracking enables multiple users on different sprints
-      let sprintChecklist: any = null;
-      let sprintSource: 'graph' | 'local' | 'user' = 'local';
+      // Load sprint checklist for session context (EPIC-015 Sprint 2 Task 3)
+      // NEW DATA FLOW: Graph API is authoritative for STATUS, file provides CONTENT
+      // 1. Fetch status from graph API (with cache fallback)
+      // 2. Load content from local sprint file
+      // 3. Merge: graph status + file content
+      let sprintChecklist: SprintChecklist | null = null;
+      let sprintSource: 'graph' | 'cache' | 'local' | 'user' = 'local';
+      let isOffline = false;
+      let cacheAge: string | undefined;
+      let cacheStaleness: CacheStalenessResult['level'] | undefined;
 
       // First, check if user has a specific sprint assignment
+      // EPIC-012: Per-user sprint tracking enables multiple users on different sprints
       const userSprint = await getUserCurrentSprint();
       let userSprintLoaded = false;
+      let sprintFilePath: string | undefined;
 
       if (userSprint) {
         try {
           const userSprintFile = await getSprintFileFromAssignment(userSprint);
           if (await fs.pathExists(userSprintFile)) {
-            const userSprintChecklist = await loadSprintChecklist(projectRoot, userSprintFile);
-            if (userSprintChecklist) {
-              sprintChecklist = userSprintChecklist;
-              sprintSource = 'user';
-              userSprintLoaded = true;
-            }
+            sprintFilePath = userSprintFile;
+            userSprintLoaded = true;
           }
         } catch {
           // User sprint file may have been deleted - clear the assignment
@@ -271,71 +460,79 @@ export class StartReflectionCommand extends ReflectionCommand {
         }
       }
 
-      // If no user sprint, load global sprint (CURRENT-SPRINT.md)
-      let localSprint: any = null;
-      if (!userSprintLoaded) {
-        localSprint = await loadSprintChecklist(projectRoot);
-      }
+      // Load sprint with graph-first status (EPIC-015 Sprint 2 Task 3)
+      const graphId = await isGraphInitialized() ? await getGraphId() : null;
+      const isGraphReady = await isAuthenticated() && graphId;
 
-      // Only check graph/local if user sprint wasn't already loaded
-      if (!userSprintLoaded) {
-        // Try to load from graph if authenticated
-        let graphSprint: any = null;
-        if (await isAuthenticated() && await isGraphInitialized()) {
-          try {
-            spinner.text = 'Checking graph for sprint updates...';
-            const graphId = await getGraphId();
-            if (graphId) {
-              const client = new GraphApiClient();
+      if (isGraphReady && graphId) {
+        // Graph-first approach: fetch status from graph API
+        spinner.text = 'Fetching sprint status from graph...';
+
+        const { data: graphData, source, staleness } = await this.loadSprintStateFromGraph(graphId);
+
+        if (graphData) {
+          // Load content from local file
+          const fileContent = await loadSprintContent(projectRoot, sprintFilePath);
+
+          if (fileContent) {
+            // Get detailed task statuses from graph for merging
+            const client = new GraphApiClient();
+            let graphTasks: Array<{ id: string; title: string; status: string; priority?: string; files?: string[] }> = [];
+            try {
               const graphResponse = await client.getActiveSprint(graphId);
-              graphSprint = this.convertGraphSprintToChecklist(graphResponse);
+              graphTasks = graphResponse.tasks || [];
+            } catch {
+              // Use cached/minimal task info
             }
-          } catch (error) {
-            // Graph unavailable - use local only
-            spinner.text = 'Graph unavailable, using local sprint file';
-          }
-        }
 
-        // Compare and choose the more complete/current sprint
-        // Priority: Local file is source of truth - it represents what the user is actively working on
-        // Graph data may be stale (e.g., still showing Sprint 1 when user moved to Sprint 2)
-        if (localSprint && graphSprint) {
-          // If the sprints are different (different names), always use local
-          // This handles the case where graph hasn't been synced with new sprint
-          const localName = localSprint.name?.toLowerCase() || '';
-          const graphName = graphSprint.name?.toLowerCase() || '';
-          const sprintsAreDifferent = localName !== graphName &&
-            !localName.includes(graphName) &&
-            !graphName.includes(localName);
+            // Merge graph status with file content
+            sprintChecklist = this.mergeGraphStatusWithContent(graphData, fileContent, graphTasks);
+            sprintSource = source;
 
-          if (sprintsAreDifferent) {
-            // Local file is the source of truth for which sprint we're on
-            sprintChecklist = localSprint;
-            sprintSource = 'local';
+            // Set offline metadata if using cache
+            if (source === 'cache') {
+              isOffline = true;
+              cacheAge = staleness?.ageHuman;
+              cacheStaleness = staleness?.level;
+
+              if (staleness?.showWarning) {
+                spinner.text = `Using cached sprint status (${staleness.ageHuman})`;
+              }
+            }
           } else {
-            // Same sprint - prefer local if it has more tasks OR higher completion count
-            // This handles case where graph has stale/test data
-            const localTotal = localSprint.progress?.total || 0;
-            const graphTotal = graphSprint.progress?.total || 0;
-            const localProgress = localSprint.progress?.complete || 0;
-            const graphProgress = graphSprint.progress?.complete || 0;
-
-            if (localTotal > graphTotal || localProgress > graphProgress) {
-              sprintChecklist = localSprint;
-              sprintSource = 'local';
-            } else {
-              sprintChecklist = graphSprint;
-              sprintSource = 'graph';
+            // No local file content - use graph data with convertGraphSprintToChecklist
+            const client = new GraphApiClient();
+            try {
+              const graphResponse = await client.getActiveSprint(graphId);
+              sprintChecklist = this.convertGraphSprintToChecklist(graphResponse);
+              sprintSource = source;
+              if (source === 'cache') {
+                isOffline = true;
+                cacheAge = staleness?.ageHuman;
+                cacheStaleness = staleness?.level;
+              }
+            } catch {
+              // Fall back to content-only
             }
           }
-        } else if (localSprint) {
-          sprintChecklist = localSprint;
-          sprintSource = 'local';
-        } else if (graphSprint) {
-          sprintChecklist = graphSprint;
-          sprintSource = 'graph';
+        } else {
+          // No graph data and no cache - fall back to local file content only
+          spinner.text = 'Graph unavailable, using local sprint file';
+          const localChecklist = await loadSprintChecklist(projectRoot, sprintFilePath);
+          if (localChecklist) {
+            sprintChecklist = localChecklist;
+            sprintSource = 'local';
+            isOffline = true; // Mark as offline since we couldn't reach graph
+          }
         }
-      } // end if (!userSprintLoaded)
+      } else {
+        // Graph not initialized - use local file only
+        const localChecklist = await loadSprintChecklist(projectRoot, sprintFilePath);
+        if (localChecklist) {
+          sprintChecklist = localChecklist;
+          sprintSource = userSprintLoaded ? 'user' : 'local';
+        }
+      }
 
       // Load session log content before archiving
       const previousSessionLog = await SessionLogManager.loadSessionLog(sessionDir);
@@ -476,7 +673,16 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // 11. Build AI context for dual output system (TASK-11)
       // Now async due to graph API enrichment (EPIC-002 Sprint 3 completion)
-      const aiContext = await this.buildAIContext(context, activeSynthesis, strategyContext, eventContext, sprintChecklist, isFirstTimeMember);
+      // EPIC-015 Sprint 2: Include offline status for display
+      const aiContext = await this.buildAIContext(
+        context,
+        activeSynthesis,
+        strategyContext,
+        eventContext,
+        sprintChecklist,
+        isFirstTimeMember,
+        { isOffline, cacheAge, cacheStaleness }
+      );
 
       // Store AI context for MCP/external access
       await this.storeAIContext(aiContext, sessionDir);
@@ -1470,7 +1676,12 @@ Example output structure:
     strategyContext: StrategyContext | undefined,
     eventContext: LoadedContext | undefined,
     sprintChecklist: any,
-    isFirstTimeMember: boolean = false
+    isFirstTimeMember: boolean = false,
+    offlineStatus?: {
+      isOffline: boolean;
+      cacheAge?: string;
+      cacheStaleness?: 'fresh' | 'stale' | 'expired';
+    }
   ): Promise<AISessionContext> {
     const workMode = context.workMode || 'Think & Build';
 
@@ -1569,6 +1780,10 @@ Example output structure:
         flowState: synthesis?.flowState?.energy || 'neutral',
         workMode: workMode,
         isFirstTimeMember,
+        // EPIC-015 Sprint 2: Offline status indicators
+        isOffline: offlineStatus?.isOffline,
+        cacheAge: offlineStatus?.cacheAge,
+        cacheStaleness: offlineStatus?.cacheStaleness,
       },
       charter: eventContext?.strategicContext?.charter,
       teamActivity: eventContext?.strategicContext?.teamActivity ? {
