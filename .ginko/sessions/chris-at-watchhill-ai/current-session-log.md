@@ -20,6 +20,11 @@ Files: .ginko/graph/config.json, dashboard/src/app/api/v1/sprint/sync/route.ts
 Impact: high
 
 
+### 13:51 - [achievement]
+Session work: (1) Updated sprint sync API to support ADR-052 task ID format (e{NNN}_s{NN}_t{NN}), checkbox status, effort in title. (2) Fixed graph load title extraction - strips frontmatter and code blocks. (3) Fixed 6 sprint titles with 'string;' issue via PATCH API. (4) Fixed EPIC-008 title. (5) Moved ChildrenSection in dashboard to below header with collapsible UI for quick discovery. All deployed to production.
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
@@ -56,4 +61,14 @@ Updated sprint sync API to support ADR-052 task ID format (e{NNN}_s{NN}_t{NN}). 
 **Timestamp:** 2026-01-19T17:57:41.745Z
 
 Files: .ginko/graph/config.json, dashboard/src/app/api/v1/sprint/sync/route.ts
+Impact: high
+
+### 13:51 - [achievement]
+# [ACHIEVEMENT] 13:51
+
+Session work: (1) Updated sprint sync API to support ADR-052 task ID format (e{NNN}_s{NN}_t{NN}), checkbox status, effort in title. (2) Fixed graph load title extraction - strips frontmatter and code blocks. (3) Fixed 6 sprint titles with 'string;' issue via PATCH API. (4) Fixed EPIC-008 title. (5) Moved ChildrenSection in dashboard to below header with collapsible UI for quick discovery. All deployed to production.
+
+**Impact:** high
+**Timestamp:** 2026-01-19T18:51:04.443Z
+
 Impact: high
