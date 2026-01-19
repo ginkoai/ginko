@@ -218,33 +218,6 @@ export function ProjectView({
     return breakdown;
   }, [sprints]);
 
-  // Find active sprint
-  const activeSprint = useMemo(() => {
-    if (!sprints) return null;
-    return sprints.find((s) => {
-      const status = (s.properties as Record<string, unknown>).status;
-      return status === 'active';
-    });
-  }, [sprints]);
-
-  // Calculate sprint progress metrics (consolidated into single box)
-  const sprintMetrics = useMemo(() => {
-    if (!activeSprint) return null;
-
-    const props = activeSprint.properties as Record<string, unknown>;
-    const progress = typeof props.progress === 'number' ? props.progress : 0;
-    const sprintName = (props.title || props.sprint_id || 'Current Sprint') as string;
-    const tasksComplete = taskStatusBreakdown['complete'] || 0;
-    const totalTasks = tasks?.length || 0;
-
-    return {
-      sprintName,
-      progress,
-      tasksComplete,
-      totalTasks,
-    };
-  }, [activeSprint, taskStatusBreakdown, tasks]);
-
   // Total node count for header
   const totalNodeCount = status?.nodes?.total || 0;
 
@@ -297,56 +270,6 @@ export function ProjectView({
         charter={charter || null}
         isLoading={charterLoading}
       />
-
-      {/* Consolidated Sprint Metrics Card */}
-      {sprintMetrics && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-6 rounded-xl bg-card border border-border"
-        >
-          <div className="space-y-4">
-            <div>
-              <span className="text-xs font-mono text-ginko-400 uppercase tracking-wider">
-                Current Sprint
-              </span>
-              <h3 className="text-lg font-semibold text-foreground mt-1">
-                {sprintMetrics.sprintName}
-              </h3>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground font-mono">Progress</span>
-                <span className="text-foreground font-mono font-medium">{sprintMetrics.progress}%</span>
-              </div>
-              <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-ginko-500 rounded-full transition-all duration-500"
-                  style={{ width: `${sprintMetrics.progress}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Tasks Metrics */}
-            <div className="flex items-center justify-between pt-3 border-t border-border">
-              <div>
-                <span className="text-xs text-muted-foreground font-mono">Tasks Complete</span>
-                <p className="text-2xl font-bold text-foreground mt-1">
-                  {sprintMetrics.tasksComplete}<span className="text-muted-foreground font-normal text-lg">/{sprintMetrics.totalTasks}</span>
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-muted-foreground font-mono">Remaining</span>
-                <p className="text-2xl font-bold text-foreground mt-1">
-                  {sprintMetrics.totalTasks - sprintMetrics.tasksComplete}
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       {/* Summary Cards Grid */}
       <div>

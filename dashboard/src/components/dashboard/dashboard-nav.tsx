@@ -232,7 +232,7 @@ export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
                   />
                   {/* Notification badge - top right of avatar (only shown when count > 0) */}
                   {notificationCount && notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-mono">
+                    <span className="absolute -top-1 -right-1 z-10 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-mono">
                       {notificationCount > 9 ? '9+' : notificationCount}
                     </span>
                   )}

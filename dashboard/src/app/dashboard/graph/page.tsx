@@ -322,8 +322,8 @@ function GraphPageContent() {
   // then fetches directly if not found (for deep links to nodes outside cache)
   useEffect(() => {
     if (selectedNodeId && nodesData?.nodes) {
-      // Skip fetching for virtual folder nodes (they only exist in UI, not in database)
-      if (selectedNodeId.endsWith('-folder')) {
+      // Skip fetching for virtual nodes (they only exist in UI, not in database)
+      if (selectedNodeId.endsWith('-folder') || selectedNodeId === 'project-root') {
         setIsFetchingNode(false);
         return;
       }
@@ -361,6 +361,18 @@ function GraphPageContent() {
 
   // Handle node selection from tree or grid
   const handleSelectNode = useCallback((nodeId: string, treeNode?: TreeNodeType) => {
+    // Handle virtual project-root node - go to project view
+    if (nodeId === 'project-root') {
+      navigateToView('project');
+      setSelectedCategory(null);
+      setSelectedNodeId(null);
+      setSelectedNode(null);
+      setIsPanelOpen(false);
+      setBreadcrumbs([]);
+      router.push('/dashboard/graph', { scroll: false });
+      return;
+    }
+
     setSelectedNodeId(nodeId);
 
     // If tree node data is provided and has properties, use it directly
@@ -379,7 +391,7 @@ function GraphPageContent() {
     const params = new URLSearchParams(searchParams.toString());
     params.set('node', nodeId);
     router.push(`/dashboard/graph?${params.toString()}`, { scroll: false });
-  }, [router, searchParams]);
+  }, [router, searchParams, navigateToView]);
 
   // Handle viewing node details (open panel)
   const handleViewDetails = useCallback((nodeId: string, nodeData?: GraphNode) => {
