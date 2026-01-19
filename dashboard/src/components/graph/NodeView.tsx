@@ -631,18 +631,19 @@ export function NodeView({
         onEdit={onEdit}
       />
 
-      {/* Content */}
-      <NodeContent node={node} />
-
-      {/* Children Section (for Epics and Sprints) */}
+      {/* Children Section (for Epics and Sprints) - collapsible, below metadata */}
       {childInfo && (
         <ChildrenSection
           children={childNodes || []}
           childType={childInfo.type}
           isLoading={loadingChildren}
           onNavigate={onNavigate}
+          defaultExpanded={true}
         />
       )}
+
+      {/* Content */}
+      <NodeContent node={node} />
 
       {/* References Section (ADRs, Patterns, Gotchas) */}
       <ReferencesSection
