@@ -229,10 +229,13 @@ function generateTaskId(sprintId: string, taskNumber: number): string {
  * Parse sprint markdown into graph structure
  * Extracts Sprint and Task nodes with relationships
  *
- * Sprint format expected:
- * - Sprint name from filename: SPRINT-YYYY-MM-name.md
- * - Goal from top section
- * - Tasks from sections starting with "### TASK-XXX:"
+ * Supports two task formats:
+ * 1. Old format: "### TASK-N: Title"
+ *    - Task ID generated from sprint ID + task number
+ * 2. New format (ADR-052): "### e{NNN}_s{NN}_t{NN}: Title (effort)"
+ *    - Task ID used directly from markdown
+ *    - Effort can be in title or **Effort:** field
+ *    - Status supports checkbox format: [x], [ ], [@], [Z]
  *
  * ADR-052: Uses hierarchical IDs (e{NNN}_s{NN}_t{NN})
  */
@@ -287,38 +290,67 @@ function parseSprintToGraph(content: string): SprintGraph {
   // Extract tasks
   const tasks: SprintGraph['tasks'] = [];
 
-  // Match task sections: ### TASK-XXX: Title
-  const taskSections = content.split(/\n### TASK-/);
+  // Match task sections with both formats:
+  // 1. Old format: ### TASK-N: Title
+  // 2. New format: ### e{NNN}_s{NN}_t{NN}: Title (effort)
+  // Split by either pattern, keeping the delimiter info
+  const taskSectionRegex = /\n###\s+(TASK-\d+|e\d{3}_s\d{2}_t\d{2}|adhoc_\d{6}_s\d{2}_t\d{2}):\s*/;
+  const parts = content.split(taskSectionRegex);
 
-  for (let i = 1; i < taskSections.length; i++) {
-    const section = taskSections[i];
+  // parts array alternates: [preamble, taskId1, section1, taskId2, section2, ...]
+  for (let i = 1; i < parts.length; i += 2) {
+    const taskIdPart = parts[i]; // e.g., "TASK-1" or "e011_s01_t01"
+    const section = parts[i + 1] || '';
 
-    // Extract task ID and title from first line
+    // Extract title from first line (may include effort in parentheses)
     const firstLine = section.split('\n')[0];
-    const taskMatch = firstLine.match(/^(\d+):\s*(.+)$/);
+    // Title may be "Refactor Nav Tree for Hierarchy (6h)" - extract title without effort
+    const titleMatch = firstLine.match(/^(.+?)(?:\s*\(\d+h?\))?$/);
+    const taskTitle = titleMatch ? titleMatch[1].trim() : firstLine.trim();
 
-    if (!taskMatch) continue;
+    let taskId: string;
+    if (taskIdPart.startsWith('TASK-')) {
+      // Old format: generate hierarchical ID from task number
+      const taskNumber = parseInt(taskIdPart.replace('TASK-', ''), 10);
+      taskId = generateTaskId(sprintId, taskNumber);
+    } else {
+      // New format: use the task ID directly (e.g., e011_s01_t01)
+      taskId = taskIdPart;
+    }
 
-    const taskNumber = parseInt(taskMatch[1], 10);
-    const taskTitle = taskMatch[2].trim();
-    // ADR-052: Generate hierarchical task ID (e.g., e005_s01_t01)
-    const taskId = generateTaskId(sprintId, taskNumber);
-
-    // Extract status
+    // Extract status - supports both text and checkbox formats
+    // Text: "**Status:** Complete" or "**Status:** In Progress"
+    // Checkbox: "**Status:** [x] Complete" or "**Status:** [ ] Not Started"
     let status: 'not_started' | 'in_progress' | 'complete' = 'not_started';
     const statusMatch = section.match(/\*\*Status:\*\*\s*(.+?)(?:\n|$)/);
     if (statusMatch) {
       const statusText = statusMatch[1].trim().toLowerCase();
-      if (statusText.includes('complete') || statusText.includes('done')) {
+      // Check for checkbox format first
+      if (statusText.startsWith('[x]')) {
+        status = 'complete';
+      } else if (statusText.startsWith('[@]')) {
+        status = 'in_progress';
+      } else if (statusText.startsWith('[ ]') || statusText.startsWith('[z]')) {
+        status = 'not_started';
+      } else if (statusText.includes('complete') || statusText.includes('done')) {
         status = 'complete';
       } else if (statusText.includes('in progress') || statusText.includes('in-progress')) {
         status = 'in_progress';
       }
     }
 
-    // Extract effort
-    const effortMatch = section.match(/\*\*Effort:\*\*\s*([^\n]+)/i);
-    const effort = effortMatch ? effortMatch[1].trim() : '';
+    // Extract effort - from **Effort:** field or from title line (e.g., "Title (6h)")
+    let effort = '';
+    const effortFieldMatch = section.match(/\*\*Effort:\*\*\s*([^\n]+)/i);
+    if (effortFieldMatch) {
+      effort = effortFieldMatch[1].trim();
+    } else {
+      // Try to extract from title line (new format: "Title (6h)")
+      const effortInTitleMatch = firstLine.match(/\((\d+h?)\)$/);
+      if (effortInTitleMatch) {
+        effort = effortInTitleMatch[1];
+      }
+    }
 
     // Extract priority
     const priorityMatch = section.match(/\*\*Priority:\*\*\s*([^\n]+)/i);
@@ -335,18 +367,19 @@ function parseSprintToGraph(content: string): SprintGraph {
       assignee = emailMatch ? emailMatch[1].toLowerCase() : undefined;
     }
 
-    // Extract files
-    const filesMatch = section.match(/\*\*Files:\*\*\s*([\s\S]*?)(?=\n\*\*|$)/i);
+    // Extract files - supports both formats:
+    // 1. "- Create: `path`" or "- Modify: `path`"
+    // 2. "- `path`" (simple bullet format)
+    const filesMatch = section.match(/\*\*Files:\*\*\s*([\s\S]*?)(?=\n\*\*|\n---|$)/i);
     const files: string[] = [];
     if (filesMatch) {
-      const fileLines = filesMatch[1].match(/[-*]\s*(?:Create|Update|Modify):\s*`([^`]+)`/gi);
-      if (fileLines) {
-        fileLines.forEach(line => {
-          const fileMatch = line.match(/`([^`]+)`/);
-          if (fileMatch) {
-            files.push(fileMatch[1]);
-          }
-        });
+      // Match any backtick-quoted path in the files section
+      const fileMatches = filesMatch[1].matchAll(/`([^`]+\.[a-zA-Z]+)`/g);
+      for (const match of fileMatches) {
+        const filePath = match[1];
+        if (!files.includes(filePath)) {
+          files.push(filePath);
+        }
       }
     }
 
@@ -456,9 +489,11 @@ async function syncSprintToGraph(
   let relCount = 0;
 
   // Create Sprint node with epic_id for hierarchy navigation (EPIC-011)
-  await client.createNode('Sprint', {
+  // Use mergeNode to update existing sprints (fixes title from graph load)
+  await client.mergeNode('Sprint', graph.sprint.id, {
     id: graph.sprint.id,
     name: graph.sprint.name,
+    title: graph.sprint.name, // Also set title to match name (fixes bad titles from graph load)
     goal: graph.sprint.goal,
     startDate: graph.sprint.startDate,
     endDate: graph.sprint.endDate,

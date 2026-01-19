@@ -14,6 +14,12 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
+### 12:57 - [feature]
+Updated sprint sync API to support ADR-052 task ID format (e{NNN}_s{NN}_t{NN}). Previously only supported old TASK-N format. Now parses: (1) new hierarchical task IDs directly from markdown, (2) checkbox status format [x]/[ ]/[@]/[Z], (3) effort in title parentheses, (4) simple bullet file references. Deployed to prod and pushed all 4 EPIC-011 sprints with ~75 nodes and ~90 relationships.
+Files: .ginko/graph/config.json, dashboard/src/app/api/v1/sprint/sync/route.ts
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
@@ -36,3 +42,18 @@ flow_state: hot
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
+
+### 12:57 - [feature]
+# [FEATURE] 12:57
+
+Updated sprint sync API to support ADR-052 task ID format (e{NNN}_s{NN}_t{NN}). Previously only supported old TASK-N format. Now parses: (1) new hierarchical task IDs directly from markdown, (2) checkbox status format [x]/[ ]/[@]/[Z], (3) effort in title parentheses, (4) simple bullet file references. Deployed to prod and pushed all 4 EPIC-011 sprints with ~75 nodes and ~90 relationships.
+
+**Files:**
+- .ginko/graph/config.json
+- dashboard/src/app/api/v1/sprint/sync/route.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-19T17:57:41.745Z
+
+Files: .ginko/graph/config.json, dashboard/src/app/api/v1/sprint/sync/route.ts
+Impact: high
