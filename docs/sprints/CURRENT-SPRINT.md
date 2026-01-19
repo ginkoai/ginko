@@ -1,97 +1,290 @@
-# Sprint: Dashboard Maintenance - UI and Data Fixes
+# SPRINT: EPIC-005 Sprint 2 - Graph Visualization
 
-**ID:** `adhoc_260119_s01`
-**Type:** Maintenance / Bug Fixes
+**Epic**: EPIC-005 Market Readiness
+
+## Sprint Overview
+
+**Sprint Goal**: Build the graph visualization layer that demonstrates ginko's unique value - showing how knowledge compounds and connections emerge across AI collaboration sessions.
+
+**Duration**: 2 weeks
+**Type**: Feature sprint
+**Progress:** 0% (0/7 tasks complete)
+
+**Success Criteria:**
+- [x] Collapsible tree explorer for hierarchical elements
+- [x] Card-based exploration for multi-relation nodes
+- [x] C4-style zoom: summary cards → focused view with adjacencies
+- [x] Graph data fetching and caching layer
+
+---
+
+## Sprint Tasks
+
+### TASK-1: Graph Data Architecture (3h)
+**Status:** [x] Complete
 **Priority:** HIGH
-**Created:** 2026-01-19
+**ID:** e005_s02_t01
 
-## Problem Statement
+**Goal:** Design the data fetching and caching layer for graph visualization.
 
-Multiple UI issues and data inconsistencies in the dashboard affecting user experience.
+**Context:**
+- Dashboard currently fetches from `/api/v1/graph/` endpoints
+- Need efficient caching for graph traversal
+- Support both tree hierarchy and card-based views
 
-### Issues Identified
+**Deliverables:**
+- Data fetching hooks (`useGraphNodes`, `useNodeAdjacencies`)
+- Caching strategy (React Query or SWR)
+- Type definitions for graph entities
+- API client consolidation
 
-1. **Badge hidden under avatar** - Notification badge in header is clipped behind avatar
-2. **Project-root 404 error** - Clicking "Project" in nav tree causes infinite API 404 errors
-3. **Current sprint in ProjectView** - Duplicated info already shown in Focus page, and had broken status logic
-4. **Duplicate ginko projects in Settings** - Two separate "ginko" teams appear (data issue)
-5. **Sprint titles showing "string };"** - Some sprints display malformed titles
-6. **Epics showing no Sprints/Tasks** - Epics 13, 12, 11, 7, 1 and Dashboard Maintenance Epic display empty
-
----
-
-## Tasks
-
-### Code Fixes (Complete)
-
-- [x] **adhoc_260119_s01_t01** - Fix notification badge z-index
-  - File: `dashboard/src/components/dashboard/dashboard-nav.tsx:235`
-  - Issue: Badge had `absolute -top-1 -right-1` but no z-index, clipped behind avatar border
-  - Fix: Added `z-10` class to badge span
-
-- [x] **adhoc_260119_s01_t02** - Fix project-root 404 error
-  - Files: `dashboard/src/app/dashboard/graph/page.tsx:326,363-374`
-  - Issue: "project-root" is a virtual tree node (not in Neo4j), clicking triggered DB fetch which 404'd
-  - Fix: Added explicit check for `nodeId === 'project-root'` - now navigates to project view
-
-- [x] **adhoc_260119_s01_t03** - Remove current sprint from ProjectView
-  - File: `dashboard/src/components/graph/ProjectView.tsx`
-  - Issue: Duplicated Focus page, had broken status logic (checked for 'active' but sprints use 'in_progress')
-  - Fix: Removed `activeSprint`, `sprintMetrics` state and the "Consolidated Sprint Metrics Card" section
-
-- [x] **adhoc_260119_s01_t04** - Create admin endpoints for investigation
-  - File: `dashboard/src/app/api/v1/admin/teams/route.ts` (NEW)
-  - File: `dashboard/src/app/api/v1/admin/diagnostics/route.ts` (NEW)
-  - Teams endpoint: List all teams, delete by ID
-  - Diagnostics endpoint: Analyze epics, sprints, malformed titles
-
-### Data Fixes (Complete)
-
-- [x] **adhoc_260119_s01_t05** - Delete duplicate ginko team
-  - Root cause: Team "ginko" (1 member) created 2026-01-18 was duplicate of "Ginko Core Team" (3 members)
-  - Fix: Deleted duplicate team via admin endpoint
-  - Team ID deleted: `c17690f4-9f0f-4f8f-8284-947fc0ece58f`
-
-- [x] **adhoc_260119_s01_t06** - Fix malformed sprint titles
-  - Found 4 sprints with titles like "string;" or "string };"
-  - Root cause: TypeScript type annotation accidentally stored as title (CLI bug)
-  - Fixed via PATCH to node endpoint:
-    - `SPRINT-2025-12-epic004-sprint4-orchestration` → "Sprint 4: Orchestration Layer"
-    - `SPRINT-2025-12-graph-infrastructure` → "SPRINT: Graph Infrastructure & Core Relationships (EPIC-001 Sprint 1)"
-    - `SPRINT-2026-01-e009-s02-cli-api` → "SPRINT: Product Roadmap Sprint 2 - CLI & API"
-    - `SPRINT-2026-01-epic008-sprint2` → "SPRINT: Team Collaboration Sprint 2 - Visibility & Coordination"
-
-- [x] **adhoc_260119_s01_t07** - Investigate Epics with no children
-  - Finding: Epics 001, 007, 011, 012, 013, 014 genuinely have no sprints in Neo4j
-  - EPIC-011 has local sprint files (e011_s00 through e011_s03) but they haven't been synced to graph
-  - Other epics are either empty or their sprints haven't been created yet
-  - Tree building code is correct - it matches sprints to epics via ID pattern extraction
-  - **Resolution:** Not a bug - epics correctly show empty when no sprints exist in graph
+**Files:**
+- `dashboard/src/lib/graph/` (new directory)
+- `dashboard/src/hooks/useGraph.ts` (new)
 
 ---
 
-## Files Modified
+### TASK-2: Tree Explorer Component (4h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e005_s02_t02
 
-| File | Change |
-|------|--------|
-| `dashboard/src/components/dashboard/dashboard-nav.tsx` | Added `z-10` to notification badge |
-| `dashboard/src/app/dashboard/graph/page.tsx` | Handle project-root click, skip fetch |
-| `dashboard/src/components/graph/ProjectView.tsx` | Removed current sprint section |
-| `dashboard/src/app/api/v1/admin/teams/route.ts` | NEW - Admin team management |
-| `dashboard/src/app/api/v1/admin/diagnostics/route.ts` | NEW - Graph diagnostics |
+**Goal:** Build collapsible tree explorer for hierarchical navigation.
+
+**Hierarchy Structure:**
+```
+Project (root)
+├── Charter
+├── Epics
+│   └── Epic
+│       └── Sprints
+│           └── Sprint
+│               └── Tasks
+│                   └── Task
+├── ADRs
+├── Patterns
+└── Gotchas
+```
+
+**Deliverables:**
+- TreeExplorer component with expand/collapse
+- TreeNode component with type-specific icons
+- Selection state management
+- Keyboard navigation (up/down/left/right/enter)
+
+**Files:**
+- `dashboard/src/components/graph/tree-explorer.tsx` (new)
+- `dashboard/src/components/graph/tree-node.tsx` (new)
+
+Follow: Marketing site aesthetic (dark theme, ginko green highlights)
 
 ---
 
-## Progress
+### TASK-3: Node Card Component (3h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e005_s02_t03
 
-**Status:** Complete
-**Progress:** 100% (7/7 tasks complete)
+**Goal:** Create card component for displaying node summaries.
 
-## Notes
+**Card Variants:**
+- ADR card (title, status, summary)
+- Pattern card (name, confidence, description)
+- Gotcha card (title, severity, description)
+- Task card (title, status, assignee)
+- Sprint card (name, progress, dates)
 
-- All code fixes deployed to production
-- Duplicate team deleted
-- 4 malformed sprint titles corrected in Neo4j
-- Empty epics are expected behavior - sprints need to be synced to graph
-- EPIC-011 sprints exist locally but need `ginko sync` to push to graph
-- Related sprint: `adhoc_260117_s01` (Dashboard Data Isolation) - completed 2026-01-17
+**Deliverables:**
+- NodeCard base component
+- Type-specific card variants
+- Hover/selected states
+- Connection indicators
+
+**Files:**
+- `dashboard/src/components/graph/node-card.tsx` (new)
+- `dashboard/src/components/graph/card-variants/` (new directory)
+
+Follow: Corner brackets aesthetic for cards
+
+---
+
+### TASK-4: Card Grid View (3h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e005_s02_t04
+
+**Goal:** Build card grid for exploring non-hierarchical nodes.
+
+**Features:**
+- Filterable by node type (ADR, Pattern, Gotcha, etc.)
+- Searchable by name/content
+- Sortable by date, name, relevance
+- Responsive grid layout
+
+**Deliverables:**
+- CardGrid component
+- Filter bar component
+- Search input with debounce
+- Sort controls
+
+**Files:**
+- `dashboard/src/components/graph/card-grid.tsx` (new)
+- `dashboard/src/components/graph/filter-bar.tsx` (new)
+
+---
+
+### TASK-5: Node Detail Panel (4h)
+**Status:** [ ] Pending
+**Priority:** HIGH
+**ID:** e005_s02_t05
+
+**Goal:** Build the focused view panel for selected nodes.
+
+**Panel Features:**
+- Full node content display
+- 1-hop adjacencies (related nodes)
+- Breadcrumb navigation
+- Action buttons (edit, sync status)
+
+**C4-Style Zoom Pattern:**
+1. User clicks card in grid → Panel slides in
+2. Panel shows full content + immediate connections
+3. Clicking connection zooms to that node
+
+**Deliverables:**
+- NodeDetailPanel component
+- AdjacencyList component
+- Breadcrumb navigation
+- Panel animations
+
+**Files:**
+- `dashboard/src/components/graph/node-detail-panel.tsx` (new)
+- `dashboard/src/components/graph/adjacency-list.tsx` (new)
+
+---
+
+### TASK-6: Graph Page Layout (3h)
+**Status:** [ ] Pending
+**Priority:** MEDIUM
+**ID:** e005_s02_t06
+
+**Goal:** Create the main graph exploration page layout.
+
+**Layout Structure:**
+```
+┌─────────────────────────────────────────────────────┐
+│ Header (existing nav)                               │
+├──────────────┬──────────────────────────────────────┤
+│ Tree Explorer│ Card Grid / Detail Panel             │
+│ (collapsible)│                                      │
+│              │                                      │
+│              │                                      │
+└──────────────┴──────────────────────────────────────┘
+```
+
+**Features:**
+- Resizable sidebar (tree explorer)
+- Toggle between grid/detail views
+- Maintain selection state across views
+
+**Deliverables:**
+- Graph page layout component
+- Resizable panel implementation
+- View state management
+
+**Files:**
+- `dashboard/src/app/dashboard/graph/page.tsx` (new)
+- `dashboard/src/app/dashboard/graph/layout.tsx` (new)
+
+---
+
+### TASK-7: Graph Navigation Integration (2h)
+**Status:** [ ] Pending
+**Priority:** MEDIUM
+**ID:** e005_s02_t07
+
+**Goal:** Integrate graph explorer into dashboard navigation.
+
+**Navigation Updates:**
+- Add "Graph" to sidebar navigation
+- Update dashboard home to link to graph
+- Add breadcrumbs for deep navigation
+- URL-based node selection (shareable links)
+
+**Deliverables:**
+- Sidebar nav update
+- Route configuration
+- URL state management
+- Deep linking support
+
+**Files:**
+- `dashboard/src/components/dashboard/dashboard-sidebar.tsx`
+- `dashboard/src/app/dashboard/graph/[nodeId]/page.tsx` (new)
+
+---
+
+### TASK-8: Sprint 2 Polish and Documentation (2h)
+**Status:** [ ] Pending
+**Priority:** LOW
+**ID:** e005_s02_t08
+
+**Goal:** Polish, test, and document the graph visualization features.
+
+**Deliverables:**
+- [x] Component documentation
+- [x] Visual QA against marketing site
+- [x] Performance testing with sample data
+- [x] Sprint retrospective
+- [x] Bug fixes (corner brackets, adjacencies API, description display, tree-grid sync)
+- [x] Created EPIC-006 backlog for future enhancements
+
+**Files:**
+- Sprint file updates
+- `docs/epics/EPIC-006-graph-explorer-v2.md` (new)
+
+**Bug Fixes Completed (2025-12-11):**
+1. Fixed missing corner brackets on grid cards (all 4 corners now display)
+2. Reduced excessive padding between brackets and cards
+3. Created missing `/api/v1/graph/adjacencies/[nodeId]` route (was causing 404)
+4. Fixed tree-view selection not scrolling to card in grid-view
+5. Added more property fallbacks for node descriptions (content, context, purpose)
+
+---
+
+## Technical Notes
+
+### Graph API Endpoints (existing)
+- `GET /api/v1/graph/nodes` - List nodes by type
+- `GET /api/v1/graph/query` - Semantic search
+- `GET /api/v1/graph/adjacencies/:nodeId` - Get related nodes
+
+### State Management
+- Use React Query for server state (caching, refetching)
+- Zustand or context for UI state (selection, view mode)
+- URL params for shareable state (selected node, filters)
+
+### Performance Considerations
+- Lazy load adjacencies on node selection
+- Virtualize long lists (tree nodes, card grids)
+- Debounce search input
+- Cache traversed paths
+
+---
+
+## Blockers
+
+None yet.
+
+---
+
+## Next Steps
+
+After Sprint 2:
+- Sprint 3: Coaching Insights Engine
+- Sprint 4: Knowledge Editing + Beta Polish
+
+---
+
+**Sprint Status: COMPLETE**
+**Sprint Start: 2025-12-11**
+**Sprint End: 2026-01-17**
