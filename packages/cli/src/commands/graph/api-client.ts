@@ -592,6 +592,57 @@ export class GraphApiClient {
       `/api/v1/sprint/active?graphId=${encodeURIComponent(graphId)}`
     );
   }
+
+  /**
+   * Sync tasks to graph (EPIC-015 Sprint 0a)
+   * Creates or updates Task nodes with BELONGS_TO relationships
+   *
+   * Key principle (ADR-060): Content from Git, State from Graph.
+   * - On CREATE: Uses initial_status from markdown
+   * - On UPDATE: Preserves existing status (graph-authoritative)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param tasks - Array of parsed tasks
+   * @param createRelationships - Whether to create BELONGS_TO relationships
+   * @returns Sync response with counts
+   */
+  async syncTasks(
+    graphId: string,
+    tasks: TaskSyncInput[],
+    createRelationships: boolean = true
+  ): Promise<TaskSyncResponse> {
+    return this.request<TaskSyncResponse>(
+      'POST',
+      '/api/v1/task/sync',
+      { graphId, tasks, createRelationships }
+    );
+  }
+
+  /**
+   * Get tasks from graph (EPIC-015 Sprint 0a)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param filters - Optional filters (sprintId, epicId)
+   * @returns Array of task objects
+   */
+  async getTasks(
+    graphId: string,
+    filters?: { sprintId?: string; epicId?: string }
+  ): Promise<TaskFromGraph[]> {
+    let url = `/api/v1/task/sync?graphId=${encodeURIComponent(graphId)}`;
+    if (filters?.sprintId) {
+      url += `&sprintId=${encodeURIComponent(filters.sprintId)}`;
+    }
+    if (filters?.epicId) {
+      url += `&epicId=${encodeURIComponent(filters.epicId)}`;
+    }
+
+    const response = await this.request<{ tasks: TaskFromGraph[]; count: number }>(
+      'GET',
+      url
+    );
+    return response.tasks || [];
+  }
 }
 
 /**
@@ -841,6 +892,51 @@ export interface ActiveSprintResponse {
     executionTime: number;
     timestamp: string;
   };
+}
+
+/**
+ * Task sync input for API (EPIC-015 Sprint 0a)
+ */
+export interface TaskSyncInput {
+  id: string;
+  sprint_id: string;
+  epic_id: string;
+  title: string;
+  estimate: string | null;
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  assignee: string | null;
+  initial_status: 'not_started' | 'in_progress' | 'blocked' | 'complete' | 'paused';
+  goal: string | null;
+  acceptance_criteria: string[];
+  files: string[];
+  related_adrs: string[];
+}
+
+/**
+ * Task sync response (EPIC-015 Sprint 0a)
+ */
+export interface TaskSyncResponse {
+  success: boolean;
+  created: number;
+  updated: number;
+  relationships: number;
+  tasks: string[];
+}
+
+/**
+ * Task retrieved from graph (EPIC-015 Sprint 0a)
+ */
+export interface TaskFromGraph {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+  sprint_id: string;
+  epic_id: string;
+  estimate: string | null;
+  assignee: string | null;
+  goal: string | null;
+  synced_at: string | null;
 }
 
 /**

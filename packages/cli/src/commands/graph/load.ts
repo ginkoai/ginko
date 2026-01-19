@@ -19,6 +19,7 @@ import { promisify } from 'util';
 const globAsync = promisify(glob);
 import { GraphApiClient, DocumentUpload } from './api-client.js';
 import { loadGraphConfig, isGraphInitialized, updateDocumentHash } from './config.js';
+import { parseSprintTasks, ParsedTask, SprintParseResult } from '../../lib/task-parser.js';
 
 interface LoadOptions {
   docsOnly?: boolean;
@@ -262,6 +263,40 @@ export async function loadCommand(options: LoadOptions): Promise<void> {
     }
 
     console.log(chalk.green('✓ Configuration updated'));
+
+    // Extract and sync tasks from sprint files (EPIC-015 Sprint 0a)
+    const sprintDocs = documents.filter(doc => doc.type === 'Sprint');
+    if (sprintDocs.length > 0) {
+      console.log(chalk.dim('\nExtracting tasks from sprints...'));
+
+      const allTasks: ParsedTask[] = [];
+      const sprintResults: SprintParseResult[] = [];
+
+      for (const doc of sprintDocs) {
+        try {
+          const result = parseSprintTasks(doc.content, doc.filePath);
+          sprintResults.push(result);
+          allTasks.push(...result.tasks);
+        } catch (error) {
+          console.warn(chalk.yellow(`⚠️  Failed to parse tasks from ${doc.filePath}`));
+        }
+      }
+
+      if (allTasks.length > 0) {
+        console.log(chalk.dim(`  Found ${allTasks.length} tasks in ${sprintResults.length} sprints`));
+        console.log(chalk.dim('  Syncing tasks to graph...'));
+
+        try {
+          const syncResult = await client.syncTasks(config.graphId, allTasks, true);
+          console.log(chalk.green(`✓ Tasks synced: ${syncResult.created} created, ${syncResult.updated} updated, ${syncResult.relationships} relationships`));
+        } catch (error) {
+          console.warn(chalk.yellow(`⚠️  Task sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`));
+          console.log(chalk.dim('  Tasks will be synced on next load'));
+        }
+      } else {
+        console.log(chalk.dim('  No tasks found in sprint files'));
+      }
+    }
 
     console.log(chalk.gray('\n' + '─'.repeat(50)));
     console.log(chalk.green('✅ Knowledge graph ready!'));

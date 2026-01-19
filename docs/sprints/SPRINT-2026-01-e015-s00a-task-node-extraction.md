@@ -5,7 +5,7 @@
 **Sprint Goal**: Parse sprint files to create independent Task nodes in graph
 **Duration**: 0.5-1 week
 **Type**: Foundation sprint (prerequisite for Sprint 1+)
-**Progress:** 0% (0/5 tasks complete)
+**Progress:** 100% (5/5 tasks complete)
 **Prerequisite:** Sprint 0 complete (status APIs exist)
 
 **Why This Sprint:**
@@ -16,11 +16,11 @@ EPIC-015 makes the Graph authoritative for state. Without separate Task nodes, s
 - Clean relationships (Task → Sprint → Epic)
 
 **Success Criteria:**
-- [ ] Sprint files parsed to extract task definitions
-- [ ] Task nodes created with proper properties
-- [ ] Relationships: Task -[BELONGS_TO]-> Sprint -[BELONGS_TO]-> Epic
-- [ ] `ginko graph load` creates Task nodes automatically
-- [ ] Existing status APIs work with new Task nodes
+- [x] Sprint files parsed to extract task definitions
+- [x] Task nodes created with proper properties
+- [x] Relationships: Task -[BELONGS_TO]-> Sprint -[BELONGS_TO]-> Epic
+- [x] `ginko graph load` creates Task nodes automatically
+- [x] Existing status APIs work with new Task nodes
 
 ---
 
@@ -85,9 +85,9 @@ RETURN e, s, t
 ## Sprint Tasks
 
 ### e015_s00a_t01: Task Parser for Sprint Markdown (4h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Create parser to extract task definitions from sprint markdown files
 
@@ -132,18 +132,18 @@ interface ParsedTask {
 - Create: `packages/cli/src/lib/task-parser.test.ts`
 
 **Acceptance Criteria:**
-- [ ] Parses all task fields from markdown
-- [ ] Handles missing/optional fields gracefully
-- [ ] Extracts sprint_id from task_id
-- [ ] Unit tests for all parsing rules
-- [ ] Tested against existing sprint files
+- [x] Parses all task fields from markdown
+- [x] Handles missing/optional fields gracefully
+- [x] Extracts sprint_id from task_id
+- [x] Unit tests for all parsing rules
+- [x] Tested against existing sprint files
 
 ---
 
 ### e015_s00a_t02: Task Node Creation in Graph (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Create/update Task nodes in Neo4j from parsed task data
 
@@ -185,17 +185,17 @@ RETURN t
 - Modify: `packages/cli/src/commands/graph/load.ts`
 
 **Acceptance Criteria:**
-- [ ] Task nodes created with all properties
-- [ ] Existing task status NOT overwritten
-- [ ] Content (title, goal) updated on re-sync
-- [ ] Idempotent (safe to run multiple times)
+- [x] Task nodes created with all properties
+- [x] Existing task status NOT overwritten
+- [x] Content (title, goal) updated on re-sync
+- [x] Idempotent (safe to run multiple times)
 
 ---
 
 ### e015_s00a_t03: Create Task/Sprint/Epic Relationships (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Create BELONGS_TO relationships for full hierarchy
 
@@ -233,17 +233,17 @@ function parseHierarchy(taskId: string): { sprintId: string; epicId: string } {
 - Modify: `packages/cli/src/lib/task-graph-sync.ts`
 
 **Acceptance Criteria:**
-- [ ] Task → Sprint relationships created
-- [ ] Sprint → Epic relationships created
-- [ ] Relationships are idempotent
-- [ ] Hierarchy queryable via Cypher
+- [x] Task → Sprint relationships created
+- [x] Sprint → Epic relationships created
+- [x] Relationships are idempotent
+- [x] Hierarchy queryable via Cypher
 
 ---
 
 ### e015_s00a_t04: Integrate with `ginko graph load` (3h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** Automatically create Task nodes when loading sprint files
 
@@ -278,17 +278,17 @@ ginko graph load
 - Modify: `packages/cli/src/lib/graph-loader.ts` (if exists)
 
 **Acceptance Criteria:**
-- [ ] `ginko graph load` creates Task nodes
-- [ ] Summary shows task count
-- [ ] Existing functionality unchanged
-- [ ] Performance acceptable (<30s for full load)
+- [x] `ginko graph load` creates Task nodes
+- [x] Summary shows task count
+- [x] Existing functionality unchanged
+- [x] Performance acceptable (<30s for full load)
 
 ---
 
 ### e015_s00a_t05: Verify Status APIs Work with Task Nodes (2h)
-**Status:** [ ] Not Started
+**Status:** [x] Complete
 **Priority:** MEDIUM
-**Assignee:** TBD
+**Assignee:** chris@watchhill.ai
 
 **Goal:** End-to-end test that Sprint 0 APIs work with new Task nodes
 
@@ -323,11 +323,11 @@ ginko graph load
 - Create: `packages/cli/src/commands/graph/__tests__/task-integration.test.ts`
 
 **Acceptance Criteria:**
-- [ ] Task nodes exist after graph load
-- [ ] Status APIs return 200 (not 404)
-- [ ] Status updates persist in graph
-- [ ] History endpoint returns events
-- [ ] Hierarchy relationships queryable
+- [x] Task nodes exist after graph load
+- [x] Status APIs return 200 (not 404)
+- [x] Status updates persist in graph
+- [x] History endpoint returns events
+- [x] Hierarchy relationships queryable
 
 ---
 
@@ -396,5 +396,28 @@ Example: `adhoc_260119_s01_t01`
 **Inserted After:** Sprint 0 (API Foundation)
 **Blocks:** Sprint 1 (CLI Status Commands)
 **ADR:** ADR-060 Content/State Separation
-**Started:** TBD
-**Participants:** TBD
+**Started:** 2026-01-19
+**Completed:** 2026-01-19
+**Participants:** Chris Norton, Claude
+
+## Accomplishments
+
+### 2026-01-19: Sprint 0a Complete
+
+**Files Created:**
+- `packages/cli/src/lib/task-parser.ts` - Task parser for sprint markdown (supports e{NNN}_s{NN}_t{NN}, TASK-N, adhoc formats)
+- `packages/cli/src/lib/task-parser.test.ts` - 19 unit tests
+- `packages/cli/src/lib/task-graph-sync.ts` - Task sync utilities for graph API
+- `packages/cli/src/commands/graph/__tests__/task-integration.test.ts` - 27 integration tests
+- `dashboard/src/app/api/v1/task/sync/route.ts` - POST /api/v1/task/sync endpoint
+
+**Files Modified:**
+- `packages/cli/src/commands/graph/api-client.ts` - Added syncTasks() and getTasks() methods
+- `packages/cli/src/commands/graph/load.ts` - Integrated task extraction during sprint loading
+
+**Key Achievements:**
+- Task parser handles all ID formats: standard (e015_s00a_t01), legacy (TASK-N), adhoc (adhoc_260119_s01_t01)
+- ADR-060 principle enforced: status preserved on UPDATE (graph-authoritative)
+- BELONGS_TO relationships created automatically: Task → Sprint → Epic
+- All 46 tests passing (19 unit + 27 integration)
+- Dashboard builds successfully

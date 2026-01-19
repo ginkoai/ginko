@@ -1,0 +1,501 @@
+/**
+ * @fileType: utility
+ * @status: current
+ * @updated: 2026-01-19
+ * @tags: [task-parser, sprint, epic-015, sprint-0a]
+ * @related: [sprint-parser.ts, task-graph-sync.ts]
+ * @priority: high
+ * @complexity: medium
+ * @dependencies: [fs-extra]
+ */
+
+/**
+ * Task Parser for Sprint Markdown (EPIC-015 Sprint 0a Task 1)
+ *
+ * Parses task definitions from sprint markdown files into structured data
+ * for syncing to Neo4j graph. Handles multiple task ID formats:
+ * - Standard: e{NNN}_s{NN}_t{NN} (e.g., e015_s00a_t01)
+ * - Legacy: TASK-N (e.g., TASK-1)
+ * - Ad-hoc: adhoc_{YYMMDD}_s{NN}_t{NN} (e.g., adhoc_260119_s01_t01)
+ *
+ * Key principle (ADR-060): Content from Git, State from Graph.
+ * Parser extracts CONTENT fields only (title, goal, priority, estimate).
+ * Status in markdown is only used for initial creation, not updates.
+ */
+
+import fs from 'fs-extra';
+import path from 'path';
+
+/**
+ * Task status values (aligned with Status API)
+ */
+export type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'complete' | 'paused';
+
+/**
+ * Parsed task from sprint markdown
+ */
+export interface ParsedTask {
+  /** Task ID (e.g., e015_s00a_t01, TASK-1, adhoc_260119_s01_t01) */
+  id: string;
+  /** Derived sprint ID (e.g., e015_s00a, adhoc_260119_s01) */
+  sprint_id: string;
+  /** Derived epic ID (e.g., e015, adhoc_260119) */
+  epic_id: string;
+  /** Task title */
+  title: string;
+  /** Estimated effort (e.g., "3h", "4-6h") */
+  estimate: string | null;
+  /** Priority level */
+  priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  /** Assignee email or null */
+  assignee: string | null;
+  /** Initial status from checkbox (used only on CREATE) */
+  initial_status: TaskStatus;
+  /** Task goal/description */
+  goal: string | null;
+  /** Acceptance criteria list */
+  acceptance_criteria: string[];
+  /** Referenced files */
+  files: string[];
+  /** Related ADR references */
+  related_adrs: string[];
+}
+
+/**
+ * Sprint metadata extracted alongside tasks
+ */
+export interface ParsedSprint {
+  /** Sprint ID (derived from filename or content) */
+  id: string;
+  /** Sprint name */
+  name: string;
+  /** Epic ID */
+  epic_id: string;
+  /** Sprint file path */
+  file_path: string;
+}
+
+/**
+ * Result of parsing a sprint file
+ */
+export interface SprintParseResult {
+  sprint: ParsedSprint;
+  tasks: ParsedTask[];
+}
+
+/**
+ * Parse task hierarchy from task ID
+ *
+ * @param taskId - Task ID in various formats
+ * @returns Object with sprint_id and epic_id, or null if invalid
+ */
+export function parseTaskHierarchy(taskId: string): { sprint_id: string; epic_id: string } | null {
+  // Standard format: e015_s00a_t01 or e015_s00_t01
+  const standardMatch = taskId.match(/^(e\d{3})_(s\d{2}[a-z]?)_(t\d{2})$/i);
+  if (standardMatch) {
+    const epicId = standardMatch[1].toLowerCase();
+    const sprintSuffix = standardMatch[2].toLowerCase();
+    return {
+      sprint_id: `${epicId}_${sprintSuffix}`,
+      epic_id: epicId,
+    };
+  }
+
+  // Ad-hoc format: adhoc_260119_s01_t01
+  const adhocMatch = taskId.match(/^(adhoc_\d{6})_(s\d{2})_(t\d{2})$/i);
+  if (adhocMatch) {
+    const adhocId = adhocMatch[1].toLowerCase();
+    const sprintSuffix = adhocMatch[2].toLowerCase();
+    return {
+      sprint_id: `${adhocId}_${sprintSuffix}`,
+      epic_id: adhocId,
+    };
+  }
+
+  // Legacy TASK-N format - derive from context (requires sprint info)
+  // For legacy format, we cannot derive hierarchy without sprint context
+  if (taskId.match(/^TASK-\d+$/i)) {
+    return null; // Caller must provide sprint context
+  }
+
+  return null;
+}
+
+/**
+ * Map checkbox character to task status
+ *
+ * @param checkbox - Single character from checkbox ([x], [@], [ ], [Z])
+ * @returns TaskStatus value
+ */
+function mapCheckboxToStatus(checkbox: string | undefined): TaskStatus {
+  if (!checkbox) return 'not_started';
+
+  const char = checkbox.trim().toLowerCase();
+  switch (char) {
+    case 'x':
+      return 'complete';
+    case '@':
+      return 'in_progress';
+    case 'z':
+      return 'paused';
+    case ' ':
+    default:
+      return 'not_started';
+  }
+}
+
+/**
+ * Normalize priority value
+ */
+function normalizePriority(priority: string | undefined): ParsedTask['priority'] {
+  if (!priority) return 'MEDIUM';
+
+  const upper = priority.trim().toUpperCase();
+  if (['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].includes(upper)) {
+    return upper as ParsedTask['priority'];
+  }
+  return 'MEDIUM';
+}
+
+/**
+ * Extract acceptance criteria from task block
+ */
+function extractAcceptanceCriteria(blockText: string): string[] {
+  const criteria: string[] = [];
+
+  // Find acceptance criteria section
+  const sectionMatch = blockText.match(
+    /\*\*Acceptance Criteria:\*\*\s*([\s\S]*?)(?=\n\*\*|\n###|\n---|\n##|$)/i
+  );
+
+  if (!sectionMatch) return criteria;
+
+  // Extract checkbox items: - [ ] or - [x]
+  const checkboxMatches = sectionMatch[1].matchAll(/^-\s+\[.\]\s+(.+?)$/gm);
+  for (const match of checkboxMatches) {
+    criteria.push(match[1].trim());
+  }
+
+  // Also extract plain bullets if no checkboxes found
+  if (criteria.length === 0) {
+    const bulletMatches = sectionMatch[1].matchAll(/^-\s+(.+?)$/gm);
+    for (const match of bulletMatches) {
+      criteria.push(match[1].trim());
+    }
+  }
+
+  return criteria;
+}
+
+/**
+ * Extract file paths from task block
+ */
+function extractFiles(blockText: string): string[] {
+  const files = new Set<string>();
+
+  // Pattern: **Files:** section with bullet list
+  const filesSection = blockText.match(/\*\*Files(?:\sto\s(?:Create|Modify))?:\*\*\s*([\s\S]*?)(?=\n\*\*|\n###|\n---|\n##|$)/i);
+  if (filesSection) {
+    // Match: - Create: `path/to/file.ts` or - Modify: `path/to/file.ts` or just `path`
+    const pathMatches = filesSection[1].matchAll(/`([^`]+\.[a-z]+)`/gi);
+    for (const match of pathMatches) {
+      files.add(match[1]);
+    }
+  }
+
+  // Pattern: inline code paths that look like file paths
+  const inlineMatches = blockText.matchAll(/`((?:packages|dashboard|src|docs)\/[^`]+\.[a-z]+)`/gi);
+  for (const match of inlineMatches) {
+    files.add(match[1]);
+  }
+
+  return Array.from(files).sort();
+}
+
+/**
+ * Extract related ADR references
+ */
+function extractRelatedADRs(blockText: string): string[] {
+  const adrs = new Set<string>();
+
+  // Match ADR-XXX patterns
+  const adrMatches = blockText.matchAll(/ADR-(\d+)/gi);
+  for (const match of adrMatches) {
+    adrs.add(`ADR-${match[1]}`);
+  }
+
+  return Array.from(adrs).sort();
+}
+
+/**
+ * Parse a single task block
+ *
+ * @param blockText - Raw markdown text for one task
+ * @param sprintContext - Sprint context for legacy TASK-N format
+ * @returns ParsedTask or null if invalid
+ */
+export function parseTaskBlock(
+  blockText: string,
+  sprintContext?: { sprint_id: string; epic_id: string }
+): ParsedTask | null {
+  // Extract task header - multiple formats supported
+  // Standard: ### e015_s00a_t01: Title (3h)
+  // Legacy: ### TASK-1: Title (4-6h)
+  // Ad-hoc: ### adhoc_260119_s01_t01 - Title
+  // Without time: ### e015_s00a_t01: Title
+  const headerPatterns = [
+    // Standard with colon and optional time
+    /^###\s+([a-z0-9_]+):\s+(.+?)\s*(?:\(([0-9]+(?:-[0-9]+)?h?)\))?$/im,
+    // With dash separator (ad-hoc style)
+    /^###\s+([a-z0-9_]+)\s+-\s+(.+?)$/im,
+    // Legacy TASK-N format
+    /^###\s+(TASK-\d+):\s+(.+?)\s*(?:\(([0-9]+(?:-[0-9]+)?h?)\))?$/im,
+  ];
+
+  let taskId: string | null = null;
+  let title: string | null = null;
+  let estimate: string | null = null;
+
+  for (const pattern of headerPatterns) {
+    const match = blockText.match(pattern);
+    if (match) {
+      taskId = match[1];
+      title = match[2].trim();
+      estimate = match[3] || null;
+      break;
+    }
+  }
+
+  if (!taskId || !title) {
+    return null;
+  }
+
+  // Parse hierarchy
+  let hierarchy = parseTaskHierarchy(taskId);
+
+  // For legacy TASK-N format, use sprint context
+  if (!hierarchy && sprintContext) {
+    hierarchy = {
+      sprint_id: sprintContext.sprint_id,
+      epic_id: sprintContext.epic_id,
+    };
+  }
+
+  if (!hierarchy) {
+    // Cannot determine hierarchy, skip task
+    console.warn(`Cannot determine hierarchy for task: ${taskId}`);
+    return null;
+  }
+
+  // Extract status from checkbox: **Status:** [x]
+  const statusMatch = blockText.match(/\*\*Status:\*\*\s+\[(.)\]/i);
+  const initialStatus = mapCheckboxToStatus(statusMatch?.[1]);
+
+  // Extract priority
+  const priorityMatch = blockText.match(/\*\*Priority:\*\*\s+([A-Z_]+)/i);
+  const priority = normalizePriority(priorityMatch?.[1]);
+
+  // Extract assignee (accepts both Assignee and Owner)
+  const assigneeMatch = blockText.match(/\*\*(?:Assignee|Owner):\*\*\s+([^\n]+)/i);
+  let assignee: string | null = null;
+  if (assigneeMatch) {
+    const value = assigneeMatch[1].trim();
+    // Filter out "TBD", "None", empty values
+    if (value && !['tbd', 'none', 'n/a', '-'].includes(value.toLowerCase())) {
+      assignee = value;
+    }
+  }
+
+  // Extract goal
+  const goalMatch = blockText.match(/\*\*Goal:\*\*\s+([^\n]+)/i);
+  const goal = goalMatch ? goalMatch[1].trim() : null;
+
+  // Extract acceptance criteria
+  const acceptanceCriteria = extractAcceptanceCriteria(blockText);
+
+  // Extract files
+  const files = extractFiles(blockText);
+
+  // Extract related ADRs
+  const relatedADRs = extractRelatedADRs(blockText);
+
+  return {
+    id: taskId.toLowerCase(),
+    sprint_id: hierarchy.sprint_id,
+    epic_id: hierarchy.epic_id,
+    title,
+    estimate,
+    priority,
+    assignee,
+    initial_status: initialStatus,
+    goal,
+    acceptance_criteria: acceptanceCriteria,
+    files,
+    related_adrs: relatedADRs,
+  };
+}
+
+/**
+ * Extract sprint metadata from sprint file
+ *
+ * @param content - Sprint file content
+ * @param filePath - Path to sprint file
+ * @returns ParsedSprint metadata
+ */
+function extractSprintMetadata(content: string, filePath: string): ParsedSprint {
+  const filename = path.basename(filePath, '.md');
+
+  // Try to extract sprint ID from filename
+  // Pattern: SPRINT-2026-01-e015-s00a-... → e015_s00a
+  const filenameMatch = filename.match(/SPRINT-\d{4}-\d{2}-(e\d{3})-(s\d{2}[a-z]?)-/i);
+  if (filenameMatch) {
+    const epicId = filenameMatch[1].toLowerCase();
+    const sprintSuffix = filenameMatch[2].toLowerCase();
+    const sprintId = `${epicId}_${sprintSuffix}`;
+
+    // Extract sprint name from title
+    const titleMatch = content.match(/^#\s+(?:SPRINT:\s+)?(.+?)(?:\s+\(|$)/m);
+    const name = titleMatch ? titleMatch[1].trim() : filename;
+
+    return {
+      id: sprintId,
+      name,
+      epic_id: epicId,
+      file_path: filePath,
+    };
+  }
+
+  // Ad-hoc pattern: SPRINT-adhoc_260119-...
+  const adhocMatch = filename.match(/SPRINT-(adhoc_\d{6})-/i);
+  if (adhocMatch) {
+    const adhocId = adhocMatch[1].toLowerCase();
+    const sprintId = `${adhocId}_s01`; // Default to s01 for adhoc
+
+    const titleMatch = content.match(/^#\s+(.+?)(?:\s+\(|$)/m);
+    const name = titleMatch ? titleMatch[1].trim() : filename;
+
+    return {
+      id: sprintId,
+      name,
+      epic_id: adhocId,
+      file_path: filePath,
+    };
+  }
+
+  // Legacy pattern from content: # SPRINT: Name (EPIC-XXX Sprint N)
+  const legacyMatch = content.match(/^#\s+SPRINT:\s+(.+?)\s+\(EPIC-(\d+)\s+Sprint\s+(\d+)\)/m);
+  if (legacyMatch) {
+    const name = legacyMatch[1].trim();
+    const epicNum = legacyMatch[2];
+    const sprintNum = legacyMatch[3];
+    const epicId = `e${epicNum.padStart(3, '0')}`;
+    const sprintId = `${epicId}_s${sprintNum.padStart(2, '0')}`;
+
+    return {
+      id: sprintId,
+      name,
+      epic_id: epicId,
+      file_path: filePath,
+    };
+  }
+
+  // Fallback: generate from filename
+  const fallbackId = filename
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^sprint_/, '');
+
+  return {
+    id: fallbackId,
+    name: filename,
+    epic_id: 'unknown',
+    file_path: filePath,
+  };
+}
+
+/**
+ * Parse sprint markdown file to extract all tasks
+ *
+ * @param content - Raw sprint markdown content
+ * @param filePath - Path to sprint file (for metadata extraction)
+ * @returns SprintParseResult with sprint metadata and parsed tasks
+ */
+export function parseSprintTasks(content: string, filePath: string): SprintParseResult {
+  // Extract sprint metadata
+  const sprint = extractSprintMetadata(content, filePath);
+
+  // Split content by task headers (### followed by task ID pattern)
+  // Match: ### e015_s00a_t01:, ### TASK-1:, ### adhoc_..._t01
+  const taskSections = content.split(/(?=^###\s+(?:e\d{3}_s\d{2}[a-z]?_t\d{2}|TASK-\d+|adhoc_\d{6}_s\d{2}_t\d{2})[\s:-])/im);
+
+  const tasks: ParsedTask[] = [];
+  const sprintContext = {
+    sprint_id: sprint.id,
+    epic_id: sprint.epic_id,
+  };
+
+  for (const section of taskSections) {
+    if (!section.trim().startsWith('###')) continue;
+
+    const task = parseTaskBlock(section, sprintContext);
+    if (task) {
+      tasks.push(task);
+    }
+  }
+
+  return { sprint, tasks };
+}
+
+/**
+ * Parse sprint file from filesystem
+ *
+ * @param filePath - Absolute path to sprint markdown file
+ * @returns SprintParseResult or null if file not found
+ */
+export async function parseSprintFile(filePath: string): Promise<SprintParseResult | null> {
+  try {
+    if (!await fs.pathExists(filePath)) {
+      console.warn(`Sprint file not found: ${filePath}`);
+      return null;
+    }
+
+    const content = await fs.readFile(filePath, 'utf-8');
+    return parseSprintTasks(content, filePath);
+  } catch (error) {
+    console.error(`Failed to parse sprint file ${filePath}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Parse all sprint files in a directory
+ *
+ * @param sprintsDir - Path to sprints directory
+ * @returns Array of SprintParseResult
+ */
+export async function parseAllSprints(sprintsDir: string): Promise<SprintParseResult[]> {
+  const results: SprintParseResult[] = [];
+
+  try {
+    if (!await fs.pathExists(sprintsDir)) {
+      console.warn(`Sprints directory not found: ${sprintsDir}`);
+      return results;
+    }
+
+    const files = await fs.readdir(sprintsDir);
+    const sprintFiles = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md'));
+
+    for (const file of sprintFiles) {
+      const filePath = path.join(sprintsDir, file);
+      const result = await parseSprintFile(filePath);
+      if (result) {
+        results.push(result);
+      }
+    }
+
+    return results;
+  } catch (error) {
+    console.error(`Failed to parse sprints directory ${sprintsDir}:`, error);
+    return results;
+  }
+}
