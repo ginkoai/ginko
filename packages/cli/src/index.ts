@@ -60,7 +60,7 @@ import { logoutCommand } from './commands/logout.js';
 import { whoamiCommand } from './commands/whoami.js';
 import { handoffCommand } from './commands/handoff.js';
 import { charterCommand, charterExamples } from './commands/charter.js';
-import { epicCommand, epicExamples } from './commands/epic.js';
+import { epicStatusCommand, epicExamples } from './commands/epic/index.js';
 import { verifyCommand } from './commands/verify.js';
 import { orchestrateCommand } from './commands/orchestrate.js';
 import { dlqCommand } from './commands/dlq.js';
@@ -72,6 +72,7 @@ import { assignCommand } from './commands/assign.js';
 import { inviteCommand } from './commands/invite/index.js';
 import { joinCommand } from './commands/join/index.js';
 import { roadmapCommand } from './commands/roadmap/index.js';
+import { taskStatusCommand } from './commands/task/index.js';
 
 const program = new Command();
 
@@ -184,25 +185,8 @@ program
     return charterCommand(options);
   });
 
-program
-  .command('epic')
-  .description('Create and manage epics with sprint breakdown (AI-assisted by default)')
-  .option('--no-ai', 'Run interactive mode instead of outputting template')
-  .option('--list', 'List existing epics')
-  .option('--view', 'View epic details with sprint breakdown')
-  .option('--sync', 'Sync epic to graph database')
-  .option('--examples', 'Show epic command examples')
-  .action((options) => {
-    if (options.examples) {
-      console.log(chalk.green('\n📋 Epic Command Examples:\n'));
-      epicExamples.forEach(example => {
-        console.log(chalk.dim(`  ${example}`));
-      });
-      console.log('');
-      return;
-    }
-    return epicCommand(options);
-  });
+// Epic command with status management (EPIC-015 Sprint 1)
+program.addCommand(epicStatusCommand());
 
 program
   .command('log [description]')
@@ -603,15 +587,9 @@ program
     return createCommand(description, { ...options, type: 'story' });
   });
 
-program
-  .command('task <description>')
-  .description('Quick create a task (shortcut for backlog create task)')
-  .option('-p, --priority <priority>', 'Priority level')
-  .option('-s, --size <size>', 'Size estimate')
-  .action(async (description, options) => {
-    const { createCommand } = await import('./commands/backlog/create.js');
-    return createCommand(description, { ...options, type: 'task' });
-  });
+// Task status management (EPIC-015 Sprint 1)
+// Replaces quick task creation - use `ginko backlog create task` for that
+program.addCommand(taskStatusCommand());
 
 // Magic command - catch-all for natural language (Level 4-5)
 // This must be defined AFTER all other commands to work as a catch-all

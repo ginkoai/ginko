@@ -13,6 +13,7 @@ import { Command } from 'commander';
 import { SprintPipeline } from './sprint-pipeline.js';
 import { EnhancedSprintPipeline, SprintOptions } from './sprint-pipeline-enhanced.js';
 import { createDepsCommand } from './deps.js';
+import { createSprintStatusCommands, addSprintStatusShortcuts } from './status.js';
 
 /**
  * Sprint command router
@@ -58,6 +59,10 @@ export function sprintCommand(): Command {
 
   // Add subcommands (EPIC-004 Sprint 4)
   sprint.addCommand(createDepsCommand());
+
+  // Add status commands (EPIC-015 Sprint 1)
+  sprint.addCommand(createSprintStatusCommands());
+  addSprintStatusShortcuts(sprint);
 
   return sprint;
 }

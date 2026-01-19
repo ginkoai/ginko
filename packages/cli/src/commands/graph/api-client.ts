@@ -643,6 +643,158 @@ export class GraphApiClient {
     );
     return response.tasks || [];
   }
+
+  // =============================================================================
+  // EPIC-015 Sprint 1: Status Update Methods
+  // =============================================================================
+
+  /**
+   * Update task status in graph (EPIC-015 Sprint 1)
+   * Updates status directly in Neo4j, emits status change event
+   *
+   * @param graphId - Graph namespace identifier
+   * @param taskId - Task ID to update
+   * @param status - New status value
+   * @param reason - Required for 'blocked' status
+   * @returns Updated task info with previous status
+   */
+  async updateTaskStatus(
+    graphId: string,
+    taskId: string,
+    status: TaskStatus,
+    reason?: string
+  ): Promise<TaskStatusResponse> {
+    return this.request<TaskStatusResponse>(
+      'PATCH',
+      `/api/v1/task/${encodeURIComponent(taskId)}/status`,
+      { graphId, status, reason }
+    );
+  }
+
+  /**
+   * Get task status from graph (EPIC-015 Sprint 1)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param taskId - Task ID to query
+   * @returns Current task status
+   */
+  async getTaskStatus(
+    graphId: string,
+    taskId: string
+  ): Promise<{ id: string; status: TaskStatus; blocked_reason?: string }> {
+    return this.request<{ id: string; status: TaskStatus; blocked_reason?: string }>(
+      'GET',
+      `/api/v1/task/${encodeURIComponent(taskId)}/status?graphId=${encodeURIComponent(graphId)}`
+    );
+  }
+
+  /**
+   * Update sprint status in graph (EPIC-015 Sprint 1)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param sprintId - Sprint ID to update
+   * @param status - New status value
+   * @returns Updated sprint info with previous status
+   */
+  async updateSprintStatus(
+    graphId: string,
+    sprintId: string,
+    status: SprintStatus
+  ): Promise<SprintStatusResponse> {
+    return this.request<SprintStatusResponse>(
+      'PATCH',
+      `/api/v1/sprint/${encodeURIComponent(sprintId)}/status`,
+      { graphId, status }
+    );
+  }
+
+  /**
+   * Get sprint status from graph (EPIC-015 Sprint 1)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param sprintId - Sprint ID to query
+   * @returns Current sprint status
+   */
+  async getSprintStatus(
+    graphId: string,
+    sprintId: string
+  ): Promise<{ id: string; status: SprintStatus }> {
+    return this.request<{ id: string; status: SprintStatus }>(
+      'GET',
+      `/api/v1/sprint/${encodeURIComponent(sprintId)}/status?graphId=${encodeURIComponent(graphId)}`
+    );
+  }
+
+  /**
+   * Update epic status in graph (EPIC-015 Sprint 1)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param epicId - Epic ID to update
+   * @param status - New status value
+   * @returns Updated epic info with previous status
+   */
+  async updateEpicStatus(
+    graphId: string,
+    epicId: string,
+    status: EpicStatus
+  ): Promise<EpicStatusResponse> {
+    return this.request<EpicStatusResponse>(
+      'PATCH',
+      `/api/v1/epic/${encodeURIComponent(epicId)}/status`,
+      { graphId, status }
+    );
+  }
+
+  /**
+   * Get epic status from graph (EPIC-015 Sprint 1)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param epicId - Epic ID to query
+   * @returns Current epic status
+   */
+  async getEpicStatus(
+    graphId: string,
+    epicId: string
+  ): Promise<{ id: string; status: EpicStatus }> {
+    return this.request<{ id: string; status: EpicStatus }>(
+      'GET',
+      `/api/v1/epic/${encodeURIComponent(epicId)}/status?graphId=${encodeURIComponent(graphId)}`
+    );
+  }
+
+  /**
+   * Get all tasks in a sprint (for cascade completion checks)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param sprintId - Sprint ID to query
+   * @returns Array of tasks with status
+   */
+  async getSprintTasks(
+    graphId: string,
+    sprintId: string
+  ): Promise<Array<{ id: string; title: string; status: string }>> {
+    const tasks = await this.getTasks(graphId, { sprintId });
+    return tasks.map(t => ({ id: t.id, title: t.title, status: t.status }));
+  }
+
+  /**
+   * Get all sprints in an epic (for cascade completion checks)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param epicId - Epic ID to query
+   * @returns Array of sprints with status
+   */
+  async getEpicSprints(
+    graphId: string,
+    epicId: string
+  ): Promise<Array<{ id: string; name: string; status: string }>> {
+    // Query sprints that belong to this epic
+    const response = await this.request<{ sprints: Array<{ id: string; name: string; status: string }> }>(
+      'GET',
+      `/api/v1/sprint/by-epic?graphId=${encodeURIComponent(graphId)}&epicId=${encodeURIComponent(epicId)}`
+    );
+    return response.sprints || [];
+  }
 }
 
 /**
@@ -937,6 +1089,71 @@ export interface TaskFromGraph {
   assignee: string | null;
   goal: string | null;
   synced_at: string | null;
+}
+
+// =============================================================================
+// EPIC-015 Sprint 1: Status Update Types
+// =============================================================================
+
+/**
+ * Task status values (graph-authoritative)
+ */
+export type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'complete';
+
+/**
+ * Sprint status values
+ */
+export type SprintStatus = 'planned' | 'active' | 'paused' | 'complete';
+
+/**
+ * Epic status values
+ */
+export type EpicStatus = 'proposed' | 'active' | 'paused' | 'complete';
+
+/**
+ * Task status update response
+ */
+export interface TaskStatusResponse {
+  success: boolean;
+  task: {
+    id: string;
+    title?: string;
+    status: TaskStatus;
+    status_updated_at: string;
+    status_updated_by: string;
+    blocked_reason?: string;
+  };
+  previous_status: string;
+}
+
+/**
+ * Sprint status update response
+ */
+export interface SprintStatusResponse {
+  success: boolean;
+  sprint: {
+    id: string;
+    name?: string;
+    status: SprintStatus;
+    status_updated_at: string;
+    status_updated_by: string;
+  };
+  previous_status: string;
+}
+
+/**
+ * Epic status update response
+ */
+export interface EpicStatusResponse {
+  success: boolean;
+  epic: {
+    id: string;
+    title?: string;
+    status: EpicStatus;
+    status_updated_at: string;
+    status_updated_by: string;
+  };
+  previous_status: string;
 }
 
 /**
