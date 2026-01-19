@@ -56,7 +56,7 @@ function extractMetadata(content: string): Record<string, unknown> {
 
 /**
  * Extract title from markdown
- * Strips code blocks first to avoid matching headings inside code
+ * Strips frontmatter and code blocks to avoid matching comments/code as headings
  */
 function extractTitle(content: string): string {
   // Try frontmatter title first
@@ -65,11 +65,14 @@ function extractTitle(content: string): string {
     return frontmatterMatch[1].trim();
   }
 
-  // Strip code blocks to avoid matching content inside them
-  const contentWithoutCode = content.replace(/```[\s\S]*?```/g, '');
+  // Strip frontmatter (contains # comments that aren't headings)
+  let cleanContent = content.replace(/^---\n[\s\S]*?\n---\n?/m, '');
 
-  // Try first heading (must be at start of line, not inside code)
-  const headingMatch = contentWithoutCode.match(/^#\s+(.+)$/m);
+  // Strip code blocks to avoid matching content inside them
+  cleanContent = cleanContent.replace(/```[\s\S]*?```/g, '');
+
+  // Try first heading (must be at start of line, not inside code/frontmatter)
+  const headingMatch = cleanContent.match(/^#\s+(.+)$/m);
   if (headingMatch) {
     return headingMatch[1].trim();
   }
