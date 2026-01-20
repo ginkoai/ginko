@@ -1511,10 +1511,21 @@
       "relevance": "critical",
       "created": "2026-01-20T16:39:53.975Z",
       "sessionId": "session-chris-at-watchhill-ai-1768927193916"
+    },
+    {
+      "filename": "gotcha-deployed-second-round-of-maintenance-fixes-1-compl.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-20T20:50:55.049Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768942255016"
     }
   ],
-  "lastUpdated": "2026-01-20T16:39:53.976Z",
-  "totalModules": 118,
+  "lastUpdated": "2026-01-20T20:50:55.050Z",
+  "totalModules": 119,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
