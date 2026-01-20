@@ -82,7 +82,7 @@ export const DEFAULT_GINKO_CONFIG: GinkoConfig = {
   paths: {
     docs: "docs",
     sprints: "docs/sprints",
-    currentSprint: "docs/sprints/CURRENT-SPRINT.md",
+    // EPIC-015 Sprint 3: currentSprint path deprecated - sprint state comes from graph
     prds: "docs/PRD",
     adrs: "docs/adr",
     architecture: "docs/architecture",
@@ -94,16 +94,18 @@ export const DEFAULT_GINKO_CONFIG: GinkoConfig = {
   workMode: {
     default: "think-build",
     documentationDepth: {
-      "hack-ship": ["currentSprint", "sessions"],
-      "think-build": ["currentSprint", "sessions", "adrs", "prds"],
-      "full-planning": ["currentSprint", "sessions", "adrs", "prds", "architecture", "bestPractices"]
+      // EPIC-015 Sprint 3: currentSprint removed - sprint state comes from graph
+      "hack-ship": ["sprints", "sessions"],
+      "think-build": ["sprints", "sessions", "adrs", "prds"],
+      "full-planning": ["sprints", "sessions", "adrs", "prds", "architecture", "bestPractices"]
     }
   },
   contextLoading: {
     progressive: true,
     maxDepth: 3,
     followReferences: true,
-    priorityOrder: ["sessions", "currentSprint", "prds", "adrs", "context"]
+    // EPIC-015 Sprint 3: currentSprint removed - sprint state comes from graph
+    priorityOrder: ["sessions", "sprints", "prds", "adrs", "context"]
   }
 };
 

@@ -319,7 +319,7 @@ ginko sync --type ADR                                 # Sync only ADRs
 
 | Question Type | File Location |
 |--------------|---------------|
-| Sprint progress | \`docs/sprints/CURRENT-SPRINT.md\` |
+| Sprint progress | \`docs/sprints/SPRINT-*.md\` (scan for active sprint) |
 | Architecture decisions | \`docs/adr/ADR-*.md\` |
 | Project goals | \`docs/PROJECT-CHARTER.md\` |
 | Recent activity | \`.ginko/sessions/[user]/current-events.jsonl\` |
@@ -328,11 +328,13 @@ ginko sync --type ADR                                 # Sync only ADRs
 ### Common Query Recipes
 
 **"What's our sprint progress?"**
-→ Read \`docs/sprints/CURRENT-SPRINT.md\`, count checkboxes:
+→ Use graph query or scan sprint files:
 \`\`\`bash
-grep -c "\\[x\\]" docs/sprints/CURRENT-SPRINT.md  # complete
-grep -c "\\[@\\]" docs/sprints/CURRENT-SPRINT.md  # in progress
-grep -c "\\[ \\]" docs/sprints/CURRENT-SPRINT.md  # pending
+# Via graph (preferred - EPIC-015 Sprint 3)
+ginko graph query "current sprint progress"
+
+# Fallback: scan sprint files
+ls docs/sprints/SPRINT-*.md | tail -1 | xargs grep -c "\\[x\\]"  # complete tasks
 \`\`\`
 
 **"How do we handle X?" / "What's our approach to X?"**

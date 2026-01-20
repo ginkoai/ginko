@@ -73,6 +73,7 @@ import { inviteCommand } from './commands/invite/index.js';
 import { joinCommand } from './commands/join/index.js';
 import { roadmapCommand } from './commands/roadmap/index.js';
 import { taskStatusCommand } from './commands/task/index.js';
+import { migrateCommand } from './commands/migrate/index.js';
 
 const program = new Command();
 
@@ -590,6 +591,10 @@ program
 // Task status management (EPIC-015 Sprint 1)
 // Replaces quick task creation - use `ginko backlog create task` for that
 program.addCommand(taskStatusCommand());
+
+// Migration utilities (EPIC-015 Sprint 3)
+// Sync markdown status to graph: ginko migrate status [--dry-run]
+program.addCommand(migrateCommand());
 
 // Magic command - catch-all for natural language (Level 4-5)
 // This must be defined AFTER all other commands to work as a catch-all

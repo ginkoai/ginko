@@ -261,7 +261,6 @@ updated: YYYY-MM-DD
 ## Sprint Tasks
 
 ### TASK-1: [Task Title] ([Effort])
-**Status:** [ ] Not Started
 **Priority:** HIGH
 
 **Goal:** [What this task achieves]
@@ -279,7 +278,6 @@ Avoid: [gotcha-name]
 ---
 
 ### TASK-2: [Task Title] ([Effort])
-**Status:** [ ] Not Started
 **Priority:** MEDIUM
 
 ...

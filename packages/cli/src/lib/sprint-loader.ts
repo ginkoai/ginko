@@ -180,13 +180,27 @@ function parseFrontmatter(content: string): Record<string, string> {
 }
 
 /**
+ * Warn about deprecated CURRENT-SPRINT.md file
+ * EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated in favor of graph-authoritative state
+ */
+function warnDeprecatedCurrentSprint(sprintsDir: string): void {
+  const currentSprintPath = path.join(sprintsDir, 'CURRENT-SPRINT.md');
+  if (fs.existsSync(currentSprintPath)) {
+    console.warn('\n⚠️  DEPRECATED: CURRENT-SPRINT.md detected');
+    console.warn('   This file is no longer used. Sprint state now comes from the graph.');
+    console.warn('   You can safely delete: docs/sprints/CURRENT-SPRINT.md\n');
+  }
+}
+
+/**
  * Find active sprint file
  *
  * Priority:
- * 1. Check CURRENT-SPRINT.md for "Between Sprints" status → return null
- * 2. Check CURRENT-SPRINT.md for sprint reference → return that file
- * 3. Fall back to scanning SPRINT-*.md files for first incomplete one
+ * 1. Scan SPRINT-*.md files for first incomplete one
  *    - Respects frontmatter `status` field: active > not_started > (skip paused/complete)
+ *
+ * EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated. Sprint state now comes from
+ * the graph API, not from a local file. This function only scans actual sprint files.
  *
  * Valid status values:
  * - active: Currently being worked on
@@ -208,58 +222,11 @@ export async function findActiveSprint(projectRoot?: string): Promise<string | n
       return null;
     }
 
-    // Check CURRENT-SPRINT.md first (source of truth)
-    const currentSprintPath = path.join(sprintsDir, 'CURRENT-SPRINT.md');
-    if (fs.existsSync(currentSprintPath)) {
-      const currentContent = await fs.readFile(currentSprintPath, 'utf-8');
+    // EPIC-015 Sprint 3: Warn about deprecated CURRENT-SPRINT.md
+    warnDeprecatedCurrentSprint(sprintsDir);
 
-      // Check for "Between Sprints" or "No active sprint" status
-      if (currentContent.includes('Between Sprints') ||
-          currentContent.includes('No active sprint') ||
-          currentContent.match(/\*\*Status\*\*:\s*Between Sprints/i)) {
-        return null; // Explicitly between sprints
-      }
-
-      // Look for sprint reference: See: SPRINT-YYYY-MM-DD-name.md
-      const sprintRefMatch = currentContent.match(/See:\s*(SPRINT-[\w-]+\.md)/i);
-      if (sprintRefMatch) {
-        const referencedPath = path.join(sprintsDir, sprintRefMatch[1]);
-        if (fs.existsSync(referencedPath)) {
-          // Validate referenced sprint isn't complete before returning
-          const referencedContent = await fs.readFile(referencedPath, 'utf-8');
-          const refFrontmatter = parseFrontmatter(referencedContent);
-          const refStatus = refFrontmatter.status?.toLowerCase();
-
-          // If referenced sprint is complete, don't return it - fall through to scanning
-          if (refStatus !== 'complete') {
-            // Also check progress percentage
-            const refProgressMatch = referencedContent.match(/\*\*Progress:?\*\*:?\s*(\d+)%/);
-            const refProgress = refProgressMatch ? parseInt(refProgressMatch[1]) : 0;
-            if (refProgress < 100) {
-              return referencedPath;
-            }
-          }
-          // Fall through to scan for next active sprint
-        }
-      }
-
-      // Look for **Last Completed**: SPRINT-XXX pattern (means between sprints)
-      if (currentContent.match(/\*\*Last Completed\*\*:/)) {
-        return null;
-      }
-
-      // NEW: Check if CURRENT-SPRINT.md contains actual sprint content
-      // (not just a reference to another file)
-      // This supports the pattern where CURRENT-SPRINT.md IS the sprint file
-      const hasSprintContent = currentContent.includes('## Sprint Tasks') ||
-                               currentContent.includes('### TASK-') ||
-                               currentContent.match(/\*\*Sprint Goal\*\*:/);
-      if (hasSprintContent) {
-        return currentSprintPath;
-      }
-    }
-
-    // Fall back: Get all sprint files sorted by date (newest first)
+    // Get all sprint files sorted by date (newest first)
+    // Skip CURRENT-SPRINT.md as it's deprecated
     const sprintFiles = (await fs.readdir(sprintsDir))
       .filter(f => f.startsWith('SPRINT-') && f.endsWith('.md') && f !== 'CURRENT-SPRINT.md')
       .sort()

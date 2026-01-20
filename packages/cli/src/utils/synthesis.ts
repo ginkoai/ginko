@@ -628,30 +628,24 @@ export class SessionSynthesizer {
 
   /**
    * Load sprint context from docs/sprints/
+   *
+   * EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated.
+   * This function now scans SPRINT-*.md files directly.
+   * Sprint state (task status, progress) comes from the graph API.
    */
   private async loadSprintContext(): Promise<SprintContext | null> {
     try {
       const sprintsDir = path.join(this.projectRoot, 'docs', 'sprints');
-      const currentSprintPath = path.join(sprintsDir, 'CURRENT-SPRINT.md');
 
-      // Check if CURRENT-SPRINT.md exists
-      try {
-        await fs.access(currentSprintPath);
-        const content = await fs.readFile(currentSprintPath, 'utf-8');
+      // EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated
+      // Scan sprint files directly to find the most recent one
+      const files = await fs.readdir(sprintsDir);
+      const sprints = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md') && f !== 'CURRENT-SPRINT.md');
 
-        // CURRENT-SPRINT.md has all readiness info (WHY, WHAT, HOW, status)
-        // No need to read full sprint file - parse CURRENT-SPRINT.md directly
-        return this.parseSprintContent(content);
-      } catch {
-        // No CURRENT-SPRINT.md, look for most recent sprint
-        const files = await fs.readdir(sprintsDir);
-        const sprints = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md'));
-
-        if (sprints.length > 0) {
-          const latest = sprints.sort().reverse()[0];
-          const sprintContent = await fs.readFile(path.join(sprintsDir, latest), 'utf-8');
-          return this.parseSprintContent(sprintContent);
-        }
+      if (sprints.length > 0) {
+        const latest = sprints.sort().reverse()[0];
+        const sprintContent = await fs.readFile(path.join(sprintsDir, latest), 'utf-8');
+        return this.parseSprintContent(sprintContent);
       }
 
       return null;

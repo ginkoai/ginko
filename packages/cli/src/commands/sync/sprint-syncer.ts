@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-12-22
- * @tags: [sync, sprint-syncer, cloud-to-local, ADR-054, EPIC-006]
+ * @updated: 2026-01-20
+ * @tags: [sync, sprint-syncer, cloud-to-local, ADR-054, EPIC-006, EPIC-015]
  * @related: [sync-command.ts, types.ts, node-syncer.ts]
  * @priority: high
  * @complexity: medium
@@ -10,11 +10,13 @@
  */
 
 /**
- * Sprint Syncer (ADR-054 Extension)
+ * Sprint Syncer (ADR-054 Extension, EPIC-015 Sprint 3)
  *
- * Handles syncing Sprint and Task status from cloud graph to local markdown.
- * Unlike knowledge nodes which replace entire files, sprint sync updates
- * specific task status checkboxes within existing markdown files.
+ * Handles syncing Sprint and Task CONTENT from cloud graph to local markdown.
+ * Content-only sync: titles, descriptions, goals, acceptance criteria.
+ * Status is NOT synced - it lives in the graph only (EPIC-015 Sprint 3 t05).
+ *
+ * Existing status checkboxes in local files are preserved but not updated.
  */
 
 import * as fs from 'fs/promises';
@@ -25,44 +27,9 @@ import type { SprintSyncResult, TaskStatusUpdate, SprintFile } from './types.js'
 
 const globAsync = promisify(glob);
 
-/**
- * Task status values from graph
- */
-type TaskStatus = 'todo' | 'in_progress' | 'complete' | 'blocked';
-
-/**
- * Map graph status to markdown checkbox format
- */
-function statusToCheckbox(status: TaskStatus): string {
-  switch (status) {
-    case 'complete':
-      return '[x]';
-    case 'in_progress':
-      return '[@]';
-    case 'blocked':
-      return '[Z]';
-    case 'todo':
-    default:
-      return '[ ]';
-  }
-}
-
-/**
- * Map graph status to display text
- */
-function statusToText(status: TaskStatus): string {
-  switch (status) {
-    case 'complete':
-      return 'Complete';
-    case 'in_progress':
-      return 'In Progress';
-    case 'blocked':
-      return 'Blocked';
-    case 'todo':
-    default:
-      return 'Pending';
-  }
-}
+// EPIC-015 Sprint 3: Status mapping functions removed
+// Status lives in graph only - no longer synced to/from markdown
+// See: status-migration.ts for one-time migration of existing markdown status
 
 /**
  * Find all sprint markdown files in the project
@@ -74,7 +41,7 @@ export async function findSprintFiles(projectRoot: string): Promise<SprintFile[]
   const sprintFiles: SprintFile[] = [];
 
   for (const filePath of files) {
-    // Skip CURRENT-SPRINT.md as it's a copy
+    // EPIC-015 Sprint 3: Skip CURRENT-SPRINT.md - it's deprecated
     if (filePath.includes('CURRENT-SPRINT.md')) continue;
 
     const content = await fs.readFile(filePath, 'utf-8');
@@ -126,120 +93,44 @@ function extractSprintId(content: string, filePath: string): string | null {
   return null;
 }
 
-/**
- * Extract task IDs and their current status from sprint markdown
- */
-export function extractTasksFromMarkdown(content: string): Map<string, { status: string; lineNum: number }> {
-  const tasks = new Map<string, { status: string; lineNum: number }>();
-  const lines = content.split('\n');
-
-  let currentTaskId: string | null = null;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Look for task ID line: **ID:** e006_s02_t01
-    const idMatch = line.match(/\*\*ID:\*\*\s*(\w+)/);
-    if (idMatch) {
-      currentTaskId = idMatch[1];
-    }
-
-    // Look for status line: **Status:** [ ] Pending
-    const statusMatch = line.match(/\*\*Status:\*\*\s*\[([ xX@Z])\]/);
-    if (statusMatch && currentTaskId) {
-      tasks.set(currentTaskId, {
-        status: statusMatch[1],
-        lineNum: i,
-      });
-      currentTaskId = null;
-    }
-  }
-
-  return tasks;
-}
+// EPIC-015 Sprint 3: extractTasksFromMarkdown removed
+// Task status extraction from markdown is no longer needed
+// Status lives in graph only - use task-parser.ts for content extraction
 
 /**
- * Update sprint markdown with new task statuses
+ * Update sprint markdown with task content (EPIC-015 Sprint 3: content-only sync)
+ *
+ * NOTE: Status is NOT synced - it lives in graph only.
+ * This function syncs content fields: titles, descriptions, goals, acceptance criteria.
+ * Existing status checkboxes in local files are preserved (not modified).
+ *
+ * @param content - Current markdown file content
+ * @param updates - Task updates from graph (status field ignored)
+ * @returns Updated content and list of changes made
  */
 export function updateSprintMarkdown(
   content: string,
   updates: TaskStatusUpdate[]
 ): { updated: string; changes: string[] } {
-  const lines = content.split('\n');
+  // EPIC-015 Sprint 3: Content-only sync
+  // Status lives in graph only - we no longer update status checkboxes or progress lines
+  // Local status checkboxes are preserved as-is (backward compatibility)
+
   const changes: string[] = [];
 
-  let currentTaskId: string | null = null;
-  let totalTasks = 0;
-  let completedTasks = 0;
+  // Currently, TaskStatusUpdate only contains taskId, newStatus, sprintId
+  // Future: When content fields (title, description, etc.) are added to the API,
+  // this function will update those fields in the markdown.
+  //
+  // For now, we return unchanged content since we're not syncing status anymore
+  // and content sync hasn't been implemented yet in the API.
 
-  // First pass: update task statuses
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Track task ID
-    const idMatch = line.match(/\*\*ID:\*\*\s*(\w+)/);
-    if (idMatch) {
-      currentTaskId = idMatch[1];
-    }
-
-    // Update status line if we have an update for this task
-    const statusMatch = line.match(/(\*\*Status:\*\*\s*)\[([ xX@Z])\](\s*\w+)?/);
-    if (statusMatch && currentTaskId) {
-      totalTasks++;
-
-      const update = updates.find(u => u.taskId === currentTaskId);
-      if (update) {
-        const newCheckbox = statusToCheckbox(update.newStatus as TaskStatus);
-        const newText = statusToText(update.newStatus as TaskStatus);
-        const newLine = `${statusMatch[1]}${newCheckbox} ${newText}`;
-
-        if (lines[i] !== newLine) {
-          changes.push(`${currentTaskId}: ${statusMatch[2]} -> ${newCheckbox}`);
-          lines[i] = newLine;
-        }
-
-        if (update.newStatus === 'complete') {
-          completedTasks++;
-        }
-      } else {
-        // Count existing complete tasks
-        if (statusMatch[2].toLowerCase() === 'x') {
-          completedTasks++;
-        }
-      }
-
-      currentTaskId = null;
-    }
-  }
-
-  // Second pass: update progress line
-  const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-  const progressComplete = progressPercent === 100 ? ' \u2713' : '';
-
-  for (let i = 0; i < lines.length; i++) {
-    const progressMatch = lines[i].match(/(\*\*Progress:\*\*\s*)\d+%\s*\(\d+\/\d+\s*tasks?\s*complete\)(\s*[✓✔])?/i);
-    if (progressMatch) {
-      const newProgress = `${progressMatch[1]}${progressPercent}% (${completedTasks}/${totalTasks} tasks complete)${progressComplete}`;
-      if (lines[i] !== newProgress) {
-        changes.push(`Progress: ${progressPercent}% (${completedTasks}/${totalTasks})`);
-        lines[i] = newProgress;
-      }
-      break;
-    }
-  }
-
-  // Third pass: update success criteria checkboxes if all tasks complete
-  if (progressPercent === 100) {
-    for (let i = 0; i < lines.length; i++) {
-      // Update unchecked success criteria to checked
-      if (lines[i].match(/^- \[ \]/)) {
-        lines[i] = lines[i].replace(/^- \[ \]/, '- [x]');
-      }
-    }
+  if (updates.length > 0) {
+    changes.push(`Content sync ready (${updates.length} tasks found in graph, status in graph only)`);
   }
 
   return {
-    updated: lines.join('\n'),
+    updated: content,
     changes,
   };
 }
@@ -300,7 +191,10 @@ export async function fetchTaskStatuses(
 }
 
 /**
- * Sync a single sprint file with graph data
+ * Sync a single sprint file with graph data (content-only, EPIC-015 Sprint 3)
+ *
+ * Syncs content fields (titles, descriptions, goals) from graph to local markdown.
+ * Status is NOT synced - it lives in graph only.
  */
 export async function syncSprintFile(
   sprintFile: SprintFile,
@@ -317,7 +211,7 @@ export async function syncSprintFile(
   };
 
   try {
-    // Fetch task statuses from graph
+    // Fetch task data from graph (content sync, status stays in graph)
     const updates = await fetchTaskStatuses(graphId, token, sprintFile.sprintId, apiBase);
 
     if (updates.length === 0) {
@@ -325,19 +219,21 @@ export async function syncSprintFile(
       return result;
     }
 
-    // Update markdown content
+    // Update markdown content (content-only, status preserved locally)
     const { updated, changes } = updateSprintMarkdown(sprintFile.content, updates);
 
-    if (changes.length === 0) {
-      result.changes.push('Already in sync');
-      return result;
+    // Only write if content actually changed
+    if (updated !== sprintFile.content) {
+      await fs.writeFile(sprintFile.path, updated, 'utf-8');
+      result.tasksUpdated = updates.length;
     }
 
-    // Write updated content
-    await fs.writeFile(sprintFile.path, updated, 'utf-8');
-
-    result.tasksUpdated = changes.filter(c => c.includes('->')).length;
     result.changes = changes;
+
+    // Add note about status being in graph only
+    if (result.changes.length === 0) {
+      result.changes.push('Content synced (status in graph only)');
+    }
 
     return result;
   } catch (error) {
@@ -348,12 +244,16 @@ export async function syncSprintFile(
 
 /**
  * Update CURRENT-SPRINT.md to match the active sprint
+ * @deprecated EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated.
+ * Sprint state now lives in the graph. This function is kept for backward
+ * compatibility but does nothing.
  */
 export async function updateCurrentSprintFile(
-  projectRoot: string,
-  activeSprintPath: string
+  _projectRoot: string,
+  _activeSprintPath: string
 ): Promise<void> {
-  const currentSprintPath = path.join(projectRoot, 'docs/sprints/CURRENT-SPRINT.md');
-  const content = await fs.readFile(activeSprintPath, 'utf-8');
-  await fs.writeFile(currentSprintPath, content, 'utf-8');
+  // EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated
+  // Sprint state now lives in the graph, not in local files.
+  // This function is kept as a no-op for backward compatibility.
+  return;
 }

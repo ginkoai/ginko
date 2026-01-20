@@ -37,7 +37,7 @@ import {
 import {
   findSprintFiles,
   syncSprintFile,
-  updateCurrentSprintFile,
+  // EPIC-015 Sprint 3: updateCurrentSprintFile deprecated - CURRENT-SPRINT.md no longer used
 } from './sprint-syncer.js';
 import {
   getTeamSyncStatus,
@@ -312,20 +312,8 @@ async function syncSprints(
     }
   }
 
-  // Update CURRENT-SPRINT.md if we have an active sprint
-  const updatedSprints = results.filter(r => r.tasksUpdated > 0);
-  if (updatedSprints.length > 0) {
-    // Find the most recently updated sprint
-    const latestSprint = sprintFiles.find(sf => sf.sprintId === updatedSprints[0].sprintId);
-    if (latestSprint) {
-      try {
-        await updateCurrentSprintFile(projectRoot, latestSprint.path);
-        console.log(chalk.dim('\n  Updated CURRENT-SPRINT.md'));
-      } catch {
-        // Ignore errors updating CURRENT-SPRINT.md
-      }
-    }
-  }
+  // EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated
+  // Sprint state now lives in the graph, not in local files.
 
   return results;
 }
@@ -449,11 +437,10 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
     const sprintResults = await syncSprints(graphId, token, projectRoot, options);
 
     // Commit changes if any sprints were updated
+    // EPIC-015 Sprint 3: No longer includes CURRENT-SPRINT.md (deprecated)
     const updatedSprints = sprintResults.filter(r => r.tasksUpdated > 0);
     if (updatedSprints.length > 0) {
       const files = updatedSprints.map(r => r.filePath);
-      // Also include CURRENT-SPRINT.md
-      files.push('docs/sprints/CURRENT-SPRINT.md');
 
       console.log(chalk.dim('\n📝 Committing changes...'));
       const committed = await commitSyncedFiles(files, projectRoot);

@@ -855,6 +855,10 @@ async function followTypedRelationships(
 /**
  * Get active sprint for project
  *
+ * EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated.
+ * This function now scans SPRINT-*.md files directly to find the active sprint.
+ * Sprint state (task status, progress) comes from the graph API.
+ *
  * @param projectId - Project ID
  * @returns Active sprint or undefined
  */
@@ -869,40 +873,10 @@ async function getActiveSprint(projectId: string): Promise<Sprint | undefined> {
       return undefined;
     }
 
-    // Read CURRENT-SPRINT.md first (optimized for readiness - ADR-043)
-    const currentSprintPath = path.join(sprintDir, 'CURRENT-SPRINT.md');
-
-    if (await fs.pathExists(currentSprintPath)) {
-      const content = await fs.readFile(currentSprintPath, 'utf-8');
-
-      // CURRENT-SPRINT.md contains all readiness info (WHY, WHAT, HOW, status)
-      // No need to read the full sprint file during startup
-
-      // Extract sprint reference (e.g., "**Sprint**: SPRINT-2025-10-27-cloud-knowledge-graph")
-      const sprintMatch = content.match(/\*\*Sprint\*\*:\s*(SPRINT-[\w-]+)/);
-      const sprintId = sprintMatch ? sprintMatch[1] : 'unknown';
-
-      // Extract title from "Sprint Goal" section
-      const titleMatch = content.match(/##\s+Sprint Goal\s+(.+?)(?=\n\n|\*\*|$)/s);
-      const title = titleMatch ? titleMatch[1].trim() : 'Active Sprint';
-
-      // Extract progress if available
-      // Handles both **Progress:** and **Progress**: formats
-      const progressMatch = content.match(/\*\*Progress:?\*\*:?\s*(\d+)%/);
-      const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
-
-      return {
-        id: sprintId,
-        title,
-        goals: [], // Available in CURRENT-SPRINT.md if needed
-        progress,
-        started: new Date(), // Could parse from CURRENT-SPRINT.md if needed
-      };
-    }
-
-    // Fallback: scan all sprint files (legacy behavior)
+    // EPIC-015 Sprint 3: CURRENT-SPRINT.md is deprecated
+    // Scan all sprint files to find active one
     const files = await fs.readdir(sprintDir);
-    const sprintFiles = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md'));
+    const sprintFiles = files.filter(f => f.startsWith('SPRINT-') && f.endsWith('.md') && f !== 'CURRENT-SPRINT.md');
 
     for (const file of sprintFiles) {
       const filePath = path.join(sprintDir, file);

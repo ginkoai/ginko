@@ -12,6 +12,11 @@ ginko sync                     # Pull dashboard edits to local git
 ginko handoff "summary"        # Optional session handoff
 ginko charter                  # Create project charter (AI-mediated)
 ginko epic                     # Create epic with sprints (AI-mediated)
+
+# Task status management (graph-authoritative)
+ginko task start <id>          # Start working on task
+ginko task complete <id>       # Mark task complete
+ginko task block <id>          # Mark task blocked
 ```
 
 ### AI Assistant Instructions
@@ -370,7 +375,8 @@ ginko sync --type ADR                                 # Sync only ADRs
 
 | Question Type | File Location |
 |--------------|---------------|
-| Sprint progress | `docs/sprints/CURRENT-SPRINT.md` |
+| Sprint progress | Graph via `ginko start` (authoritative) |
+| Sprint documentation | `docs/sprints/SPRINT-*.md` (narrative details) |
 | Architecture decisions | `docs/adr/ADR-*.md` |
 | Project goals | `docs/PROJECT-CHARTER.md` |
 | Recent activity | `.ginko/sessions/[user]/current-events.jsonl` |
@@ -379,11 +385,13 @@ ginko sync --type ADR                                 # Sync only ADRs
 ### Common Query Recipes
 
 **"What's our sprint progress?"**
-→ Read `docs/sprints/CURRENT-SPRINT.md`, count checkboxes:
+→ Use `ginko start` to see current progress, or query the graph:
 ```bash
-grep -c "\[x\]" docs/sprints/CURRENT-SPRINT.md  # complete
-grep -c "\[@\]" docs/sprints/CURRENT-SPRINT.md  # in progress
-grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
+# Via ginko start (shows progress in header)
+ginko start
+
+# Via graph query
+ginko graph query "current sprint progress"
 ```
 
 **"How do we handle X?" / "What's our approach to X?"**
@@ -505,112 +513,98 @@ Create ad-hoc tasks for:
 
 ---
 
-## Sprint Progress Tracking
+## Sprint Progress Tracking (Graph-Authoritative)
 
-### Continuous Sprint Updates
+**IMPORTANT:** Task status is now managed via CLI commands, NOT markdown checkboxes. The knowledge graph is the single source of truth for task status.
 
-**Location:** `docs/sprints/SPRINT-[date]-[name].md`
+### Task Status Commands
 
-**Update sprint progress after completing significant work:**
+Use these CLI commands to update task status:
 
-### When to Update Sprint
-- ✅ After completing any sprint task
-- 🚧 When starting work on a new task (mark in-progress)
-- 🚫 When discovering blockers
-- 🎯 After achieving major milestones
-- 📊 End of each work session
-
-### What to Update
-
-**1. Task Status (Checkbox Format)**
-```markdown
-## Tasks
-- [x] Implement event-based context loading (ADR-043)
-- [x] Fix EventQueue timer hanging process
-- [@] Add team event filtering (in progress)
-- [Z] Implement sprint command (paused/sleeping)
-- [ ] Add analytics dashboard
+```bash
+ginko task start <id>          # Mark task as in_progress
+ginko task complete <id>       # Mark task as completed
+ginko task block <id>          # Mark task as blocked
 ```
 
-**Checkbox States:**
-- `[ ]` - Todo (not started)
-- `[@]` - In progress (currently working on)
-- `[Z]` - Paused/sleeping (temporarily on hold)
-- `[x]` - Complete
+**Examples:**
+```bash
+ginko task start e015_s03_t02      # Starting work on task
+ginko task complete e015_s03_t02   # Task finished
+ginko task block e015_s03_t02      # Hit a blocker
+```
 
-**2. Accomplishments Section**
-Add completed work with details:
+### When to Update Task Status
+- **Start of work:** `ginko task start <id>` when beginning a task
+- **Task completion:** `ginko task complete <id>` after finishing work
+- **Blockers discovered:** `ginko task block <id>` when stuck
+- **Before commits:** Always update status before committing related work
+
+### Progress Display
+
+Sprint progress is displayed automatically by `ginko start`:
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Sprint: EPIC-015 Sprint 3                              43% [t03/7]    │
+│  Next: e015_s03_t04 - Implement task command (continue)                │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+Progress percentage comes from the graph (completed tasks / total tasks).
+
+### Legacy: Checkbox Format (Deprecated)
+
+**Note:** Checkbox syntax in markdown files is now legacy and ignored by the system.
+
+Old format (no longer used for status):
+```markdown
+- [x] Completed task (legacy)
+- [@] In progress (legacy)
+- [ ] Pending (legacy)
+```
+
+These checkboxes may still appear in older sprint files but are not authoritative. The graph status (managed via `ginko task` commands) is the source of truth.
+
+### Sprint Documentation
+
+Sprint files (`docs/sprints/SPRINT-*.md`) remain useful for:
+- **Accomplishments:** Narrative descriptions of completed work
+- **Technical notes:** Implementation details, decisions made
+- **Blockers:** Detailed context about what's blocking progress
+
+**Example accomplishment entry:**
 ```markdown
 ## Accomplishments This Sprint
 
-### 2025-11-06: Event Queue Fix
-- Fixed EventQueue timer hanging `ginko start` process (90s → 2s startup)
-- Root cause: setInterval without .unref() kept event loop alive
-- Impact: 47x faster CLI startup, production-ready performance
-- Files: packages/cli/src/lib/event-queue.ts:89
+### 2025-01-15: Task Command Implementation
+- Implemented `ginko task` command for graph-authoritative status updates
+- Root cause of sync issues: local file status conflicting with graph
+- Solution: Graph becomes single source of truth
+- Files: packages/cli/src/commands/task/task.ts
 ```
 
-**3. Next Steps Section**
-Keep this current with immediate priorities:
-```markdown
-## Next Steps
-1. Implement team event filtering (--team flag)
-2. Add sprint progress visualization
-3. Optimize context module loading
-```
-
-**4. Blockers Section**
-Document impediments immediately:
-```markdown
-## Blockers
-- ⚠️ Neo4j API returns 405 on event creation (needs investigation)
-- ⚠️ Sprint file parsing fails on complex markdown (regex issue)
-```
-
-### Sprint Update Pattern
+### Workflow Pattern
 
 **After completing work:**
 ```bash
-# 1. Log the achievement
-ginko log "Achievement description..." --category=achievement --impact=high
+# 1. Mark the task complete in the graph
+ginko task complete e015_s03_t04
 
-# 2. Update sprint file
-# - Check off completed task: [ ] → [x]
-# - Add accomplishment entry with date, description, impact, files
-# - Update next steps if priorities changed
-# - Add blockers if discovered
+# 2. Log the achievement
+ginko log "Completed task command implementation. Graph is now authoritative for task status." \
+  --category=feature --impact=high
 
-# 3. Commit sprint updates with work
-git add docs/sprints/SPRINT-*.md
-git commit -m "Complete [task]: [description]
-
-Updated sprint progress..."
-```
-
-### Sprint Progress Calculation
-
-**Progress Formula:**
-```
-Progress % = (Completed Tasks / Total Tasks) × 100
-```
-
-Update the progress line at the top of sprint file:
-```markdown
-**Progress:** 23% (5/22 tasks complete)
+# 3. Commit your code changes
+git add .
+git commit -m "feat(task): Implement graph-authoritative task status"
 ```
 
 ### Integration with Session Logging
 
-Sprint updates complement session logging:
-- **Session logs** capture detailed chronology (WHAT + WHY + HOW)
-- **Sprint updates** provide high-level progress tracking (tasks complete, blockers, next steps)
-- Both work together for full visibility
-
-**Example workflow:**
-1. Complete feature implementation
-2. `ginko log` captures technical details
-3. Update sprint file marks task complete + adds accomplishment
-4. Commit both together
+Task status and session logging work together:
+- **Task status** (`ginko task`) - Quick status updates to the graph
+- **Session logs** (`ginko log`) - Detailed chronology (WHAT + WHY + HOW)
+- Both provide full visibility for team members and future sessions
 
 ---
 
@@ -645,13 +639,14 @@ These checkpoints ensure consistent logging volume:
 - Example: `ginko log "Starting e008_s04_t02: Stripe product configuration. Will create per-seat subscription product." --category=feature`
 
 **Before Every Git Commit:**
+- Mark completed tasks: `ginko task complete <id>`
 - Log what's being committed and why (captures intent, not just diff)
 - This is the most important checkpoint - never skip it
 - Example: `ginko log "Implementing seat-based billing. Added seat_count tracking, prorated upgrade support." --category=feature --impact=high`
 
 **After Task Completion:**
+- Mark task complete: `ginko task complete <id>`
 - Log completion with key decisions and learnings
-- Update sprint file in same commit
 
 **Every 30 Minutes (Active Work):**
 - Checkpoint: "What have I done that should be logged?"
@@ -841,4 +836,4 @@ vercel ls
 
 ---
 
-*Last updated: 2025-11-25 | Version: 2.1 (EPIC-003: Natural Language Queries)*
+*Last updated: 2026-01-20 | Version: 2.2 (EPIC-015 Sprint 3: Graph-Authoritative Task Status)*
