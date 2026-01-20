@@ -1488,10 +1488,33 @@
       "relevance": "critical",
       "created": "2026-01-19T20:21:27.728Z",
       "sessionId": "session-chris-at-watchhill-ai-1768854087666"
+    },
+    {
+      "filename": "decision-drafted-adr061-task-assignment-and-work-tracking-a.md",
+      "type": "decision",
+      "tags": [
+        "decision",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-20T16:14:46.040Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768925685994"
+    },
+    {
+      "filename": "pattern-created-epic016-personal-workstreams-assignment-wi.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-20T16:39:53.975Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768927193916"
     }
   ],
-  "lastUpdated": "2026-01-19T20:21:27.729Z",
-  "totalModules": 116,
+  "lastUpdated": "2026-01-20T16:39:53.976Z",
+  "totalModules": 118,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
