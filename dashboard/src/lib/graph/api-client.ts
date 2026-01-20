@@ -574,6 +574,109 @@ function normalizeTitle(title: string): string {
 }
 
 /**
+ * Check if a title is malformed (contains code artifacts)
+ * Returns true if the title appears to be corrupted data
+ */
+function isMalformedTitle(title: string): boolean {
+  if (!title) return true;
+
+  const malformedPatterns = [
+    /^string[;,}\s]/i,           // starts with 'string;' or 'string,' or 'string }'
+    /^["']?string["']?[;,]/i,    // quoted string with separator
+    /^[{}\[\]];?$/,              // just braces/brackets
+    /^\[object/i,                // stringified object
+    /^undefined$/i,              // literal undefined
+    /^null$/i,                   // literal null
+    /^function\s*\(/i,           // function definition
+    /\/\/\s*["']/,               // JS comment with quote
+    /^["']?(GET|POST|PUT|PATCH|DELETE)\s+\/api/i,  // API endpoint
+  ];
+
+  return malformedPatterns.some(pattern => pattern.test(title));
+}
+
+/**
+ * Extract a clean title from a potentially malformed string
+ * Tries to find quoted content or meaningful text
+ */
+function extractCleanTitle(title: string): string | null {
+  // Try to extract quoted string (handles 'string; // "Actual Title"')
+  const quotedMatch = title.match(/"([^"]+)"|'([^']+)'/);
+  if (quotedMatch) {
+    const extracted = quotedMatch[1] || quotedMatch[2];
+    // Don't return if the extracted content is also malformed
+    if (extracted && !isMalformedTitle(extracted)) {
+      return extracted;
+    }
+  }
+
+  // Try to extract content after // comment marker
+  const commentMatch = title.match(/\/\/\s*(.+)$/);
+  if (commentMatch) {
+    const afterComment = commentMatch[1].replace(/^["']|["']$/g, '').trim();
+    if (afterComment && !isMalformedTitle(afterComment)) {
+      return afterComment;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Sanitize a sprint title, handling malformed data from database
+ * Examples of malformed titles:
+ * - 'string; // "Graph-First Reading"' -> 'Graph-First Reading'
+ * - 'string,' -> use fallback ID
+ * - 'PATCH /api/v1/task/{id}/status Endpoint' -> use fallback ID
+ */
+function sanitizeSprintTitle(title: string, sprintId: string): string {
+  if (!title) return sprintId;
+
+  // If title is malformed, try to extract clean content or use fallback
+  if (isMalformedTitle(title)) {
+    const cleanTitle = extractCleanTitle(title);
+    if (cleanTitle) {
+      return cleanTitle;
+    }
+
+    // Generate fallback from sprint ID
+    const normalizedId = extractNormalizedSprintId(sprintId, '');
+    if (normalizedId) {
+      const parts = normalizedId.match(/e(\d+)_s(\d+)/);
+      if (parts) {
+        return `Sprint ${parseInt(parts[2])} (Epic ${parseInt(parts[1])})`;
+      }
+    }
+    return sprintId;
+  }
+
+  return title;
+}
+
+/**
+ * Sanitize a task title, handling malformed data from database
+ */
+function sanitizeTaskTitle(title: string, taskId: string): string {
+  if (!title) return taskId;
+
+  if (isMalformedTitle(title)) {
+    const cleanTitle = extractCleanTitle(title);
+    if (cleanTitle) {
+      return cleanTitle;
+    }
+
+    // Generate fallback from task ID
+    const taskMatch = taskId.match(/e(\d+)_s(\d+)_t(\d+)/i);
+    if (taskMatch) {
+      return `Task ${parseInt(taskMatch[3])} (Sprint ${parseInt(taskMatch[2])})`;
+    }
+    return taskId;
+  }
+
+  return title;
+}
+
+/**
  * Deduplicate nodes by a property key, keeping the first occurrence
  * Uses normalized ID matching and title deduplication to handle various formats
  */
@@ -693,6 +796,53 @@ function extractNormalizedSprintId(id: string, title?: string): string | null {
 }
 
 /**
+ * Extract canonical epic ID from a node (checks multiple sources)
+ * Returns normalized form like "e015"
+ */
+function getCanonicalEpicId(epic: GraphNode): string | null {
+  const props = epic.properties as Record<string, unknown>;
+  const epicIdProp = getNodeProp(props, 'epic_id');
+  const title = getNodeProp(props, 'title') || '';
+
+  // Try to extract from: epic_id property, node.id, title
+  return extractEpicId(epicIdProp || '') ||
+         extractEpicId(epic.id) ||
+         extractEpicId(title) ||
+         null;
+}
+
+/**
+ * Sanitize an epic title, handling malformed data
+ * Similar to sanitizeSprintTitle but for epics
+ */
+function sanitizeEpicTitle(title: string, epicId: string): string {
+  if (!title) return epicId;
+
+  // Check for JavaScript comment pattern (data corruption)
+  const jsCommentMatch = title.match(/^[^"]*\/\/\s*"([^"]+)"/);
+  if (jsCommentMatch) {
+    return jsCommentMatch[1];
+  }
+
+  // Check for 'string;' or 'string,' prefix patterns
+  if (title.match(/^string[;,]\s*/i)) {
+    const quotedMatch = title.match(/"([^"]+)"/);
+    if (quotedMatch) {
+      return quotedMatch[1];
+    }
+    // Remove the 'string,' prefix
+    return title.replace(/^string[;,]\s*/i, '').trim() || epicId;
+  }
+
+  // If title is just an ID-like string (e.g., "e015"), prefer the epicId if it has more info
+  if (title.match(/^e\d+$/i) && epicId && epicId.length > title.length) {
+    return epicId;
+  }
+
+  return title;
+}
+
+/**
  * Build a tree structure from flat node list
  * Hierarchical structure: Project -> Epics -> Sprints -> Tasks
  */
@@ -714,19 +864,68 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     getNodesByLabel('Principle', options),
   ]);
 
-  // Deduplicate by semantic ID to avoid showing duplicates
-  const epics = deduplicateByProperty(rawEpics, 'epic_id');
+  // Smart epic deduplication that preserves sprint linkage
+  // Group epics by canonical ID, pick best display node, but keep ALL node IDs for sprint matching
+  const epicsByCanonicalId = new Map<string, GraphNode[]>();
+  const unmatchableEpics: GraphNode[] = [];
+
+  rawEpics.forEach((epic) => {
+    const canonicalId = getCanonicalEpicId(epic);
+    if (canonicalId) {
+      const group = epicsByCanonicalId.get(canonicalId) || [];
+      group.push(epic);
+      epicsByCanonicalId.set(canonicalId, group);
+    } else {
+      // Can't determine canonical ID - keep as separate
+      unmatchableEpics.push(epic);
+    }
+  });
+
+  // For each group, pick the "best" epic (one with a proper title)
+  const deduplicatedEpics: GraphNode[] = [];
+  const epicMap = new Map<string, TreeNode>(); // Will be populated with ALL variants
+
+  epicsByCanonicalId.forEach((group, canonicalId) => {
+    // Sort: prefer nodes with proper titles (not just IDs), then by longest title
+    const sorted = group.sort((a, b) => {
+      const propsA = a.properties as Record<string, unknown>;
+      const propsB = b.properties as Record<string, unknown>;
+      const titleA = getNodeProp(propsA, 'title') || '';
+      const titleB = getNodeProp(propsB, 'title') || '';
+
+      // Prefer nodes with non-ID titles
+      const aIsIdOnly = titleA.match(/^e\d+$/i) || !titleA;
+      const bIsIdOnly = titleB.match(/^e\d+$/i) || !titleB;
+      if (aIsIdOnly && !bIsIdOnly) return 1;
+      if (!aIsIdOnly && bIsIdOnly) return -1;
+
+      // Then prefer longer titles (usually more descriptive)
+      return titleB.length - titleA.length;
+    });
+
+    // Use the best one for display
+    deduplicatedEpics.push(sorted[0]);
+  });
+
+  // Add unmatchable epics (couldn't determine canonical ID)
+  unmatchableEpics.forEach((epic) => {
+    const props = epic.properties as Record<string, unknown>;
+    const title = getNodeProp(props, 'title') || '';
+    // Skip if it's a malformed entry with no real content
+    if (title && !title.match(/^string[;,]/i)) {
+      deduplicatedEpics.push(epic);
+    }
+  });
+
   const tasks = deduplicateByProperty(rawTasks, 'task_id');
 
   // Deduplicate sprints by normalized sprint ID (e.g., e006_s03)
-  // Multiple sprint nodes may represent the same logical sprint
   const seenNormalizedSprintIds = new Set<string>();
   const sprints = rawSprints.filter((sprint) => {
     const props = sprint.properties as Record<string, unknown>;
     const title = getNodeProp(props, 'title') || '';
     const normalizedId = extractNormalizedSprintId(sprint.id, title);
 
-    // If we can normalize this sprint and we've seen it before, skip it
     if (normalizedId) {
       if (seenNormalizedSprintIds.has(normalizedId)) {
         return false;
@@ -737,15 +936,17 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     return true;
   });
 
-  // Build epic tree nodes with a map for fast lookup
-  const epicMap = new Map<string, TreeNode>();
-  const epicNodes: TreeNode[] = epics.map((epic) => {
+  // Build epic tree nodes
+  const epicNodes: TreeNode[] = deduplicatedEpics.map((epic) => {
     const props = epic.properties as Record<string, unknown>;
-    const epicId = getNodeProp(props, 'epic_id') || epic.id;
+    const epicIdProp = getNodeProp(props, 'epic_id') || epic.id;
+    const rawTitle = getNodeProp(props, 'title') || '';
+    const canonicalId = getCanonicalEpicId(epic);
+
     const node: TreeNode = {
       id: epic.id,
       label: 'Epic' as const,
-      name: getNodeProp(props, 'title') || epicId,
+      name: sanitizeEpicTitle(rawTitle, epicIdProp),
       hasChildren: true,
       isExpanded: false,
       properties: epic.properties,
@@ -753,22 +954,38 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     };
 
     // Add to map with multiple possible keys for matching
-    epicMap.set(epicId.toLowerCase(), node);
+    epicMap.set(epicIdProp.toLowerCase(), node);
     epicMap.set(epic.id.toLowerCase(), node);
 
-    // Extract from both epic_id property and node ID
-    const extracted = extractEpicId(epicId) || extractEpicId(epic.id);
-    if (extracted) {
-      epicMap.set(extracted, node);
-      // Also store numeric part (e.g., "005" or "5")
-      const numericMatch = extracted.match(/\d+/);
+    if (canonicalId) {
+      epicMap.set(canonicalId, node);
+      // Also store numeric part
+      const numericMatch = canonicalId.match(/\d+/);
       if (numericMatch) {
         epicMap.set(numericMatch[0], node);
-        epicMap.set(numericMatch[0].replace(/^0+/, '') || '0', node); // Without leading zeros
+        epicMap.set(numericMatch[0].replace(/^0+/, '') || '0', node);
       }
     }
 
     return node;
+  });
+
+  // IMPORTANT: Also add epicMap entries for ALL duplicate nodes pointing to the canonical node
+  // This ensures sprints linked to any variant find the correct tree node
+  epicsByCanonicalId.forEach((group, canonicalId) => {
+    const targetNode = epicMap.get(canonicalId);
+    if (targetNode) {
+      group.forEach((epic) => {
+        const props = epic.properties as Record<string, unknown>;
+        const epicIdProp = getNodeProp(props, 'epic_id');
+
+        // Add all ID variants to map pointing to the canonical node
+        epicMap.set(epic.id.toLowerCase(), targetNode);
+        if (epicIdProp) {
+          epicMap.set(epicIdProp.toLowerCase(), targetNode);
+        }
+      });
+    }
   });
 
   // Map for sprint lookup when grouping tasks
@@ -778,11 +995,12 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   sprints.forEach((sprint) => {
     const props = sprint.properties as Record<string, unknown>;
     const sprintId = getNodeProp(props, 'sprint_id') || sprint.id;
+    const rawTitle = getNodeProp(props, 'title') || '';
 
     const sprintTreeNode: TreeNode = {
       id: sprint.id,
       label: 'Sprint' as const,
-      name: getNodeProp(props, 'title') || sprintId,
+      name: sanitizeSprintTitle(rawTitle, sprintId),
       hasChildren: true,
       isExpanded: false,
       properties: sprint.properties,
@@ -807,14 +1025,35 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     }
 
     // Nest sprint under parent Epic using extractEpicId
-    // Try extracting from sprint_id property, node ID, and title
-    const epicIdFromSprint = extractEpicId(sprintId) || extractEpicId(sprint.id) || extractEpicId(getNodeProp(props, 'title') || '');
-    if (epicIdFromSprint) {
-      const parentEpic = epicMap.get(epicIdFromSprint);
-      if (parentEpic) {
-        parentEpic.children = parentEpic.children || [];
-        parentEpic.children.push(sprintTreeNode);
+    // Try multiple sources: sprint_id property, node ID, title, and explicit epic_id property
+    let parentEpic: TreeNode | undefined;
+
+    // First, check for explicit epic_id property on sprint
+    const explicitEpicId = getNodeProp(props, 'epic_id');
+    if (explicitEpicId) {
+      const normalized = normalizeId(explicitEpicId);
+      parentEpic = epicMap.get(normalized) || epicMap.get(explicitEpicId.toLowerCase());
+    }
+
+    // Fall back to extracting from sprint_id, node ID, or title
+    if (!parentEpic) {
+      const epicIdFromSprint = extractEpicId(sprintId) || extractEpicId(sprint.id) || extractEpicId(rawTitle);
+      if (epicIdFromSprint) {
+        parentEpic = epicMap.get(epicIdFromSprint);
       }
+    }
+
+    // Last resort: try the normalized sprint ID to extract epic
+    if (!parentEpic && normalizedSprintId) {
+      const epicIdFromNormalized = extractEpicId(normalizedSprintId);
+      if (epicIdFromNormalized) {
+        parentEpic = epicMap.get(epicIdFromNormalized);
+      }
+    }
+
+    if (parentEpic) {
+      parentEpic.children = parentEpic.children || [];
+      parentEpic.children.push(sprintTreeNode);
     }
   });
 
@@ -822,11 +1061,12 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   tasks.forEach((task) => {
     const props = task.properties as Record<string, unknown>;
     const taskId = getNodeProp(props, 'task_id') || task.id;
+    const rawTaskTitle = getNodeProp(props, 'title') || '';
 
     const taskTreeNode: TreeNode = {
       id: task.id,
       label: 'Task' as const,
-      name: getNodeProp(props, 'title') || taskId,
+      name: sanitizeTaskTitle(rawTaskTitle, taskId),
       hasChildren: false,
       properties: task.properties,
     };

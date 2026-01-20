@@ -66,16 +66,17 @@ export function MemberFilter({
         const userTeams: Team[] = teamsData.teams || []
         setTeams(userTeams)
 
-        // Check if user is owner of any team
+        // Check if user is owner of any team (needed for owner-only features)
         const ownerTeams = userTeams.filter(t => t.role === 'owner')
         setIsOwner(ownerTeams.length > 0)
 
-        // If owner, fetch members from owned teams
-        if (ownerTeams.length > 0) {
+        // Fetch members from ALL teams (not just owned teams)
+        // This allows seeing all team colleagues
+        if (userTeams.length > 0) {
           const allMembers: TeamMember[] = []
           const seenUserIds = new Set<string>()
 
-          for (const team of ownerTeams) {
+          for (const team of userTeams) {
             const membersRes = await fetch(`/api/v1/teams/${team.id}/members`)
             if (membersRes.ok) {
               const membersData = await membersRes.json()
@@ -101,8 +102,9 @@ export function MemberFilter({
     fetchTeamsAndMembers()
   }, [currentUserId])
 
-  // If not an owner or still loading, don't render
-  if (loading || !isOwner) {
+  // Only show filter if user has teammates to filter by
+  // Note: API enforces owner-only access for viewing other members' insights
+  if (loading || members.length === 0) {
     return null
   }
 

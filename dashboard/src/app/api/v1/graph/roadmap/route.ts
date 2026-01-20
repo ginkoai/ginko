@@ -194,9 +194,38 @@ export async function GET(request: NextRequest) {
 
     const results = await runQuery(query, { graphId, laneFilter, statusFilter });
 
+    // Deduplicate results by normalized epic ID and title
+    const seenIds = new Set<string>();
+    const seenTitles = new Set<string>();
+    const deduplicatedResults = results.filter((r: any) => {
+      // Normalize ID: e012, epic-012, EPIC_012 -> e012
+      const rawId = (r.id || '').toLowerCase().trim();
+      const idMatch = rawId.match(/^(?:e|epic[-_]?)(\d+)$/);
+      const normalizedId = idMatch ? `e${idMatch[1].padStart(3, '0')}` : rawId;
+
+      // Normalize title for comparison
+      const normalizedTitle = (r.title || '')
+        .replace(/^(?:EPIC|ADR|PRD|Sprint|Task)[-_]?\d+[:\s]+/i, '')
+        .trim()
+        .toLowerCase();
+
+      if (seenIds.has(normalizedId)) {
+        return false;
+      }
+      if (normalizedTitle && seenTitles.has(normalizedTitle)) {
+        return false;
+      }
+
+      seenIds.add(normalizedId);
+      if (normalizedTitle) {
+        seenTitles.add(normalizedTitle);
+      }
+      return true;
+    });
+
     // Transform results into EpicRoadmapItems
     // Handle legacy data: convert commitment_status to roadmap_lane if needed
-    const epics: EpicRoadmapItem[] = results.map(r => {
+    const epics: EpicRoadmapItem[] = deduplicatedResults.map((r: any) => {
       // Convert legacy commitment_status to roadmap_lane
       let lane: RoadmapLane = r.roadmap_lane || 'later';
       if (!r.roadmap_lane && r.commitment_status) {

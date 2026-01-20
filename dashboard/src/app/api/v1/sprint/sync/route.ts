@@ -1,9 +1,9 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-14
- * @tags: [sprint, graph-sync, epic-001, task-2]
- * @related: [_cloud-graph-client.ts, active/route.ts]
+ * @updated: 2026-01-20
+ * @tags: [sprint, graph-sync, epic-001, task-2, data-validation]
+ * @related: [_cloud-graph-client.ts, active/route.ts, admin/cleanup-titles/route.ts]
  * @priority: critical
  * @complexity: medium
  * @dependencies: [neo4j-driver]
@@ -56,6 +56,82 @@ interface SprintGraph {
     owner?: string;
     assignee?: string; // Email extracted from owner for dashboard matching
   }>;
+}
+
+// ============================================================================
+// Title Validation (Prevent corrupted data from entering the graph)
+// ============================================================================
+
+// Patterns that indicate a malformed title (TypeScript type hints, code artifacts, etc.)
+const MALFORMED_TITLE_PATTERNS = [
+  /^string[;,}\s]/i,           // "string;" or "string," (TypeScript type hints)
+  /^["']?string["']?[;,]/i,    // Quoted string with separator
+  /^[{}\[\]];?$/,              // Just braces/brackets
+  /^\[object/i,                // Stringified object
+  /^undefined$/i,              // Literal undefined
+  /^null$/i,                   // Literal null
+  /^function\s*\(/i,           // Function definition
+  /\/\/\s*["']/,               // JS comment with quote
+  /^["']?(GET|POST|PUT|PATCH|DELETE)\s+\/api/i,  // API endpoint stored as title
+];
+
+/**
+ * Check if a title appears to be malformed/corrupted data
+ */
+function isMalformedTitle(title: string | null | undefined): boolean {
+  if (!title || typeof title !== 'string') return true;
+  const trimmed = title.trim();
+  if (trimmed.length === 0) return true;
+  return MALFORMED_TITLE_PATTERNS.some(pattern => pattern.test(trimmed));
+}
+
+/**
+ * Validate and sanitize a sprint name before storing
+ * Returns the original name if valid, or a fallback based on sprint ID
+ */
+function validateSprintName(name: string | null | undefined, sprintId: string): string {
+  if (!isMalformedTitle(name)) {
+    return name!.trim();
+  }
+
+  // Generate fallback from sprint ID
+  // e.g., "e015_s03" -> "EPIC-015 Sprint 3"
+  const match = sprintId.match(/e(\d+)_s(\d+)/i);
+  if (match) {
+    return `EPIC-${match[1].padStart(3, '0')} Sprint ${parseInt(match[2])}`;
+  }
+
+  // Ad-hoc sprint fallback
+  const adhocMatch = sprintId.match(/adhoc_(\d{6})_s(\d+)/i);
+  if (adhocMatch) {
+    return `Ad-hoc Sprint ${parseInt(adhocMatch[2])} (${adhocMatch[1]})`;
+  }
+
+  // Ultimate fallback
+  console.warn(`[Sprint Sync] Invalid sprint name for ${sprintId}, using ID as name`);
+  return sprintId;
+}
+
+/**
+ * Validate and sanitize a task title before storing
+ * Returns the original title if valid, or a fallback based on task ID
+ */
+function validateTaskTitle(title: string | null | undefined, taskId: string): string {
+  if (!isMalformedTitle(title)) {
+    return title!.trim();
+  }
+
+  // Generate fallback from task ID
+  // e.g., "e015_s03_t02" -> "Task 2"
+  const match = taskId.match(/t(\d+)$/i);
+  if (match) {
+    console.warn(`[Sprint Sync] Invalid task title for ${taskId}: "${title}", using fallback`);
+    return `Task ${parseInt(match[1])}`;
+  }
+
+  // Ultimate fallback
+  console.warn(`[Sprint Sync] Invalid task title for ${taskId}: "${title}", using ID as title`);
+  return taskId;
 }
 
 export async function POST(request: NextRequest) {
@@ -490,10 +566,12 @@ async function syncSprintToGraph(
 
   // Create Sprint node with epic_id for hierarchy navigation (EPIC-011)
   // Use mergeNode to update existing sprints (fixes title from graph load)
+  // Validate sprint name to prevent corrupted data (e.g., "string;") from entering graph
+  const validatedSprintName = validateSprintName(graph.sprint.name, graph.sprint.id);
   await client.mergeNode('Sprint', graph.sprint.id, {
     id: graph.sprint.id,
-    name: graph.sprint.name,
-    title: graph.sprint.name, // Also set title to match name (fixes bad titles from graph load)
+    name: validatedSprintName,
+    title: validatedSprintName, // Also set title to match name (fixes bad titles from graph load)
     goal: graph.sprint.goal,
     startDate: graph.sprint.startDate,
     endDate: graph.sprint.endDate,
@@ -528,10 +606,12 @@ async function syncSprintToGraph(
   for (const task of graph.tasks) {
     // Map status to graph-compatible values (not_started -> todo)
     const graphStatus = task.status === 'not_started' ? 'todo' : task.status;
+    // Validate task title to prevent corrupted data from entering graph
+    const validatedTaskTitle = validateTaskTitle(task.title, task.id);
 
     const { isNew } = await client.mergeNode('Task', task.id, {
       id: task.id,
-      title: task.title,
+      title: validatedTaskTitle,
       status: graphStatus,
       effort: task.effort,
       priority: task.priority,

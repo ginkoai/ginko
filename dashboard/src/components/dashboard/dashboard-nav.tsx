@@ -26,7 +26,6 @@ import {
   BellIcon,
   Cog6ToothIcon,
   ArrowRightOnRectangleIcon,
-  UserCircleIcon,
   ChartBarIcon,
   MapIcon,
   LightBulbIcon,
@@ -141,11 +140,6 @@ export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
       label: 'Notifications',
       icon: BellIcon,
       href: '/dashboard/notifications'
-    },
-    {
-      label: 'Profile',
-      icon: UserCircleIcon,
-      href: '/dashboard/settings#account'
     },
     {
       label: 'Settings',

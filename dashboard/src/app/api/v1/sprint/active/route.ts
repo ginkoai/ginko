@@ -167,15 +167,34 @@ export async function GET(request: NextRequest) {
     const client = await CloudGraphClient.fromBearerToken(token, graphId);
 
     // Query for active sprint with priority:
-    // 1. First try to find sprint with status='active'
-    // 2. Fallback to most recent sprint if no active status found
-    // Performance optimization: Single query with all relationships
-    const result = await client.runScopedQuery<any>(`
-      // Get sprints, prioritizing status='active', then most recent
+    // 1. First try to find sprint with status='active' or 'in_progress'
+    // 2. Then sprints with incomplete tasks (progress < 100%)
+    // 3. Fallback: if ALL sprints are complete, return the most recent one
+    // Performance optimization: Single query with UNION for fallback
+    let result = await client.runScopedQuery<any>(`
+      // Get sprints with their task counts
       MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
-      WITH s
+      OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+      WITH s,
+           count(t) as totalTasks,
+           sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks
+
+      // Calculate progress and prefer incomplete sprints
+      WITH s, totalTasks, completedTasks,
+           CASE WHEN totalTasks > 0 THEN (completedTasks * 100 / totalTasks) ELSE 0 END as progress
+
+      // Filter: prefer sprints that are not complete
+      WHERE s.status IS NULL OR s.status <> 'complete'
+
+      // Order by: incomplete first, then active/in_progress status, then newest
       ORDER BY
-        CASE WHEN s.status = 'active' THEN 0 ELSE 1 END,
+        CASE WHEN totalTasks = 0 OR progress < 100 THEN 0 ELSE 1 END,
+        CASE
+          WHEN s.status IN ['active', 'in_progress'] THEN 0
+          WHEN s.status = 'not_started' THEN 1
+          ELSE 2
+        END,
+        progress ASC,
         s.createdAt DESC
       LIMIT 1
 
@@ -191,9 +210,26 @@ export async function GET(request: NextRequest) {
              next as nextTask
     `);
 
+    // Fallback: If no sprint found (all might be marked 'complete'), get most recent
+    if (result.length === 0) {
+      result = await client.runScopedQuery<any>(`
+        MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
+        WITH s
+        ORDER BY s.createdAt DESC
+        LIMIT 1
+
+        OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+        OPTIONAL MATCH (s)-[:NEXT_TASK]->(next:Task)
+
+        RETURN s as sprint,
+               collect(DISTINCT t) as tasks,
+               next as nextTask
+      `);
+    }
+
     if (result.length === 0) {
       return NextResponse.json(
-        { error: 'No active sprint found' },
+        { error: 'No sprints found in this project' },
         { status: 404 }
       );
     }
