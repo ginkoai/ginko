@@ -19,6 +19,8 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-011](EPIC-011-graph-explorer-v2.md) | Graph Explorer v2 - UX Polish & Advanced Features | Proposed | `EPIC-011-graph-explorer-v2.md` |
 | [EPIC-012](EPIC-012-web-collaboration-gui.md) | Web Collaboration GUI | Proposed | `EPIC-012-web-collaboration-gui.md` |
 | [EPIC-013](EPIC-013-codex-integration.md) | Ginko + OpenAI Codex Integration | Proposed | `EPIC-013-codex-integration.md` |
+| [EPIC-015](EPIC-015-graph-authoritative-state.md) | Graph-Authoritative Operational State | Active | `EPIC-015-graph-authoritative-state.md` |
+| [EPIC-016](EPIC-016-personal-workstreams.md) | Personal Workstreams & Assignment | Proposed | `EPIC-016-personal-workstreams.md` |
 
 ## Maintenance Epics
 
@@ -33,8 +35,8 @@ Maintenance epics (ADR-059) are containers for ongoing operational work. They ar
 | Status | Count | Epics |
 |--------|-------|-------|
 | Complete | 6 | 001, 002, 004, 005, 006, 008 |
-| Active | 3 | 003, 009, 010 |
-| Proposed | 3 | 011, 012, 013 |
+| Active | 4 | 003, 009, 010, 015 |
+| Proposed | 4 | 011, 012, 013, 016 |
 | Planned | 1 | 007 |
 
 ### EPIC-010: MVP Marketing Strategy
