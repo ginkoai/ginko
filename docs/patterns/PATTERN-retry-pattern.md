@@ -1,9 +1,9 @@
 ---
 type: pattern
 status: draft
-updated: 2026-01-07
+updated: 2026-01-20
 synced-from: dashboard
-synced-at: 2026-01-07T16:21:51.692Z
+synced-at: 2026-01-20T17:21:35.099Z
 ---
 
 # retry-pattern
