@@ -16,6 +16,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { getUserEmail, getGinkoDir, detectWorkMode, getProjectRoot } from '../../utils/helpers.js';
+import { checkForUpdatesAsync } from '../../utils/version-check.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
@@ -473,6 +474,9 @@ export class StartReflectionCommand extends ReflectionCommand {
     }
 
     try {
+      // 0. Start version check in background (non-blocking)
+      const versionCheckPromise = checkForUpdatesAsync();
+
       // 1. Parse intent
       const parsedIntent = this.parseIntent(intent);
 
@@ -824,6 +828,12 @@ export class StartReflectionCommand extends ReflectionCommand {
           table: options.table,
           full: options.full
         });
+      }
+
+      // 15. Show update notification if available (non-blocking check completed)
+      const updateMessage = await versionCheckPromise;
+      if (updateMessage) {
+        console.log(updateMessage);
       }
 
     } catch (error) {
