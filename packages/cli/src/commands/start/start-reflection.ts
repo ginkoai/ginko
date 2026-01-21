@@ -808,6 +808,17 @@ export class StartReflectionCommand extends ReflectionCommand {
         // Cursor update is non-critical - don't block session start
       }
 
+      // EPIC-016 Sprint 3: Record session start activity
+      try {
+        const activityGraphId = await getGraphId();
+        if (activityGraphId) {
+          const activityClient = new GraphApiClient();
+          await activityClient.recordActivity(activityGraphId, 'session_start');
+        }
+      } catch {
+        // Activity tracking is non-critical - don't block session start
+      }
+
       // Auto-update insights at scheduled intervals (1-day, 7-day, 30-day)
       this.runScheduledInsights().catch(() => {
         // Insights update is non-critical - don't block session start

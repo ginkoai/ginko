@@ -21,6 +21,7 @@ import { createTeamCommand } from './create.js';
 import { listTeamsCommand } from './list.js';
 import { addTeamMemberCommand, removeTeamMemberCommand, listTeamMembersCommand } from './members.js';
 import { addTeamToProjectCommand, removeTeamFromProjectCommand } from './projects.js';
+import { teamStatusCommand } from './status.js';
 
 /**
  * Main team command with subcommands
@@ -114,6 +115,39 @@ ${chalk.gray('Learn More:')}
     .description('Revoke team access from a project')
     .action(async (teamIdOrName, projectIdOrName) => {
       await removeTeamFromProjectCommand(teamIdOrName, projectIdOrName);
+    });
+
+  return team;
+}
+
+/**
+ * Team visibility command (EPIC-016 Sprint 3)
+ * Shows team-wide work status and unassigned tasks
+ */
+export function teamVisibilityCommand() {
+  const team = new Command('team')
+    .description('Team visibility commands')
+    .addHelpText(
+      'after',
+      `
+${chalk.gray('Commands:')}
+  ${chalk.green('ginko team status')}    ${chalk.dim('Show team work status and unassigned tasks')}
+
+${chalk.gray('Examples:')}
+  ${chalk.green('ginko team status')}    ${chalk.dim('View all team members\' current work')}
+`
+    )
+    .action(() => {
+      // When called without subcommand, show help
+      team.help({ error: false });
+    });
+
+  // Status command
+  team
+    .command('status')
+    .description('Show team work status and unassigned tasks')
+    .action(async () => {
+      await teamStatusCommand();
     });
 
   return team;

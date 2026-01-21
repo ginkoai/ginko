@@ -689,6 +689,24 @@ export class GraphApiClient {
   }
 
   /**
+   * Record user activity in graph (EPIC-016 Sprint 3)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param activityType - Type of activity being recorded
+   * @returns Activity response with timestamp
+   */
+  async recordActivity(
+    graphId: string,
+    activityType: 'session_start' | 'task_start' | 'task_complete' | 'task_block' | 'event_logged'
+  ): Promise<{ success: boolean; lastActivityAt: string }> {
+    return this.request<{ success: boolean; lastActivityAt: string }>(
+      'POST',
+      '/api/v1/user/activity',
+      { graphId, activityType }
+    );
+  }
+
+  /**
    * Update sprint status in graph (EPIC-015 Sprint 1)
    *
    * @param graphId - Graph namespace identifier

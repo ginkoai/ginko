@@ -48,7 +48,7 @@ import { backlogCommand } from './commands/backlog/index.js';
 import { graphCommand } from './commands/graph/index.js';
 import { knowledgeCommand } from './commands/knowledge/index.js';
 import { projectCommand } from './commands/project/index.js';
-import { teamManagementCommand } from './commands/team/index.js';
+import { teamManagementCommand, teamVisibilityCommand } from './commands/team/index.js';
 import { agentCommand } from './commands/agent/index.js';
 import { sprintCommand } from './commands/sprint/index.js';
 import { checkpointCommand } from './commands/checkpoint/index.js';
@@ -479,15 +479,19 @@ program
   .option('--revert-commit', 'Revert the Copilot integration git commit')
   .action((options) => uninstallCopilotCommand(options));
 
-// Team collaboration command
+// Team collaboration command (legacy session logs)
 program
-  .command('team [user]')
+  .command('team-activity [user]')
+  .alias('team-logs')
   .description('View team activity from user-namespaced session logs')
   .option('--timeline', 'Show chronological team events')
   .option('--files', 'Show file activity across team')
   .option('--conflicts', 'Show files modified by multiple users')
   .option('--window <hours>', 'Time window in hours (default: 24)', '24')
   .action((user, options) => teamCommand(user, options));
+
+// Team visibility commands (EPIC-016 Sprint 3)
+program.addCommand(teamVisibilityCommand());
 
 // Task assignment command (EPIC-006 Sprint 2 TASK-9)
 program

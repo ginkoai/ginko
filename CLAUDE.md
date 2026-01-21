@@ -17,6 +17,9 @@ ginko epic                     # Create epic with sprints (AI-mediated)
 ginko task start <id>          # Start working on task
 ginko task complete <id>       # Mark task complete
 ginko task block <id>          # Mark task blocked
+
+# Team visibility (EPIC-016)
+ginko team status              # View team work status and unassigned tasks
 ```
 
 ### AI Assistant Instructions
@@ -371,6 +374,17 @@ ginko sync                                            # Pull dashboard changes t
 ginko sync --type ADR                                 # Sync only ADRs
 ```
 
+**Team visibility (EPIC-016):**
+```bash
+ginko team status              # View all team members' work status
+```
+
+Shows:
+- Member progress with sprint context and completion percentage
+- Last activity timestamps (relative time)
+- Unassigned work grouped by sprint with "needs owner" indicator
+- Summary: total members, active today, unassigned tasks
+
 ### Local Files (Fallback when graph unavailable)
 
 | Question Type | File Location |
@@ -397,8 +411,8 @@ ginko graph query "current sprint progress"
 **"How do we handle X?" / "What's our approach to X?"**
 → `ginko graph query "X"` OR local: `grep -l -i "X" docs/adr/*.md`
 
-**"What is [person] working on?"**
-→ `ginko graph query "person activity"` OR: `grep -i "person" .ginko/sessions/*/current-session-log.md`
+**"What is [person] working on?" / "What is the team working on?"**
+→ `ginko team status` (shows all team members' current work and progress)
 
 **"Show me ADRs about [topic]"**
 → `ginko graph query "topic" --type ADR` OR: `grep -l -i "topic" docs/adr/*.md`
