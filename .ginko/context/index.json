@@ -1560,10 +1560,22 @@
       "relevance": "critical",
       "created": "2026-01-21T15:48:23.035Z",
       "sessionId": "session-chris-at-watchhill-ai-1769010502992"
+    },
+    {
+      "filename": "pattern-published-ginkoaicli-v2.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T17:11:04.817Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769015464747"
     }
   ],
-  "lastUpdated": "2026-01-21T15:48:23.036Z",
-  "totalModules": 122,
+  "lastUpdated": "2026-01-21T17:11:04.818Z",
+  "totalModules": 123,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

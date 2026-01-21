@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-21T15-47-55-790Z
-started: 2026-01-21T15:47:55.790Z
+session_id: session-2026-01-21T16-07-30-531Z
+started: 2026-01-21T16:07:30.531Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-21T15-47-55-790Z
+# Session Log: session-2026-01-21T16-07-30-531Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,9 +14,15 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 10:48 - [feature]
-Enhanced ginko start with roadmap-aware sprint selection and graph-only state loading. Changes: 1) API now prioritizes sprints by Epic roadmap_lane (Now > Next > Later), excludes done/dropped epics. 2) CLI simplified to fetch state directly from graph API without local file loading/merging - faster startup. 3) Fixed Cypher query syntax for Neo4j compatibility.
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
+### 11:07 - [feature]
+Added version update check to ginko start. Non-blocking async check against npm registry with 24-hour cache. Shows notification when newer @ginkoai/cli version available. Uses ES module compatible import.meta.url for __dirname equivalent.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+
+### 12:11 - [feature]
+Published @ginkoai/cli v2.1.0 to npm. Includes: roadmap-aware sprint selection, graph-only state loading, version update notifications, clean non-TTY output.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: high
 
 
@@ -43,20 +49,33 @@ Impact: high
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 10:48 - [feature]
-# [FEATURE] 10:48
+### 11:07 - [feature]
+# [FEATURE] 11:07
 
-Enhanced ginko start with roadmap-aware sprint selection and graph-only state loading. Changes: 1) API now prioritizes sprints by Epic roadmap_lane (Now > Next > Later), excludes done/dropped epics. 2) CLI simplified to fetch state directly from graph API without local file loading/merging - faster startup. 3) Fixed Cypher query syntax for Neo4j compatibility.
+Added version update check to ginko start. Non-blocking async check against npm registry with 24-hour cache. Shows notification when newer @ginkoai/cli version available. Uses ES module compatible import.meta.url for __dirname equivalent.
 
 **Files:**
-- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-21T16:07:44.400Z
+
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+### 12:11 - [feature]
+# [FEATURE] 12:11
+
+Published @ginkoai/cli v2.1.0 to npm. Includes: roadmap-aware sprint selection, graph-only state loading, version update notifications, clean non-TTY output.
+
+**Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/sprint/active/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-21T15:48:20.156Z
+**Timestamp:** 2026-01-21T17:11:02.013Z
 
-Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: high
