@@ -72,11 +72,46 @@ interface JobResponse {
     status: 'queued' | 'processing' | 'completed' | 'failed';
     createdAt: string;
     progress: JobProgress;
+    warnings?: string[];
   };
 }
 
 // Batch size for embedding generation
 const EMBEDDING_BATCH_SIZE = 20;
+
+/**
+ * Generate a summary from document content.
+ * Strips frontmatter and extracts first meaningful paragraph.
+ */
+function generateSummary(content: string, maxLength: number = 500): string {
+  // Strip YAML frontmatter (---...---)
+  let text = content.replace(/^---[\s\S]*?---\n*/m, '');
+
+  // Strip markdown headers at the start
+  text = text.replace(/^#+\s+[^\n]+\n*/gm, '');
+
+  // Get first meaningful paragraph (non-empty, non-header)
+  const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0);
+  const firstParagraph = paragraphs[0] || '';
+
+  // Clean up markdown syntax
+  let summary = firstParagraph
+    .replace(/\*\*([^*]+)\*\*/g, '$1')  // Bold
+    .replace(/\*([^*]+)\*/g, '$1')       // Italic
+    .replace(/`([^`]+)`/g, '$1')         // Code
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // Links
+    .replace(/^[-*]\s+/gm, '')           // List items
+    .replace(/\n/g, ' ')                 // Newlines to spaces
+    .replace(/\s+/g, ' ')                // Multiple spaces to single
+    .trim();
+
+  // Truncate with ellipsis if needed
+  if (summary.length > maxLength) {
+    summary = summary.substring(0, maxLength - 3).replace(/\s+\S*$/, '') + '...';
+  }
+
+  return summary;
+}
 
 export async function POST(request: NextRequest) {
   console.log('[Documents API] POST /api/v1/graph/documents called');
@@ -147,6 +182,7 @@ export async function POST(request: NextRequest) {
       embedded: 0,
       total: body.documents.length,
     };
+    const warnings: string[] = [];
 
     // Initialize Voyage client for embeddings
     let voyageClient: VoyageEmbeddingClient | null = null;
@@ -154,6 +190,7 @@ export async function POST(request: NextRequest) {
       voyageClient = new VoyageEmbeddingClient();
     } catch (error) {
       console.warn('[Documents API] Voyage AI not configured, skipping embeddings:', error);
+      warnings.push('Embedding service not configured. Documents will be searchable by content but not by semantic similarity.');
     }
 
     const session = getSession();
@@ -171,7 +208,11 @@ export async function POST(request: NextRequest) {
             progress.embedded += batch.length;
           } catch (embedError) {
             console.error('[Documents API] Embedding generation failed:', embedError);
-            // Continue without embeddings
+            // Continue without embeddings but track the failure
+            const errorMsg = embedError instanceof Error ? embedError.message : 'Unknown error';
+            if (!warnings.some(w => w.includes('Embedding generation failed'))) {
+              warnings.push(`Embedding generation failed: ${errorMsg}. Documents uploaded but semantic search may not work.`);
+            }
           }
         }
 
@@ -188,6 +229,8 @@ export async function POST(request: NextRequest) {
               type: doc.type,
               title: doc.title,
               content: doc.content,
+              // Generate summary from content (first 500 chars, frontmatter stripped)
+              summary: generateSummary(doc.content, 500),
               filePath: doc.filePath,
               hash: doc.hash,
               graph_id: body.graphId,
@@ -199,6 +242,8 @@ export async function POST(request: NextRequest) {
               editedAt: now,
               editedBy: 'cli-upload',
               contentHash: doc.hash,
+              // Track embedding status for diagnostics
+              has_embedding: !!embedding,
             };
 
             // Add metadata if present
@@ -241,14 +286,22 @@ export async function POST(request: NextRequest) {
       const duration = Date.now() - startTime;
       console.log(`[Documents API] Completed in ${duration}ms. Uploaded: ${progress.uploaded}, Embedded: ${progress.embedded}`);
 
+      // Determine status based on embedding success
+      const embeddingsComplete = progress.embedded === progress.total;
       const response: JobResponse = {
         job: {
           jobId,
           status: 'completed',
           createdAt: new Date().toISOString(),
           progress,
+          ...(warnings.length > 0 && { warnings }),
         },
       };
+
+      // Log warning if embeddings were incomplete
+      if (!embeddingsComplete) {
+        console.warn(`[Documents API] Partial success: ${progress.embedded}/${progress.total} documents embedded`);
+      }
 
       return NextResponse.json(response, { status: 201 });
     } finally {

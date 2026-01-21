@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-21T16-07-30-531Z
-started: 2026-01-21T16:07:30.531Z
+session_id: session-2026-01-21T17-37-11-372Z
+started: 2026-01-21T17:37:11.372Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-21T16-07-30-531Z
+# Session Log: session-2026-01-21T17-37-11-372Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,15 +14,15 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 11:07 - [feature]
-Added version update check to ginko start. Non-blocking async check against npm registry with 24-hour cache. Shows notification when newer @ginkoai/cli version available. Uses ES module compatible import.meta.url for __dirname equivalent.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-Impact: medium
+### 12:42 - [insight]
+Root cause identified for graph loading bug. When Voyage AI embedding fails, nodes are created but: 1) embeddings silently skipped, 2) summary field never populated, 3) job status lies (always returns completed), 4) status endpoint hardcodes withEmbeddings:0. Affects new projects where VOYAGE_API_KEY may be misconfigured or rate limited.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Impact: high
 
 
-### 12:11 - [feature]
-Published @ginkoai/cli v2.1.0 to npm. Includes: roadmap-aware sprint selection, graph-only state loading, version update notifications, clean non-TTY output.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+### 12:47 - [fix]
+Fixed graph loading bug for new projects. Added: 1) generateSummary() function that strips frontmatter and extracts first 500 chars of content, 2) has_embedding flag to track embedding status, 3) warnings array in job response when embeddings fail. Root cause was silent embedding failure - nodes were created without summary or embedding. Deployed to app.ginkoai.com.
+Files: dashboard/src/app/api/v1/graph/documents/route.ts
 Impact: high
 
 
@@ -38,6 +38,12 @@ Impact: high
 <!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
 <!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
 
+### 12:42 - [insight]
+Root cause identified for graph loading bug. When Voyage AI embedding fails, nodes are created but: 1) embeddings silently skipped, 2) summary field never populated, 3) job status lies (always returns completed), 4) status endpoint hardcodes withEmbeddings:0. Affects new projects where VOYAGE_API_KEY may be misconfigured or rate limited.
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Impact: high
+
+
 ## Git Operations
 <!-- Commits, merges, branch changes -->
 <!-- These entries also appear in Timeline for narrative coherence -->
@@ -49,33 +55,32 @@ Impact: high
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 11:07 - [feature]
-# [FEATURE] 11:07
+### 12:42 - [insight]
+# [INSIGHT] 12:42
 
-Added version update check to ginko start. Non-blocking async check against npm registry with 24-hour cache. Shows notification when newer @ginkoai/cli version available. Uses ES module compatible import.meta.url for __dirname equivalent.
+Root cause identified for graph loading bug. When Voyage AI embedding fails, nodes are created but: 1) embeddings silently skipped, 2) summary field never populated, 3) job status lies (always returns completed), 4) status endpoint hardcodes withEmbeddings:0. Affects new projects where VOYAGE_API_KEY may be misconfigured or rate limited.
 
 **Files:**
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-
-**Impact:** medium
-**Timestamp:** 2026-01-21T16:07:44.400Z
-
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-Impact: medium
-
-### 12:11 - [feature]
-# [FEATURE] 12:11
-
-Published @ginkoai/cli v2.1.0 to npm. Includes: roadmap-aware sprint selection, graph-only state loading, version update notifications, clean non-TTY output.
-
-**Files:**
-- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
-- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
 
 **Impact:** high
-**Timestamp:** 2026-01-21T17:11:02.013Z
+**Timestamp:** 2026-01-21T17:42:36.108Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Impact: high
+
+### 12:47 - [fix]
+# [FIX] 12:47
+
+Fixed graph loading bug for new projects. Added: 1) generateSummary() function that strips frontmatter and extracts first 500 chars of content, 2) has_embedding flag to track embedding status, 3) warnings array in job response when embeddings fail. Root cause was silent embedding failure - nodes were created without summary or embedding. Deployed to app.ginkoai.com.
+
+**Files:**
+- dashboard/src/app/api/v1/graph/documents/route.ts
+
+**Impact:** high
+**Timestamp:** 2026-01-21T17:47:27.574Z
+
+Files: dashboard/src/app/api/v1/graph/documents/route.ts
 Impact: high
