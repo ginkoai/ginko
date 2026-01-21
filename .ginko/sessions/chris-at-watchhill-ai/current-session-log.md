@@ -32,6 +32,12 @@ Files: dashboard/src/app/api/v1/graph/query/route.ts, src/graph/schema/014-voyag
 Impact: high
 
 
+### 14:27 - [achievement]
+Maintenance sprint complete: Graph loading bug fixed. Changes: 1) Summary field now auto-generated, 2) Query searches type-specific indexes, 3) Migration 014 adds Sprint/Epic/Task/Charter indexes at 1024 dims. Verified working - semantic search returns results from multiple types. Ed should run ginko graph load --force to regenerate embeddings.
+Files: .ginko/graph/config.json
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
@@ -104,4 +110,18 @@ Deployed query endpoint fix: now searches type-specific vector indexes instead o
 **Timestamp:** 2026-01-21T18:06:32.540Z
 
 Files: dashboard/src/app/api/v1/graph/query/route.ts, src/graph/schema/014-voyage-vector-indexes.cypher
+Impact: high
+
+### 14:27 - [achievement]
+# [ACHIEVEMENT] 14:27
+
+Maintenance sprint complete: Graph loading bug fixed. Changes: 1) Summary field now auto-generated, 2) Query searches type-specific indexes, 3) Migration 014 adds Sprint/Epic/Task/Charter indexes at 1024 dims. Verified working - semantic search returns results from multiple types. Ed should run ginko graph load --force to regenerate embeddings.
+
+**Files:**
+- .ginko/graph/config.json
+
+**Impact:** high
+**Timestamp:** 2026-01-21T19:27:38.564Z
+
+Files: .ginko/graph/config.json
 Impact: high
