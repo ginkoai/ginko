@@ -1595,10 +1595,21 @@
       "relevance": "critical",
       "created": "2026-01-21T17:47:32.541Z",
       "sessionId": "session-chris-at-watchhill-ai-1769017652337"
+    },
+    {
+      "filename": "pattern-deployed-query-endpoint-fix-now-searches-typespeci.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T18:06:36.674Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769018796629"
     }
   ],
-  "lastUpdated": "2026-01-21T17:47:32.551Z",
-  "totalModules": 125,
+  "lastUpdated": "2026-01-21T18:06:36.674Z",
+  "totalModules": 126,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

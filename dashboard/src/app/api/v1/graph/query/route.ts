@@ -206,45 +206,74 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build Cypher query for vector search
-    const labelFilter = labels.length > 0 ? labels.map(l => `node:${l}`).join(' OR ') : '';
+    // Type-specific vector index names (must match schema migrations)
+    const typeIndexMap: Record<string, string> = {
+      ADR: 'adr_embedding_index',
+      PRD: 'prd_embedding_index',
+      Pattern: 'pattern_embedding_index',
+      Gotcha: 'gotcha_embedding_index',
+      Session: 'session_embedding_index',
+      CodeFile: 'codefile_embedding_index',
+      ContextModule: 'contextmodule_embedding_index',
+      Sprint: 'sprint_embedding_index',
+      Epic: 'epic_embedding_index',
+      Task: 'task_embedding_index',
+      Charter: 'charter_embedding_index',
+    };
 
-    let cypherQuery = `
-      CALL db.index.vector.queryNodes(
-        'knowledge_embeddings',
-        $limit,
-        $queryEmbedding
-      )
-      YIELD node, score
-      WHERE node.graph_id = $graphId
-    `;
-
-    if (labelFilter) {
-      cypherQuery += ` AND (${labelFilter})`;
-    }
-
-    cypherQuery += `
-      WITH node, score, labels(node) as nodeLabels
-      ORDER BY score DESC
-      RETURN node, score, nodeLabels
-    `;
+    // Determine which types to search
+    const typesToSearch = labels.length > 0
+      ? labels.filter(l => typeIndexMap[l])
+      : Object.keys(typeIndexMap);
 
     const session = getSession();
     try {
-      const result = await session.executeRead(async (tx) => {
-        return tx.run(cypherQuery, {
-          queryEmbedding,
-          limit: neo4j.int(searchLimit * 2), // Query extra for filtering
-          graphId,
-        });
-      });
+      // Search each type's index and combine results
+      const allResults: Array<{ node: any; score: number; nodeLabels: string[] }> = [];
 
-      const results: QueryResult[] = result.records
-        .slice(0, searchLimit)
-        .map((record) => {
-          const node = record.get('node');
-          const score = record.get('score');
-          const nodeLabels = record.get('nodeLabels') as string[];
+      for (const nodeType of typesToSearch) {
+        const indexName = typeIndexMap[nodeType];
+        if (!indexName) continue;
+
+        try {
+          const cypherQuery = `
+            CALL db.index.vector.queryNodes($indexName, $limit, $queryEmbedding)
+            YIELD node, score
+            WHERE node.graph_id = $graphId
+            WITH node, score, labels(node) as nodeLabels
+            RETURN node, score, nodeLabels
+          `;
+
+          const result = await session.executeRead(async (tx) => {
+            return tx.run(cypherQuery, {
+              indexName,
+              queryEmbedding,
+              limit: neo4j.int(Math.ceil(searchLimit / typesToSearch.length) + 2),
+              graphId,
+            });
+          });
+
+          for (const record of result.records) {
+            allResults.push({
+              node: record.get('node'),
+              score: record.get('score'),
+              nodeLabels: record.get('nodeLabels') as string[],
+            });
+          }
+        } catch (indexError: any) {
+          // Index might not exist for this type - continue to next
+          console.log(`[Graph Query API] Index ${indexName} not available: ${indexError.message}`);
+        }
+      }
+
+      // Sort combined results by score and take top N
+      allResults.sort((a, b) => b.score - a.score);
+      const topResults = allResults.slice(0, searchLimit);
+
+      const results: QueryResult[] = topResults.map((record) => {
+          const node = record.node;
+          const score = record.score;
+          const nodeLabels = record.nodeLabels;
           const nodeType = nodeLabels.find(l => l !== 'Node') || 'Unknown';
 
           // Parse tags from node properties (may be string or array)

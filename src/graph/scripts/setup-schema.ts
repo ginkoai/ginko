@@ -35,6 +35,11 @@ async function setupSchema() {
     await neo4jClient.runMigration('007-vector-indexes.cypher');
     await neo4jClient.runMigration('008-sprint-task-indexes.cypher');
     await neo4jClient.runMigration('009-agent-schema.cypher');
+    await neo4jClient.runMigration('010-task-deps.cypher');
+    await neo4jClient.runMigration('011-performance-indexes.cypher');
+    await neo4jClient.runMigration('012-team-membership.cypher');
+    await neo4jClient.runMigration('013-billing-seats.cypher');
+    await neo4jClient.runMigration('014-voyage-vector-indexes.cypher');
 
     // Verify schema
     await neo4jClient.verifySchema();

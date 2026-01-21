@@ -26,6 +26,12 @@ Files: dashboard/src/app/api/v1/graph/documents/route.ts
 Impact: high
 
 
+### 13:06 - [feature]
+Deployed query endpoint fix: now searches type-specific vector indexes instead of non-existent knowledge_embeddings. Created migration 014 for Voyage AI 1024-dim indexes (Sprint, Epic, Task, Charter). Migration pending - needs to be run via Neo4j AuraDB console.
+Files: dashboard/src/app/api/v1/graph/query/route.ts, src/graph/schema/014-voyage-vector-indexes.cypher
+Impact: high
+
+
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
 <!-- These entries also appear in Timeline for narrative coherence -->
@@ -83,4 +89,19 @@ Fixed graph loading bug for new projects. Added: 1) generateSummary() function t
 **Timestamp:** 2026-01-21T17:47:27.574Z
 
 Files: dashboard/src/app/api/v1/graph/documents/route.ts
+Impact: high
+
+### 13:06 - [feature]
+# [FEATURE] 13:06
+
+Deployed query endpoint fix: now searches type-specific vector indexes instead of non-existent knowledge_embeddings. Created migration 014 for Voyage AI 1024-dim indexes (Sprint, Epic, Task, Charter). Migration pending - needs to be run via Neo4j AuraDB console.
+
+**Files:**
+- dashboard/src/app/api/v1/graph/query/route.ts
+- src/graph/schema/014-voyage-vector-indexes.cypher
+
+**Impact:** high
+**Timestamp:** 2026-01-21T18:06:32.540Z
+
+Files: dashboard/src/app/api/v1/graph/query/route.ts, src/graph/schema/014-voyage-vector-indexes.cypher
 Impact: high
