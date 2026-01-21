@@ -662,12 +662,12 @@ export const EPIC_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'description',
-      label: 'Description',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: false,
-      placeholder: 'Epic description',
-      helperText: 'High-level description of the epic',
+      placeholder: 'Epic content (markdown)',
+      helperText: 'Full epic specification including vision, problem statement, success criteria, and sprint plan',
     },
   ],
   validate: (data) => {

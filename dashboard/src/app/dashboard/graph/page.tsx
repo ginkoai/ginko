@@ -30,7 +30,6 @@ import { Breadcrumbs, type BreadcrumbItem } from '@/components/graph/Breadcrumbs
 import { NodeView } from '@/components/graph/NodeView';
 import { ViewTransition, getTransitionDirection, type TransitionDirection, type ViewKey } from '@/components/graph/ViewTransition';
 import { OnboardingOverlay } from '@/components/graph/OnboardingOverlay';
-import { HelpButton } from '@/components/graph/HelpButton';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useGraphNodes, useNodeAncestry, graphQueryKeys } from '@/lib/graph/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -768,11 +767,6 @@ function GraphPageContent() {
         onCreate={handleCreateSave}
       />
 
-      {/* Help Button with Tour Option */}
-      <HelpButton
-        onStartTour={handleStartTour}
-        className="fixed bottom-6 right-6 z-50"
-      />
 
       {/* First-Time User Onboarding */}
       <OnboardingOverlay onComplete={handleTourComplete} />

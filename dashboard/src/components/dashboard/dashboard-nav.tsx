@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Dropdown } from '@/components/ui/dropdown'
 import { DashboardTabs } from './dashboard-tabs'
-import { Menu, X } from 'lucide-react'
+import { ShortcutsHelp } from '@/components/graph/ShortcutsHelp'
+import { Menu, X, HelpCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   BellIcon,
@@ -100,6 +101,7 @@ interface DashboardNavProps {
 export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
   const [loading, setLoading] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [showShortcutsHelp, setShowShortcutsHelp] = useState(false)
   const { supabase } = useSupabase()
   const router = useRouter()
   const pathname = usePathname()
@@ -212,12 +214,22 @@ export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
+          {/* Keyboard Shortcuts Help */}
+          <button
+            onClick={() => setShowShortcutsHelp(true)}
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            aria-label="Keyboard shortcuts"
+            title="Keyboard shortcuts (?)"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+
           {/* User Menu with notification badge */}
           <Dropdown
             trigger={
-              <Button variant="ghost" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground p-1 sm:p-2">
-                <div className="relative">
+              <Button variant="ghost" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground p-1 sm:p-2 overflow-visible">
+                <div className="relative overflow-visible">
                   <Avatar
                     src={user.user_metadata?.avatar_url}
                     alt={user.user_metadata?.full_name || user.email || ''}
@@ -293,6 +305,12 @@ export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
         </div>
       </div>
     )}
+
+    {/* Keyboard Shortcuts Help Modal */}
+    <ShortcutsHelp
+      open={showShortcutsHelp}
+      onOpenChange={setShowShortcutsHelp}
+    />
     </>
   )
 }

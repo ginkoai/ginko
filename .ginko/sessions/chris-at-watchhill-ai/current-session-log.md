@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-20T18-29-18-575Z
-started: 2026-01-20T18:29:18.576Z
+session_id: session-2026-01-20T22-41-34-303Z
+started: 2026-01-20T22:41:34.303Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-20T18-29-18-575Z
+# Session Log: session-2026-01-20T22-41-34-303Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,16 +14,28 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 14:00 - [achievement]
-Deployed maintenance sprint fixes to production. Changes: (1) CLI sprint selection now filters completed sprints and prioritizes active/in_progress, (2) Removed profile link from avatar menu, (3) Member filter shows all teammates not just owned teams, (4) Roadmap API deduplicates epics, (5) Sprint titles sanitized for malformed data, (6) Sprint-to-epic matching improved with multiple fallbacks.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/roadmap/route.ts, dashboard/src/app/api/v1/sprint/active/route.ts, dashboard/src/components/dashboard/dashboard-nav.tsx
+### 18:20 - [fix]
+Fixed EPIC-016 data recovery. Root cause: Two duplicate nodes with different IDs (EPIC-016 from dashboard, EPIC-016-personal-workstreams from file load). Solution: (1) Updated EPIC-016 with full content from local file via API PATCH, (2) Deleted duplicate EPIC-016-personal-workstreams node, (3) Added summary field extracted from vision section. The explore API expects node.summary but upload only stores node.content.
+Files: .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: high
 
 
-### 15:50 - [fix]
-Deployed second round of maintenance fixes: (1) Complete rewrite of epic deduplication - now groups by canonical ID and picks best display node while keeping ALL variants in epicMap for sprint matching, (2) Added epic title sanitization for malformed data like 'string,', (3) Fixed active sprint query with fallback when all sprints are complete, (4) Sprint-to-epic matching now works across duplicate nodes.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/roadmap/route.ts, dashboard/src/app/api/v1/sprint/active/route.ts
-Impact: high
+### 09:40 - [fix]
+Fixed Epic edit modal not loading content. Root cause: Schema mismatch - EPIC_SCHEMA used 'description' field but file uploads store as 'content'. Updated node-schemas.ts to use 'content' field name, consistent with ADR/PRD schemas. Deployed to production.
+Files: .ginko/context/index.json, .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+
+### 09:47 - [fix]
+Fixed Epic sort order in Graph Nav Tree. Root cause: epicNodes array wasn't sorted after building from map. Added sort by numeric ID (descending - newest first, so EPIC-016 appears before EPIC-015). File: dashboard/src/lib/graph/api-client.ts line 991.
+Files: .ginko/context/index.json, .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+
+### 10:07 - [fix]
+Moved keyboard shortcuts help button from graph page (fixed bottom-right, overlapping avatar) to top nav bar. Now appears as HelpCircle icon to the left of user avatar menu. Removed HelpButton from graph/page.tsx, added to dashboard-nav.tsx with ShortcutsHelp modal.
+Files: .ginko/context/index.json, .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: low
 
 
 ## Key Decisions
@@ -49,38 +61,72 @@ Impact: high
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 14:00 - [achievement]
-# [ACHIEVEMENT] 14:00
+### 18:20 - [fix]
+# [FIX] 18:20
 
-Deployed maintenance sprint fixes to production. Changes: (1) CLI sprint selection now filters completed sprints and prioritizes active/in_progress, (2) Removed profile link from avatar menu, (3) Member filter shows all teammates not just owned teams, (4) Roadmap API deduplicates epics, (5) Sprint titles sanitized for malformed data, (6) Sprint-to-epic matching improved with multiple fallbacks.
+Fixed EPIC-016 data recovery. Root cause: Two duplicate nodes with different IDs (EPIC-016 from dashboard, EPIC-016-personal-workstreams from file load). Solution: (1) Updated EPIC-016 with full content from local file via API PATCH, (2) Deleted duplicate EPIC-016-personal-workstreams node, (3) Added summary field extracted from vision section. The explore API expects node.summary but upload only stores node.content.
 
 **Files:**
+- .ginko/graph/config.json
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/graph/roadmap/route.ts
-- dashboard/src/app/api/v1/sprint/active/route.ts
-- dashboard/src/components/dashboard/dashboard-nav.tsx
 
 **Impact:** high
-**Timestamp:** 2026-01-20T19:00:42.313Z
+**Timestamp:** 2026-01-20T23:20:01.911Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/roadmap/route.ts, dashboard/src/app/api/v1/sprint/active/route.ts, dashboard/src/components/dashboard/dashboard-nav.tsx
+Files: .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
 Impact: high
 
-### 15:50 - [fix]
-# [FIX] 15:50
+### 09:40 - [fix]
+# [FIX] 09:40
 
-Deployed second round of maintenance fixes: (1) Complete rewrite of epic deduplication - now groups by canonical ID and picks best display node while keeping ALL variants in epicMap for sprint matching, (2) Added epic title sanitization for malformed data like 'string,', (3) Fixed active sprint query with fallback when all sprints are complete, (4) Sprint-to-epic matching now works across duplicate nodes.
+Fixed Epic edit modal not loading content. Root cause: Schema mismatch - EPIC_SCHEMA used 'description' field but file uploads store as 'content'. Updated node-schemas.ts to use 'content' field name, consistent with ADR/PRD schemas. Deployed to production.
 
 **Files:**
+- .ginko/context/index.json
+- .ginko/graph/config.json
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- dashboard/src/app/api/v1/graph/roadmap/route.ts
-- dashboard/src/app/api/v1/sprint/active/route.ts
 
-**Impact:** high
-**Timestamp:** 2026-01-20T20:50:50.477Z
+**Impact:** medium
+**Timestamp:** 2026-01-21T14:40:22.300Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/graph/roadmap/route.ts, dashboard/src/app/api/v1/sprint/active/route.ts
-Impact: high
+Files: .ginko/context/index.json, .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+### 09:47 - [fix]
+# [FIX] 09:47
+
+Fixed Epic sort order in Graph Nav Tree. Root cause: epicNodes array wasn't sorted after building from map. Added sort by numeric ID (descending - newest first, so EPIC-016 appears before EPIC-015). File: dashboard/src/lib/graph/api-client.ts line 991.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/graph/config.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** medium
+**Timestamp:** 2026-01-21T14:47:28.359Z
+
+Files: .ginko/context/index.json, .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: medium
+
+### 10:07 - [fix]
+# [FIX] 10:07
+
+Moved keyboard shortcuts help button from graph page (fixed bottom-right, overlapping avatar) to top nav bar. Now appears as HelpCircle icon to the left of user avatar menu. Removed HelpButton from graph/page.tsx, added to dashboard-nav.tsx with ShortcutsHelp modal.
+
+**Files:**
+- .ginko/context/index.json
+- .ginko/graph/config.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+
+**Impact:** low
+**Timestamp:** 2026-01-21T15:07:00.985Z
+
+Files: .ginko/context/index.json, .ginko/graph/config.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+Impact: low

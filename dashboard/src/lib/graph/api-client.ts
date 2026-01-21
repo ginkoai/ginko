@@ -988,6 +988,20 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
     }
   });
 
+  // Sort epic nodes by numeric ID (descending - newest first)
+  epicNodes.sort((a, b) => {
+    // Extract numeric ID from the epic node name (e.g., "EPIC-016: ..." -> 16)
+    const extractNumber = (node: TreeNode): number => {
+      const props = node.properties as Record<string, unknown> | undefined;
+      const epicId = props?.epic_id as string || node.id || '';
+      const match = epicId.match(/(\d+)/);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+    const numA = extractNumber(a);
+    const numB = extractNumber(b);
+    return numB - numA; // Descending order
+  });
+
   // Map for sprint lookup when grouping tasks
   const sprintMap = new Map<string, TreeNode>();
 

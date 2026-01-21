@@ -1522,10 +1522,22 @@
       "relevance": "critical",
       "created": "2026-01-20T20:50:55.049Z",
       "sessionId": "session-chris-at-watchhill-ai-1768942255016"
+    },
+    {
+      "filename": "gotcha-fixed-epic016-data-recovery.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-20T23:20:04.159Z",
+      "sessionId": "session-chris-at-watchhill-ai-1768951204098"
     }
   ],
-  "lastUpdated": "2026-01-20T20:50:55.050Z",
-  "totalModules": 119,
+  "lastUpdated": "2026-01-20T23:20:04.160Z",
+  "totalModules": 120,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
