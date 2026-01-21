@@ -1244,8 +1244,11 @@ function parseSprintTable(content: string): ParsedSprintRow[] {
 
 /**
  * Find sprint file by ID
+ * @param sprintId - Sprint ID (e.g., 'e011_s01' or 'e016_s03')
+ * @param projectRoot - Project root directory
+ * @returns Path to sprint file or null if not found
  */
-async function findSprintFileById(sprintId: string, projectRoot: string): Promise<string | null> {
+export async function findSprintFileById(sprintId: string, projectRoot: string): Promise<string | null> {
   const sprintsDir = path.join(projectRoot, 'docs', 'sprints');
 
   if (!fs.existsSync(sprintsDir)) {

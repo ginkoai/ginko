@@ -64,6 +64,14 @@ interface TaskData {
   updatedAt?: string;
 }
 
+interface EpicData {
+  id: string;
+  title?: string;
+  roadmap_lane?: 'now' | 'next' | 'later' | 'done' | 'dropped';
+  roadmap_status?: 'not_started' | 'in_progress' | 'completed' | 'cancelled';
+  priority?: number;
+}
+
 // Legacy stats interface (backward compatibility)
 interface SprintStats {
   totalTasks: number;
@@ -167,54 +175,50 @@ export async function GET(request: NextRequest) {
     const client = await CloudGraphClient.fromBearerToken(token, graphId);
 
     // Query for active sprint with priority:
-    // 1. First try to find sprint with status='active' or 'in_progress'
-    // 2. Then sprints with incomplete tasks (progress < 100%)
-    // 3. Fallback: if ALL sprints are complete, return the most recent one
-    // Performance optimization: Single query with UNION for fallback
+    // Priority order for selecting active sprint:
+    // 1. Epic roadmap lane: Now > Next > Later (done/dropped excluded)
+    // 2. Sprint completion: incomplete > no tasks > complete
+    // 3. Sprint status: active/in_progress > not_started > other
+    // 4. Progress (lower first), then newest
     let result = await client.runScopedQuery<any>(`
-      // Get sprints with their task counts
+      // Step 1: Get sprints with their parent epic and task counts
       MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
+      OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
       OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
-      WITH s,
+      WITH s, e,
            count(t) as totalTasks,
            sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks
 
-      // Calculate progress and prefer incomplete sprints
-      WITH s, totalTasks, completedTasks,
-           CASE WHEN totalTasks > 0 THEN (completedTasks * 100 / totalTasks) ELSE 0 END as progress
+      // Step 2: Calculate progress and apply filters
+      WITH s, e, totalTasks, completedTasks,
+           CASE WHEN totalTasks > 0 THEN toInteger((completedTasks * 100) / totalTasks) ELSE 0 END as progress
+      WHERE (s.status IS NULL OR s.status <> 'complete')
+        AND (e IS NULL OR e.roadmap_lane IS NULL OR NOT e.roadmap_lane IN ['done', 'dropped'])
 
-      // Filter: prefer sprints that are not complete
-      WHERE s.status IS NULL OR s.status <> 'complete'
-
-      // Order by: incomplete first, then active/in_progress status, then newest
+      // Step 3: Order by priority and select top sprint
+      WITH s, e, totalTasks, progress
       ORDER BY
-        CASE WHEN totalTasks = 0 OR progress < 100 THEN 0 ELSE 1 END,
-        CASE
-          WHEN s.status IN ['active', 'in_progress'] THEN 0
-          WHEN s.status = 'not_started' THEN 1
-          ELSE 2
-        END,
+        CASE WHEN e.roadmap_lane = 'now' THEN 0 WHEN e.roadmap_lane = 'next' THEN 1 WHEN e.roadmap_lane = 'later' THEN 2 ELSE 3 END,
+        CASE WHEN totalTasks > 0 AND progress < 100 THEN 0 WHEN totalTasks = 0 THEN 1 ELSE 2 END,
+        CASE WHEN s.status IN ['active', 'in_progress'] THEN 0 WHEN s.status = 'not_started' THEN 1 ELSE 2 END,
         progress ASC,
         s.createdAt DESC
       LIMIT 1
 
-      // Get all tasks for this sprint
+      // Step 4: Load tasks for selected sprint
+      WITH s, e
       OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
-
-      // Get next task (from NEXT_TASK relationship)
       OPTIONAL MATCH (s)-[:NEXT_TASK]->(next:Task)
 
-      // Return sprint with all data
-      RETURN s as sprint,
-             collect(DISTINCT t) as tasks,
-             next as nextTask
+      RETURN s as sprint, collect(DISTINCT t) as tasks, next as nextTask, e as epic
     `);
 
     // Fallback: If no sprint found (all might be marked 'complete'), get most recent
     if (result.length === 0) {
       result = await client.runScopedQuery<any>(`
         MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
-        WITH s
+        OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
+        WITH s, e
         ORDER BY s.createdAt DESC
         LIMIT 1
 
@@ -223,7 +227,8 @@ export async function GET(request: NextRequest) {
 
         RETURN s as sprint,
                collect(DISTINCT t) as tasks,
-               next as nextTask
+               next as nextTask,
+               e as epic
       `);
     }
 
@@ -249,6 +254,7 @@ export async function GET(request: NextRequest) {
       .filter((t: any) => t !== null)
       .map((t: any) => extractProps<TaskData>(t)!);
     const nextTaskData: TaskData | null = extractProps<TaskData>(record.nextTask);
+    const epicData: EpicData | null = extractProps<EpicData>(record.epic);
 
     // Calculate completion counts
     const completedTasks = rawTasks.filter(t => t.status === 'complete').length;
@@ -340,6 +346,14 @@ export async function GET(request: NextRequest) {
       tasks: enhancedTasks,
       next_task: enhancedNextTask,
       blocked_tasks: enhancedBlockedTasks,
+
+      // Epic/roadmap info (for CLI display)
+      epic: epicData ? {
+        id: epicData.id,
+        title: epicData.title,
+        roadmap_lane: epicData.roadmap_lane,
+        roadmap_status: epicData.roadmap_status,
+      } : null,
 
       // Backward-compatible fields (deprecated)
       nextTask: nextTaskData,

@@ -1534,10 +1534,36 @@
       "relevance": "critical",
       "created": "2026-01-20T23:20:04.159Z",
       "sessionId": "session-chris-at-watchhill-ai-1768951204098"
+    },
+    {
+      "filename": "gotcha-fixed-ginko-start-sprint-detection-and-output-disp.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T15:33:48.703Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769009628656"
+    },
+    {
+      "filename": "pattern-enhanced-ginko-start-with-roadmapaware-sprint-sele.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T15:48:23.035Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769010502992"
     }
   ],
-  "lastUpdated": "2026-01-20T23:20:04.160Z",
-  "totalModules": 120,
+  "lastUpdated": "2026-01-21T15:48:23.036Z",
+  "totalModules": 122,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
