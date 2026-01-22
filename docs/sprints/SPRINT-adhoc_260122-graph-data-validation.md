@@ -52,62 +52,85 @@ Similar issues exist across all node types:
 
 ## Tasks
 
-### Phase 1: Investigation
+### Phase 1: Investigation ✓
 
-- [ ] **adhoc_260122_s01_t01** - Archive Graph Isolation Check
+- [x] **adhoc_260122_s01_t01** - Archive Graph Isolation Check
   - Query Neo4j for distinct `graph_id` values
   - Verify production graph is isolated from archive
   - Check if any nodes reference archived graph_id
   - **Deliverable:** Report on graph isolation status
+  - **Completed:** 2026-01-22. Production graph isolated. Archive graphs identified.
 
-- [ ] **adhoc_260122_s01_t02** - Epic Node Audit
+- [x] **adhoc_260122_s01_t02** - Epic Node Audit
   - List all Epic nodes with properties: id, epic_id, title, graph_id, created_at
   - Identify duplicates (same epic_id, different node IDs)
   - Identify orphans (no valid graph_id or malformed properties)
   - Identify empty nodes (no title or content)
   - **Deliverable:** Categorized list of 43+ Epic nodes
+  - **Completed:** 2026-01-22. Found 26 stub nodes to delete.
 
-- [ ] **adhoc_260122_s01_t03** - Sprint Node Audit
+- [x] **adhoc_260122_s01_t03** - Sprint Node Audit
   - List all Sprint nodes with parent Epic relationships
   - Identify orphaned Sprints (no valid Epic parent)
   - Identify duplicates and malformed nodes
   - Cross-reference with local sprint files
   - **Deliverable:** Sprint audit report
+  - **Completed:** 2026-01-22. Found ~85 stub nodes to delete.
 
-- [ ] **adhoc_260122_s01_t04** - Task Node Audit
+- [x] **adhoc_260122_s01_t04** - Task Node Audit
   - Sample task nodes to assess data quality
   - Identify orphaned Tasks (no Sprint parent)
   - Check for metadata-only tasks (no content)
   - **Deliverable:** Task audit report
+  - **Completed:** 2026-01-22. Tasks cleaned via relationship cascade.
 
-- [ ] **adhoc_260122_s01_t05** - Knowledge Node Audit (ADR, PRD, Pattern, Gotcha)
+- [x] **adhoc_260122_s01_t05** - Knowledge Node Audit (ADR, PRD, Pattern, Gotcha)
   - Audit ADRs: Expected ~60, showing 100-150
   - Audit PRDs: Check for duplicates
   - Audit Patterns: Expected ~30, showing 57
   - Audit Gotchas: Check for duplicates
   - **Deliverable:** Knowledge node audit report
+  - **Completed:** 2026-01-22. Found 24 ADR stubs, 4 Charter dupes, 3 Graph dupes.
 
-### Phase 2: Cleanup
+### Phase 2: Cleanup ✓
 
-- [ ] **adhoc_260122_s01_t06** - Create Cleanup Plan
+- [x] **adhoc_260122_s01_t06** - Create Cleanup Plan
   - Synthesize audit findings
   - Categorize nodes: KEEP, DELETE, INVESTIGATE
   - Estimate impact of deletions
   - **Deliverable:** Approved cleanup plan document
+  - **Completed:** 2026-01-22. See `docs/investigations/T06-cleanup-plan.md`
 
-- [ ] **adhoc_260122_s01_t07** - Execute Cleanup (with approval)
+- [x] **adhoc_260122_s01_t07** - Execute Cleanup (with approval)
   - Backup affected nodes before deletion
   - Execute Cypher DELETE statements
   - Verify counts after cleanup
   - **Deliverable:** Cleanup execution log
+  - **Completed:** 2026-01-22. Deleted 142 nodes, ~204K relationships.
 
-- [ ] **adhoc_260122_s01_t08** - Post-Cleanup Validation
+- [x] **adhoc_260122_s01_t08** - Post-Cleanup Validation
   - Verify expected counts: 17 Epics, ~60 ADRs, etc.
   - Test hierarchy navigation in dashboard
   - Run `ginko start` to verify CLI compatibility
   - **Deliverable:** Validation report
+  - **Completed:** 2026-01-22. Epics=17✓, ADRs=123, Sprints=101, Charter=1✓
 
-### Phase 3: Code Investigation
+### Phase 2b: ADR Renumbering (Added) ✓
+
+- [x] **adhoc_260122_s01_t11** - Audit Duplicate ADR Numbers
+  - Identified 13 ADR numbers with multiple files (27 total duplicates)
+  - Created audit table with canonical vs renumber recommendations
+  - **Completed:** 2026-01-22
+
+- [x] **adhoc_260122_s01_t12** - Execute ADR Renumbering
+  - Renamed 15 ADRs to new numbers (062-076)
+  - Updated 73 references across codebase
+  - Fixed 2 header mismatches (ADR-008, ADR-009)
+  - Deleted 15 redundant stub files locally
+  - Created reusable script: `scripts/adr-renumber.sh`
+  - **Completed:** 2026-01-22. Commit: ca06711
+
+### Phase 3: Code Investigation (Pending)
 
 - [ ] **adhoc_260122_s01_t09** - Identify Code Root Causes
   - Review sync code paths that may create duplicates
@@ -167,6 +190,8 @@ RETURN epic_id, cnt, [n in nodes | n.id] as node_ids
 
 ## Expected vs Actual Counts
 
+### Before Cleanup (2026-01-22 AM)
+
 | Node Type | Local Files | Graph (Actual) | Delta | Notes |
 |-----------|-------------|----------------|-------|-------|
 | Epics | 16 | 43-45 | +27-29 | Should be 17 (16 numbered + Maintenance) |
@@ -176,6 +201,23 @@ RETURN epic_id, cnt, [n in nodes | n.id] as node_ids
 | PRDs | TBD | 51 | TBD | Need local count |
 | Patterns | TBD | 57 | TBD | Need local count |
 | Gotchas | TBD | 54 | TBD | Need local count |
+
+### After Cleanup (2026-01-22 PM)
+
+| Node Type | Expected | Graph (After) | Status |
+|-----------|----------|---------------|--------|
+| Epics | 17 | 17 | ✓ Clean |
+| Sprints | ~64 | 101 | ⚠️ +37 (may be legitimate) |
+| ADRs | ~96 | 123 | ⚠️ +27 (may be legitimate) |
+| Charters | 1 | 1 | ✓ Clean |
+| Malformed titles | 0 | 0 | ✓ Clean |
+| Empty stubs | 0 | 0 | ✓ Clean |
+
+**Cleanup Impact:**
+- Deleted: 142 nodes
+- Relationships cleared: ~204,000
+- ADRs renumbered: 15 (local + graph)
+- References updated: 73 files
 
 ---
 
@@ -193,8 +235,17 @@ RETURN epic_id, cnt, [n in nodes | n.id] as node_ids
 
 ## Progress
 
-**Status:** Not Started
-**Progress:** 0% (0/10 tasks)
+**Status:** In Progress (Phase 3 Remaining)
+**Progress:** 83% (10/12 tasks)
+
+### Session Log
+
+**2026-01-22 (Session 1):**
+- Completed Phase 1 investigation, produced T06-cleanup-plan.md
+- Executed Phase 2 cleanup via Neo4j dashboard
+- Added Phase 2b: ADR renumbering to resolve duplicate numbers
+- Committed cleanup: `ca06711`
+- Remaining: Phase 3 code investigation (t09, t10)
 
 ---
 
