@@ -1163,40 +1163,25 @@ pre {
 
 /* Secondary Hero Button - White with green arrow box */
 .hero-cta .btn-hero-secondary {
-    background-color: transparent !important;
-    color: #f6ffd6 !important;
-    border: 2px solid #f6ffd6;
+    background-color: #ffffff !important;
+    color: #050A0F !important;
+    border: none;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-text {
-    color: #f6ffd6 !important;
+    color: #050A0F !important;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-arrow {
-    background-color: transparent !important;
-    border: 1px solid #f6ffd6;
+    background-color: var(--color-accent) !important;
 }
 
 .hero-cta .btn-hero-secondary .arrow-icon {
-    stroke: #f6ffd6 !important;
+    stroke: #050A0F !important;
 }
 
 .hero-cta .btn-hero-secondary:hover {
-    background-color: #f6ffd6 !important;
-    color: #000000 !important;
-}
-
-.hero-cta .btn-hero-secondary:hover .btn-hero-text {
-    color: #000000 !important;
-}
-
-.hero-cta .btn-hero-secondary:hover .btn-hero-arrow {
-    background-color: #000000 !important;
-    border-color: #000000;
-}
-
-.hero-cta .btn-hero-secondary:hover .arrow-icon {
-    stroke: #f6ffd6 !important;
+    background-color: #f0f0f0 !important;
 }
 
 /* Nav Button - Header Get Started */
@@ -1223,6 +1208,12 @@ pre {
 .btn-nav-text {
     white-space: nowrap;
     color: #000000;
+    transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
+}
+
+.btn-nav:hover .btn-nav-text {
+    transform: translateX(4px);
+    letter-spacing: 0.08em;
 }
 
 .btn-nav-arrow {
@@ -2027,6 +2018,12 @@ pre {
 
 .btn-pricing-text {
     white-space: nowrap;
+    transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
+}
+
+.btn-pricing:hover .btn-pricing-text {
+    transform: translateX(4px);
+    letter-spacing: 0.08em;
 }
 
 .btn-pricing-arrow {
