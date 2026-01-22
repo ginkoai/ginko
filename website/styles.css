@@ -650,7 +650,7 @@ html:not([data-theme="dark"]) .theme-icon-dark {
 }
 
 .terminal-command {
-    color: var(--color-terminal-text);
+    color: #f6ffd6;
 }
 
 .terminal-output {
@@ -1065,6 +1065,115 @@ pre {
     border-color: var(--color-accent);
     color: var(--color-accent);
     transform: translateY(-2px);
+}
+
+/* CTA Section Buttons - Match hero style */
+.btn-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    padding: 8px 8px 8px 24px;
+    border-radius: 8px;
+    min-width: 200px;
+    height: 56px;
+    transition: all 0.3s ease-out;
+    cursor: pointer;
+}
+
+.btn-cta-text {
+    white-space: nowrap;
+    transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
+}
+
+.btn-cta:hover .btn-cta-text {
+    transform: translateX(4px);
+    letter-spacing: 0.08em;
+}
+
+.btn-cta-arrow {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.btn-cta-arrow .arrow-icon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    transition: all 0.3s ease-out;
+}
+
+.btn-cta-arrow .arrow-default {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.btn-cta-arrow .arrow-hover {
+    transform: translateX(-32px);
+    opacity: 0;
+}
+
+.btn-cta:hover .arrow-default {
+    transform: translateX(32px);
+    opacity: 0;
+}
+
+.btn-cta:hover .arrow-hover {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Primary CTA - Green with black arrow box */
+.btn-cta-primary {
+    background-color: var(--color-accent);
+    color: #000;
+    border: 2px solid var(--color-accent);
+}
+
+.btn-cta-primary .btn-cta-arrow {
+    background-color: #000;
+}
+
+.btn-cta-primary .arrow-icon {
+    stroke: var(--color-accent);
+}
+
+.btn-cta-primary:hover {
+    background-color: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+}
+
+/* Secondary CTA - White with green arrow box */
+.btn-cta-secondary {
+    background-color: #ffffff;
+    color: #050A0F;
+    border: none;
+}
+
+.btn-cta-secondary .btn-cta-arrow {
+    background-color: var(--color-accent);
+}
+
+.btn-cta-secondary .arrow-icon {
+    stroke: #050A0F;
+}
+
+.btn-cta-secondary:hover {
+    background-color: #f0f0f0;
 }
 
 /* Hero CTA Buttons - Rectangular with arrow boxes */
@@ -2096,7 +2205,7 @@ pre {
 
 .footer {
     background-color: var(--color-terminal-bg);
-    color: #dbe1d2;
+    color: #F6FFD6;
     padding: var(--space-16) 0 var(--space-8);
 }
 
@@ -2111,7 +2220,7 @@ pre {
     font-family: var(--font-mono);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
-    color: #dbe1d2;
+    color: #F6FFD6;
     margin-bottom: var(--space-4);
 }
 
@@ -2124,7 +2233,7 @@ pre {
 }
 
 .footer-section ul li a {
-    color: #dbe1d2;
+    color: #F6FFD6;
     text-decoration: none;
     font-size: var(--font-size-sm);
     transition: color var(--transition-fast);
@@ -2146,13 +2255,13 @@ pre {
 }
 
 .footer-description {
-    color: #dbe1d2;
+    color: #F6FFD6;
     font-size: var(--font-size-sm);
     line-height: 1.6;
 }
 
 .footer-tagline {
-    color: #dbe1d2;
+    color: #F6FFD6;
     font-size: var(--font-size-sm);
     font-family: var(--font-mono);
     margin-bottom: 0;
@@ -2169,7 +2278,7 @@ pre {
 .footer-bottom p {
     margin: 0;
     font-size: var(--font-size-sm);
-    color: #dbe1d2;
+    color: #F6FFD6;
 }
 
 .footer-links {
@@ -2178,7 +2287,7 @@ pre {
 }
 
 .footer-links a {
-    color: #dbe1d2;
+    color: #F6FFD6;
     font-size: var(--font-size-sm);
     text-decoration: none;
     transition: color var(--transition-fast);
