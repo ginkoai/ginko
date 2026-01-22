@@ -1089,12 +1089,11 @@ pre {
 
 .btn-cta-text {
     white-space: nowrap;
-    transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-cta:hover .btn-cta-text {
-    transform: translateX(4px);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
 }
 
 .btn-cta-arrow {
@@ -1157,23 +1156,34 @@ pre {
     border-color: var(--color-accent-hover);
 }
 
-/* Secondary CTA - White with green arrow box */
+/* Secondary CTA - Outline with #f6ffd6 */
 .btn-cta-secondary {
-    background-color: #ffffff;
-    color: #050A0F;
-    border: none;
+    background-color: transparent;
+    color: #f6ffd6;
+    border: 2px solid #f6ffd6;
 }
 
 .btn-cta-secondary .btn-cta-arrow {
-    background-color: var(--color-accent);
+    background-color: transparent;
+    border: 1px solid #f6ffd6;
 }
 
 .btn-cta-secondary .arrow-icon {
-    stroke: #050A0F;
+    stroke: #f6ffd6;
 }
 
 .btn-cta-secondary:hover {
-    background-color: #f0f0f0;
+    background-color: #f6ffd6;
+    color: #050A0F;
+}
+
+.btn-cta-secondary:hover .btn-cta-arrow {
+    background-color: #050A0F;
+    border-color: #050A0F;
+}
+
+.btn-cta-secondary:hover .arrow-icon {
+    stroke: #f6ffd6;
 }
 
 /* Hero CTA Buttons - Rectangular with arrow boxes */
@@ -1272,25 +1282,40 @@ pre {
 
 /* Secondary Hero Button - White with green arrow box */
 .hero-cta .btn-hero-secondary {
-    background-color: #ffffff !important;
-    color: #050A0F !important;
-    border: none;
+    background-color: transparent !important;
+    color: #f6ffd6 !important;
+    border: 2px solid #f6ffd6;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-text {
-    color: #050A0F !important;
+    color: #f6ffd6 !important;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-arrow {
-    background-color: var(--color-accent) !important;
+    background-color: transparent !important;
+    border: 1px solid #f6ffd6;
 }
 
 .hero-cta .btn-hero-secondary .arrow-icon {
-    stroke: #050A0F !important;
+    stroke: #f6ffd6 !important;
 }
 
 .hero-cta .btn-hero-secondary:hover {
-    background-color: #f0f0f0 !important;
+    background-color: #f6ffd6 !important;
+    color: #050A0F !important;
+}
+
+.hero-cta .btn-hero-secondary:hover .btn-hero-text {
+    color: #050A0F !important;
+}
+
+.hero-cta .btn-hero-secondary:hover .btn-hero-arrow {
+    background-color: #050A0F !important;
+    border-color: #050A0F;
+}
+
+.hero-cta .btn-hero-secondary:hover .arrow-icon {
+    stroke: #f6ffd6 !important;
 }
 
 /* Nav Button - Header Get Started */
@@ -1317,12 +1342,11 @@ pre {
 .btn-nav-text {
     white-space: nowrap;
     color: #000000;
-    transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-nav:hover .btn-nav-text {
-    transform: translateX(4px);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
 }
 
 .btn-nav-arrow {
@@ -1647,7 +1671,7 @@ pre {
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: var(--color-text-tertiary);
+    color: #c1f500;
     margin-bottom: var(--space-4);
     line-height: 1;
 }
@@ -1655,6 +1679,7 @@ pre {
 .feature-icon svg {
     width: 2.5rem;
     height: 2.5rem;
+    stroke: #c1f500;
 }
 
 .feature-name {
@@ -1723,8 +1748,8 @@ pre {
 
 .testimonial-quote-icon {
     flex-shrink: 0;
-    width: 48px;
-    height: 48px;
+    width: 72px;
+    height: 72px;
 }
 
 .testimonial-quote-icon svg {
@@ -2127,12 +2152,11 @@ pre {
 
 .btn-pricing-text {
     white-space: nowrap;
-    transition: transform 0.3s ease-out, letter-spacing 0.3s ease-out;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-pricing:hover .btn-pricing-text {
-    transform: translateX(4px);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
 }
 
 .btn-pricing-arrow {
