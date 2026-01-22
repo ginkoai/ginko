@@ -130,19 +130,21 @@ Similar issues exist across all node types:
   - Created reusable script: `scripts/adr-renumber.sh`
   - **Completed:** 2026-01-22. Commit: ca06711
 
-### Phase 3: Code Investigation (Pending)
+### Phase 3: Code Investigation ✓
 
-- [ ] **adhoc_260122_s01_t09** - Identify Code Root Causes
+- [x] **adhoc_260122_s01_t09** - Identify Code Root Causes
   - Review sync code paths that may create duplicates
   - Check for missing validation on node creation
   - Audit API endpoints for proper graph_id scoping
   - **Deliverable:** List of code issues to fix
+  - **Completed:** 2026-01-22. Found critical bug: `epic/sync` used `graphId` (camelCase) in MERGE while `task/sync` used `graph_id` (snake_case), creating duplicate nodes. See `docs/investigations/T09-code-root-causes.md`
 
-- [ ] **adhoc_260122_s01_t10** - Code Fixes (if needed)
+- [x] **adhoc_260122_s01_t10** - Code Fixes (if needed)
   - Fix identified issues
   - Add validation to prevent duplicate creation
   - Add schema enforcement where missing
   - **Deliverable:** Code PRs with fixes
+  - **Completed:** 2026-01-22. Fixed `epic/sync/route.ts:156` to use `graph_id` (snake_case) matching other sync endpoints. Build verified.
 
 ---
 
@@ -235,8 +237,8 @@ RETURN epic_id, cnt, [n in nodes | n.id] as node_ids
 
 ## Progress
 
-**Status:** In Progress (Phase 3 Remaining)
-**Progress:** 83% (10/12 tasks)
+**Status:** Complete
+**Progress:** 100% (12/12 tasks)
 
 ### Session Log
 
@@ -245,7 +247,13 @@ RETURN epic_id, cnt, [n in nodes | n.id] as node_ids
 - Executed Phase 2 cleanup via Neo4j dashboard
 - Added Phase 2b: ADR renumbering to resolve duplicate numbers
 - Committed cleanup: `ca06711`
-- Remaining: Phase 3 code investigation (t09, t10)
+
+**2026-01-22 (Session 2):**
+- Completed Phase 3 code investigation (t09, t10)
+- Root cause: `graphId` vs `graph_id` property name inconsistency in MERGE keys
+- Fixed `epic/sync/route.ts` to use `graph_id` (snake_case)
+- Documented findings in `docs/investigations/T09-code-root-causes.md`
+- Build verified, ready to deploy
 
 ---
 

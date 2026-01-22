@@ -150,10 +150,11 @@ async function syncEpicToGraph(epic: EpicSyncRequest, userEmail: string): Promis
   let nodesCreated = 0;
   let relationshipsCreated = 0;
 
-  // Create or update Epic node (scoped to graphId)
+  // Create or update Epic node (scoped to graph_id)
   // ADR-058: Store createdBy on creation, updatedBy on all updates
+  // NOTE: Uses graph_id (snake_case) to match task/sync convention (T09 fix)
   const epicQuery = `
-    MERGE (e:Epic {id: $id, graphId: $graphId})
+    MERGE (e:Epic {id: $id, graph_id: $graphId})
     ON CREATE SET
       e.createdAt = datetime(),
       e.createdBy = $userEmail,
