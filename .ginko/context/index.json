@@ -1670,10 +1670,35 @@
       "relevance": "critical",
       "created": "2026-01-22T00:10:38.378Z",
       "sessionId": "session-chris-at-watchhill-ai-1769040638332"
+    },
+    {
+      "filename": "pattern-implemented-integration-tests-for-team-status-feat.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli",
+        "performance"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-22T14:34:43.758Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769092483692"
+    },
+    {
+      "filename": "gotcha-completed-graph-cleanup-and-adr-renumbering.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-22T19:20:31.570Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769109631337"
     }
   ],
-  "lastUpdated": "2026-01-22T00:10:38.381Z",
-  "totalModules": 131,
+  "lastUpdated": "2026-01-22T19:20:31.572Z",
+  "totalModules": 133,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [
