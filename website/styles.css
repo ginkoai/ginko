@@ -115,7 +115,7 @@
    ============================================================================ */
 
 [data-theme="dark"] {
-    --color-bg: #151e28;
+    --color-bg: #0F1F2E;
     --color-surface: #030609;
     --color-surface-hover: #f6ffd6;
     --color-text: #f6ffd6;
@@ -129,8 +129,8 @@
     --color-accent-light: rgba(193, 245, 0, 0.15);
     --color-accent-dark: #99c200;
 
-    --color-terminal-bg: #0c161d;
-    --color-terminal-header: #1c2222;
+    --color-terminal-bg: #050A0F;
+    --color-terminal-header: #0A141F;
     --color-terminal-prompt: #C1F500;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
