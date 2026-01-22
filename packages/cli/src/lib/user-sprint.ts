@@ -61,8 +61,8 @@ export async function getUserCurrentSprint(): Promise<UserSprintAssignment | nul
 
     const data = await fs.readJSON(filePath);
 
-    // Validate required fields
-    if (!data.sprintId || !data.sprintFile) {
+    // Validate required fields (sprintFile can be empty for graph-based sprints)
+    if (!data.sprintId) {
       return null;
     }
 
@@ -184,6 +184,10 @@ export async function validateUserSprint(
 export async function getSprintFileFromAssignment(
   assignment: UserSprintAssignment
 ): Promise<string> {
+  // Graph-based sprints have no local file
+  if (!assignment.sprintFile) {
+    return '';
+  }
   const projectRoot = await requireGinkoRoot();
   return path.join(projectRoot, assignment.sprintFile);
 }

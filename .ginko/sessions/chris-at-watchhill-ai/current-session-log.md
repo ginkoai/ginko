@@ -1,12 +1,12 @@
 ---
-session_id: session-2026-01-21T17-37-11-372Z
-started: 2026-01-21T17:37:11.372Z
+session_id: session-2026-01-22T00-08-23-631Z
+started: 2026-01-22T00:08:23.631Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-21T17-37-11-372Z
+# Session Log: session-2026-01-22T00-08-23-631Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
@@ -14,27 +14,15 @@ flow_state: hot
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
 
-### 12:42 - [insight]
-Root cause identified for graph loading bug. When Voyage AI embedding fails, nodes are created but: 1) embeddings silently skipped, 2) summary field never populated, 3) job status lies (always returns completed), 4) status endpoint hardcodes withEmbeddings:0. Affects new projects where VOYAGE_API_KEY may be misconfigured or rate limited.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+### 19:10 - [fix]
+Fixed active sprint selection sync issue (EPIC-016). Root cause: task timestamps reflected graph sync time, not actual user activity - Sprint 2 (0%) had newer timestamps than Sprint 3 (83%) despite no work done. Solution: User intent beats auto-detection. Added sprintId param to /api/v1/sprint/active API, ginko sprint start now saves user preference locally, CLI passes preference to API. Design insight from vibecheck: 'Trust the human to prioritize' - show last-worked-on sprint + 2-3 alternatives with summary, don't over-engineer detection algorithms. Simplicity won.
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
 Impact: high
 
 
-### 12:47 - [fix]
-Fixed graph loading bug for new projects. Added: 1) generateSummary() function that strips frontmatter and extracts first 500 chars of content, 2) has_embedding flag to track embedding status, 3) warnings array in job response when embeddings fail. Root cause was silent embedding failure - nodes were created without summary or embedding. Deployed to app.ginkoai.com.
-Files: dashboard/src/app/api/v1/graph/documents/route.ts
-Impact: high
-
-
-### 13:06 - [feature]
-Deployed query endpoint fix: now searches type-specific vector indexes instead of non-existent knowledge_embeddings. Created migration 014 for Voyage AI 1024-dim indexes (Sprint, Epic, Task, Charter). Migration pending - needs to be run via Neo4j AuraDB console.
-Files: dashboard/src/app/api/v1/graph/query/route.ts, src/graph/schema/014-voyage-vector-indexes.cypher
-Impact: high
-
-
-### 14:27 - [achievement]
-Maintenance sprint complete: Graph loading bug fixed. Changes: 1) Summary field now auto-generated, 2) Query searches type-specific indexes, 3) Migration 014 adds Sprint/Epic/Task/Charter indexes at 1024 dims. Verified working - semantic search returns results from multiple types. Ed should run ginko graph load --force to regenerate embeddings.
-Files: .ginko/graph/config.json
+### 19:10 - [insight]
+Design principle learned: Flow continuity through user intent. When auto-detection fails (timestamps lie, data quality issues), fall back to explicit user choice. The pattern: (1) Let user explicitly set their focus with a command, (2) Persist that choice locally, (3) Pass it to APIs as a preference parameter, (4) Show 2-3 alternatives for when they're ready to shift. Don't try to be smarter than the human - just maintain their context and make it easy to change.
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
 Impact: high
 
 
@@ -50,9 +38,9 @@ Impact: high
 <!-- GOOD: "Discovered bcrypt rounds 10-11 optimal. Testing showed rounds 15 caused 800ms delays; rounds 11 achieved 200ms with acceptable entropy." -->
 <!-- BAD: "Bcrypt should be 11" (missing context and discovery process) -->
 
-### 12:42 - [insight]
-Root cause identified for graph loading bug. When Voyage AI embedding fails, nodes are created but: 1) embeddings silently skipped, 2) summary field never populated, 3) job status lies (always returns completed), 4) status endpoint hardcodes withEmbeddings:0. Affects new projects where VOYAGE_API_KEY may be misconfigured or rate limited.
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+### 19:10 - [insight]
+Design principle learned: Flow continuity through user intent. When auto-detection fails (timestamps lie, data quality issues), fall back to explicit user choice. The pattern: (1) Let user explicitly set their focus with a command, (2) Persist that choice locally, (3) Pass it to APIs as a preference parameter, (4) Show 2-3 alternatives for when they're ready to shift. Don't try to be smarter than the human - just maintain their context and make it easy to change.
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
 Impact: high
 
 
@@ -67,61 +55,38 @@ Impact: high
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
 
-### 12:42 - [insight]
-# [INSIGHT] 12:42
+### 19:10 - [fix]
+# [FIX] 19:10
 
-Root cause identified for graph loading bug. When Voyage AI embedding fails, nodes are created but: 1) embeddings silently skipped, 2) summary field never populated, 3) job status lies (always returns completed), 4) status endpoint hardcodes withEmbeddings:0. Affects new projects where VOYAGE_API_KEY may be misconfigured or rate limited.
+Fixed active sprint selection sync issue (EPIC-016). Root cause: task timestamps reflected graph sync time, not actual user activity - Sprint 2 (0%) had newer timestamps than Sprint 3 (83%) despite no work done. Solution: User intent beats auto-detection. Added sprintId param to /api/v1/sprint/active API, ginko sprint start now saves user preference locally, CLI passes preference to API. Design insight from vibecheck: 'Trust the human to prioritize' - show last-worked-on sprint + 2-3 alternatives with summary, don't over-engineer detection algorithms. Simplicity won.
 
 **Files:**
+- .ginko/context/index.json
 - .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
 - .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
-- .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+- dashboard/src/app/api/v1/sprint/active/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-21T17:42:36.108Z
+**Timestamp:** 2026-01-22T00:10:23.825Z
 
-Files: .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, .ginko/sessions/chris-at-watchhill-ai/insights-schedule.json
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
 Impact: high
 
-### 12:47 - [fix]
-# [FIX] 12:47
+### 19:10 - [insight]
+# [INSIGHT] 19:10
 
-Fixed graph loading bug for new projects. Added: 1) generateSummary() function that strips frontmatter and extracts first 500 chars of content, 2) has_embedding flag to track embedding status, 3) warnings array in job response when embeddings fail. Root cause was silent embedding failure - nodes were created without summary or embedding. Deployed to app.ginkoai.com.
-
-**Files:**
-- dashboard/src/app/api/v1/graph/documents/route.ts
-
-**Impact:** high
-**Timestamp:** 2026-01-21T17:47:27.574Z
-
-Files: dashboard/src/app/api/v1/graph/documents/route.ts
-Impact: high
-
-### 13:06 - [feature]
-# [FEATURE] 13:06
-
-Deployed query endpoint fix: now searches type-specific vector indexes instead of non-existent knowledge_embeddings. Created migration 014 for Voyage AI 1024-dim indexes (Sprint, Epic, Task, Charter). Migration pending - needs to be run via Neo4j AuraDB console.
+Design principle learned: Flow continuity through user intent. When auto-detection fails (timestamps lie, data quality issues), fall back to explicit user choice. The pattern: (1) Let user explicitly set their focus with a command, (2) Persist that choice locally, (3) Pass it to APIs as a preference parameter, (4) Show 2-3 alternatives for when they're ready to shift. Don't try to be smarter than the human - just maintain their context and make it easy to change.
 
 **Files:**
-- dashboard/src/app/api/v1/graph/query/route.ts
-- src/graph/schema/014-voyage-vector-indexes.cypher
+- .ginko/context/index.json
+- .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl
+- .ginko/sessions/chris-at-watchhill-ai/current-session-log.md
+- dashboard/src/app/api/v1/sprint/active/route.ts
 
 **Impact:** high
-**Timestamp:** 2026-01-21T18:06:32.540Z
+**Timestamp:** 2026-01-22T00:10:36.264Z
 
-Files: dashboard/src/app/api/v1/graph/query/route.ts, src/graph/schema/014-voyage-vector-indexes.cypher
-Impact: high
-
-### 14:27 - [achievement]
-# [ACHIEVEMENT] 14:27
-
-Maintenance sprint complete: Graph loading bug fixed. Changes: 1) Summary field now auto-generated, 2) Query searches type-specific indexes, 3) Migration 014 adds Sprint/Epic/Task/Charter indexes at 1024 dims. Verified working - semantic search returns results from multiple types. Ed should run ginko graph load --force to regenerate embeddings.
-
-**Files:**
-- .ginko/graph/config.json
-
-**Impact:** high
-**Timestamp:** 2026-01-21T19:27:38.564Z
-
-Files: .ginko/graph/config.json
+Files: .ginko/context/index.json, .ginko/sessions/chris-at-watchhill-ai/current-context.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-events.jsonl, .ginko/sessions/chris-at-watchhill-ai/current-session-log.md, dashboard/src/app/api/v1/sprint/active/route.ts
 Impact: high

@@ -81,6 +81,14 @@ interface SprintStats {
   progressPercentage: number;
 }
 
+// Alert types for edge case notifications (flow continuity)
+interface SprintAlert {
+  type: 'other_active_sprint' | 'epic_complete' | 'other_active_epic';
+  message: string;
+  sprint_id?: string;
+  epic_id?: string;
+}
+
 // Enhanced response types (EPIC-015)
 interface SprintProgress {
   complete: number;
@@ -163,6 +171,8 @@ export async function GET(request: NextRequest) {
     // Get graphId from query params or header
     const { searchParams } = new URL(request.url);
     const graphId = searchParams.get('graphId') || request.headers.get('x-graph-id');
+    // Optional: specific sprint ID to fetch (overrides auto-detect)
+    const preferredSprintId = searchParams.get('sprintId');
 
     if (!graphId) {
       return NextResponse.json(
@@ -174,35 +184,53 @@ export async function GET(request: NextRequest) {
     // Create graph client
     const client = await CloudGraphClient.fromBearerToken(token, graphId);
 
-    // Query for active sprint with priority:
+    let result: any[] = [];
+
+    // If user specified a preferred sprint, fetch that directly (user intent takes priority)
+    if (preferredSprintId) {
+      result = await client.runScopedQuery<any>(`
+        MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint {id: $preferredSprintId})
+        OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
+        OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+        OPTIONAL MATCH (s)-[:NEXT_TASK]->(next:Task)
+        RETURN s as sprint, collect(DISTINCT t) as tasks, next as nextTask, e as epic
+      `, { preferredSprintId });
+    }
+
+    // If no preferred sprint or not found, auto-detect
+    if (result.length === 0) {
+      // Query for active sprint with priority:
+    // Design principle: Maximize flow state through continuity of last session
     // Priority order for selecting active sprint:
-    // 1. Epic roadmap lane: Now > Next > Later (done/dropped excluded)
-    // 2. Sprint completion: incomplete > no tasks > complete
-    // 3. Sprint status: active/in_progress > not_started > other
-    // 4. Progress (lower first), then newest
+    // 1. Last worked on (flow continuity) - most recent task update wins
+    // 2. Epic roadmap lane: Now > Next > Later (done/dropped excluded)
+    // 3. Sprint sequence: higher sprint ID = later in sequence (s03 > s02)
     let result = await client.runScopedQuery<any>(`
-      // Step 1: Get sprints with their parent epic and task counts
+      // Step 1: Get sprints with their parent epic, task counts, and last activity
       MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
       OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
       OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
       WITH s, e,
            count(t) as totalTasks,
-           sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks
+           sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks,
+           max(t.updatedAt) as lastTaskActivity
 
       // Step 2: Calculate progress and apply filters
-      WITH s, e, totalTasks, completedTasks,
+      // Exclude 100% complete sprints (they go in alerts as celebrations)
+      // Also exclude dropped/done epics
+      WITH s, e, totalTasks, completedTasks, lastTaskActivity,
            CASE WHEN totalTasks > 0 THEN toInteger((completedTasks * 100) / totalTasks) ELSE 0 END as progress
       WHERE (s.status IS NULL OR s.status <> 'complete')
         AND (e IS NULL OR e.roadmap_lane IS NULL OR NOT e.roadmap_lane IN ['done', 'dropped'])
+        AND (totalTasks = 0 OR completedTasks < totalTasks)
 
-      // Step 3: Order by priority and select top sprint
-      WITH s, e, totalTasks, progress
+      // Step 3: Order by LAST WORKED ON (simple continuity)
+      // The sprint with most recent task activity is where the user was working
+      // Trust the human to prioritize - just show them their context
+      WITH s, e, totalTasks, progress, lastTaskActivity
       ORDER BY
-        CASE WHEN e.roadmap_lane = 'now' THEN 0 WHEN e.roadmap_lane = 'next' THEN 1 WHEN e.roadmap_lane = 'later' THEN 2 ELSE 3 END,
-        CASE WHEN totalTasks > 0 AND progress < 100 THEN 0 WHEN totalTasks = 0 THEN 1 ELSE 2 END,
-        CASE WHEN s.status IN ['active', 'in_progress'] THEN 0 WHEN s.status = 'not_started' THEN 1 ELSE 2 END,
-        progress ASC,
-        s.createdAt DESC
+        CASE WHEN lastTaskActivity IS NOT NULL THEN 0 ELSE 1 END,
+        lastTaskActivity DESC
       LIMIT 1
 
       // Step 4: Load tasks for selected sprint
@@ -212,6 +240,7 @@ export async function GET(request: NextRequest) {
 
       RETURN s as sprint, collect(DISTINCT t) as tasks, next as nextTask, e as epic
     `);
+    }
 
     // Fallback: If no sprint found (all might be marked 'complete'), get most recent
     if (result.length === 0) {
@@ -241,6 +270,42 @@ export async function GET(request: NextRequest) {
 
     const record = result[0];
 
+    // Query for edge case alerts (other active work + recent completions)
+    // This helps users stay aware of pending work while maintaining flow
+    const alertsResult = await client.runScopedQuery<any>(`
+      // Get all sprints with incomplete work (for "other active" alerts)
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
+      OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
+      OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+      WITH s, e,
+           count(t) as totalTasks,
+           sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks
+      WITH s, e, totalTasks, completedTasks,
+           CASE WHEN totalTasks > 0 THEN toInteger((completedTasks * 100) / totalTasks) ELSE 0 END as progress
+      WHERE totalTasks > 0 AND progress < 100
+        AND (s.status IS NULL OR s.status <> 'complete')
+        AND (e IS NULL OR e.roadmap_lane IS NULL OR NOT e.roadmap_lane IN ['done', 'dropped'])
+      RETURN s.id as sprintId, s.name as sprintName, e.id as epicId,
+             totalTasks, completedTasks, progress, false as isComplete
+      ORDER BY s.id
+    `);
+
+    // Also check for recently completed sprints (same epic as selected sprint)
+    // These will be shown as celebration alerts
+    const completedResult = await client.runScopedQuery<any>(`
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)-[:CONTAINS]->(t:Task)
+      WITH s, count(t) as totalTasks,
+           sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks,
+           max(t.updatedAt) as lastActivity
+      WHERE totalTasks > 0 AND completedTasks = totalTasks
+      RETURN s.id as sprintId, s.name as sprintName, totalTasks, lastActivity
+      ORDER BY lastActivity DESC
+      LIMIT 3
+    `);
+
+    // Build alerts array for edge cases
+    const alerts: SprintAlert[] = [];
+
     // Extract properties from Neo4j node objects
     // Neo4j driver returns nodes wrapped: { properties: { ... } }
     const extractProps = <T>(node: any): T | null => {
@@ -261,6 +326,73 @@ export async function GET(request: NextRequest) {
     const inProgressTasks = rawTasks.filter(t => t.status === 'in_progress').length;
     const blockedTasks = rawTasks.filter(t => t.status === 'blocked');
     const notStartedTasks = rawTasks.filter(t => t.status === 'not_started' || t.status === 'todo').length;
+
+    // =========================================================================
+    // Build alerts for edge cases (flow continuity)
+    // =========================================================================
+
+    const currentEpicId = extractEpicId(sprintData.id);
+
+    // Process alerts from other active sprints (limit to 3 max - trust human to prioritize)
+    let alertCount = 0;
+    const maxAlerts = 3;
+    let hiddenCount = 0;
+
+    for (const alertRow of alertsResult) {
+      const otherSprintId = alertRow.sprintId;
+      const otherEpicId = alertRow.epicId || extractEpicId(otherSprintId);
+      const remaining = alertRow.totalTasks - alertRow.completedTasks;
+
+      // Skip the current sprint
+      if (otherSprintId === sprintData.id) continue;
+
+      if (alertCount < maxAlerts) {
+        if (otherEpicId === currentEpicId) {
+          alerts.push({
+            type: 'other_active_sprint',
+            message: `${otherSprintId}: ${remaining} task${remaining !== 1 ? 's' : ''} remaining`,
+            sprint_id: otherSprintId,
+            epic_id: otherEpicId,
+          });
+        } else {
+          alerts.push({
+            type: 'other_active_epic',
+            message: `${otherEpicId}: ${remaining} task${remaining !== 1 ? 's' : ''} pending`,
+            sprint_id: otherSprintId,
+            epic_id: otherEpicId,
+          });
+        }
+        alertCount++;
+      } else {
+        hiddenCount++;
+      }
+    }
+
+    // Add summary if there's more hidden work
+    if (hiddenCount > 0) {
+      alerts.push({
+        type: 'other_active_epic',
+        message: `+${hiddenCount} more active sprints (run \`ginko team status\` for details)`,
+      });
+    }
+
+    // Add celebration alerts for recently completed sprints
+    // This preserves sense of accomplishment even when moving to new work
+    for (const completedRow of completedResult) {
+      const completedSprintId = completedRow.sprintId;
+      const completedEpicId = extractEpicId(completedSprintId);
+
+      // Show celebration for recently completed sprints in same or related epics
+      // Limit to 1 celebration to avoid alert fatigue
+      if (alerts.filter(a => a.type === 'epic_complete').length === 0) {
+        alerts.unshift({
+          type: 'epic_complete',
+          message: `🎉 Sprint ${completedSprintId} complete!`,
+          sprint_id: completedSprintId,
+          epic_id: completedEpicId,
+        });
+      }
+    }
 
     // =========================================================================
     // Build enhanced response (EPIC-015)
@@ -346,6 +478,9 @@ export async function GET(request: NextRequest) {
       tasks: enhancedTasks,
       next_task: enhancedNextTask,
       blocked_tasks: enhancedBlockedTasks,
+
+      // Flow continuity alerts (edge cases)
+      alerts: alerts.length > 0 ? alerts : undefined,
 
       // Epic/roadmap info (for CLI display)
       epic: epicData ? {

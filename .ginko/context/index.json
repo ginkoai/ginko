@@ -1606,10 +1606,74 @@
       "relevance": "critical",
       "created": "2026-01-21T18:06:36.674Z",
       "sessionId": "session-chris-at-watchhill-ai-1769018796629"
+    },
+    {
+      "filename": "pattern-completed-team-status-api-endpoint-e016s03t01.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "auth"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T21:55:07.881Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769032507747"
+    },
+    {
+      "filename": "pattern-completed-ginko-team-status-cli-command-e016s03t02.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T22:09:35.720Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769033375678"
+    },
+    {
+      "filename": "pattern-completed-last-activity-tracking-e016s03t03.md",
+      "type": "pattern",
+      "tags": [
+        "feature",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-21T22:21:57.451Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769034117406"
+    },
+    {
+      "filename": "gotcha-fixed-active-sprint-selection-sync-issue-epic016.md",
+      "type": "gotcha",
+      "tags": [
+        "fix",
+        "high",
+        "api",
+        "cli"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-22T00:10:26.031Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769040625973"
+    },
+    {
+      "filename": "discovery-design-principle-learned-flow-continuity-through-u.md",
+      "type": "discovery",
+      "tags": [
+        "insight",
+        "high",
+        "api"
+      ],
+      "relevance": "critical",
+      "created": "2026-01-22T00:10:38.378Z",
+      "sessionId": "session-chris-at-watchhill-ai-1769040638332"
     }
   ],
-  "lastUpdated": "2026-01-21T18:06:36.674Z",
-  "totalModules": 126,
+  "lastUpdated": "2026-01-22T00:10:38.381Z",
+  "totalModules": 131,
   "pattern-universal-reflection-pattern-i.md": {
     "type": "pattern",
     "tags": [

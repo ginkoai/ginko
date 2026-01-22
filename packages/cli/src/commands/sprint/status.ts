@@ -14,6 +14,7 @@ import chalk from 'chalk';
 import readline from 'readline';
 import { GraphApiClient, SprintStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
+import { setUserCurrentSprint } from '../../lib/user-sprint.js';
 
 // =============================================================================
 // Helpers
@@ -144,8 +145,19 @@ async function startSprintCommand(
 
   try {
     const current = await client.getSprintStatus(graphId, sprintId);
+    const epicId = extractEpicId(sprintId) || sprintId.split('_')[0];
+
     if (current.status === 'active') {
-      console.log(chalk.yellow(`Sprint ${sprintId} is already active (no change)`));
+      console.log(chalk.yellow(`Sprint ${sprintId} is already active`));
+      // Still set as user's focus sprint (they want to work on this)
+      await setUserCurrentSprint({
+        sprintId,
+        epicId,
+        sprintFile: '', // No file needed for graph-based sprints
+        sprintName: sprintId,
+        assignedAt: new Date().toISOString(),
+        assignedBy: 'manual',
+      });
       return;
     }
 
@@ -154,6 +166,16 @@ async function startSprintCommand(
     if (response.sprint.name) {
       console.log(chalk.dim(`  "${response.sprint.name}"`));
     }
+
+    // Also set as user's focus sprint for continuity in `ginko start`
+    await setUserCurrentSprint({
+      sprintId,
+      epicId,
+      sprintFile: '', // No file needed for graph-based sprints
+      sprintName: response.sprint.name || sprintId,
+      assignedAt: new Date().toISOString(),
+      assignedBy: 'manual',
+    });
   } catch (error) {
     handleError('start', sprintId, error);
   }

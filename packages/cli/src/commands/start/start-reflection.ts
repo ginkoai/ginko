@@ -540,14 +540,25 @@ export class StartReflectionCommand extends ReflectionCommand {
       const graphId = await isGraphInitialized() ? await getGraphId() : null;
       const isGraphReady = await isAuthenticated() && graphId;
 
-      if (isGraphReady && graphId) {
-        // Graph-only approach: fetch state directly from graph API (EPIC-015 Sprint 3)
-        // No local file loading - graph is authoritative for STATE
+      // When user has explicitly set a sprint (via `ginko sprint start`), respect that choice
+      // This ensures continuity - the user knows what they want to work on
+      if (userSprintLoaded && sprintFilePath && sprintFilePath.length > 0) {
+        // User has a local sprint file - load from file
+        spinner.text = 'Loading user-selected sprint...';
+        const localChecklist = await loadSprintChecklist(projectRoot, sprintFilePath);
+        if (localChecklist) {
+          sprintChecklist = localChecklist;
+          sprintSource = 'user';
+        }
+      } else if (isGraphReady && graphId) {
+        // Fetch from graph - pass user's sprint preference if set (API will prioritize it)
         spinner.text = 'Fetching sprint from graph...';
 
         const client = new GraphApiClient();
         try {
-          const graphResponse = await client.getActiveSprint(graphId);
+          // Pass user's sprint preference if set (API will prioritize it for continuity)
+          const preferredSprintId = userSprint?.sprintId;
+          const graphResponse = await client.getActiveSprint(graphId, preferredSprintId);
           sprintChecklist = this.convertGraphSprintToChecklist(graphResponse);
           sprintSource = 'graph';
 

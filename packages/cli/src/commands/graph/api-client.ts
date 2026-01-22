@@ -586,11 +586,12 @@ export class GraphApiClient {
    * @param graphId - Graph namespace identifier
    * @returns Active sprint with tasks and statistics
    */
-  async getActiveSprint(graphId: string): Promise<ActiveSprintResponse> {
-    return this.request<ActiveSprintResponse>(
-      'GET',
-      `/api/v1/sprint/active?graphId=${encodeURIComponent(graphId)}`
-    );
+  async getActiveSprint(graphId: string, preferredSprintId?: string): Promise<ActiveSprintResponse> {
+    let url = `/api/v1/sprint/active?graphId=${encodeURIComponent(graphId)}`;
+    if (preferredSprintId) {
+      url += `&sprintId=${encodeURIComponent(preferredSprintId)}`;
+    }
+    return this.request<ActiveSprintResponse>('GET', url);
   }
 
   /**
