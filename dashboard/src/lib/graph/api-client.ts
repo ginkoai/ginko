@@ -749,8 +749,9 @@ function extractEpicId(id: string): string | null {
 function extractSprintId(taskId: string): string | null {
   const lower = taskId.toLowerCase();
 
-  // Pattern: e{NNN}_s{NN}_t{NN} or e{NNN}_s{NN}
-  const match = lower.match(/^(e\d+_s\d+)/);
+  // Pattern: e{NNN}_s{NN}[a-z]?_t{NN} or e{NNN}_s{NN}[a-z]?
+  // Allow optional letter suffix on sprint number (e.g., s00a, s01b)
+  const match = lower.match(/^(e\d+_s\d+[a-z]?)/);
   if (match) return match[1];
 
   return null;
@@ -853,15 +854,18 @@ export async function buildTreeHierarchy(options: FetchOptions = {}): Promise<Tr
   }
 
   // Fetch all hierarchical nodes in parallel
+  // Use high limits to ensure we get all nodes for tree building
+  // Default limit is 50, but we need ALL nodes for proper hierarchy
+  const treeOptions = { ...options, limit: 5000 };
   const [rawEpics, rawSprints, rawTasks, adrs, prds, patterns, gotchas, principles] = await Promise.all([
-    getNodesByLabel('Epic', options),
-    getNodesByLabel('Sprint', options),
-    getNodesByLabel('Task', options),
-    getNodesByLabel('ADR', options),
-    getNodesByLabel('PRD', options),
-    getNodesByLabel('Pattern', options),
-    getNodesByLabel('Gotcha', options),
-    getNodesByLabel('Principle', options),
+    getNodesByLabel('Epic', treeOptions),
+    getNodesByLabel('Sprint', treeOptions),
+    getNodesByLabel('Task', treeOptions),
+    getNodesByLabel('ADR', treeOptions),
+    getNodesByLabel('PRD', treeOptions),
+    getNodesByLabel('Pattern', treeOptions),
+    getNodesByLabel('Gotcha', treeOptions),
+    getNodesByLabel('Principle', treeOptions),
   ]);
 
   // Smart epic deduplication that preserves sprint linkage
