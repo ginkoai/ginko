@@ -7,7 +7,7 @@
     "ginko": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc && npm run copy:templates",
+    "build": "tsc && chmod +x dist/index.js && npm run copy:templates",
     "copy:templates": "mkdir -p dist/templates && cp src/templates/*.md dist/templates/ 2>/dev/null || true",
     "dev": "tsc --watch",
     "test": "jest",
