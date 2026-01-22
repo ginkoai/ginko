@@ -1086,12 +1086,12 @@ pre {
 
 .btn-cta-text {
     white-space: nowrap;
-    opacity: 1;
-    transition: opacity 0.3s ease-out;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-cta:hover .btn-cta-text {
-    opacity: 0.6;
+    letter-spacing: 0.15em;
 }
 
 .btn-cta-arrow {
@@ -1159,7 +1159,7 @@ pre {
 }
 
 .btn-cta-primary:hover .btn-cta-text {
-    opacity: 0.6;
+    letter-spacing: 0.15em;
 }
 
 /* Secondary CTA - White with dark text */
@@ -1186,7 +1186,7 @@ pre {
 }
 
 .btn-cta-secondary:hover .btn-cta-text {
-    opacity: 0.6;
+    letter-spacing: 0.15em;
 }
 
 /* Hero CTA Buttons - Rectangular with arrow boxes */
@@ -1214,6 +1214,12 @@ pre {
     position: relative;
     z-index: 1;
     white-space: nowrap;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
+}
+
+.hero-cta .btn-hero:hover .btn-hero-text {
+    letter-spacing: 0.15em;
 }
 
 .hero-cta .btn-hero-arrow {
@@ -1292,7 +1298,6 @@ pre {
 
 .hero-cta .btn-hero-secondary .btn-hero-text {
     color: #050A0F !important;
-    transition: opacity 0.3s ease-out;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-arrow {
@@ -1308,7 +1313,7 @@ pre {
 }
 
 .hero-cta .btn-hero-secondary:hover .btn-hero-text {
-    opacity: 0.7;
+    letter-spacing: 0.15em;
 }
 
 /* Nav Button - Header Get Started */
@@ -1335,11 +1340,12 @@ pre {
 .btn-nav-text {
     white-space: nowrap;
     color: #000000;
-    transition: opacity 0.3s ease-out;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-nav:hover .btn-nav-text {
-    opacity: 0.7;
+    letter-spacing: 0.15em;
 }
 
 .btn-nav-arrow {
@@ -2146,12 +2152,12 @@ pre {
 .btn-pricing-text {
     white-space: nowrap;
     color: #000;
-    opacity: 1;
-    transition: opacity 0.3s ease-out;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-pricing:hover .btn-pricing-text {
-    opacity: 0.6;
+    letter-spacing: 0.15em;
 }
 
 .btn-pricing-arrow {
