@@ -1987,43 +1987,93 @@ pre {
 }
 
 /* Pricing card buttons - consistent sizing */
-.pricing-card .btn-primary,
-.pricing-card .btn-outline {
-    display: block;
+/* Pricing Button Base Styles */
+.btn-pricing {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
     width: 100%;
-    padding: var(--space-4) var(--space-6);
+    padding: 8px 8px 8px 24px;
     font-family: var(--font-mono);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    text-align: center;
-    border-radius: 9999px;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     text-decoration: none;
-    transition: all var(--transition-fast);
+    border-radius: 8px;
+    height: 56px;
+    transition: all 0.3s ease-out;
+    cursor: pointer;
 }
 
-/* Free and Enterprise CTAs - black with green text */
-.pricing-card .btn-outline {
-    background-color: #0A0A0A;
+.btn-pricing-text {
+    white-space: nowrap;
+}
+
+.btn-pricing-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.btn-pricing-arrow .arrow-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Outline style - for Free and Enterprise */
+.btn-pricing-outline {
+    background-color: transparent;
     color: var(--color-accent);
     border: 2px solid var(--color-accent);
 }
 
-.pricing-card .btn-outline:hover {
-    background-color: var(--color-accent);
-    color: #0A0A0A;
-    border-color: var(--color-accent);
+.btn-pricing-outline .btn-pricing-arrow {
+    background-color: transparent;
+    border: 1px solid var(--color-accent);
 }
 
-/* Pro CTA - green with black text (recommended) */
-.pricing-card .btn-primary {
+.btn-pricing-outline .arrow-icon {
+    stroke: var(--color-accent);
+}
+
+.btn-pricing-outline:hover {
     background-color: var(--color-accent);
-    color: #0A0A0A;
+    color: #000;
+}
+
+.btn-pricing-outline:hover .btn-pricing-arrow {
+    background-color: #000;
+    border-color: #000;
+}
+
+.btn-pricing-outline:hover .arrow-icon {
+    stroke: var(--color-accent);
+}
+
+/* Primary style - for Pro */
+.btn-pricing-primary {
+    background-color: var(--color-accent);
+    color: #000;
     border: 2px solid var(--color-accent);
 }
 
-.pricing-card .btn-primary:hover {
+.btn-pricing-primary .btn-pricing-arrow {
+    background-color: #000;
+}
+
+.btn-pricing-primary .arrow-icon {
+    stroke: var(--color-accent);
+}
+
+.btn-pricing-primary:hover {
     background-color: var(--color-accent-hover);
-    color: #0A0A0A;
     border-color: var(--color-accent-hover);
 }
 
