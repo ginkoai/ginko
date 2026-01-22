@@ -116,7 +116,7 @@
 
 [data-theme="dark"] {
     --color-bg: #0F1F2E;
-    --color-surface: #030609;
+    --color-surface: #050A0F;
     --color-surface-hover: #f6ffd6;
     --color-text: #f6ffd6;
     --color-text-secondary: #f6ffd6;
@@ -961,7 +961,7 @@ pre {
     justify-content: center;
     background: transparent;
     border: none;
-    color: var(--color-text-tertiary);
+    color: #f6ffd6;
     cursor: pointer;
     padding: var(--space-2);
     margin-left: var(--space-4);
@@ -1163,26 +1163,40 @@ pre {
 
 /* Secondary Hero Button - White with green arrow box */
 .hero-cta .btn-hero-secondary {
-    background-color: #ffffff !important;
-    color: #000000 !important;
-    border: 2px solid rgba(0, 0, 0, 0.1);
+    background-color: transparent !important;
+    color: #f6ffd6 !important;
+    border: 2px solid #f6ffd6;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-text {
-    color: #000000 !important;
+    color: #f6ffd6 !important;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-arrow {
-    background-color: #c1f500 !important;
+    background-color: transparent !important;
+    border: 1px solid #f6ffd6;
 }
 
 .hero-cta .btn-hero-secondary .arrow-icon {
-    stroke: #000000 !important;
+    stroke: #f6ffd6 !important;
 }
 
 .hero-cta .btn-hero-secondary:hover {
-    border-color: rgba(0, 0, 0, 0.2);
+    background-color: #f6ffd6 !important;
     color: #000000 !important;
+}
+
+.hero-cta .btn-hero-secondary:hover .btn-hero-text {
+    color: #000000 !important;
+}
+
+.hero-cta .btn-hero-secondary:hover .btn-hero-arrow {
+    background-color: #000000 !important;
+    border-color: #000000;
+}
+
+.hero-cta .btn-hero-secondary:hover .arrow-icon {
+    stroke: #f6ffd6 !important;
 }
 
 /* Nav Button - Header Get Started */
@@ -2016,6 +2030,7 @@ pre {
 }
 
 .btn-pricing-arrow {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2024,58 +2039,55 @@ pre {
     min-width: 40px;
     border-radius: 6px;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .btn-pricing-arrow .arrow-icon {
     width: 20px;
     height: 20px;
+    position: absolute;
+    transition: all 0.3s ease-out;
 }
 
-/* Outline style - for Free and Enterprise */
-.btn-pricing-outline {
-    background-color: transparent;
-    color: var(--color-accent);
-    border: 2px solid var(--color-accent);
+.btn-pricing-arrow .arrow-default {
+    transform: translateX(0);
+    opacity: 1;
 }
 
-.btn-pricing-outline .btn-pricing-arrow {
-    background-color: transparent;
-    border: 1px solid var(--color-accent);
+.btn-pricing-arrow .arrow-hover {
+    transform: translateX(-32px);
+    opacity: 0;
 }
 
-.btn-pricing-outline .arrow-icon {
-    stroke: var(--color-accent);
+.btn-pricing:hover .arrow-default {
+    transform: translateX(32px);
+    opacity: 0;
 }
 
-.btn-pricing-outline:hover {
-    background-color: var(--color-accent);
-    color: #000;
+.btn-pricing:hover .arrow-hover {
+    transform: translateX(0);
+    opacity: 1;
 }
 
-.btn-pricing-outline:hover .btn-pricing-arrow {
-    background-color: #000;
-    border-color: #000;
-}
-
-.btn-pricing-outline:hover .arrow-icon {
-    stroke: var(--color-accent);
-}
-
-/* Primary style - for Pro */
+/* All pricing buttons - green with black text and black arrow box */
+.btn-pricing-outline,
 .btn-pricing-primary {
     background-color: var(--color-accent);
     color: #000;
     border: 2px solid var(--color-accent);
 }
 
+.btn-pricing-outline .btn-pricing-arrow,
 .btn-pricing-primary .btn-pricing-arrow {
     background-color: #000;
 }
 
+.btn-pricing-outline .arrow-icon,
 .btn-pricing-primary .arrow-icon {
     stroke: var(--color-accent);
 }
 
+.btn-pricing-outline:hover,
 .btn-pricing-primary:hover {
     background-color: var(--color-accent-hover);
     border-color: var(--color-accent-hover);
