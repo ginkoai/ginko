@@ -3,7 +3,7 @@ type: project
 status: current
 updated: 2025-08-01
 tags: [mvp, backlog, supabase, vercel, sessions, analytics, testing, production]
-related: [ADR-001-infrastructure-stack-selection.md, ADR-003-oauth-authentication-architecture.md, UX-001-user-journey-friction-analysis.md, SPRINT-001-dependencies-analysis.md]
+related: [ADR-001-infrastructure-stack-selection.md, ADR-062-oauth-authentication-architecture.md, UX-001-user-journey-friction-analysis.md, SPRINT-001-dependencies-analysis.md]
 priority: critical
 audience: [developer, ai-agent, team]
 estimated-read: 12-min

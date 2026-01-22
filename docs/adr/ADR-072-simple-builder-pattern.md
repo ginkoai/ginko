@@ -1,4 +1,4 @@
-# ADR-013: Simple Builder Pattern for Pipeline Architecture
+# ADR-072: Simple Builder Pattern for Pipeline Architecture
 
 ## Status
 Proposed

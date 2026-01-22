@@ -1,4 +1,4 @@
-# ADR-006: Continuous Context Invocation Pattern
+# ADR-065: Continuous Context Invocation Pattern
 
 ## Status
 Proposed

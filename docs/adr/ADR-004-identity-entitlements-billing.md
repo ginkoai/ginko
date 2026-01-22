@@ -3,7 +3,7 @@ type: decision
 status: approved
 updated: 2025-08-01
 tags: [identity, authentication, authorization, billing, entitlements, stripe, oauth]
-related: [ADR-003-oauth-authentication-architecture.md, database.ts, remote-server.ts]
+related: [ADR-062-oauth-authentication-architecture.md, database.ts, remote-server.ts]
 priority: critical
 audience: [developer, ai-agent, business]
 estimated-read: 15-min

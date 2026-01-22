@@ -159,7 +159,7 @@ Traditional approaches require developers to:
 
 ### The Simple Builder Pattern
 
-From [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-013-simple-builder-pattern.md), Ginko implements reflection through a modular, chainable pipeline:
+From [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-072-simple-builder-pattern.md), Ginko implements reflection through a modular, chainable pipeline:
 
 ```typescript
 export abstract class ReflectionPipeline {
@@ -266,7 +266,7 @@ We evaluated Railway-oriented programming, functional pipelines, and state machi
 
 ### Safe Defaults Pattern
 
-From [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-014-safe-defaults-reflector-pattern.md), reflectors perform beneficial analyses **by default** with explicit opt-out:
+From [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-073-safe-defaults-reflector-pattern.md), reflectors perform beneficial analyses **by default** with explicit opt-out:
 
 ```bash
 # Safe by default - dependency checks, validation, warnings
@@ -1035,8 +1035,8 @@ ginko init  # Migrates MCP data to .ginko/ directory
 ### Architecture Decision Records
 
 #### Core Architecture
-- [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-013-simple-builder-pattern.md)
-- [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-014-safe-defaults-reflector-pattern.md)
+- [ADR-013: Simple Builder Pattern for Pipeline Architecture](../adr/ADR-072-simple-builder-pattern.md)
+- [ADR-014: Safe Defaults Reflector Pattern](../adr/ADR-073-safe-defaults-reflector-pattern.md)
 - [ADR-020: CLI-First Pivot](../adr/ADR-020-cli-first-pivot.md)
 - [ADR-021: Privacy-First Git-Native Architecture](../adr/ADR-021-privacy-first-git-native.md)
 - [ADR-022: Persistent Context Modules](../adr/ADR-022-persistent-context-modules.md)

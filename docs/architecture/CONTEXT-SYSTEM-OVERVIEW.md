@@ -28,7 +28,7 @@ The AI takes responsibility for its own context awareness:
 **Key Innovation**: The AI asks "What don't I know?" rather than waiting to be told.
 
 ### 2. Continuous Context Invocation Pattern
-**ADR-006** | [Full Document](./ADR-006-continuous-context-invocation.md)
+**ADR-006** | [Full Document](./ADR-065-continuous-context-invocation.md)
 
 Context awareness through natural reflexes rather than mechanical checking:
 - Four core reflexes embedded in AI behavior
@@ -38,7 +38,7 @@ Context awareness through natural reflexes rather than mechanical checking:
 **Key Innovation**: Context reflexes feel like thinking, not process.
 
 ### 3. Context Reflexes Architecture
-**ADR-008** | [Full Document](./ADR-008-context-reflexes.md)
+**ADR-008** | [Full Document](./ADR-068-context-reflexes.md)
 
 The four automatic thought patterns:
 
@@ -65,7 +65,7 @@ Real-time visibility into collaboration state:
 **Key Innovation**: Misalignment becomes immediately visible.
 
 ### 5. Phase Context Coherence
-**ADR-007** | [Full Document](./ADR-007-phase-context-coherence.md)
+**ADR-007** | [Full Document](./ADR-067-phase-context-coherence.md)
 
 Ensures the right context for the current phase:
 - Phase detection from activity
@@ -75,7 +75,7 @@ Ensures the right context for the current phase:
 **Key Innovation**: Context matches current need, not everything always.
 
 ### 6. Progressive Context Loading
-**ADR-009** | [Full Document](./ADR-009-progressive-context-loading.md)
+**ADR-009** | [Full Document](./ADR-069-progressive-context-loading.md)
 
 Three-stage loading strategy:
 1. **Initial Load** - Minimal to start

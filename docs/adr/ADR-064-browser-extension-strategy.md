@@ -1,4 +1,4 @@
-# ADR-004: Browser-First Strategy for Claude.ai Integration
+# ADR-064: Browser-First Strategy for Claude.ai Integration
 
 ## Status
 Proposed

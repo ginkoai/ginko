@@ -10,7 +10,7 @@ estimated-read: 8-min
 dependencies: [remote-server.ts]
 ---
 
-# ADR-008: Serverless-First Architecture for MVP
+# ADR-009: Serverless-First Architecture for MVP
 
 ## Status
 Approved

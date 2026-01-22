@@ -1,4 +1,4 @@
-# ADR-003: Migration from WatchHill to Ginko AI
+# ADR-063: Migration from WatchHill to Ginko AI
 
 ## Status
 Accepted

@@ -131,4 +131,4 @@ Based on Phase 1 learnings:
 - [Chrome Storage API](https://developer.chrome.com/docs/extensions/reference/storage/)
 - [Content Security Policy Guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
 - Feature Document: `/docs/features/BROWSER-EXTENSION.md`
-- ADR: `/docs/adr/ADR-004-browser-extension-strategy.md`
+- ADR: `/docs/adr/ADR-064-browser-extension-strategy.md`

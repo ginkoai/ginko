@@ -1,4 +1,4 @@
-# ADR-007: Phase Context Coherence
+# ADR-067: Phase Context Coherence
 
 ## Status
 Proposed

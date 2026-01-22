@@ -1,4 +1,4 @@
-# ADR-009: Progressive Context Loading
+# ADR-069: Progressive Context Loading
 
 ## Status
 Proposed

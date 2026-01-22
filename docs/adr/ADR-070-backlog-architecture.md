@@ -1,4 +1,4 @@
-# ADR-011: Git-Native Backlog Architecture
+# ADR-070: Git-Native Backlog Architecture
 
 ## Status
 Proposed

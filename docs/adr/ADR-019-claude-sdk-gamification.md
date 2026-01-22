@@ -512,7 +512,7 @@ We commit to:
 ### Documentation
 - [Claude Code SDK Documentation](https://docs.anthropic.com/en/docs/claude-code/sdk)
 - [Claude Code Status Line](https://docs.anthropic.com/en/docs/claude-code/statusline)
-- [ADR-016: Handoff Tool Consolidation](ADR-016-handoff-tool-consolidation-and-vibecheck.md)
+- [ADR-016: Handoff Tool Consolidation](ADR-075-handoff-tool-consolidation-and-vibecheck.md)
 - [ADR-018: Collaborative Slash Commands](ADR-018-collaborative-slash-commands.md)
 
 ### Code References

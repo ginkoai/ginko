@@ -1,4 +1,4 @@
-# ADR-026: Enhanced ginko init with intelligent project optimization for AI collaboration
+# ADR-076: Enhanced ginko init with Intelligent Project Optimization
 
 ## Status
 Implemented

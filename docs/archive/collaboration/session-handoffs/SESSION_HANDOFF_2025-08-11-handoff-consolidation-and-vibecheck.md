@@ -59,7 +59,7 @@ git log -1 --oneline  # Should show: feat: add SESSION_HANDOFF to free tier
 ## 📟 Key Files Modified This Session
 ```
 packages/mcp-server/src/entitlements-manager.ts - Added SESSION_HANDOFF to free tier
-docs/architecture/ADR-016-handoff-tool-consolidation-and-vibecheck.md - New
+docs/architecture/ADR-075-handoff-tool-consolidation-and-vibecheck.md - New
 BACKLOG.md - Added FEATURE-002 vibecheck collaboration pattern
 ```
 

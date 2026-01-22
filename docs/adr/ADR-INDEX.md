@@ -8,11 +8,11 @@ This document maintains the official registry of all Architecture Decision Recor
 |-------|-------|--------|------|------|
 | [ADR-001](ADR-001-infrastructure-stack-selection.md) | Infrastructure Stack Selection | Approved | 2025-01-31 | infrastructure, mvp, supabase, vercel |
 | [ADR-002](ADR-002-ai-readable-code-frontmatter.md) | AI-Readable Code Frontmatter | Approved | 2025-01-31 | ai-optimization, code-organization |
-| [ADR-003](ADR-003-oauth-authentication-architecture.md) | OAuth Authentication Architecture | Approved | 2025-08-01 | oauth, authentication, supabase |
+| [ADR-003](ADR-062-oauth-authentication-architecture.md) | OAuth Authentication Architecture | Approved | 2025-08-01 | oauth, authentication, supabase |
 | [ADR-004](ADR-004-identity-entitlements-billing.md) | Identity, Entitlements & Billing Architecture | Approved | 2025-08-01 | identity, billing, stripe |
 | [ADR-005](ADR-005-stripe-payment-integration.md) | Stripe Payment Integration | Approved | 2025-08-01 | payments, stripe, billing |
 | [ADR-006](ADR-006-oauth-only-authentication.md) | OAuth-Only Authentication Strategy | Approved | 2025-08-02 | oauth, authentication, security |
-| [ADR-007](ADR-007-github-search-engine.md) | GitHub Search Engine Architecture | Approved | 2025-08-02 | search, github, indexing |
+| [ADR-007](ADR-066-github-search-engine.md) | GitHub Search Engine Architecture | Approved | 2025-08-02 | search, github, indexing |
 | [ADR-008](ADR-008-environment-based-authentication.md) | Environment-Based Authentication | Approved | 2025-08-04 | authentication, environment, security |
 | [ADR-009](ADR-009-serverless-first-mvp-architecture.md) | Serverless-First MVP Architecture | Approved | 2025-08-04 | serverless, vercel, architecture |
 | [ADR-010](ADR-010-ai-attribution-efficacy-tracking.md) | AI Attribution and Efficacy Tracking System | Accepted | 2025-08-04 | ai-attribution, efficacy, marketplace |
@@ -143,4 +143,4 @@ ADRs are never deleted, only deprecated or superseded. This maintains a complete
 **Maintainer:** Architecture Team
 - [ADR-025: Context Preservation System Architecture](./ADR-025-context-preservation-system-architecture.md)
 
-- [ADR-026: Enhanced ginko init with intelligent project optimization for AI collaboration](./ADR-026-enhanced-ginko-init-with-intelligent-project-optimization-for-ai-collaboration.md)
+- [ADR-026: Enhanced ginko init with intelligent project optimization for AI collaboration](./ADR-076-enhanced-ginko-init-with-intelligent-project-optimization-for-ai-collaboration.md)

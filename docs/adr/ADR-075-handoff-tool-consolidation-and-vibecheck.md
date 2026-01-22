@@ -1,4 +1,4 @@
-# ADR-016: Handoff Tool Consolidation and Vibecheck Collaboration Pattern
+# ADR-075: Handoff Tool Consolidation and Vibecheck Pattern
 
 **Status**: Proposed  
 **Date**: 2025-08-11  

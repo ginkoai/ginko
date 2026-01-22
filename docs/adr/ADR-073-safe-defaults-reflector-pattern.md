@@ -1,4 +1,4 @@
-# ADR-014: Safe Defaults Pattern for Reflector Pipelines
+# ADR-073: Safe Defaults Pattern for Reflector Pipelines
 
 **Status**: Proposed
 **Date**: 2025-09-15

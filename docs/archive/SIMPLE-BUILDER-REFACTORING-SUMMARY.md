@@ -104,7 +104,7 @@ Complete migration guide available at: `docs/SIMPLE-BUILDER-MIGRATION-GUIDE.md`
 - `src/core/simple-pipeline.ts` (example implementation)
 
 ### Documentation
-- `docs/adr/ADR-013-simple-builder-pattern.md`
+- `docs/adr/ADR-072-simple-builder-pattern.md`
 - `docs/SIMPLE-BUILDER-MIGRATION-GUIDE.md`
 - `docs/SIMPLE-BUILDER-REFACTORING-SUMMARY.md` (this file)
 

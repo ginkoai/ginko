@@ -297,7 +297,7 @@ export async function initCommand(options: InitOptions) {
   - Zero cross-project contamination incidents
 
 ## References
-- Related ADRs: [ADR-013 (Pipeline Pattern)](./ADR-013-simple-builder-pattern.md)
+- Related ADRs: [ADR-013 (Pipeline Pattern)](./ADR-072-simple-builder-pattern.md)
 - PRD: [PRD-2025-09-18-first-use-experience](../PRD/PRD-2025-09-18-first-use-experience-enhancement.md)
 - PRD: [PRD-003-ginko-doctor-reflector](../PRD/PRD-003-ginko-doctor-reflector.md)
 - Documentation: [Windows Fresh Install UX Testing](../UX/windows-fresh-install.md)

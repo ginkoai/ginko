@@ -3,7 +3,7 @@ type: architecture
 status: current
 updated: 2025-08-01
 tags: [production, saas, multi-tenant, scalability, security, enterprise, oauth, supabase, vercel]
-related: [ARCHITECTURE.md, ADR-001-infrastructure-stack-selection.md, ADR-003-oauth-authentication-architecture.md]
+related: [ARCHITECTURE.md, ADR-001-infrastructure-stack-selection.md, ADR-062-oauth-authentication-architecture.md]
 priority: high
 audience: [developer, ai-agent, stakeholder]
 estimated-read: 35-min
@@ -97,7 +97,7 @@ graph TD
 
 ### 3. ✅ **Current Authentication Architecture (Implemented)**
 
-Based on [ADR-003: OAuth Authentication Architecture](./ADR-003-oauth-authentication-architecture.md):
+Based on [ADR-003: OAuth Authentication Architecture](./ADR-062-oauth-authentication-architecture.md):
 
 #### OAuth Flow
 ```mermaid
@@ -516,7 +516,7 @@ class ResourceManager {
 - **Uptime**: 99.9% (Vercel + Supabase)
 
 ### Implementation References
-- [ADR-003: OAuth Authentication Architecture](./ADR-003-oauth-authentication-architecture.md)
+- [ADR-003: OAuth Authentication Architecture](./ADR-062-oauth-authentication-architecture.md)
 - [OAuth Implementation Post-Mortem](../post-mortem/oauth-implementation-challenges.md)
 - [Vercel Deployment Guide](../setup/vercel-deployment-guide.md)
 

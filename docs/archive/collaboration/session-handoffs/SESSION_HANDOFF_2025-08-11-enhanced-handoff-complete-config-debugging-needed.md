@@ -47,7 +47,7 @@ cat .mcp.json  # Check current config
 - **api/tools/call.ts**: New `enhancedHandoffWorkflow()` replaces separate prepare/capture logic with two-step approval workflow
 - **api/tools/list.ts**: Updated tool schemas, removed capture tool, enhanced descriptions for consolidated workflow
 - **CLAUDE.md**: Added vibecheck collaboration pattern documentation for drift detection
-- **docs/architecture/ADR-016-handoff-tool-consolidation-and-vibecheck.md**: Documented architecture decision
+- **docs/architecture/ADR-075-handoff-tool-consolidation-and-vibecheck.md**: Documented architecture decision
 - **.mcp.json**: Currently has placeholder UUIDs causing database errors (needs debugging)
 
 ### Key Decisions Made  

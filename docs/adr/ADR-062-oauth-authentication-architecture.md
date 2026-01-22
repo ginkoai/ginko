@@ -10,7 +10,7 @@ estimated-read: 12-min
 dependencies: [ADR-001, supabase-setup-guide.md]
 ---
 
-# ADR-003: OAuth Authentication Architecture
+# ADR-062: OAuth Authentication Architecture
 
 ## Status
 ✅ **Approved and Implemented**

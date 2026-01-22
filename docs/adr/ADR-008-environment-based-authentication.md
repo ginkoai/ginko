@@ -10,7 +10,7 @@ estimated-read: 5-min
 dependencies: [auth-manager.ts]
 ---
 
-# ADR-007: Environment-Based Authentication for MCP Endpoints
+# ADR-008: Environment-Based Authentication for MCP Endpoints
 
 ## Status
 Approved and Implemented

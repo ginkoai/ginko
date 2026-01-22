@@ -1,4 +1,4 @@
-# ADR-012: Ginko Command Architecture - Structured Freedom
+# ADR-071: Ginko Command Architecture - Structured Freedom
 
 ## Status
 Proposed

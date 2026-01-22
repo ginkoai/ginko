@@ -235,56 +235,56 @@ Some ADRs have multiple slug versions. Keep the canonical one (matching local fi
 // ADR-003: Keep -statusline-intelligence-hooks-over-otel (matches local file)
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id IN ['ADR-003-migration-to-ginkoai', 'ADR-003-oauth-authentication-architecture']
+  AND a.id IN ['ADR-063-migration-to-ginkoai', 'ADR-062-oauth-authentication-architecture']
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-004: Keep -identity-entitlements-billing
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-004-browser-extension-strategy'
+  AND a.id = 'ADR-064-browser-extension-strategy'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-006: Keep -oauth-only-authentication
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-006-continuous-context-invocation'
+  AND a.id = 'ADR-065-continuous-context-invocation'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-007: Keep -supabase-platform-adoption
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id IN ['ADR-007-github-search-engine', 'ADR-007-phase-context-coherence']
+  AND a.id IN ['ADR-066-github-search-engine', 'ADR-067-phase-context-coherence']
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-008: Keep -environment-based-authentication
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-008-context-reflexes'
+  AND a.id = 'ADR-068-context-reflexes'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-009: Keep -serverless-first-mvp-architecture
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-009-progressive-context-loading'
+  AND a.id = 'ADR-069-progressive-context-loading'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-011: Keep -best-practices-claude-code-integration
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-011-backlog-architecture'
+  AND a.id = 'ADR-070-backlog-architecture'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-012: Keep -legacy-context-migration-strategy
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-012-ginko-command-architecture'
+  AND a.id = 'ADR-071-ginko-command-architecture'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
@@ -298,21 +298,21 @@ RETURN count(*) as deleted;
 // ADR-014: Keep -safe-defaults-reflector-pattern
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id IN ['ADR-014-enhanced-handoff-quality', 'ADR-014-mcp-server-consolidation-and-rationalization']
+  AND a.id IN ['ADR-074-enhanced-handoff-quality', 'ADR-014-mcp-server-consolidation-and-rationalization']
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-016: Keep -simplify-mcp-interface-preserve-capabilities
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-016-handoff-tool-consolidation-and-vibecheck'
+  AND a.id = 'ADR-075-handoff-tool-consolidation-and-vibecheck'
 DETACH DELETE a
 RETURN count(*) as deleted;
 
 // ADR-026: Keep -intelligent-model-routing
 MATCH (a:ADR)
 WHERE (a.graph_id = 'gin_1762125961056_dg4bsd' OR a.graphId = 'gin_1762125961056_dg4bsd')
-  AND a.id = 'ADR-026-enhanced-ginko-init-with-intelligent-project-optimization-for-ai-collaboration'
+  AND a.id = 'ADR-076-enhanced-ginko-init-with-intelligent-project-optimization-for-ai-collaboration'
 DETACH DELETE a
 RETURN count(*) as deleted;
 ```
