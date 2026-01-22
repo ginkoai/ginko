@@ -90,7 +90,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const graphId = searchParams.get('graphId');
     const labelsParam = searchParams.get('labels');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 100);
+    // Allow higher limits for tree building (5000 nodes)
+    // Default to 20 for normal listing, max 5000 for bulk operations
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20', 10), 5000);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
     if (!graphId) {
