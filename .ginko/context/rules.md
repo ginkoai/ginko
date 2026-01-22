@@ -1,19 +1,13 @@
-# Context Rules
+# Context Management Rules
 
-## Auto-Load
-- Current file being edited
-- Files in same directory
-- Recent files (last 5 edited)
+## Privacy & Security
+- All context stored locally in .ginko/
+- No data leaves your machine without explicit action
+- Handoffs are git-tracked for team collaboration
+- Config (.ginko/config.json) is gitignored
 
-## Exclude
-- node_modules/
-- .git/
-- dist/
-- build/
-- *.log
-- *.tmp
-
-## Boundaries
-- Module: Current package/workspace
-- Project: Repository root
-- Focus: Active feature branch
+## Best Practices
+- Always run `ginko handoff` before switching context
+- Use `ginko start` to resume with full context
+- Keep handoffs under 2000 words for clarity
+- Include specific next steps in every handoff

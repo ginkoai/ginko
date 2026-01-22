@@ -2,11 +2,11 @@
   "commandsUsed": {
     "status": 1
   },
-  "firstSeen": "2025-08-28T18:12:47.734Z",
-  "lastSeen": "2025-08-28T18:12:47.735Z",
+  "firstSeen": "2026-01-22T19:59:34.432Z",
+  "lastSeen": "2026-01-22T19:59:34.432Z",
   "totalSessions": 0,
   "hintsShown": [
-    "first-handoff"
+    "vibecheck-suggestion"
   ],
   "preferences": {
     "showHints": true,

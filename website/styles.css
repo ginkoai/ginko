@@ -115,11 +115,11 @@
    ============================================================================ */
 
 [data-theme="dark"] {
-    --color-bg: #252C2C;
-    --color-surface: #121616;
-    --color-surface-hover: #DBE1D2;
-    --color-text: #DBE1D2;
-    --color-text-secondary: #DBE1D2;
+    --color-bg: #151e28;
+    --color-surface: #030609;
+    --color-surface-hover: #f6ffd6;
+    --color-text: #f6ffd6;
+    --color-text-secondary: #f6ffd6;
     --color-text-tertiary: #CED6C2;
     --color-border: #BAC6A9;
     --color-border-strong: #3a3a3a;
@@ -129,7 +129,7 @@
     --color-accent-light: rgba(193, 245, 0, 0.15);
     --color-accent-dark: #99c200;
 
-    --color-terminal-bg: #121616;
+    --color-terminal-bg: #0c161d;
     --color-terminal-header: #1c2222;
     --color-terminal-prompt: #C1F500;
 

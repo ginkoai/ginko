@@ -132,18 +132,28 @@
       subtitleEl.textContent = variant.subtitle;
     }
 
-    // Update primary CTA
+    // Update primary CTA - only update text span to preserve arrow box
     const primaryCtaEl = document.querySelector('[data-hero-cta-primary]');
     if (primaryCtaEl) {
-      primaryCtaEl.textContent = variant.primaryCta.text;
+      const primaryTextEl = primaryCtaEl.querySelector('.btn-hero-text');
+      if (primaryTextEl) {
+        primaryTextEl.textContent = variant.primaryCta.text;
+      } else {
+        primaryCtaEl.textContent = variant.primaryCta.text;
+      }
       primaryCtaEl.href = variant.primaryCta.href;
       primaryCtaEl.setAttribute('data-variant', variant.id);
     }
 
-    // Update secondary CTA
+    // Update secondary CTA - only update text span to preserve arrow box
     const secondaryCtaEl = document.querySelector('[data-hero-cta-secondary]');
     if (secondaryCtaEl) {
-      secondaryCtaEl.textContent = variant.secondaryCta.text;
+      const secondaryTextEl = secondaryCtaEl.querySelector('.btn-hero-text');
+      if (secondaryTextEl) {
+        secondaryTextEl.textContent = variant.secondaryCta.text;
+      } else {
+        secondaryCtaEl.textContent = variant.secondaryCta.text;
+      }
       secondaryCtaEl.href = variant.secondaryCta.href;
       secondaryCtaEl.setAttribute('data-variant', variant.id);
     }

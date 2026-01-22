@@ -1,16 +1,14 @@
-# Local Best Practices
+# Local Development Best Practices
 
-## Code Style
-- Follow existing patterns in the codebase
-- Maintain consistent naming conventions
-- Document complex logic
+## Session Management
+- `ginko start` - Begin new session with context loading
+- `ginko handoff` - Save progress for seamless continuation
+- `ginko vibecheck` - Quick realignment when stuck
 
-## Git Workflow
-- Commit early and often
-- Write clear commit messages
-- Create handoffs at natural breakpoints
+## Development Workflow
+1. Check what exists: `ls -la` relevant directories
+2. Find examples: Look for similar features already implemented
+3. Test existing: Try current endpoints/features first
+4. Plan, implement, test, document
 
-## AI Collaboration
-- Keep context focused
-- Use vibecheck when stuck
-- Archive sessions when complete
+*Customize this file for your team's specific practices*

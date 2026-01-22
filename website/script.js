@@ -391,6 +391,61 @@ const initCursorEasterEgg = () => {
 };
 
 // ============================================================================
+// HERO BUTTON TYPEWRITER ANIMATION
+// ============================================================================
+
+const initHeroButtonAnimation = () => {
+  const heroButtons = document.querySelectorAll('.btn-hero');
+
+  if (!heroButtons.length) return;
+
+  heroButtons.forEach(button => {
+    const textSpan = button.querySelector('.btn-hero-text');
+    if (!textSpan) return;
+
+    const originalText = textSpan.textContent;
+    let animationInterval = null;
+
+    button.addEventListener('mouseenter', () => {
+      const text = originalText;
+      const len = text.length;
+      const mid = Math.floor(len / 2);
+      let left = mid;
+      let right = mid;
+
+      // Start with non-breaking spaces
+      textSpan.textContent = '\u00A0'.repeat(len);
+
+      animationInterval = setInterval(() => {
+        if (left >= 0 || right < len) {
+          let result = '';
+          for (let i = 0; i < len; i++) {
+            if (i >= left && i <= right) {
+              result += text[i];
+            } else {
+              result += '\u00A0';
+            }
+          }
+          textSpan.textContent = result;
+
+          if (left > 0) left--;
+          if (right < len - 1) right++;
+        } else {
+          clearInterval(animationInterval);
+        }
+      }, 30);
+    });
+
+    button.addEventListener('mouseleave', () => {
+      if (animationInterval) {
+        clearInterval(animationInterval);
+      }
+      textSpan.textContent = originalText;
+    });
+  });
+};
+
+// ============================================================================
 // INITIALIZATION
 // ============================================================================
 // FAQ ACCORDION
@@ -437,6 +492,7 @@ function init() {
   initSmoothScroll();
   initScrollEffects();
   initScrollAnimations();
+  initHeroButtonAnimation();
   initTerminalAnimation();
   initCopyButtons();
   initCursorEasterEgg();

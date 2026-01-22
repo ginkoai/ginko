@@ -1,0 +1,14 @@
+{
+  "projectName": "ginko",
+  "techStack": [],
+  "projectType": "api",
+  "hasTests": true,
+  "testCommand": "npm test",
+  "buildCommand": "npm run build",
+  "packageManager": "npm",
+  "frameworks": [],
+  "languages": [
+    "typescript",
+    "javascript"
+  ]
+}
