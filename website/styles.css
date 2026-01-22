@@ -1089,11 +1089,11 @@ pre {
 
 .btn-cta-text {
     white-space: nowrap;
-    transition: letter-spacing 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
 }
 
 .btn-cta:hover .btn-cta-text {
-    letter-spacing: 0.1em;
+    opacity: 0.7;
 }
 
 .btn-cta-arrow {
@@ -1143,6 +1143,10 @@ pre {
     border: 2px solid var(--color-accent);
 }
 
+.btn-cta-primary .btn-cta-text {
+    color: #000;
+}
+
 .btn-cta-primary .btn-cta-arrow {
     background-color: #000;
 }
@@ -1152,38 +1156,39 @@ pre {
 }
 
 .btn-cta-primary:hover {
-    background-color: var(--color-accent-hover);
-    border-color: var(--color-accent-hover);
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
 }
 
-/* Secondary CTA - Outline with #f6ffd6 */
+.btn-cta-primary:hover .btn-cta-text {
+    opacity: 0.7;
+}
+
+/* Secondary CTA - White with dark text */
 .btn-cta-secondary {
-    background-color: transparent;
-    color: #f6ffd6;
-    border: 2px solid #f6ffd6;
+    background-color: #ffffff;
+    color: #050A0F;
+    border: none;
 }
 
-.btn-cta-secondary .btn-cta-arrow {
-    background-color: transparent;
-    border: 1px solid #f6ffd6;
-}
-
-.btn-cta-secondary .arrow-icon {
-    stroke: #f6ffd6;
-}
-
-.btn-cta-secondary:hover {
-    background-color: #f6ffd6;
+.btn-cta-secondary .btn-cta-text {
     color: #050A0F;
 }
 
-.btn-cta-secondary:hover .btn-cta-arrow {
-    background-color: #050A0F;
-    border-color: #050A0F;
+.btn-cta-secondary .btn-cta-arrow {
+    background-color: var(--color-accent);
 }
 
-.btn-cta-secondary:hover .arrow-icon {
-    stroke: #f6ffd6;
+.btn-cta-secondary .arrow-icon {
+    stroke: #050A0F;
+}
+
+.btn-cta-secondary:hover {
+    background-color: #ffffff;
+}
+
+.btn-cta-secondary:hover .btn-cta-text {
+    opacity: 0.7;
 }
 
 /* Hero CTA Buttons - Rectangular with arrow boxes */
@@ -1282,18 +1287,18 @@ pre {
 
 /* Secondary Hero Button - White with green arrow box */
 .hero-cta .btn-hero-secondary {
-    background-color: transparent !important;
-    color: #f6ffd6 !important;
-    border: 2px solid #f6ffd6;
+    background-color: #f6ffd6 !important;
+    color: #050A0F !important;
+    border: none;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-text {
-    color: #f6ffd6 !important;
+    color: #050A0F !important;
+    transition: opacity 0.3s ease-out;
 }
 
 .hero-cta .btn-hero-secondary .btn-hero-arrow {
-    background-color: transparent !important;
-    border: 1px solid #f6ffd6;
+    background-color: #050A0F !important;
 }
 
 .hero-cta .btn-hero-secondary .arrow-icon {
@@ -1302,20 +1307,10 @@ pre {
 
 .hero-cta .btn-hero-secondary:hover {
     background-color: #f6ffd6 !important;
-    color: #050A0F !important;
 }
 
 .hero-cta .btn-hero-secondary:hover .btn-hero-text {
-    color: #050A0F !important;
-}
-
-.hero-cta .btn-hero-secondary:hover .btn-hero-arrow {
-    background-color: #050A0F !important;
-    border-color: #050A0F;
-}
-
-.hero-cta .btn-hero-secondary:hover .arrow-icon {
-    stroke: #f6ffd6 !important;
+    opacity: 0.7;
 }
 
 /* Nav Button - Header Get Started */
@@ -1342,11 +1337,11 @@ pre {
 .btn-nav-text {
     white-space: nowrap;
     color: #000000;
-    transition: letter-spacing 0.3s ease-out;
+    transition: opacity 0.3s ease-out;
 }
 
 .btn-nav:hover .btn-nav-text {
-    letter-spacing: 0.1em;
+    opacity: 0.7;
 }
 
 .btn-nav-arrow {
@@ -2152,11 +2147,12 @@ pre {
 
 .btn-pricing-text {
     white-space: nowrap;
-    transition: letter-spacing 0.3s ease-out;
+    color: #000;
+    transition: opacity 0.3s ease-out;
 }
 
 .btn-pricing:hover .btn-pricing-text {
-    letter-spacing: 0.1em;
+    opacity: 0.7;
 }
 
 .btn-pricing-arrow {
