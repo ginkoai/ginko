@@ -1902,7 +1902,6 @@ pre {
     transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--color-accent);
-    border-radius: 0;
 }
 
 /* Remove Pro card highlight when sibling cards are hovered */
@@ -1913,7 +1912,6 @@ pre {
 .pricing-card-featured {
     border-color: var(--color-accent);
     border-width: 1px;
-    border-radius: 0;
 }
 
 .plan-header {
