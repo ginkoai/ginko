@@ -372,4 +372,10 @@ This backlog defines the high-level items needed to deliver the MVP based on:
 ## Total MVP Points: 67 (including infrastructure)
 ## Marketing Content Points: 8 (post-MVP)
 ## Team Velocity: 20 points/day
+
+---
+
+## 🔧 Quick Fixes (Chris)
+
+- [ ] **docs.ginko.ai unreachable** - DNS/hosting issue, site returns "can't be reached" error (2025-01-23)
 ## Timeline: ~3.5 days to complete MVP + 0.4 days for content
