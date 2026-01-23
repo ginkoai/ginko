@@ -107,7 +107,7 @@
 
     /* Brass Hands - Corner Bracket Dimensions */
     --bracket-size: 12px;
-    --bracket-thickness: 2px;
+    --bracket-thickness: 3px;
 }
 
 /* ============================================================================
@@ -1997,7 +1997,7 @@ pre {
 
 /* CTA corner brackets in dark */
 .cta .corner-bracket {
-    border-color: rgba(10, 10, 10, 0.4);
+    border-color: rgba(10, 10, 10, 0.7);
 }
 
 /* ============================================================================
