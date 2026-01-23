@@ -1,24 +1,18 @@
 ---
-session_id: session-2026-01-22T19-44-01-611Z
-started: 2026-01-22T19:44:01.611Z
+session_id: session-2026-01-22T22-39-51-767Z
+started: 2026-01-22T22:39:51.767Z
 user: chris@watchhill.ai
 branch: main
 flow_state: hot
 ---
 
-# Session Log: session-2026-01-22T19-44-01-611Z
+# Session Log: session-2026-01-22T22-39-51-767Z
 
 ## Timeline
 <!-- Complete chronological log of all session events -->
 <!-- Includes: fixes, features, achievements, and categorized entries (decisions/insights/git also appear in their sections) -->
 <!-- GOOD: "Fixed auth timeout. Root cause: bcrypt rounds set to 15 (too slow). Reduced to 11." -->
 <!-- BAD: "Fixed timeout" (too terse, missing root cause) -->
-
-### 14:55 - [fix]
-Completed Phase 3 of graph cleanup sprint. Root cause identified: epic/sync used graphId (camelCase) while task/sync used graph_id (snake_case), creating duplicate Epic nodes. Fixed epic/sync/route.ts:156 to use graph_id. Sprint adhoc_260122_s01 now 100% complete.
-Files: dashboard/src/app/api/v1/epic/sync/route.ts, docs/sprints/SPRINT-adhoc_260122-graph-data-validation.md
-Impact: high
-
 
 ## Key Decisions
 <!-- Important decisions made during session with alternatives considered -->
@@ -42,18 +36,3 @@ Impact: high
 <!-- EPIC-002 Sprint 2: These become AVOID_GOTCHA relationships in the graph -->
 <!-- GOOD: "EventQueue setInterval keeps process alive. Solution: timer.unref() allows clean exit." -->
 <!-- BAD: "Timer bug fixed" (missing symptom, cause, and solution) -->
-
-### 14:55 - [fix]
-# [FIX] 14:55
-
-Completed Phase 3 of graph cleanup sprint. Root cause identified: epic/sync used graphId (camelCase) while task/sync used graph_id (snake_case), creating duplicate Epic nodes. Fixed epic/sync/route.ts:156 to use graph_id. Sprint adhoc_260122_s01 now 100% complete.
-
-**Files:**
-- dashboard/src/app/api/v1/epic/sync/route.ts
-- docs/sprints/SPRINT-adhoc_260122-graph-data-validation.md
-
-**Impact:** high
-**Timestamp:** 2026-01-22T19:55:21.331Z
-
-Files: dashboard/src/app/api/v1/epic/sync/route.ts, docs/sprints/SPRINT-adhoc_260122-graph-data-validation.md
-Impact: high
