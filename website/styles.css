@@ -1215,6 +1215,7 @@ pre {
 
 /* Universal button styles - works anywhere */
 .btn-hero {
+    overflow: hidden;
     transition: background-color 0.3s ease-out, border-color 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
@@ -1223,13 +1224,13 @@ pre {
     position: relative;
     z-index: 1;
     white-space: nowrap;
-    letter-spacing: 0.05em;
-    transition: letter-spacing 0.3s ease-out;
+    display: inline-block;
+    transition: transform 0.3s ease-out;
 }
 
 a:hover .btn-hero-text,
 button:hover .btn-hero-text {
-    letter-spacing: 0.15em;
+    transform: scaleX(1.05);
 }
 
 /* Universal arrow animation - works anywhere */
