@@ -1213,6 +1213,11 @@ pre {
     overflow: hidden;
 }
 
+/* Universal button styles - works anywhere */
+.btn-hero {
+    transition: background-color 0.3s ease-out, border-color 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
 /* Universal button text animation - works anywhere */
 .btn-hero-text {
     position: relative;
@@ -1225,6 +1230,36 @@ pre {
 a:hover .btn-hero-text,
 button:hover .btn-hero-text {
     letter-spacing: 0.15em;
+}
+
+/* Universal arrow animation - works anywhere */
+.btn-hero-arrow .arrow-icon {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    transition: all 0.3s ease-out;
+}
+
+.btn-hero-arrow .arrow-default {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.btn-hero-arrow .arrow-hover {
+    transform: translateX(-32px);
+    opacity: 0;
+}
+
+a:hover .btn-hero-arrow .arrow-default,
+button:hover .btn-hero-arrow .arrow-default {
+    transform: translateX(32px);
+    opacity: 0;
+}
+
+a:hover .btn-hero-arrow .arrow-hover,
+button:hover .btn-hero-arrow .arrow-hover {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .hero-cta .btn-hero-arrow {
