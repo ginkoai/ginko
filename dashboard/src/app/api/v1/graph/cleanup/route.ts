@@ -18,7 +18,7 @@
  *
  * Query Parameters:
  * - graphId: Target graph (required)
- * - action: 'analyze' (default) | 'cleanup-orphans' | 'cleanup-default' | 'dedupe-epics'
+ * - action: 'analyze' (default) | 'cleanup-orphans' | 'cleanup-default' | 'dedupe-epics' | 'dedupe-tasks'
  * - dryRun: 'true' (default) | 'false' - preview changes without executing
  * - confirm: Required confirmation token for destructive operations
  */
@@ -40,6 +40,12 @@ interface DuplicateEpic {
   duplicateTitle: string;
 }
 
+interface DuplicateTask {
+  taskId: string;
+  count: number;
+  sprintId: string;
+}
+
 interface CleanupAnalysis {
   orphanNodes: {
     total: number;
@@ -50,6 +56,12 @@ interface CleanupAnalysis {
     byType: OrphanAnalysis[];
   };
   duplicateEpics: DuplicateEpic[];
+  duplicateTasks: {
+    total: number;
+    uniqueIds: number;
+    duplicateCount: number;
+    samples: DuplicateTask[];
+  };
   staleGraphIds: {
     graphId: string;
     count: number;
@@ -122,6 +134,27 @@ export async function GET(request: NextRequest) {
     `;
     const duplicateResults = await runQuery<DuplicateEpic>(duplicateEpicQuery, { graphId });
 
+    // Find duplicate tasks (same id, multiple nodes)
+    const duplicateTaskQuery = `
+      MATCH (t:Task)
+      WHERE t.graph_id = $graphId OR t.graphId = $graphId
+      WITH t.id as taskId, t.sprint_id as sprintId, count(t) as cnt
+      WHERE cnt > 1
+      RETURN taskId, cnt as count, sprintId
+      ORDER BY cnt DESC
+      LIMIT 20
+    `;
+    const duplicateTaskResults = await runQuery<DuplicateTask>(duplicateTaskQuery, { graphId });
+
+    // Get total task count and unique IDs for summary
+    const taskCountQuery = `
+      MATCH (t:Task)
+      WHERE t.graph_id = $graphId OR t.graphId = $graphId
+      WITH count(t) as total, count(DISTINCT t.id) as unique
+      RETURN total, unique
+    `;
+    const taskCountResult = await runQuery<{ total: number; unique: number }>(taskCountQuery, { graphId });
+
     // Find stale/orphaned graphIds (not the main one, with few nodes)
     const staleGraphIdQuery = `
       MATCH (n)
@@ -160,6 +193,16 @@ export async function GET(request: NextRequest) {
         })),
       },
       duplicateEpics: duplicateResults,
+      duplicateTasks: {
+        total: toNumber(taskCountResult[0]?.total) || 0,
+        uniqueIds: toNumber(taskCountResult[0]?.unique) || 0,
+        duplicateCount: toNumber(taskCountResult[0]?.total) - toNumber(taskCountResult[0]?.unique),
+        samples: duplicateTaskResults.map(r => ({
+          taskId: r.taskId,
+          count: toNumber(r.count),
+          sprintId: r.sprintId || 'unknown',
+        })),
+      },
       staleGraphIds: staleResults.map(r => ({
         graphId: r.graphId,
         count: toNumber(r.count),
@@ -174,6 +217,7 @@ export async function GET(request: NextRequest) {
           { action: 'cleanup-orphans', description: 'Delete orphan nodes (no graphId)', estimatedDeletes: analysis.orphanNodes.total },
           { action: 'cleanup-default', description: 'Migrate or delete "default" graphId nodes', estimatedAffected: analysis.defaultGraphIdNodes.total },
           { action: 'dedupe-epics', description: 'Merge duplicate epics (keep detailed version)', estimatedMerges: analysis.duplicateEpics.length },
+          { action: 'dedupe-tasks', description: 'Remove duplicate Task nodes (keep one per id)', estimatedDeletes: analysis.duplicateTasks.duplicateCount },
           { action: 'cleanup-stale', description: 'Delete nodes from stale/test graphIds', estimatedDeletes: staleResults.reduce((sum, r) => sum + toNumber(r.count), 0) },
         ],
         usage: 'DELETE /api/v1/graph/cleanup?graphId=X&action=ACTION&dryRun=false&confirm=CLEANUP_CONFIRMED',
@@ -300,6 +344,37 @@ export async function DELETE(request: NextRequest) {
           `;
           const mergeResult = await runQuery<{ count: number }>(mergeQuery, { graphId });
           result = { affected: toNumber(mergeResult[0]?.count), details: 'Merged duplicate epics (kept detailed versions)' };
+        }
+        break;
+      }
+
+      case 'dedupe-tasks': {
+        // Find duplicate tasks and keep only the newest one (by Neo4j internal ID)
+        if (dryRun) {
+          const countQuery = `
+            MATCH (t:Task)
+            WHERE t.graph_id = $graphId OR t.graphId = $graphId
+            WITH t.id as taskId, collect(t) as nodes
+            WHERE size(nodes) > 1
+            UNWIND nodes[1..] as toDelete
+            RETURN count(toDelete) as count
+          `;
+          const countResult = await runQuery<{ count: number }>(countQuery, { graphId });
+          result = { affected: toNumber(countResult[0]?.count), details: 'Dry run: would delete duplicate Task nodes (keeping one per id)' };
+        } else {
+          // Keep the first node (arbitrary but consistent), delete the rest
+          const dedupeQuery = `
+            MATCH (t:Task)
+            WHERE t.graph_id = $graphId OR t.graphId = $graphId
+            WITH t.id as taskId, collect(t) as nodes
+            WHERE size(nodes) > 1
+            WITH taskId, nodes[0] as keep, nodes[1..] as toDelete
+            UNWIND toDelete as dup
+            DETACH DELETE dup
+            RETURN count(dup) as count
+          `;
+          const dedupeResult = await runQuery<{ count: number }>(dedupeQuery, { graphId });
+          result = { affected: toNumber(dedupeResult[0]?.count), details: 'Deleted duplicate Task nodes (kept one per id)' };
         }
         break;
       }
