@@ -1088,6 +1088,7 @@ pre {
     z-index: 1;
     white-space: nowrap;
     display: inline-block;
+    transform-origin: center;
     transition: transform 0.3s ease-out;
 }
 
@@ -1343,6 +1344,7 @@ pre {
     white-space: nowrap;
     color: #000000;
     display: inline-block;
+    transform-origin: center;
     transition: transform 0.3s ease-out;
 }
 
@@ -2156,6 +2158,7 @@ pre {
     white-space: nowrap;
     color: #000;
     display: inline-block;
+    transform-origin: center;
     transition: transform 0.3s ease-out;
 }
 
