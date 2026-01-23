@@ -1087,12 +1087,12 @@ pre {
     position: relative;
     z-index: 1;
     white-space: nowrap;
-    letter-spacing: 0.05em;
-    transition: letter-spacing 0.3s ease-out;
+    display: inline-block;
+    transition: transform 0.3s ease-out;
 }
 
 .btn-cta:hover .btn-cta-text {
-    letter-spacing: 0.15em !important;
+    transform: scaleX(1.1);
 }
 
 .btn-cta-arrow {
@@ -1160,12 +1160,12 @@ pre {
 }
 
 .btn-cta-primary:hover .btn-cta-text {
-    letter-spacing: 0.15em !important;
+    transform: scaleX(1.1);
 }
 
-/* Secondary CTA - White with dark text */
+/* Secondary CTA - Cream with dark text */
 .btn-cta-secondary {
-    background-color: #ffffff;
+    background-color: #f6ffd6;
     color: #050A0F;
     border: none;
 }
@@ -1175,19 +1175,19 @@ pre {
 }
 
 .btn-cta-secondary .btn-cta-arrow {
-    background-color: var(--color-accent);
+    background-color: #050A0F;
 }
 
 .btn-cta-secondary .arrow-icon {
-    stroke: #050A0F;
+    stroke: #f6ffd6;
 }
 
 .btn-cta-secondary:hover {
-    background-color: #ffffff;
+    background-color: #f6ffd6;
 }
 
 .btn-cta-secondary:hover .btn-cta-text {
-    letter-spacing: 0.15em !important;
+    transform: scaleX(1.1);
 }
 
 /* Hero CTA Buttons - Rectangular with arrow boxes */
@@ -1342,12 +1342,12 @@ pre {
     z-index: 1;
     white-space: nowrap;
     color: #000000;
-    letter-spacing: 0.05em;
-    transition: letter-spacing 0.3s ease-out;
+    display: inline-block;
+    transition: transform 0.3s ease-out;
 }
 
 .btn-nav:hover .btn-nav-text {
-    letter-spacing: 0.15em !important;
+    transform: scaleX(1.1);
 }
 
 .btn-nav-arrow {
@@ -2155,12 +2155,12 @@ pre {
     z-index: 1;
     white-space: nowrap;
     color: #000;
-    letter-spacing: 0.05em;
-    transition: letter-spacing 0.3s ease-out;
+    display: inline-block;
+    transition: transform 0.3s ease-out;
 }
 
 .btn-pricing:hover .btn-pricing-text {
-    letter-spacing: 0.15em !important;
+    transform: scaleX(1.1);
 }
 
 .btn-pricing-arrow {
