@@ -13,7 +13,7 @@
 
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, AlertCircle } from 'lucide-react';
+import { FileText, AlertCircle, ChevronRight } from 'lucide-react';
 import { useGraphStatus, useNodesByLabel } from '@/lib/graph/hooks';
 import { SkeletonHero, SkeletonCard } from '@/components/ui/skeleton';
 import type { NodeLabel, GraphNode, CharterNode } from '@/lib/graph/types';
@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 export interface ProjectViewProps {
   graphId: string;
   onSelectCategory: (label: NodeLabel) => void;
+  onViewCharter?: (charterId: string) => void;
   className?: string;
 }
 
@@ -48,9 +49,11 @@ const SUMMARY_NODE_TYPES: NodeLabel[] = [
 function CharterHeroCard({
   charter,
   isLoading,
+  onViewCharter,
 }: {
   charter: GraphNode<CharterNode> | null;
   isLoading: boolean;
+  onViewCharter?: (charterId: string) => void;
 }) {
   if (isLoading) {
     return <SkeletonHero />;
@@ -117,6 +120,16 @@ function CharterHeroCard({
             </p>
           )}
         </div>
+        {/* View/Edit Charter button */}
+        {onViewCharter && (
+          <button
+            onClick={() => onViewCharter(charter.id)}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="View Charter details"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Goals & Success Criteria */}
@@ -175,6 +188,7 @@ function CharterHeroCard({
 export function ProjectView({
   graphId,
   onSelectCategory,
+  onViewCharter,
   className,
 }: ProjectViewProps) {
   // Fetch graph status for node counts
@@ -269,6 +283,7 @@ export function ProjectView({
       <CharterHeroCard
         charter={charter || null}
         isLoading={charterLoading}
+        onViewCharter={onViewCharter}
       />
 
       {/* Summary Cards Grid */}

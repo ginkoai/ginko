@@ -1323,10 +1323,10 @@ export function getChildInfo(node: GraphNode): { type: NodeLabel; parentId: stri
   // Epics have Sprints as children
   if (node.label === 'Epic') {
     const epicId = getNodeProp(props, 'epic_id') || node.id;
+    // Try normalized ID first, fall back to raw epic_id or node.id for non-numeric epics (e.g., "maintenance")
     const normalizedId = extractEpicId(epicId) || extractEpicId(node.id);
-    if (normalizedId) {
-      return { type: 'Sprint', parentId: normalizedId };
-    }
+    const parentId = normalizedId || epicId.toLowerCase();
+    return { type: 'Sprint', parentId };
   }
 
   // Sprints have Tasks as children
@@ -1356,8 +1356,8 @@ export async function getChildNodes(
     return [];
   }
 
-  // Fetch all nodes of the child type
-  const candidates = await getNodesByLabel(childInfo.type, options);
+  // Fetch all nodes of the child type with high limit to ensure we get all candidates
+  const candidates = await getNodesByLabel(childInfo.type, { ...options, limit: 5000 });
   const children: GraphNode[] = [];
 
   // Find matching children based on parent ID
@@ -1369,7 +1369,18 @@ export async function getChildNodes(
       const sprintId = getNodeProp(props, 'sprint_id') || candidate.id;
       const title = getNodeProp(props, 'title') || '';
       const epicId = extractEpicId(sprintId) || extractEpicId(candidate.id) || extractEpicId(title);
-      if (epicId === childInfo.parentId) {
+
+      // Also check for explicit epic_id property on sprint (for non-standard naming)
+      const explicitEpicId = getNodeProp(props, 'epic_id');
+      const normalizedExplicitEpicId = explicitEpicId
+        ? (extractEpicId(explicitEpicId) || explicitEpicId.toLowerCase())
+        : null;
+
+      // Match by extracted epic ID or explicit epic_id property
+      if (epicId === childInfo.parentId ||
+          normalizedExplicitEpicId === childInfo.parentId ||
+          sprintId.toLowerCase().startsWith(childInfo.parentId + '_') ||
+          candidate.id.toLowerCase().startsWith(childInfo.parentId + '_')) {
         children.push(candidate);
       }
     }

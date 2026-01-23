@@ -188,11 +188,18 @@ function RelatedNodesSummaryComponent({
   isLoading,
   className,
 }: RelatedNodesSummaryProps) {
-  // Group adjacencies by node label
+  // Group adjacencies by node label, deduplicating by node ID
   const groupedAdjacencies = useMemo((): GroupedAdjacencies[] => {
     const groups: Record<NodeLabel, AdjacentNode[]> = {} as Record<NodeLabel, AdjacentNode[]>;
+    const seenNodeIds = new Set<string>();
 
     adjacencies.forEach((adj) => {
+      // Deduplicate by node ID - skip if we've already seen this node
+      if (seenNodeIds.has(adj.node.id)) {
+        return;
+      }
+      seenNodeIds.add(adj.node.id);
+
       const label = adj.node.label;
       if (!groups[label]) {
         groups[label] = [];

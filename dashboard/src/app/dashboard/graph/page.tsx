@@ -701,6 +701,7 @@ function GraphPageContent() {
               <ProjectView
                 graphId={graphId!}
                 onSelectCategory={handleSelectCategory}
+                onViewCharter={handleViewDetails}
               />
             )}
 

@@ -121,8 +121,8 @@ export function ChildCard({ node, onClick, className }: ChildCardProps) {
     <button
       onClick={() => onClick(node.id)}
       className={cn(
-        'flex flex-col p-3 rounded-lg border border-white/30 transition-all',
-        'hover:bg-white/10 hover:border-white/50',
+        'flex flex-col p-3 rounded-lg border border-border transition-all',
+        'bg-card hover:bg-card/80 hover:border-ginko-500/50',
         'text-left w-full',
         className
       )}

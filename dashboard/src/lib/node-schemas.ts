@@ -324,6 +324,8 @@ export const GOTCHA_SCHEMA: NodeSchema = {
 };
 
 // Charter Schema
+// Note: Charters synced from git have a 'content' field with full markdown.
+// This schema uses 'content' to match how Charters are stored in the graph.
 export const CHARTER_SCHEMA: NodeSchema = {
   type: 'Charter',
   displayName: 'Project Charter',
@@ -336,28 +338,12 @@ export const CHARTER_SCHEMA: NodeSchema = {
       placeholder: 'Project name',
     },
     {
-      name: 'purpose',
-      label: 'Purpose',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: true,
-      placeholder: 'Why does this project exist?',
-      helperText: 'Describe the problem being solved',
-    },
-    {
-      name: 'goals',
-      label: 'Goals',
-      type: 'markdown',
-      required: true,
-      placeholder: 'What are the key goals?',
-      helperText: 'List primary project goals (one per line)',
-    },
-    {
-      name: 'success_criteria',
-      label: 'Success Criteria',
-      type: 'markdown',
-      required: true,
-      placeholder: 'How will success be measured?',
-      helperText: 'Define measurable success criteria',
+      placeholder: '## Purpose\n\nWhy does this project exist?\n\n## Goals\n\nWhat are the key goals?\n\n## Success Criteria\n\nHow will success be measured?',
+      helperText: 'Full charter content in markdown format (Purpose, Goals, Success Criteria sections)',
     },
   ],
   validate: (data) => {
@@ -367,16 +353,8 @@ export const CHARTER_SCHEMA: NodeSchema = {
       errors.push('Title must be at least 3 characters');
     }
 
-    if (!data.purpose || data.purpose.trim().length < 20) {
-      errors.push('Purpose must be at least 20 characters');
-    }
-
-    if (!data.goals || data.goals.trim().length < 20) {
-      errors.push('Goals must be at least 20 characters');
-    }
-
-    if (!data.success_criteria || data.success_criteria.trim().length < 20) {
-      errors.push('Success criteria must be at least 20 characters');
+    if (!data.content || data.content.trim().length < 50) {
+      errors.push('Content must be at least 50 characters');
     }
 
     return { valid: errors.length === 0, errors };
@@ -545,6 +523,8 @@ export const SPRINT_SCHEMA: NodeSchema = {
 };
 
 // Task Schema
+// Note: Tasks synced from git have a 'content' field with full markdown.
+// This schema uses 'content' to match how Tasks are stored in the graph.
 export const TASK_SCHEMA: NodeSchema = {
   type: 'Task',
   displayName: 'Task',
@@ -590,12 +570,12 @@ export const TASK_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'description',
-      label: 'Description',
+      name: 'content',
+      label: 'Content',
       type: 'markdown',
       required: false,
-      placeholder: 'Task description',
-      helperText: 'Detailed description of what needs to be done',
+      placeholder: 'Task content (markdown)',
+      helperText: 'Full task content including description, acceptance criteria, and notes',
     },
     {
       name: 'assignee',
