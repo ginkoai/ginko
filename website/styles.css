@@ -1084,6 +1084,8 @@ pre {
 }
 
 .btn-cta-text {
+    position: relative;
+    z-index: 1;
     white-space: nowrap;
     letter-spacing: 0.05em;
     transition: letter-spacing 0.3s ease-out;
@@ -1336,6 +1338,8 @@ pre {
 }
 
 .btn-nav-text {
+    position: relative;
+    z-index: 1;
     white-space: nowrap;
     color: #000000;
     letter-spacing: 0.05em;
@@ -2147,6 +2151,8 @@ pre {
 }
 
 .btn-pricing-text {
+    position: relative;
+    z-index: 1;
     white-space: nowrap;
     color: #000;
     letter-spacing: 0.05em;
