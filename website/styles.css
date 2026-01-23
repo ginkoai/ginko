@@ -1087,13 +1087,12 @@ pre {
     position: relative;
     z-index: 1;
     white-space: nowrap;
-    display: inline-block;
-    transform-origin: center;
-    transition: transform 0.3s ease-out;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-cta:hover .btn-cta-text {
-    transform: scaleX(1.1);
+    letter-spacing: 0.15em;
 }
 
 .btn-cta-arrow {
@@ -1161,7 +1160,7 @@ pre {
 }
 
 .btn-cta-primary:hover .btn-cta-text {
-    transform: scaleX(1.1);
+    letter-spacing: 0.15em;
 }
 
 /* Secondary CTA - Cream with dark text */
@@ -1188,7 +1187,7 @@ pre {
 }
 
 .btn-cta-secondary:hover .btn-cta-text {
-    transform: scaleX(1.1);
+    letter-spacing: 0.15em;
 }
 
 /* Hero CTA Buttons - Rectangular with arrow boxes */
@@ -1343,13 +1342,12 @@ pre {
     z-index: 1;
     white-space: nowrap;
     color: #000000;
-    display: inline-block;
-    transform-origin: center;
-    transition: transform 0.3s ease-out;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-nav:hover .btn-nav-text {
-    transform: scaleX(1.1);
+    letter-spacing: 0.15em;
 }
 
 .btn-nav-arrow {
@@ -2066,8 +2064,8 @@ pre {
 .feature-check {
     color: var(--color-accent);
     font-weight: var(--font-weight-bold);
-    font-size: 1.25rem;
-    margin-right: var(--space-2);
+    font-size: 1.75rem;
+    margin-right: var(--space-3);
 }
 
 .popular-badge {
@@ -2125,13 +2123,6 @@ pre {
     border-bottom: none;
 }
 
-.plan-features li::before {
-    content: '✓';
-    color: var(--color-accent);
-    font-weight: var(--font-weight-bold);
-    margin-right: var(--space-3);
-}
-
 /* Pricing card buttons - consistent sizing */
 /* Pricing Button Base Styles */
 .btn-pricing {
@@ -2157,13 +2148,12 @@ pre {
     z-index: 1;
     white-space: nowrap;
     color: #000;
-    display: inline-block;
-    transform-origin: center;
-    transition: transform 0.3s ease-out;
+    letter-spacing: 0.05em;
+    transition: letter-spacing 0.3s ease-out;
 }
 
 .btn-pricing:hover .btn-pricing-text {
-    transform: scaleX(1.1);
+    letter-spacing: 0.15em;
 }
 
 .btn-pricing-arrow {
