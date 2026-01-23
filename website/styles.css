@@ -1074,7 +1074,6 @@ pre {
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
     text-decoration: none;
     padding: 8px 8px 8px 24px;
     border-radius: 8px;
@@ -1326,7 +1325,6 @@ pre {
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
     text-decoration: none;
     padding: 6px 6px 6px 16px;
     border-radius: 8px;
@@ -2141,7 +2139,6 @@ pre {
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
     text-decoration: none;
     border-radius: 8px;
     height: 56px;
