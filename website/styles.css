@@ -1213,7 +1213,8 @@ pre {
     overflow: hidden;
 }
 
-.hero-cta .btn-hero-text {
+/* Universal button text animation - works anywhere */
+.btn-hero-text {
     position: relative;
     z-index: 1;
     white-space: nowrap;
@@ -1221,7 +1222,8 @@ pre {
     transition: letter-spacing 0.3s ease-out;
 }
 
-.hero-cta .btn-hero:hover .btn-hero-text {
+a:hover .btn-hero-text,
+button:hover .btn-hero-text {
     letter-spacing: 0.15em;
 }
 
