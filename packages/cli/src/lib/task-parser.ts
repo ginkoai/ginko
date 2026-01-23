@@ -53,6 +53,8 @@ export interface ParsedTask {
   initial_status: TaskStatus;
   /** Task goal/description */
   goal: string | null;
+  /** Approach/implementation notes (e014_s02_t04) */
+  approach: string | null;
   /** Acceptance criteria list */
   acceptance_criteria: string[];
   /** Referenced files */
@@ -155,6 +157,31 @@ function normalizePriority(priority: string | undefined): ParsedTask['priority']
     return upper as ParsedTask['priority'];
   }
   return 'MEDIUM';
+}
+
+/**
+ * Extract approach/implementation notes from task block (e014_s02_t04)
+ *
+ * Parses the **Approach:** section which contains 2-3 sentences describing
+ * how to implement the task.
+ */
+function extractApproach(blockText: string): string | null {
+  // Match: **Approach:** followed by text until next section
+  const approachMatch = blockText.match(
+    /\*\*Approach:\*\*\s+([\s\S]*?)(?=\n\*\*(?!Approach)|\n###|\n---|\n##|$)/i
+  );
+
+  if (!approachMatch) return null;
+
+  // Clean up the approach text - join lines and trim
+  const approach = approachMatch[1]
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join(' ')
+    .trim();
+
+  return approach.length > 0 ? approach : null;
 }
 
 /**
@@ -310,6 +337,9 @@ export function parseTaskBlock(
   const goalMatch = blockText.match(/\*\*Goal:\*\*\s+([^\n]+)/i);
   const goal = goalMatch ? goalMatch[1].trim() : null;
 
+  // Extract approach (e014_s02_t04)
+  const approach = extractApproach(blockText);
+
   // Extract acceptance criteria
   const acceptanceCriteria = extractAcceptanceCriteria(blockText);
 
@@ -329,6 +359,7 @@ export function parseTaskBlock(
     assignee,
     initial_status: initialStatus,
     goal,
+    approach,
     acceptance_criteria: acceptanceCriteria,
     files,
     related_adrs: relatedADRs,

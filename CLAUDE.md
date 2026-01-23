@@ -125,6 +125,14 @@ We can create it with: ginko charter
 - **Dev Server**: `npm run dev`
 
 
+## Environment Variables
+
+| Variable | Purpose |
+|----------|---------|
+| `GINKO_FORCE_TTY=1` | Force TTY-like output (box-drawing tables, colors) in terminals that report `isTTY=false` but support rich output (e.g., Claude Code) |
+| `FORCE_COLOR=1` | Force chalk color output (set automatically when `GINKO_FORCE_TTY=1`) |
+
+
 ## AI-Optimized File Discovery (ADR-002)
 
 **MANDATORY: Use these commands for 70% faster context discovery:**
@@ -172,6 +180,38 @@ find . -name "*.ts" | xargs grep -l "@complexity: high"
 
 ### Core Methodology
 **INVENTORY → CONTEXT → THINK → PLAN → PRE-MORTEM → VALIDATE → ACT → TEST**
+
+### 🚨 Task Completion Protocol (CRITICAL)
+
+**After completing ANY sprint task, you MUST update the graph:**
+
+```bash
+ginko task complete <task_id>
+```
+
+**Example workflow:**
+1. Start task: `ginko task start e014_s02_t01`
+2. Do the work
+3. **Complete task: `ginko task complete e014_s02_t01`** ← Don't forget!
+
+**Why this matters:**
+- `ginko start` shows the next task based on graph status
+- Uncommitted task completions cause stale "Next up" suggestions
+- Team visibility depends on accurate task status
+
+**Task Status Commands:**
+| Command | Effect |
+|---------|--------|
+| `ginko task start <id>` | Mark as in_progress |
+| `ginko task complete <id>` | Mark as complete |
+| `ginko task block <id> "reason"` | Mark as blocked |
+| `ginko task pause <id>` | Return to not_started |
+
+**Cascade option:** When completing the last task in a sprint:
+```bash
+ginko task complete e014_s02_t07 --cascade
+```
+This auto-completes the parent sprint if all tasks are done.
 
 ### The Vibecheck Pattern 🎯
 When feeling lost or sensing misalignment:

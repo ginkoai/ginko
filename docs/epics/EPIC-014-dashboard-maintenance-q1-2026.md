@@ -43,7 +43,8 @@ This is a **maintenance epic** (ADR-059) - a container for operational work that
 
 | Sprint | Focus | Status |
 |--------|-------|--------|
-| e014_s01 | Insights Mobile UAT & Polish | Active |
+| e014_s01 | Insights Mobile UAT & Polish | Complete |
+| e014_s02 | System Hardening & Reliability | Active |
 
 ## Success Criteria
 

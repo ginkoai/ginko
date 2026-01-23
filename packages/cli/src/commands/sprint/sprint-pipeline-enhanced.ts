@@ -373,6 +373,45 @@ export class EnhancedSprintPipeline extends SimplePipelineBase {
     }
     sections.push('');
 
+    // Auto-generated UAT Task (e014_s02_t06)
+    sections.push(`### UAT & Polish (Final Task)\n`);
+    sections.push(`**Goal:** Verify sprint deliverables and ensure production readiness\n`);
+
+    // Generate testing checklist derived from sprint scope
+    const totalItems =
+      (context.parsedIntent?.requestedItems?.length || 0) +
+      (context.backlogItems?.userStories?.length || 0) +
+      (context.backlogItems?.tasks?.length || 0);
+
+    // Scale UAT complexity based on sprint size
+    if (totalItems <= 3) {
+      // Small sprint: brief UAT
+      sections.push(`**Acceptance Criteria:**`);
+      sections.push(`- [ ] All sprint tasks completed and working`);
+      sections.push(`- [ ] Build passes with no errors`);
+      sections.push(`- [ ] Quick manual verification of changes`);
+    } else if (totalItems <= 7) {
+      // Medium sprint: standard UAT
+      sections.push(`**Acceptance Criteria:**`);
+      sections.push(`- [ ] All sprint tasks completed and working`);
+      sections.push(`- [ ] Build passes with no errors`);
+      sections.push(`- [ ] Unit tests pass for new code`);
+      sections.push(`- [ ] Manual verification of each feature`);
+      sections.push(`- [ ] Documentation updated if needed`);
+    } else {
+      // Large sprint: detailed UAT
+      sections.push(`**Acceptance Criteria:**`);
+      sections.push(`- [ ] All sprint tasks completed and working`);
+      sections.push(`- [ ] Build passes with no errors or warnings`);
+      sections.push(`- [ ] Unit tests pass with adequate coverage`);
+      sections.push(`- [ ] Integration tests pass`);
+      sections.push(`- [ ] Manual verification of each feature`);
+      sections.push(`- [ ] Edge cases tested`);
+      sections.push(`- [ ] Documentation updated`);
+      sections.push(`- [ ] Performance acceptable`);
+    }
+    sections.push('');
+
     // Acceptance Criteria
     sections.push(`## ✅ Acceptance Criteria\n`);
     sections.push(`- [ ] All committed items completed`);

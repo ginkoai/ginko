@@ -407,9 +407,13 @@ function NodeContent({ node }: { node: GraphNode }) {
   const theory = getNodeProp(props, 'theory');
   const mitigation = getNodeProp(props, 'mitigation');
   const goal = getNodeProp(props, 'goal');
+  const approach = getNodeProp(props, 'approach'); // Task approach (e014_s02_t04)
   const overview = getNodeProp(props, 'overview'); // PRD field
   const requirements = getNodeProp(props, 'requirements'); // PRD field
   const successCriteria = getNodeProp(props, 'success_criteria'); // PRD field
+
+  // Task-specific: acceptance_criteria is an array (e014_s02_t05)
+  const acceptanceCriteria = props.acceptance_criteria as string[] | undefined;
 
   const sections: { label: string; content: string }[] = [];
 
@@ -420,6 +424,7 @@ function NodeContent({ node }: { node: GraphNode }) {
   if (overview) sections.push({ label: 'Overview', content: overview });
   if (purpose) sections.push({ label: 'Purpose', content: purpose });
   if (goal) sections.push({ label: 'Goal', content: goal });
+  if (approach) sections.push({ label: 'Approach', content: approach }); // e014_s02_t04
   if (context) sections.push({ label: 'Context', content: context });
   if (decision) sections.push({ label: 'Decision', content: decision });
   if (consequences) sections.push({ label: 'Consequences', content: consequences });
@@ -428,7 +433,10 @@ function NodeContent({ node }: { node: GraphNode }) {
   if (theory) sections.push({ label: 'Theory', content: theory });
   if (mitigation) sections.push({ label: 'Mitigation', content: mitigation });
 
-  if (sections.length === 0) {
+  // Check if we have any content (sections or acceptance criteria)
+  const hasContent = sections.length > 0 || (acceptanceCriteria && acceptanceCriteria.length > 0);
+
+  if (!hasContent) {
     return null;
   }
 
@@ -442,6 +450,23 @@ function NodeContent({ node }: { node: GraphNode }) {
           <MarkdownRenderer content={section.content} />
         </article>
       ))}
+
+      {/* Acceptance Criteria - Task-specific (e014_s02_t05) */}
+      {acceptanceCriteria && acceptanceCriteria.length > 0 && (
+        <article>
+          <h2 className="text-sm font-mono font-medium text-muted-foreground uppercase tracking-wider mb-2">
+            Acceptance Criteria
+          </h2>
+          <ul className="space-y-2" role="list">
+            {acceptanceCriteria.map((criterion, idx) => (
+              <li key={idx} className="flex items-start gap-2 text-sm text-foreground">
+                <span className="text-muted-foreground select-none" aria-hidden="true">☐</span>
+                <span>{criterion}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      )}
     </section>
   );
 }
@@ -455,10 +480,11 @@ function NodeProperties({ node }: { node: GraphNode }) {
     'id', 'graph_id', 'created_at', 'updated_at',
     'title', 'name', 'description', 'summary', 'content',
     'context', 'decision', 'consequences', 'purpose', 'theory',
-    'mitigation', 'goal', 'status', 'severity', 'confidence',
+    'mitigation', 'goal', 'approach', 'status', 'severity', 'confidence',
     'adr_id', 'epic_id', 'sprint_id', 'task_id', 'pattern_id',
     'gotcha_id', 'principle_id', 'prd_id', 'assignee',
     'overview', 'requirements', 'success_criteria', // PRD fields
+    'acceptance_criteria', // Task field (e014_s02_t05)
   ]);
 
   const displayProps = Object.entries(props).filter(

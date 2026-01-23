@@ -232,20 +232,35 @@ async function syncEpicToGraph(epic: EpicSyncRequest, userEmail: string): Promis
   }
 
   // Link to existing sprints if they reference this epic
+  // Match on: sprint name, epic_id property, or sprint ID pattern (e{NNN}_s{NN})
   const linkSprintsQuery = `
     MATCH (e:Epic {id: $epicId})
     MATCH (s:Sprint)
-    WHERE s.name CONTAINS $epicIdLower OR s.name CONTAINS $epicIdUpper
+    WHERE s.name CONTAINS $epicIdLower
+       OR s.name CONTAINS $epicIdUpper
+       OR s.epic_id = $epicIdUpper
+       OR s.epic_id = $epicIdShort
+       OR s.id STARTS WITH $epicIdPrefix
+       OR s.sprint_id STARTS WITH $epicIdPrefix
     MERGE (e)-[r:CONTAINS]->(s)
     ON CREATE SET r.wasCreated = true
     ON MATCH SET r.wasCreated = false
     RETURN count(r) as linkedSprints, sum(CASE WHEN r.wasCreated THEN 1 ELSE 0 END) as newLinks
   `;
 
+  // Extract numeric part for e{NNN} prefix matching
+  const epicNumMatch = epic.id.match(/(\d+)/);
+  const epicNum = epicNumMatch ? epicNumMatch[1].padStart(3, '0') : '000';
+  const epicIdPrefix = `e${epicNum}_s`;
+  // Also handle unpadded EPIC-14 format (sprint sync stores epicNum as integer)
+  const epicIdShort = epicNumMatch ? `EPIC-${parseInt(epicNumMatch[1])}` : epic.id;
+
   const linkResult = await runQuery(linkSprintsQuery, {
     epicId: epic.id,
     epicIdLower: epic.id.toLowerCase().replace('-', ''),
     epicIdUpper: epic.id,
+    epicIdShort,
+    epicIdPrefix,
   });
 
   if (linkResult.length > 0) {

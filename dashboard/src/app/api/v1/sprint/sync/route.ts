@@ -347,9 +347,10 @@ function parseSprintToGraph(content: string): SprintGraph {
   const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
 
   // Extract epic ID for hierarchy (EPIC-011)
+  // ADR-052: Use padded format (EPIC-014) for consistent matching
   const epicSprintInfo = extractEpicSprintNumbers(content);
   const epicId = epicSprintInfo
-    ? `EPIC-${epicSprintInfo.epicNum}`
+    ? `EPIC-${String(epicSprintInfo.epicNum).padStart(3, '0')}`
     : null;
 
   // Build sprint object
@@ -581,6 +582,19 @@ async function syncSprintToGraph(
     graph_id: graphId, // EPIC-011: Consistency with other node types
   });
   nodeCount++;
+
+  // Create Epic -> Sprint CONTAINS relationship if epic exists (e014_s02_t01)
+  // This ensures sprints appear under their epic in nav tree regardless of epic sync timing
+  if (graph.sprint.epicId) {
+    try {
+      await client.createRelationship(graph.sprint.epicId, graph.sprint.id, {
+        type: 'CONTAINS',
+      });
+      relCount++;
+    } catch {
+      // Epic may not exist yet - relationship will be created when epic is synced
+    }
+  }
 
   // Collect all unique files across tasks (TASK-3)
   const allFiles = new Set<string>();

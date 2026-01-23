@@ -459,9 +459,17 @@ export class StartReflectionCommand extends ReflectionCommand {
    * Override execute to process handoff and display session info
    */
   async execute(intent: string, options: any = {}): Promise<void> {
-    // Disable spinner in non-TTY mode (e.g., Claude Code) to prevent output pollution
-    // The table output will be the only visible output
-    const isTTY = process.stdout.isTTY === true;
+    // TTY detection with override for Claude Code (e014_s02_t03)
+    // Claude Code's terminal supports box-drawing and colors but reports isTTY=false
+    // Use GINKO_FORCE_TTY=1 to force TTY-like output in Claude Code
+    const forceTTY = process.env.GINKO_FORCE_TTY === '1' || process.env.GINKO_FORCE_TTY === 'true';
+    const isTTY = forceTTY || process.stdout.isTTY === true;
+
+    // Also force chalk colors when forcing TTY mode (chalk checks FORCE_COLOR env var)
+    if (forceTTY && !process.env.FORCE_COLOR) {
+      process.env.FORCE_COLOR = '1';
+    }
+
     const spinner = ora({
       text: 'Initializing session...',
       isEnabled: isTTY,

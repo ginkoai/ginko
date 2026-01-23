@@ -46,6 +46,7 @@ interface ParsedTask {
   assignee: string | null;
   initial_status: TaskStatus;
   goal: string | null;
+  approach: string | null;  // e014_s02_t04: Implementation notes
   acceptance_criteria: string[];
   files: string[];
   related_adrs: string[];
@@ -161,6 +162,7 @@ export async function POST(request: NextRequest) {
               t.estimate = $estimate,
               t.assignee = $assignee,
               t.goal = $goal,
+              t.approach = $approach,
               t.status = $initialStatus,
               t.acceptance_criteria = $acceptanceCriteria,
               t.files = $files,
@@ -175,6 +177,7 @@ export async function POST(request: NextRequest) {
               t.priority = $priority,
               t.estimate = $estimate,
               t.goal = $goal,
+              t.approach = $approach,
               t.acceptance_criteria = $acceptanceCriteria,
               t.files = $files,
               t.related_adrs = $relatedAdrs,
@@ -194,6 +197,7 @@ export async function POST(request: NextRequest) {
               estimate: task.estimate,
               assignee: task.assignee,
               goal: task.goal,
+              approach: task.approach || null,
               initialStatus: task.initial_status,
               acceptanceCriteria: task.acceptance_criteria,
               files: task.files,
@@ -351,6 +355,7 @@ export async function GET(request: NextRequest) {
                t.estimate as estimate,
                t.assignee as assignee,
                t.goal as goal,
+               t.approach as approach,
                t.synced_at as synced_at
         ORDER BY t.sprint_id, t.id
       `;
@@ -369,6 +374,7 @@ export async function GET(request: NextRequest) {
         estimate: record.get('estimate'),
         assignee: record.get('assignee'),
         goal: record.get('goal'),
+        approach: record.get('approach') || null,
         synced_at: record.get('synced_at')?.toString() || null,
       }));
 

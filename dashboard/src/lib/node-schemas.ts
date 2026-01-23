@@ -570,6 +570,22 @@ export const TASK_SCHEMA: NodeSchema = {
       ],
     },
     {
+      name: 'goal',
+      label: 'Goal',
+      type: 'text',
+      required: false,
+      placeholder: 'What is the task goal?',
+      helperText: 'Brief description of what this task accomplishes',
+    },
+    {
+      name: 'approach',
+      label: 'Approach',
+      type: 'textarea',
+      required: false,
+      placeholder: 'How should this task be implemented?',
+      helperText: '2-3 sentences describing the implementation approach (e014_s02_t04)',
+    },
+    {
       name: 'content',
       label: 'Content',
       type: 'markdown',
