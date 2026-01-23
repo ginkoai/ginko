@@ -108,6 +108,15 @@
     /* Brass Hands - Corner Bracket Dimensions */
     --bracket-size: 12px;
     --bracket-thickness: 3px;
+
+    /* Button Colors */
+    --color-btn-primary-bg: #c1f500;
+    --color-btn-primary-text: #000000;
+    --color-btn-secondary-bg: #ffffff;
+    --color-btn-secondary-text: #000000;
+    --color-btn-cream-bg: #f6ffd6;
+    --color-btn-arrow-dark: #000000;
+    --color-btn-arrow-surface: #050A0F;
 }
 
 /* ============================================================================
@@ -136,6 +145,15 @@
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+
+    /* Button Colors - Dark Mode */
+    --color-btn-primary-bg: #C1F500;
+    --color-btn-primary-text: #000000;
+    --color-btn-secondary-bg: #f6ffd6;
+    --color-btn-secondary-text: #050A0F;
+    --color-btn-cream-bg: #f6ffd6;
+    --color-btn-arrow-dark: #050A0F;
+    --color-btn-arrow-surface: #050A0F;
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
 }
 
@@ -1213,27 +1231,129 @@ pre {
     overflow: hidden;
 }
 
-/* Universal button styles - works anywhere */
+/* ============================================================================
+   UNIVERSAL BUTTON SYSTEM (Design Token Based)
+   ============================================================================ */
+
+/* Base button styles */
 .btn-hero {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-2) var(--space-2) var(--space-2) var(--space-6);
+    min-width: 200px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    cursor: pointer;
     overflow: hidden;
     transition: background-color 0.3s ease-out, border-color 0.3s ease-out, box-shadow 0.3s ease-out;
 }
 
-/* Universal button text animation - works anywhere */
+/* Primary button - Lime green */
+.btn-hero-primary {
+    background-color: var(--color-btn-primary-bg);
+    color: var(--color-btn-primary-text);
+    border: none;
+}
+
+/* Secondary button - White/cream */
+.btn-hero-secondary {
+    background-color: var(--color-btn-secondary-bg);
+    color: var(--color-btn-secondary-text);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary cream variant (for CTA section) */
+.btn-hero-secondary.btn-hero-cream {
+    background-color: var(--color-btn-cream-bg);
+    border: none;
+}
+
+/* Small button variant (for nav) */
+.btn-hero-sm {
+    gap: var(--space-3);
+    padding: 6px 6px 6px var(--space-4);
+    min-width: auto;
+    height: 44px;
+    font-size: var(--font-size-xs);
+}
+
+/* Full width variant (for pricing cards) */
+.btn-hero-full {
+    width: 100%;
+}
+
+/* Button text */
 .btn-hero-text {
     position: relative;
     z-index: 1;
     white-space: nowrap;
     display: inline-block;
+    color: var(--color-btn-primary-text);
     transition: transform 0.3s ease-out;
 }
 
+/* Text hover animation - scale from center */
 a:hover .btn-hero-text,
 button:hover .btn-hero-text {
     transform: scaleX(1.05);
 }
 
-/* Universal arrow animation - works anywhere */
+/* Arrow box base */
+.btn-hero-arrow {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+/* Small arrow variant */
+.btn-hero-sm .btn-hero-arrow {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+}
+
+/* Dark arrow box (for primary buttons) */
+.btn-hero-arrow-dark {
+    background-color: var(--color-btn-arrow-dark);
+}
+
+.btn-hero-arrow-dark .arrow-icon {
+    stroke: var(--color-btn-primary-bg);
+}
+
+/* Accent arrow box (for secondary buttons) */
+.btn-hero-arrow-accent {
+    background-color: var(--color-btn-primary-bg);
+}
+
+.btn-hero-arrow-accent .arrow-icon {
+    stroke: var(--color-btn-primary-text);
+}
+
+/* Surface arrow box (for cream secondary) */
+.btn-hero-arrow-surface {
+    background-color: var(--color-btn-arrow-surface);
+}
+
+.btn-hero-arrow-surface .arrow-icon {
+    stroke: var(--color-btn-cream-bg);
+}
+
+/* Arrow icons */
 .btn-hero-arrow .arrow-icon {
     width: 20px;
     height: 20px;
@@ -1251,6 +1371,7 @@ button:hover .btn-hero-text {
     opacity: 0;
 }
 
+/* Arrow hover animation */
 a:hover .btn-hero-arrow .arrow-default,
 button:hover .btn-hero-arrow .arrow-default {
     transform: translateX(32px);
