@@ -2081,7 +2081,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .cta-content {
     position: relative;
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
     padding: var(--space-12);
 }
@@ -2191,8 +2191,8 @@ button:hover .btn-hero-arrow .arrow-hover {
 .pricing-card {
     position: relative;
     background: linear-gradient(135deg, var(--color-surface) 0%, #0a0a0a 100%);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    border-radius: 0;
     padding: var(--space-8);
     text-align: center;
     transition: all var(--transition-base);
@@ -2205,18 +2205,17 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .pricing-card:hover {
-    transform: translateY(-4px);
     box-shadow: var(--shadow-lg);
     border-color: var(--color-accent);
 }
 
 /* Remove Pro card highlight when sibling cards are hovered */
 .pricing-grid:has(.pricing-card:hover) .pricing-card-featured:not(:hover) {
-    border-color: var(--color-border);
+    border-color: transparent;
 }
 
 .pricing-card-featured {
-    border-color: var(--color-accent);
+    border-color: transparent;
     border-width: 1px;
 }
 
