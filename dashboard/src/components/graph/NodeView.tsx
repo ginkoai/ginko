@@ -87,21 +87,27 @@ const nodeColors: Record<NodeLabel, { bg: string; text: string; border: string }
   Commit: { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/30' },
 };
 
-const statusColors: Record<string, string> = {
-  complete: 'bg-emerald-500/20 text-emerald-400',
-  in_progress: 'bg-ginko-500/20 text-ginko-400',
-  paused: 'bg-amber-500/20 text-amber-400',
-  todo: 'bg-slate-500/20 text-slate-400',
-  accepted: 'bg-emerald-500/20 text-emerald-400',
-  proposed: 'bg-blue-500/20 text-blue-400',
-  deprecated: 'bg-red-500/20 text-red-400',
-  superseded: 'bg-orange-500/20 text-orange-400',
-  active: 'bg-ginko-500/20 text-ginko-400',
-  planning: 'bg-blue-500/20 text-blue-400',
-  high: 'bg-emerald-500/20 text-emerald-400',
-  medium: 'bg-amber-500/20 text-amber-400',
-  low: 'bg-slate-500/20 text-slate-400',
-  critical: 'bg-red-500/20 text-red-400',
+const statusConfig: Record<string, { color: string; label: string }> = {
+  // Task statuses
+  todo: { color: 'bg-slate-500/20 text-slate-400', label: 'Todo' },
+  not_started: { color: 'bg-slate-500/20 text-slate-400', label: 'Todo' },
+  in_progress: { color: 'bg-ginko-500/20 text-ginko-400', label: 'In Progress' },
+  paused: { color: 'bg-amber-500/20 text-amber-400', label: 'Paused' },
+  complete: { color: 'bg-emerald-500/20 text-emerald-400', label: 'Done' },
+  // Sprint/Epic statuses
+  planning: { color: 'bg-blue-500/20 text-blue-400', label: 'Planning' },
+  active: { color: 'bg-blue-600 text-white', label: 'Active' },
+  'on-hold': { color: 'bg-amber-500/20 text-amber-400', label: 'On Hold' },
+  // ADR statuses
+  proposed: { color: 'bg-blue-500/20 text-blue-400', label: 'Proposed' },
+  accepted: { color: 'bg-emerald-500/20 text-emerald-400', label: 'Accepted' },
+  deprecated: { color: 'bg-red-500/20 text-red-400', label: 'Deprecated' },
+  superseded: { color: 'bg-orange-500/20 text-orange-400', label: 'Superseded' },
+  // Severity/Confidence statuses
+  low: { color: 'bg-slate-500/20 text-slate-400', label: 'Low' },
+  medium: { color: 'bg-amber-500/20 text-amber-400', label: 'Medium' },
+  high: { color: 'bg-orange-500/20 text-orange-400', label: 'High' },
+  critical: { color: 'bg-red-500/20 text-red-400', label: 'Critical' },
 };
 
 // =============================================================================
@@ -334,13 +340,13 @@ function NodeHeader({
             {status && (
               <span
                 className={cn(
-                  'text-xs px-2 py-0.5 rounded-full font-mono',
-                  statusColors[status] || 'bg-slate-500/20 text-slate-400'
+                  'text-[10px] px-1.5 py-0.5 rounded font-mono',
+                  statusConfig[status]?.color || 'bg-slate-500/20 text-slate-400'
                 )}
                 role="status"
-                aria-label={`Status: ${status.replace('_', ' ')}`}
+                aria-label={`Status: ${statusConfig[status]?.label || status.replace('_', ' ')}`}
               >
-                {status.replace('_', ' ')}
+                {statusConfig[status]?.label || status.replace('_', ' ')}
               </span>
             )}
           </div>

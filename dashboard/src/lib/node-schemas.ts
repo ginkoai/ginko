@@ -405,7 +405,7 @@ export const PRINCIPLE_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'theory',
+      name: 'content',
       label: 'Theory (Why It Matters)',
       type: 'markdown',
       required: true,
@@ -440,7 +440,7 @@ export const PRINCIPLE_SCHEMA: NodeSchema = {
       errors.push('Status is required');
     }
 
-    if (!data.theory || data.theory.trim().length < 20) {
+    if (!data.content || data.content.trim().length < 20) {
       errors.push('Theory must be at least 20 characters');
     }
 
@@ -488,7 +488,7 @@ export const SPRINT_SCHEMA: NodeSchema = {
       ],
     },
     {
-      name: 'goal',
+      name: 'content',
       label: 'Goal',
       type: 'markdown',
       required: false,

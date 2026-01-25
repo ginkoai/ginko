@@ -222,9 +222,9 @@ function TreeNodeComponent({
           {node.name}
         </span>
 
-        {/* Status badge for tasks */}
-        {node.label === 'Task' && node.properties && (
-          <TaskStatusBadge status={(node.properties as Record<string, unknown>).status as string} />
+        {/* Status badge for tasks, sprints, and epics */}
+        {(node.label === 'Task' || node.label === 'Sprint' || node.label === 'Epic') && node.properties && (
+          <StatusBadge status={(node.properties as Record<string, unknown>).status as string} />
         )}
       </div>
 
@@ -260,17 +260,23 @@ function TreeNodeComponent({
 }
 
 // =============================================================================
-// Task Status Badge
+// Status Badge (Tasks, Sprints, Epics)
 // =============================================================================
 
-function TaskStatusBadge({ status }: { status: string | undefined }) {
+function StatusBadge({ status }: { status: string | undefined }) {
   if (!status) return null;
 
   const statusConfig: Record<string, { color: string; label: string }> = {
+    // Task statuses
     todo: { color: 'bg-slate-500/20 text-slate-400', label: 'Todo' },
+    not_started: { color: 'bg-slate-500/20 text-slate-400', label: 'Todo' },
     in_progress: { color: 'bg-ginko-500/20 text-ginko-400', label: 'In Progress' },
     paused: { color: 'bg-amber-500/20 text-amber-400', label: 'Paused' },
     complete: { color: 'bg-emerald-500/20 text-emerald-400', label: 'Done' },
+    // Sprint/Epic statuses
+    planning: { color: 'bg-blue-500/20 text-blue-400', label: 'Planning' },
+    active: { color: 'bg-blue-600 text-white', label: 'Active' },
+    'on-hold': { color: 'bg-amber-500/20 text-amber-400', label: 'On Hold' },
   };
 
   const config = statusConfig[status] || statusConfig.todo;
