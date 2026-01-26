@@ -37,6 +37,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyConnection, getSession } from '../../../graph/_neo4j';
 import { emitStatusChangeEvent } from '../../../graph/status-events';
+import { updateUserActivity } from '../../../graph/user-activity';
 
 // Valid task status values
 const VALID_STATUSES = ['not_started', 'in_progress', 'blocked', 'complete'] as const;
@@ -249,6 +250,14 @@ export async function PATCH(
         changed_at: new Date().toISOString(),
         reason: body.reason?.trim(),
       });
+
+      // EPIC-016 Sprint 3 Task 3: Update user's last activity timestamp
+      // Maps status to activity type: in_progress->task_start, complete->task_complete, blocked->task_block
+      const { statusToActivityType } = await import('../../../graph/user-activity');
+      const activityType = statusToActivityType(body.status);
+      if (activityType) {
+        await updateUserActivity(session, body.graphId.trim(), userId, activityType);
+      }
 
       console.log('[Task Status API] Task status updated:', taskId, previousStatus, '->', body.status);
       return NextResponse.json(response, { status: 200 });
