@@ -52,14 +52,14 @@
     --color-text: #0A0A0A;
     --color-text-secondary: #1c2222;
     --color-text-tertiary: #121616;
-    --color-border: #DBE1D2;
-    --color-border-strong: #BAC6A9;
+    --color-border: ##282f33;
+    --color-border-strong: ##091014;
 
     /* Ginko Green Accent - Electric Lime */
-    --color-accent: #aeff00;
-    --color-accent-hover: #9ae600;
+    --color-accent: #D0F549;
+    --color-accent-hover: #D0F549;
     --color-accent-light: rgba(174, 255, 0, 0.15);
-    --color-accent-dark: #8acc00;
+    --color-accent-dark: #D0F549;
 
     /* Semantic Colors */
     --color-success: #22C55E;
@@ -70,7 +70,7 @@
     /* Terminal/Code Colors */
     --color-terminal-bg: #171717;
     --color-terminal-text: #BAC6A9;
-    --color-terminal-prompt: #aeff00;
+    --color-terminal-prompt: #D0F549;
     --color-terminal-comment: #121616;
     --color-terminal-header: #1c2222;
 
@@ -105,12 +105,12 @@
     --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Brass Hands - Corner Bracket Dimensions */
+    /* Corner Bracket Dimensions */
     --bracket-size: 12px;
     --bracket-thickness: 3px;
 
     /* Button Colors */
-    --color-btn-primary-bg: #c1f500;
+    --color-btn-primary-bg: #D0F549;
     --color-btn-primary-text: #000000;
     --color-btn-secondary-bg: #ffffff;
     --color-btn-secondary-text: #000000;
@@ -124,30 +124,30 @@
    ============================================================================ */
 
 [data-theme="dark"] {
-    --color-bg: #0F1F2E;
-    --color-surface: #050A0F;
+    --color-bg: #091014;
+    --color-surface: #091014;
     --color-surface-hover: #f6ffd6;
     --color-text: #f6ffd6;
     --color-text-secondary: #f6ffd6;
-    --color-text-tertiary: #CED6C2;
-    --color-border: #BAC6A9;
-    --color-border-strong: #3a3a3a;
+    --color-text-tertiary: ##f6ffd6;
+    --color-border: #282f33;
+    --color-border-strong: ##091014;
 
-    --color-accent: #C1F500;
+    --color-accent: #D0F549;
     --color-accent-hover: #addc00;
     --color-accent-light: rgba(193, 245, 0, 0.15);
     --color-accent-dark: #99c200;
 
-    --color-terminal-bg: #050A0F;
-    --color-terminal-header: #0A141F;
-    --color-terminal-prompt: #C1F500;
+    --color-terminal-bg: ##060B0E;
+    --color-terminal-header: #091014;
+    --color-terminal-prompt: #D0F549;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
 
     /* Button Colors - Dark Mode */
-    --color-btn-primary-bg: #C1F500;
+    --color-btn-primary-bg: #D0F549;
     --color-btn-primary-text: #000000;
     --color-btn-secondary-bg: #f6ffd6;
     --color-btn-secondary-text: #050A0F;
@@ -226,7 +226,7 @@ code {
 
 .container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0 var(--space-6);
 }
@@ -247,7 +247,6 @@ section {
     z-index: 1000;
     background-color: rgba(250, 250, 250, 0.8);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--color-border);
     transition: background-color var(--transition-base);
 }
 
@@ -260,7 +259,7 @@ section {
     align-items: center;
     justify-content: space-between;
     padding: var(--space-4) var(--space-6);
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
 }
 
@@ -311,6 +310,7 @@ section {
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
     color: var(--color-text-secondary);
     text-decoration: none;
     transition: color var(--transition-fast);
@@ -889,17 +889,18 @@ pre {
 .hero-content {
     position: relative;
     text-align: center;
-    max-width: 900px;
+    max-width: 1300px;
     margin: 0 auto;
 }
 
 .hero-title {
     font-family: var(--font-mono);
-    font-size: var(--font-size-5xl);
+    font-size: var(--font-size-6xl);
     font-weight: var(--font-weight-extrabold);
     line-height: 1.1;
     margin-bottom: var(--space-6);
     color: var(--color-text);
+    text-transform: uppercase;
 }
 
 .hero-title .highlight {
@@ -911,7 +912,7 @@ pre {
     color: var(--color-text-secondary);
     margin-bottom: var(--space-8);
     line-height: 1.6;
-    max-width: 500px;
+    max-width: 750px;
 }
 
 .hero-cta {
@@ -1429,7 +1430,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 /* Primary Hero Button - Lime green with black arrow box */
 .hero-cta .btn-hero-primary {
-    background-color: #c1f500 !important;
+    background-color: #D0F549 !important;
     color: #000000 !important;
     border: none;
 }
@@ -1443,7 +1444,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .hero-cta .btn-hero-primary .arrow-icon {
-    stroke: #c1f500 !important;
+    stroke: #D0F549 !important;
 }
 
 .hero-cta .btn-hero-primary:hover {
@@ -1493,7 +1494,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     padding: 6px 6px 6px 16px;
     border-radius: 8px;
     height: 44px;
-    background-color: #c1f500;
+    background-color: #D0F549;
     color: #000000;
     transition: all 0.3s ease-out;
     cursor: pointer;
@@ -1530,7 +1531,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     width: 16px;
     height: 16px;
     position: absolute;
-    stroke: #c1f500;
+    stroke: #D0F549;
     transition: all 0.3s ease-out;
 }
 
@@ -1599,6 +1600,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     text-align: center;
     margin-bottom: var(--space-6);
     color: var(--color-text);
+    text-transform: uppercase;
 }
 
 .section-subtitle {
@@ -1801,6 +1803,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     color: var(--color-text);
     margin: 0;
     margin-top: var(--space-4);
+    text-transform: uppercase;
 }
 
 /* Unified bordered grid */
@@ -1835,7 +1838,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: #c1f500;
+    color: #D0F549;
     margin-bottom: var(--space-4);
     line-height: 1;
 }
@@ -1843,7 +1846,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 .feature-icon svg {
     width: 2.5rem;
     height: 2.5rem;
-    stroke: #c1f500;
+    stroke: #D0F549;
 }
 
 .feature-name {
@@ -1889,7 +1892,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 .feature-card { position: relative; padding: var(--space-8); text-align: center; background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%); border: none; border-radius: 0; }
 .feature-label { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-accent); letter-spacing: 0.1em; margin-bottom: var(--space-4); }
 .feature-description { font-size: var(--font-size-base); color: var(--color-text-secondary); line-height: 1.6; margin: 0; }
-.feature-card h3 { font-family: var(--font-mono); font-size: var(--font-size-2xl); margin-bottom: var(--space-3); }
+.feature-card h3 { font-family: var(--font-mono); font-size: var(--font-size-2xl); margin-bottom: var(--space-3); text-transform: uppercase; }
 
 /* ============================================================================
    TESTIMONIAL SECTION
@@ -1919,7 +1922,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 .testimonial-quote-icon svg {
     width: 100%;
     height: 100%;
-    fill: #c1f500;
+    fill: #D0F549;
 }
 
 .testimonial-text {
@@ -1972,6 +1975,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     color: var(--color-text);
     margin: 0;
     margin-top: var(--space-4);
+    text-transform: uppercase;
 }
 
 .faq-accordion {
@@ -2081,7 +2085,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .cta-content {
     position: relative;
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: var(--space-12);
 }
@@ -2091,6 +2095,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     font-size: var(--font-size-4xl);
     margin-bottom: var(--space-6);
     color: #0A0A0A;
+    text-transform: uppercase;
 }
 
 .cta h2 {
@@ -2190,9 +2195,9 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .pricing-card {
     position: relative;
-    background: linear-gradient(135deg, var(--color-surface) 0%, #0a0a0a 100%);
+    background: #0C151C;
     border: 1px solid transparent;
-    border-radius: 0;
+    border-radius: 12px;
     padding: var(--space-8);
     text-align: center;
     transition: all var(--transition-base);
@@ -2407,6 +2412,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     font-weight: var(--font-weight-bold);
     color: #F6FFD6;
     margin-bottom: var(--space-4);
+    text-transform: uppercase;
 }
 
 .footer-section ul {
@@ -2476,6 +2482,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     font-size: var(--font-size-sm);
     text-decoration: none;
     transition: color var(--transition-fast);
+    text-transform: uppercase;
 }
 
 .footer-links a:hover {
