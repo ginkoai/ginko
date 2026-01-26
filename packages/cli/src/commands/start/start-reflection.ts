@@ -15,6 +15,7 @@ import fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import readline from 'readline';
 import { getUserEmail, getGinkoDir, detectWorkMode, getProjectRoot } from '../../utils/helpers.js';
 import { checkForUpdatesAsync } from '../../utils/version-check.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
@@ -815,6 +816,16 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // 13. Stop spinner before any output
       spinner.stop();
+
+      // EPIC-016 Sprint 4: Check for unassigned tasks and prompt for bulk assignment (ADR-061)
+      // Per ADR-061: Work cannot be anonymous - prompt at sprint start for assignment
+      if (sprintChecklist && graphId) {
+        sprintChecklist = await this.checkAndPromptBulkAssignment(
+          sprintChecklist,
+          graphId,
+          userEmail
+        );
+      }
 
       // EPIC-008 Sprint 2: Check team context staleness (silent - no output)
       await this.checkTeamStaleness();
@@ -2034,6 +2045,107 @@ Example output structure:
     } catch {
       // Staleness check is non-critical - don't block session start
     }
+  }
+
+  /**
+   * Check for unassigned tasks in the active sprint and prompt for bulk assignment
+   * Per ADR-061: Work cannot be anonymous - encourage assignment at sprint start
+   *
+   * @param sprintChecklist - Current sprint data with tasks
+   * @param graphId - Graph ID for API calls
+   * @param userEmail - Current user's email
+   * @returns Updated sprintChecklist if tasks were assigned
+   */
+  private async checkAndPromptBulkAssignment(
+    sprintChecklist: SprintChecklist | null,
+    graphId: string | null,
+    userEmail: string
+  ): Promise<SprintChecklist | null> {
+    // Skip if no sprint or no graph
+    if (!sprintChecklist || !graphId) {
+      return sprintChecklist;
+    }
+
+    // Count unassigned tasks from graph
+    const client = new GraphApiClient();
+
+    // Extract sprint ID from file or name, handling both formats:
+    // - e016_s04 (underscore - API format)
+    // - e016-s04 (hyphen - file naming format)
+    const sourceString = sprintChecklist.file || sprintChecklist.name || '';
+    const sprintIdMatch = sourceString.match(/e\d+[-_]s\d+/i);
+    if (!sprintIdMatch) {
+      return sprintChecklist;
+    }
+
+    // Normalize to underscore format for API calls
+    const sprintId = sprintIdMatch[0].replace('-', '_').toLowerCase();
+
+    try {
+      // Fetch tasks from graph to check assignee status
+      const tasks = await client.getTasks(graphId, { sprintId });
+      const unassignedTasks = tasks.filter(t =>
+        !t.assignee || t.assignee === '' || t.assignee === null
+      );
+
+      if (unassignedTasks.length === 0) {
+        return sprintChecklist;
+      }
+
+      // Prompt user for bulk assignment (ADR-061)
+      console.log('');
+      console.log(chalk.yellow(`📋 ${unassignedTasks.length} unassigned ${unassignedTasks.length === 1 ? 'task' : 'tasks'} in sprint ${sprintId}`));
+
+      const shouldAssign = await this.promptConfirm(`Assign all to you (${userEmail})?`);
+
+      if (shouldAssign) {
+        // Bulk assign all tasks
+        const assignSpinner = ora({
+          text: `Assigning ${unassignedTasks.length} tasks...`,
+          isEnabled: process.stdout.isTTY || process.env.GINKO_FORCE_TTY === '1',
+        }).start();
+
+        try {
+          // Update each task's assignee
+          for (const task of unassignedTasks) {
+            await client.request<{ node: { id: string } }>(
+              'PATCH',
+              `/api/v1/graph/nodes/${encodeURIComponent(task.id)}?graphId=${encodeURIComponent(graphId)}`,
+              { assignee: userEmail }
+            );
+          }
+
+          assignSpinner.succeed(chalk.green(`✓ Assigned ${unassignedTasks.length} tasks to ${userEmail}`));
+        } catch (error) {
+          assignSpinner.fail(chalk.red(`Failed to assign tasks: ${(error as Error).message}`));
+        }
+      } else {
+        console.log(chalk.dim('  Skipped - tasks remain unassigned'));
+      }
+
+      console.log('');
+    } catch {
+      // Non-blocking - if we can't check assignments, continue
+    }
+
+    return sprintChecklist;
+  }
+
+  /**
+   * Prompt user for yes/no confirmation
+   */
+  private async promptConfirm(message: string): Promise<boolean> {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    return new Promise((resolve) => {
+      rl.question(`${message} [Y/n] `, (answer) => {
+        rl.close();
+        resolve(answer.toLowerCase() !== 'n');
+      });
+    });
   }
 
   /**
