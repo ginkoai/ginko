@@ -13,6 +13,7 @@ import chalk from 'chalk';
 import readline from 'readline';
 import { GraphApiClient, TaskStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
+import { getCurrentUser } from '../../utils/auth-storage.js';
 
 // =============================================================================
 // Types
@@ -195,8 +196,52 @@ export async function completeCommand(
 }
 
 /**
+ * Get task details from graph including assignee
+ * Uses the graph nodes API to fetch full task properties
+ */
+async function getTaskDetails(
+  client: GraphApiClient,
+  graphId: string,
+  taskId: string
+): Promise<{ assignee: string | null; title: string | null }> {
+  try {
+    // Use the graph nodes API to get full task details
+    const response = await client.request<{
+      node: { properties: { assignee?: string; title?: string } };
+    }>('GET', `/api/v1/graph/nodes/${encodeURIComponent(taskId)}?graphId=${encodeURIComponent(graphId)}`);
+
+    return {
+      assignee: response.node?.properties?.assignee || null,
+      title: response.node?.properties?.title || null,
+    };
+  } catch {
+    // If we can't get details, assume no assignee
+    return { assignee: null, title: null };
+  }
+}
+
+/**
+ * Update task assignee in graph
+ */
+async function updateTaskAssignee(
+  client: GraphApiClient,
+  graphId: string,
+  taskId: string,
+  assignee: string
+): Promise<void> {
+  await client.request<{ node: { id: string } }>(
+    'PATCH',
+    `/api/v1/graph/nodes/${encodeURIComponent(taskId)}?graphId=${encodeURIComponent(graphId)}`,
+    { assignee }
+  );
+}
+
+/**
  * Mark task as in progress
  * Usage: ginko task start <taskId>
+ *
+ * Per ADR-061: Starting work on a task requires assignment.
+ * If task is unassigned, prompts user to assign to themselves.
  */
 export async function startCommand(
   taskId: string,
@@ -213,7 +258,29 @@ export async function startCommand(
       return;
     }
 
-    // Update status
+    // ADR-061: Check assignment before starting (work cannot be anonymous)
+    const taskDetails = await getTaskDetails(client, graphId, taskId);
+    const currentUser = await getCurrentUser();
+
+    if (!taskDetails.assignee && currentUser?.email) {
+      // Task is unassigned - prompt for assignment per ADR-061
+      console.log(chalk.yellow(`\nTask ${taskId} is unassigned.`));
+      if (taskDetails.title) {
+        console.log(chalk.dim(`  "${taskDetails.title}"`));
+      }
+
+      const shouldAssign = await confirm(`Assign to you (${currentUser.email})?`);
+
+      if (shouldAssign) {
+        await updateTaskAssignee(client, graphId, taskId, currentUser.email);
+        console.log(chalk.green(`✓ Assigned to ${currentUser.email}`));
+      } else {
+        // User declined assignment - warn but allow per ADR-061
+        console.log(chalk.yellow('⚠ Working without assignment. Work may not be traceable.'));
+      }
+    }
+
+    // Update status to in_progress
     const response = await client.updateTaskStatus(graphId, taskId, 'in_progress');
     console.log(chalk.cyan(`▶ Task ${taskId} started`));
     if (response.task.title) {
