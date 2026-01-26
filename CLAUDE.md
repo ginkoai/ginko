@@ -209,9 +209,16 @@ ginko task complete <task_id>
 
 **Cascade option:** When completing the last task in a sprint:
 ```bash
-ginko task complete e014_s02_t07 --cascade
+ginko task complete e014_s02_t07 --cascade --yes
 ```
 This auto-completes the parent sprint if all tasks are done.
+- `--cascade`: Check if sprint/epic should be completed
+- `--yes`: Auto-confirm without prompting (required for non-interactive use)
+
+**Manual sprint completion:** If cascade wasn't used or failed:
+```bash
+ginko sprint complete e014_s02
+```
 
 ### The Vibecheck Pattern 🎯
 When feeling lost or sensing misalignment:
@@ -339,6 +346,18 @@ ginko sync                                            # Pull dashboard changes t
 ginko sync --type ADR                                 # Sync only ADRs
 ```
 
+**Team visibility:**
+```bash
+ginko team status                                     # Show team-wide work status
+```
+
+The team status command displays:
+- All team members with their current sprint and progress
+- Progress bars and completion percentages
+- Last activity timestamps (relative time)
+- Unassigned work summary by sprint
+- Team summary statistics
+
 ### Local Files (Fallback when graph unavailable)
 
 | Question Type | File Location |
@@ -367,6 +386,9 @@ grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
 
 **"Show me ADRs about [topic]"**
 → `ginko graph query "topic" --type ADR` OR: `grep -l -i "topic" docs/adr/*.md`
+
+**"What's my team working on?" / "Who's doing what?"**
+→ `ginko team status` - shows all team members, their active sprints, progress, and last activity
 
 
 ## Project-Specific Patterns
