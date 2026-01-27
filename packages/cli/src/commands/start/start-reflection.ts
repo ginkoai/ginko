@@ -72,6 +72,9 @@ import {
   routePlanningChoice,
   PlanningChoice
 } from '../../lib/planning-menu.js';
+// EPIC-016 Sprint 5: Adaptive coaching (t01, t03)
+import { getCoachingContext, CoachingContext } from '../../lib/coaching-level.js';
+import { showTargetedCoaching } from '../../lib/targeted-coaching.js';
 import {
   GraphApiClient,
   TaskPatternsResponse,
@@ -902,6 +905,17 @@ export class StartReflectionCommand extends ReflectionCommand {
       this.runScheduledInsights().catch(() => {
         // Insights update is non-critical - don't block session start
       });
+
+      // EPIC-016 Sprint 5 t03: Show targeted coaching tips at session start
+      // Only show if we didn't just show the planning menu (which has its own coaching)
+      if (!structureStatus.shouldShowPlanningMenu) {
+        try {
+          const coachingContext = await getCoachingContext(graphId || undefined);
+          await showTargetedCoaching(coachingContext, 'start');
+        } catch {
+          // Coaching tips are non-critical - don't block session start
+        }
+      }
 
       // 14. Display output LAST (after all async operations complete)
       // Table view is the FINAL output - nothing should print after it

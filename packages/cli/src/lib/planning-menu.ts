@@ -26,7 +26,7 @@
 import prompts from 'prompts';
 import chalk from 'chalk';
 import { WorkStructureStatus } from './user-sprint.js';
-import { logEvent } from './event-logger.js';
+import { logEvent, logPlanningMenuEvent } from './event-logger.js';
 // EPIC-016 Sprint 4: Adoption-based quieting (t05)
 import {
   getAdoptionScore,
@@ -35,6 +35,15 @@ import {
   checkAdhocStreak,
   AdoptionSignal
 } from './adoption-score.js';
+// EPIC-016 Sprint 5: Adaptive coaching based on insight scores (t01)
+import {
+  getCoachingContext,
+  CoachingLevel,
+  PROMPT_VARIANTS,
+  selectPrompt,
+  getTargetedCoachingSuggestions,
+} from './coaching-level.js';
+import { getGraphId } from '../commands/graph/config.js';
 
 // =============================================================================
 // Types
@@ -103,6 +112,11 @@ export async function showPlanningMenu(
   const menuConfig = await getPlanningMenuConfig();
   const adoptionScore = await getAdoptionScore();
 
+  // EPIC-016 Sprint 5 t01: Get coaching context based on insight scores
+  const graphId = await getGraphId().catch(() => null);
+  const coachingContext = await getCoachingContext(graphId || undefined);
+  const coachingLevel = coachingContext.level;
+
   console.log('');
 
   // Check for ad-hoc streak (3+ consecutive sessions resets score)
@@ -110,23 +124,32 @@ export async function showPlanningMenu(
     await checkAdhocStreak(status.consecutiveAdhocSessions);
   }
 
-  // Show context-appropriate header based on quieting level
+  // EPIC-016 Sprint 5 t03: Show targeted coaching for low metrics
+  if (coachingLevel === 'supportive') {
+    const suggestions = getTargetedCoachingSuggestions(coachingContext);
+    if (suggestions.length > 0) {
+      console.log(chalk.cyan('💡 Coaching tip:'));
+      console.log(chalk.dim(`   ${suggestions[0]}`));
+      console.log('');
+    }
+  }
+
+  // Show context-appropriate header based on coaching level
   if (menuConfig.showCelebration && adoptionScore.score >= 20) {
     console.log(chalk.green('🌳 Great job staying organized!'));
   }
 
   if (status?.reason === 'all_tasks_complete') {
-    console.log(chalk.green(`🎉 Sprint complete! All tasks finished in ${status.sprintId}`));
-    console.log(chalk.white('What would you like to work on next?'));
+    // Use coaching-level variant for sprint complete message
+    const message = selectPrompt(PROMPT_VARIANTS.sprintComplete, coachingLevel);
+    console.log(message);
   } else if (menuConfig.showCoachingTip && status?.consecutiveAdhocSessions && status.consecutiveAdhocSessions > 1) {
     console.log(chalk.yellow(`💡 You've had ${status.consecutiveAdhocSessions} sessions without planned work.`));
     console.log(chalk.white('Would you like to plan your work?'));
-  } else if (adoptionScore.level === 'minimal') {
-    // Minimal prompt for high adopters
-    console.log(chalk.dim('No active sprint.'));
   } else {
-    console.log(chalk.yellow('You have no planned work.'));
-    console.log(chalk.white('What would you like to work on?'));
+    // Use coaching-level variant for no structure message
+    const message = selectPrompt(PROMPT_VARIANTS.noStructure, coachingLevel);
+    console.log(message);
   }
 
   console.log('');
@@ -152,7 +175,8 @@ export async function showPlanningMenu(
   }
 
   // Log selection and record adoption signal (non-blocking)
-  logPlanningChoice(response.choice).catch(() => {
+  // EPIC-016 Sprint 5 t05: Pass coaching context for feedback loop
+  logPlanningChoice(response.choice, coachingLevel, coachingContext.overallScore).catch(() => {
     // Ignore logging errors
   });
 
@@ -169,7 +193,11 @@ export async function showPlanningMenu(
  *
  * Also records adoption signals for quieting behavior.
  */
-async function logPlanningChoice(choice: PlanningChoice): Promise<void> {
+async function logPlanningChoice(
+  choice: PlanningChoice,
+  coachingLevel?: CoachingLevel,
+  overallScore?: number
+): Promise<void> {
   const descriptions: Record<PlanningChoice, string> = {
     'epic': 'Started new epic creation from planning menu',
     'sprint': 'Started new sprint creation from planning menu',
@@ -193,6 +221,11 @@ async function logPlanningChoice(choice: PlanningChoice): Promise<void> {
       tags: ['planning-menu', `choice-${choice}`, 'coaching-data'],
       impact: choice === 'adhoc' ? 'low' : 'medium',
     });
+
+    // EPIC-016 Sprint 5 t05: Log coaching interaction for feedback loop
+    if (coachingLevel) {
+      await logPlanningMenuEvent(choice, coachingLevel, overallScore);
+    }
 
     // Record adoption signal for quieting behavior (t05)
     const signal = adoptionSignals[choice];

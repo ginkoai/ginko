@@ -19,6 +19,10 @@ import path from 'path';
 import { requireAuth } from '../utils/auth-storage.js';
 // EPIC-016 Sprint 4: Handoff reconciliation (t06)
 import { reconcileWork } from '../lib/work-reconciliation.js';
+// EPIC-016 Sprint 5: Adaptive coaching (t03)
+import { getCoachingContext } from '../lib/coaching-level.js';
+import { showTargetedCoaching } from '../lib/targeted-coaching.js';
+import { getGraphId } from './graph/config.js';
 
 interface HandoffOptions {
   message?: string;
@@ -140,6 +144,15 @@ export async function handoffCommand(options: HandoffOptions = {}) {
     console.log('');
     console.log(chalk.dim('Resume anytime with: ') + chalk.bold('ginko start'));
     console.log('');
+
+    // EPIC-016 Sprint 5 t03: Show targeted coaching tips at handoff
+    try {
+      const graphId = await getGraphId().catch(() => null);
+      const coachingContext = await getCoachingContext(graphId || undefined);
+      await showTargetedCoaching(coachingContext, 'handoff');
+    } catch {
+      // Coaching tips are non-critical - don't block handoff
+    }
 
     // Show sync status (future: when Neo4j event queue is implemented)
     if (options.verbose) {

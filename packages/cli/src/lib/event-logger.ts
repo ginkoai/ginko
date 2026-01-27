@@ -349,3 +349,137 @@ export async function clearEvents(): Promise<void> {
     console.error('[EventLogger] Failed to clear events:', error instanceof Error ? error.message : String(error));
   }
 }
+
+// =============================================================================
+// EPIC-016 Sprint 5 Task 5: Coaching Feedback Loop
+// =============================================================================
+
+/**
+ * Coaching event types for tracking interactions
+ */
+export type CoachingEventType =
+  | 'planning_menu_shown'
+  | 'planning_menu_selection'
+  | 'coaching_level_auto'
+  | 'coaching_level_override'
+  | 'targeted_tip_shown'
+  | 'session_with_structure'
+  | 'session_without_structure';
+
+/**
+ * Coaching event data for analytics
+ */
+export interface CoachingEventData {
+  type: CoachingEventType;
+  coachingLevel?: 'minimal' | 'standard' | 'supportive';
+  overallScore?: number;
+  selection?: string; // For planning menu selections
+  tipId?: string;     // For targeted tips
+  metric?: string;    // For metric-specific tips
+  sessionHadStructure?: boolean;
+  override?: boolean;
+  previousLevel?: string;
+}
+
+/**
+ * Log a coaching interaction event (EPIC-016 Sprint 5 Task 5)
+ *
+ * Tracks coaching interactions for future analysis:
+ * - Planning menu selections over time
+ * - Time from "no structure" to "structured work"
+ * - User override patterns
+ * - Correlation between coaching level and adoption
+ *
+ * @param data - Coaching event data
+ */
+export async function logCoachingEvent(data: CoachingEventData): Promise<void> {
+  const description = formatCoachingDescription(data);
+
+  await logEvent({
+    category: 'insight',
+    description,
+    tags: ['coaching-data', `coaching-${data.type}`, `level-${data.coachingLevel || 'unknown'}`],
+    impact: 'low',
+  });
+}
+
+/**
+ * Format coaching event description for logging
+ */
+function formatCoachingDescription(data: CoachingEventData): string {
+  switch (data.type) {
+    case 'planning_menu_shown':
+      return `Planning menu shown (coaching level: ${data.coachingLevel}, score: ${data.overallScore})`;
+
+    case 'planning_menu_selection':
+      return `Planning menu selection: ${data.selection} (coaching level: ${data.coachingLevel})`;
+
+    case 'coaching_level_auto':
+      return `Coaching level auto-adjusted to ${data.coachingLevel} (score: ${data.overallScore})`;
+
+    case 'coaching_level_override':
+      return `Coaching level manually set to ${data.coachingLevel} (previous: ${data.previousLevel})`;
+
+    case 'targeted_tip_shown':
+      return `Targeted coaching tip shown: ${data.tipId} (metric: ${data.metric}, level: ${data.coachingLevel})`;
+
+    case 'session_with_structure':
+      return `Session started with structured work (coaching level: ${data.coachingLevel})`;
+
+    case 'session_without_structure':
+      return `Session started without structure, menu shown (coaching level: ${data.coachingLevel})`;
+
+    default:
+      return `Coaching event: ${data.type}`;
+  }
+}
+
+/**
+ * Log planning menu interaction
+ */
+export async function logPlanningMenuEvent(
+  selection: string,
+  coachingLevel: 'minimal' | 'standard' | 'supportive',
+  overallScore?: number
+): Promise<void> {
+  await logCoachingEvent({
+    type: 'planning_menu_selection',
+    selection,
+    coachingLevel,
+    overallScore,
+  });
+}
+
+/**
+ * Log coaching level change
+ */
+export async function logCoachingLevelChange(
+  newLevel: 'minimal' | 'standard' | 'supportive',
+  isOverride: boolean,
+  overallScore?: number,
+  previousLevel?: string
+): Promise<void> {
+  await logCoachingEvent({
+    type: isOverride ? 'coaching_level_override' : 'coaching_level_auto',
+    coachingLevel: newLevel,
+    overallScore,
+    override: isOverride,
+    previousLevel,
+  });
+}
+
+/**
+ * Log targeted tip shown
+ */
+export async function logTargetedTipShown(
+  tipId: string,
+  metric: string,
+  coachingLevel: 'minimal' | 'standard' | 'supportive'
+): Promise<void> {
+  await logCoachingEvent({
+    type: 'targeted_tip_shown',
+    tipId,
+    metric,
+    coachingLevel,
+  });
+}

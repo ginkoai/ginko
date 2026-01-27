@@ -14,6 +14,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { InsightsOverview, TimescalePeriod } from '@/components/insights/InsightsOverview'
 import { MemberFilter } from '@/components/insights/MemberFilter'
+import CoachingSettings from '@/components/insights/CoachingSettings'
 import { DashboardCoachingReport } from '@/lib/insights/types'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
 
@@ -193,14 +194,24 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
         </div>
       </div>
 
-      {/* Main Content */}
-      <InsightsOverview
-        report={report}
-        loading={loading}
-        error={error}
-        selectedPeriod={selectedPeriod}
-        onPeriodChange={handlePeriodChange}
-      />
+      {/* Main Content - Grid layout with Insights and Settings */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Insights (3/4 width on large screens) */}
+        <div className="lg:col-span-3">
+          <InsightsOverview
+            report={report}
+            loading={loading}
+            error={error}
+            selectedPeriod={selectedPeriod}
+            onPeriodChange={handlePeriodChange}
+          />
+        </div>
+
+        {/* Coaching Settings Sidebar (1/4 width on large screens) */}
+        <div className="lg:col-span-1">
+          <CoachingSettings report={report} loading={loading} />
+        </div>
+      </div>
     </div>
   )
 }
