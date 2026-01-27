@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-17
- * @tags: [api, admin, cleanup, teams, adhoc_260117_s01]
+ * @updated: 2026-01-27
+ * @tags: [api, admin, cleanup, teams, uat]
  * @related: [../migrate-teams/route.ts]
  * @priority: high
  * @complexity: low
@@ -12,12 +12,12 @@
 /**
  * DELETE /api/v1/admin/cleanup-test-teams
  *
- * Cleanup endpoint to remove orphaned e2e/test teams from Supabase.
- * These teams were created during testing and clutter the team list.
+ * Cleanup endpoint to remove test teams from Supabase.
  *
- * Deletes teams where:
- * 1. Name contains 'e2e', 'test', or 'uat' (case insensitive)
- * 2. OR graph_id contains 'e2e', 'test', or 'uat' (case insensitive)
+ * Query Parameters:
+ * - graphId: (required) Specific graph_id to filter by. Only teams matching
+ *            this exact graph_id will be deleted. This prevents accidental
+ *            deletion of production data.
  *
  * Only accessible to admin users.
  */
@@ -51,22 +51,26 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Require explicit graphId parameter for safety
+    const { searchParams } = new URL(request.url);
+    const graphId = searchParams.get('graphId');
+
+    if (!graphId) {
+      return NextResponse.json(
+        { error: 'graphId parameter is required to prevent accidental deletion of production data' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createServiceRoleClient();
     const deleted: CleanupResult[] = [];
 
     try {
-      // First, identify teams to be deleted
+      // First, identify teams to be deleted (exact match on graph_id)
       const { data: teamsToDelete, error: selectError } = await supabase
         .from('teams')
         .select('id, name, graph_id, created_at')
-        .or(
-          'name.ilike.%e2e%,' +
-          'name.ilike.%test%,' +
-          'name.ilike.%uat%,' +
-          'graph_id.ilike.%e2e%,' +
-          'graph_id.ilike.%test%,' +
-          'graph_id.ilike.%uat%'
-        );
+        .eq('graph_id', graphId);
 
       if (selectError) {
         console.error('[Cleanup Test Teams API] Error finding teams:', selectError);
@@ -90,16 +94,7 @@ export async function DELETE(request: NextRequest) {
       // Delete each team (team_members will cascade delete)
       for (const team of teamsToDelete) {
         // Determine why this team is being deleted
-        const nameLower = (team.name || '').toLowerCase();
-        const graphIdLower = (team.graph_id || '').toLowerCase();
-        let reason = '';
-        if (nameLower.includes('e2e') || graphIdLower.includes('e2e')) {
-          reason = 'e2e';
-        } else if (nameLower.includes('test') || graphIdLower.includes('test')) {
-          reason = 'test';
-        } else if (nameLower.includes('uat') || graphIdLower.includes('uat')) {
-          reason = 'uat';
-        }
+        const reason = `graph_id=${graphId}`;
 
         const { error: deleteError } = await supabase
           .from('teams')
@@ -155,21 +150,25 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Require explicit graphId parameter for safety
+    const { searchParams } = new URL(request.url);
+    const graphId = searchParams.get('graphId');
+
+    if (!graphId) {
+      return NextResponse.json(
+        { error: 'graphId parameter is required to prevent accidental deletion of production data' },
+        { status: 400 }
+      );
+    }
+
     const supabase = createServiceRoleClient();
 
     try {
-      // Find teams that would be deleted
+      // Find teams that would be deleted (exact match on graph_id)
       const { data: teamsToDelete, error: selectError } = await supabase
         .from('teams')
         .select('id, name, graph_id, created_at')
-        .or(
-          'name.ilike.%e2e%,' +
-          'name.ilike.%test%,' +
-          'name.ilike.%uat%,' +
-          'graph_id.ilike.%e2e%,' +
-          'graph_id.ilike.%test%,' +
-          'graph_id.ilike.%uat%'
-        );
+        .eq('graph_id', graphId);
 
       if (selectError) {
         console.error('[Cleanup Test Teams API] Error finding teams:', selectError);
@@ -181,7 +180,8 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         preview: true,
-        message: `Found ${teamsToDelete?.length || 0} test teams that would be deleted`,
+        graphId,
+        message: `Found ${teamsToDelete?.length || 0} teams with graph_id='${graphId}' that would be deleted`,
         teams: teamsToDelete || [],
         count: teamsToDelete?.length || 0,
       });
