@@ -29,6 +29,21 @@ export interface GraphInitResponse {
   createdAt: string;
 }
 
+export interface TeamCreateResponse {
+  success: boolean;
+  team: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    graph_id: string | null;
+    created_by: string;
+    created_at: string;
+    updated_at: string;
+    role: 'owner' | 'member';
+  };
+}
+
 export interface DocumentUpload {
   id: string;
   type: 'ADR' | 'PRD' | 'Epic' | 'Sprint' | 'Charter' | 'Pattern' | 'Gotcha' | 'Session' | 'ContextModule';
@@ -308,6 +323,27 @@ export class GraphApiClient {
     documents: Record<string, number>;
   }): Promise<GraphInitResponse> {
     return this.request<GraphInitResponse>('POST', '/api/v1/graph/init', data);
+  }
+
+  /**
+   * Create a team for a project (called after graph init)
+   * Each project has its own team with the creator as owner
+   *
+   * @param name - Team/project name
+   * @param graphId - Associated graph ID
+   * @param description - Optional team description
+   * @returns Created team with ID
+   */
+  async createTeam(
+    name: string,
+    graphId: string,
+    description?: string
+  ): Promise<TeamCreateResponse> {
+    return this.request<TeamCreateResponse>('POST', '/api/v1/teams', {
+      name,
+      graph_id: graphId,
+      description: description || `Team for ${name} project`,
+    });
   }
 
   /**

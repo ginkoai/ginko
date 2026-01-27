@@ -1,7 +1,7 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-10-31
+ * @updated: 2026-01-27
  * @tags: [graph, init, setup, cli]
  * @related: [api-client.ts, config.ts, load.ts]
  * @priority: critical
@@ -186,12 +186,28 @@ export async function initCommand(options: InitOptions): Promise<void> {
     console.log(chalk.dim(`  Namespace: ${result.namespace}`));
     console.log(chalk.dim(`  Graph ID: ${result.graphId}`));
 
+    // Create project team (for dashboard visibility)
+    let teamId: string | undefined;
+    try {
+      console.log(chalk.dim('Creating project team...'));
+      const teamResult = await client.createTeam(projectName, result.graphId);
+      teamId = teamResult.team.id;
+      console.log(chalk.green('✓ Project team created'));
+      console.log(chalk.dim(`  Team ID: ${teamId}`));
+    } catch (teamError) {
+      // Non-fatal: team creation failure shouldn't block graph init
+      console.log(chalk.yellow('⚠ Team creation skipped'));
+      const errorMsg = teamError instanceof Error ? teamError.message : String(teamError);
+      console.log(chalk.dim(`  (${errorMsg})`));
+    }
+
     // Save configuration
     const config = createDefaultConfig(
       result.graphId,
       result.namespace,
       projectName,
-      options.visibility || 'private'
+      options.visibility || 'private',
+      teamId
     );
 
     await saveGraphConfig(config);

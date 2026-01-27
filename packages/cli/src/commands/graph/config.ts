@@ -16,6 +16,7 @@ import { getGinkoDir } from '../../utils/helpers.js';
 export interface GraphConfig {
   version: string;
   graphId: string;
+  teamId?: string;  // Project team ID in Supabase (for dashboard visibility)
   namespace: string;
   projectName: string;
   visibility: 'private' | 'organization' | 'public';
@@ -128,11 +129,13 @@ export function createDefaultConfig(
   graphId: string,
   namespace: string,
   projectName: string,
-  visibility: 'private' | 'organization' | 'public' = 'private'
+  visibility: 'private' | 'organization' | 'public' = 'private',
+  teamId?: string
 ): GraphConfig {
   return {
     version: '1.0',
     graphId,
+    teamId,
     namespace,
     projectName,
     visibility,
@@ -146,4 +149,12 @@ export function createDefaultConfig(
     hashes: {},
     lastSync: new Date().toISOString(),
   };
+}
+
+/**
+ * Get team ID from config
+ */
+export async function getTeamId(): Promise<string | null> {
+  const config = await loadGraphConfig();
+  return config?.teamId || null;
 }
