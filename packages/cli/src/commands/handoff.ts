@@ -1,9 +1,9 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2025-11-04
- * @tags: [handoff, session, cursor, adr-043, event-stream]
- * @related: [start/index.ts, lib/session-cursor.ts, status.ts]
+ * @updated: 2026-01-26
+ * @tags: [handoff, session, cursor, adr-043, event-stream, epic-016-s04]
+ * @related: [start/index.ts, lib/session-cursor.ts, status.ts, lib/work-reconciliation.ts]
  * @priority: critical
  * @complexity: low
  * @dependencies: [fs-extra, chalk, simple-git]
@@ -17,6 +17,8 @@ import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
 import { isQueueInitialized, getQueue } from '../lib/event-queue.js';
 import path from 'path';
 import { requireAuth } from '../utils/auth-storage.js';
+// EPIC-016 Sprint 4: Handoff reconciliation (t06)
+import { reconcileWork } from '../lib/work-reconciliation.js';
 
 interface HandoffOptions {
   message?: string;
@@ -34,6 +36,20 @@ interface HandoffOptions {
 export async function handoffCommand(options: HandoffOptions = {}) {
   // Require authentication
   await requireAuth('handoff');
+
+  // EPIC-016 Sprint 4 t06: Check for untracked work before handoff
+  try {
+    const reconciliation = await reconcileWork();
+    if (reconciliation.userAction === 'cancelled') {
+      console.log(chalk.dim('Handoff cancelled.'));
+      return;
+    }
+    if (reconciliation.taskCreated) {
+      console.log(chalk.dim(`Tracked as: ${reconciliation.taskCreated}`));
+    }
+  } catch {
+    // Non-critical - continue with handoff even if reconciliation fails
+  }
 
   const spinner = ora('Pausing work...').start();
 

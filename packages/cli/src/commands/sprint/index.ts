@@ -14,6 +14,9 @@ import { SprintPipeline } from './sprint-pipeline.js';
 import { EnhancedSprintPipeline, SprintOptions } from './sprint-pipeline-enhanced.js';
 import { createDepsCommand } from './deps.js';
 import { createSprintStatusCommands, addSprintStatusShortcuts } from './status.js';
+// EPIC-016 Sprint 4: Conversational sprint creation
+import { createSprintCommand as createSprintAction } from './create.js';
+import { createQuickFixTask } from './quick-fix.js';
 
 /**
  * Sprint command router
@@ -63,6 +66,29 @@ export function sprintCommand(): Command {
   // Add status commands (EPIC-015 Sprint 1)
   sprint.addCommand(createSprintStatusCommands());
   addSprintStatusShortcuts(sprint);
+
+  // EPIC-016 Sprint 4: Conversational sprint creation (t03)
+  sprint
+    .command('create')
+    .description('Create a new feature sprint (conversational)')
+    .option('--adhoc', 'Link to Ad-Hoc epic (default: true)')
+    .option('--epic <epicId>', 'Link to specific epic')
+    .action(async (options) => {
+      await createSprintAction(options);
+    });
+
+  // EPIC-016 Sprint 4: Quick-fix fast path (t04)
+  sprint
+    .command('quick-fix <description>')
+    .alias('qf')
+    .description('Create a single-task sprint for a quick fix')
+    .action(async (description) => {
+      const result = await createQuickFixTask(description);
+      if (result.success) {
+        console.log(`✓ Created: ${result.taskId} - ${description}`);
+        console.log('  Run `ginko task complete` when done.');
+      }
+    });
 
   return sprint;
 }

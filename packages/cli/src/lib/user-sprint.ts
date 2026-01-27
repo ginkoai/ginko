@@ -34,6 +34,24 @@ export interface UserSprintAssignment {
   sprintName: string;      // Human-readable sprint name
   assignedAt: string;      // ISO timestamp
   assignedBy: 'auto' | 'manual';
+
+  // EPIC-016 Sprint 4: Ad-hoc tracking (t01)
+  isAdhoc?: boolean;                  // True if working without sprint structure
+  consecutiveAdhocSessions?: number;  // Count of sessions without structured work
+  lastAdhocSessionAt?: string;        // ISO timestamp of last ad-hoc session
+}
+
+/**
+ * Result of checking user's work structure status (EPIC-016 Sprint 4 t01)
+ * Used by start command to determine if planning menu should be shown
+ */
+export interface WorkStructureStatus {
+  hasStructuredWork: boolean;        // User has active sprint with incomplete tasks
+  sprintId: string | null;           // Current sprint ID if any
+  incompleteTasks: number;           // Count of remaining tasks (-1 if unknown)
+  consecutiveAdhocSessions: number;  // Sessions without structured work
+  shouldShowPlanningMenu: boolean;   // Final decision
+  reason: 'has_sprint' | 'no_sprint' | 'all_tasks_complete' | 'adhoc_pattern';
 }
 
 const CURRENT_SPRINT_FILE = 'current-sprint.json';
@@ -190,4 +208,155 @@ export async function getSprintFileFromAssignment(
   }
   const projectRoot = await requireGinkoRoot();
   return path.join(projectRoot, assignment.sprintFile);
+}
+
+// =============================================================================
+// EPIC-016 Sprint 4: Work Structure Detection (t01)
+// =============================================================================
+
+/**
+ * Check if user has structured work (sprint with incomplete tasks)
+ *
+ * Decision matrix:
+ * | Has Sprint | Has Tasks | Consecutive Adhoc | Result |
+ * |------------|-----------|-------------------|--------|
+ * | Yes        | Yes       | Any               | Has structured work |
+ * | Yes        | No (100%) | Any               | No structure (complete) |
+ * | No         | N/A       | <= 1              | No structure (new) |
+ * | No         | N/A       | > 1               | No structure (adhoc pattern) |
+ *
+ * @param userSprint - User's current sprint assignment
+ * @param sprintChecklist - Sprint task data from graph/file (with progress info)
+ * @returns WorkStructureStatus with decision
+ */
+export function checkWorkStructure(
+  userSprint: UserSprintAssignment | null,
+  sprintChecklist: { progress?: { total: number; complete: number }; tasks?: Array<{ state: string }> } | null
+): WorkStructureStatus {
+  // Case 1: No sprint assignment
+  if (!userSprint || !userSprint.sprintId) {
+    return {
+      hasStructuredWork: false,
+      sprintId: null,
+      incompleteTasks: 0,
+      consecutiveAdhocSessions: userSprint?.consecutiveAdhocSessions || 0,
+      shouldShowPlanningMenu: true,
+      reason: 'no_sprint'
+    };
+  }
+
+  // Case 2: Sprint assigned but no checklist data (graph unavailable)
+  if (!sprintChecklist) {
+    // Trust the sprint assignment, assume structured
+    return {
+      hasStructuredWork: true,
+      sprintId: userSprint.sprintId,
+      incompleteTasks: -1, // Unknown
+      consecutiveAdhocSessions: 0,
+      shouldShowPlanningMenu: false,
+      reason: 'has_sprint'
+    };
+  }
+
+  // Calculate incomplete tasks
+  let incompleteTasks: number;
+  if (sprintChecklist.progress) {
+    incompleteTasks = sprintChecklist.progress.total - sprintChecklist.progress.complete;
+  } else if (sprintChecklist.tasks) {
+    incompleteTasks = sprintChecklist.tasks.filter(
+      t => t.state === 'todo' || t.state === 'in_progress'
+    ).length;
+  } else {
+    incompleteTasks = -1; // Unknown
+  }
+
+  // Case 3: Sprint with incomplete tasks
+  if (incompleteTasks > 0 || incompleteTasks === -1) {
+    return {
+      hasStructuredWork: true,
+      sprintId: userSprint.sprintId,
+      incompleteTasks,
+      consecutiveAdhocSessions: 0,
+      shouldShowPlanningMenu: false,
+      reason: 'has_sprint'
+    };
+  }
+
+  // Case 4: Sprint 100% complete
+  return {
+    hasStructuredWork: false,
+    sprintId: userSprint.sprintId,
+    incompleteTasks: 0,
+    consecutiveAdhocSessions: userSprint.consecutiveAdhocSessions || 0,
+    shouldShowPlanningMenu: true,
+    reason: 'all_tasks_complete'
+  };
+}
+
+/**
+ * Increment ad-hoc session counter
+ * Called when user chooses ad-hoc work in planning menu
+ */
+export async function incrementAdhocSessionCount(): Promise<number> {
+  const filePath = await getUserSprintFilePath();
+  let data: Partial<UserSprintAssignment> = {};
+
+  try {
+    if (await fs.pathExists(filePath)) {
+      data = await fs.readJSON(filePath);
+    }
+  } catch {
+    // Start fresh if file is corrupted
+  }
+
+  const newCount = (data.consecutiveAdhocSessions || 0) + 1;
+  data.isAdhoc = true;
+  data.consecutiveAdhocSessions = newCount;
+  data.lastAdhocSessionAt = new Date().toISOString();
+
+  await fs.ensureDir(path.dirname(filePath));
+  await fs.writeJSON(filePath, data, { spaces: 2 });
+
+  return newCount;
+}
+
+/**
+ * Reset ad-hoc session counter
+ * Called when user starts structured work (creates/selects epic/sprint)
+ */
+export async function resetAdhocSessionCount(): Promise<void> {
+  const filePath = await getUserSprintFilePath();
+
+  try {
+    if (await fs.pathExists(filePath)) {
+      const data = await fs.readJSON(filePath);
+      data.isAdhoc = false;
+      data.consecutiveAdhocSessions = 0;
+      await fs.writeJSON(filePath, data, { spaces: 2 });
+    }
+  } catch {
+    // Ignore errors - non-critical
+  }
+}
+
+/**
+ * Create sprint assignment from sprint ID (for graph-based sprints)
+ */
+export function createAssignmentFromSprintId(
+  sprintId: string,
+  sprintName: string,
+  assignedBy: 'auto' | 'manual' = 'auto'
+): UserSprintAssignment {
+  // Extract epic ID from sprint ID (e.g., e016_s04 -> e016, adhoc_260126_s01 -> adhoc_260126)
+  const parts = sprintId.split('_s');
+  const epicId = parts[0] || sprintId;
+
+  return {
+    sprintId,
+    epicId,
+    sprintFile: '', // Graph-based, no local file
+    sprintName,
+    assignedAt: new Date().toISOString(),
+    assignedBy
+  };
 }

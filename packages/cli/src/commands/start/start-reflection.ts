@@ -59,8 +59,19 @@ import {
   setUserCurrentSprint,
   createAssignmentFromFile,
   getSprintFileFromAssignment,
-  UserSprintAssignment
+  UserSprintAssignment,
+  // EPIC-016 Sprint 4: Structure detection (t01)
+  checkWorkStructure,
+  incrementAdhocSessionCount,
+  resetAdhocSessionCount,
+  WorkStructureStatus
 } from '../../lib/user-sprint.js';
+// EPIC-016 Sprint 4: Planning menu (t02)
+import {
+  showPlanningMenu,
+  routePlanningChoice,
+  PlanningChoice
+} from '../../lib/planning-menu.js';
 import {
   GraphApiClient,
   TaskPatternsResponse,
@@ -528,7 +539,7 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // First, check if user has a specific sprint assignment
       // EPIC-012: Per-user sprint tracking enables multiple users on different sprints
-      const userSprint = await getUserCurrentSprint();
+      let userSprint = await getUserCurrentSprint();
       let userSprintLoaded = false;
       let sprintFilePath: string | undefined;
 
@@ -816,6 +827,44 @@ export class StartReflectionCommand extends ReflectionCommand {
 
       // 13. Stop spinner before any output
       spinner.stop();
+
+      // EPIC-016 Sprint 4: Work Pattern Coaching - Structure Detection (t01) and Planning Menu (t02)
+      // Check if user has structured work (Epic→Sprint→Task). If not, show guided planning menu.
+      const structureStatus = checkWorkStructure(userSprint, sprintChecklist);
+
+      if (structureStatus.shouldShowPlanningMenu) {
+        // Show planning menu to guide user toward structured work
+        const menuResult = await showPlanningMenu(structureStatus);
+
+        if (menuResult.cancelled) {
+          console.log(chalk.dim('Session start cancelled.'));
+          return;
+        }
+
+        // Route the selection
+        const routeResult = await routePlanningChoice(menuResult.choice!);
+
+        // Track adoption: ad-hoc vs structured choice
+        if (menuResult.choice === 'adhoc') {
+          await incrementAdhocSessionCount();
+        } else if (routeResult.success) {
+          // User chose structured work - reset ad-hoc counter
+          await resetAdhocSessionCount();
+        }
+
+        // Epic and sprint creation handle their own flow
+        if (!routeResult.shouldContinueStart) {
+          return;
+        }
+
+        // For quick-fix and ad-hoc, update sprint info if a sprint was created
+        if (routeResult.sprintId) {
+          userSprint = await getUserCurrentSprint();
+          // Could refresh sprintChecklist from graph here if needed
+        }
+
+        console.log(''); // Spacing before normal output continues
+      }
 
       // EPIC-016 Sprint 4: Check for unassigned tasks and prompt for bulk assignment (ADR-061)
       // Per ADR-061: Work cannot be anonymous - prompt at sprint start for assignment

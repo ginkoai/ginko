@@ -431,6 +431,77 @@ grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
 - `ginko vibecheck` - Quick realignment when stuck
 - `ginko ship` - Create PR-ready branch with context
 
+
+## Work Pattern Coaching (EPIC-016)
+
+Ginko guides users toward Epic→Sprint→Task structure while supporting ad-hoc work when appropriate.
+
+### Planning Menu
+
+When `ginko start` detects no structured work, it shows a planning menu:
+
+```
+You have no planned work.
+What would you like to work on?
+
+[a] New Epic - Large initiative with multiple sprints
+[b] New Feature Sprint - Focused work with clear goals
+[c] Quick fix / Bug fix - Single task, minimal overhead
+[d] Something else - Explore, research, or work ad-hoc
+```
+
+**Behavior-Based Quieting:** The menu adapts based on adoption score:
+- New users: Full prompts with descriptions and coaching tips
+- Regular users: Lighter prompts (descriptions hidden)
+- Power users: Minimal prompts (only when truly unstructured)
+
+### Quick Commands
+
+**Create a quick-fix task (minimal ceremony):**
+```bash
+ginko sprint quick-fix "Fix the login button"
+ginko sprint qf "Fix the login button"  # Alias
+```
+
+**Create a feature sprint (conversational):**
+```bash
+ginko sprint create
+```
+This prompts for a description, uses AI to break down tasks, and creates an ad-hoc sprint.
+
+### Handoff Reconciliation
+
+When running `ginko handoff`, if untracked work is detected (commits without an active task), you'll be prompted:
+
+```
+📋 You have work that may not be tracked:
+   2 commit(s) in the last 24h
+   Latest: "Fix authentication bug..."
+
+Would you like to track this work?
+[1] Yes, create a quick task
+[2] No, skip this time
+```
+
+This ensures significant work is captured in the knowledge graph.
+
+### Adoption Signals
+
+Ginko tracks adoption patterns to adjust coaching:
+
+| Behavior | Points |
+|----------|--------|
+| Creates sprint unprompted | +2 |
+| Creates epic | +2 |
+| Completes tracked task | +1 |
+| Uses quick-fix flow | +1 |
+| 3+ consecutive ad-hoc sessions | reset |
+
+**Quieting Levels:**
+- 0-5 points: Full coaching (new users)
+- 6-15 points: Light coaching
+- 16+ points: Minimal prompts (power users)
+
 ## Privacy & Security
 - All context stored locally in `.ginko/`
 - No data leaves your machine without explicit action
