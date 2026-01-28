@@ -271,6 +271,7 @@ export async function GET(request: NextRequest) {
     try {
       const searchParams = request.nextUrl.searchParams;
       const projectId = searchParams.get('projectId');
+      const graphId = searchParams.get('graphId');
       const limit = parseInt(searchParams.get('limit') || '1', 10);
       const days = searchParams.get('days');
       const memberEmail = searchParams.get('memberEmail');
@@ -350,6 +351,11 @@ export async function GET(request: NextRequest) {
 
       if (projectId) {
         query = query.eq('project_id', projectId);
+      }
+
+      // Filter by graphId to ensure project isolation (BUG-002 fix)
+      if (graphId) {
+        query = query.eq('graph_id', graphId);
       }
 
       const { data: allRuns, error } = await query;

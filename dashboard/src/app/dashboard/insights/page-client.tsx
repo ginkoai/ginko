@@ -17,6 +17,7 @@ import { MemberFilter } from '@/components/insights/MemberFilter'
 import CoachingSettings from '@/components/insights/CoachingSettings'
 import { DashboardCoachingReport } from '@/lib/insights/types'
 import { ArrowPathIcon } from '@heroicons/react/24/outline'
+import { useUserGraph } from '@/contexts/UserGraphContext'
 
 interface InsightsPageClientProps {
   userId: string
@@ -27,6 +28,7 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const { graphId } = useUserGraph()
 
   const [report, setReport] = useState<DashboardCoachingReport | null>(null)
   const [loading, setLoading] = useState(true)
@@ -74,6 +76,10 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
       })
       if (targetEmail && targetEmail !== userEmail) {
         queryParams.set('memberEmail', targetEmail)
+      }
+      // Filter by selected project's graphId
+      if (graphId) {
+        queryParams.set('graphId', graphId)
       }
       const response = await fetch(`/api/v1/insights/sync?${queryParams.toString()}`)
 
@@ -148,7 +154,7 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
     } finally {
       setLoading(false)
     }
-  }, [userId, userEmail, selectedPeriod, selectedMemberEmail])
+  }, [userId, userEmail, selectedPeriod, selectedMemberEmail, graphId])
 
   // Handle period change
   const handlePeriodChange = useCallback((period: TimescalePeriod) => {
@@ -156,10 +162,10 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
     loadInsights(period, selectedMemberEmail)
   }, [loadInsights, selectedMemberEmail])
 
-  // Reload when member changes
+  // Reload when member or project changes
   useEffect(() => {
     loadInsights(selectedPeriod, selectedMemberEmail)
-  }, [selectedMemberEmail]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedMemberEmail, graphId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     loadInsights()

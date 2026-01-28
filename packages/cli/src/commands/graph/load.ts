@@ -83,17 +83,32 @@ function extractTitle(content: string): string {
 
 /**
  * Determine document type from file path
+ * Note: This uses path-based detection. Files should be in their correct directories:
+ * - Epic files: docs/epics/
+ * - Sprint files: docs/sprints/
+ * If a file is misfiled, it will be incorrectly typed.
  */
-function getDocumentType(filePath: string): DocumentUpload['type'] {
-  if (filePath.includes('/adr/')) return 'ADR';
-  if (filePath.includes('/PRD/')) return 'PRD';
-  if (filePath.includes('/epics/')) return 'Epic';
-  if (filePath.includes('/sprints/')) return 'Sprint';
-  if (filePath.includes('PROJECT-CHARTER')) return 'Charter';
-  if (filePath.includes('pattern')) return 'Pattern';
-  if (filePath.includes('gotcha')) return 'Gotcha';
-  if (filePath.includes('/sessions/')) return 'Session';
-  return 'ContextModule';
+function getDocumentType(filePath: string, content: string): { type: DocumentUpload['type']; warning?: string } {
+  // Detect misfiled epics in sprints directory
+  if (filePath.includes('/sprints/') && (
+    filePath.includes('EPIC-') ||
+    content.match(/^#\s*EPIC-\d+:/m)
+  )) {
+    return {
+      type: 'Epic',
+      warning: `Epic file found in sprints directory: ${filePath}. Move to docs/epics/ for correct processing.`
+    };
+  }
+
+  if (filePath.includes('/adr/')) return { type: 'ADR' };
+  if (filePath.includes('/PRD/')) return { type: 'PRD' };
+  if (filePath.includes('/epics/')) return { type: 'Epic' };
+  if (filePath.includes('/sprints/')) return { type: 'Sprint' };
+  if (filePath.includes('PROJECT-CHARTER')) return { type: 'Charter' };
+  if (filePath.includes('pattern')) return { type: 'Pattern' };
+  if (filePath.includes('gotcha')) return { type: 'Gotcha' };
+  if (filePath.includes('/sessions/')) return { type: 'Session' };
+  return { type: 'ContextModule' };
 }
 
 /**
@@ -134,9 +149,15 @@ async function prepareDocuments(options: LoadOptions): Promise<DocumentUpload[]>
         const filename = path.basename(filePath, '.md');
         const id = filename;
 
+        // Get document type with misfiling detection
+        const { type, warning } = getDocumentType(filePath, content);
+        if (warning) {
+          console.warn(chalk.yellow(`⚠️  ${warning}`));
+        }
+
         const doc: DocumentUpload = {
           id,
-          type: getDocumentType(filePath),
+          type,
           title: extractTitle(content),
           content,
           filePath,

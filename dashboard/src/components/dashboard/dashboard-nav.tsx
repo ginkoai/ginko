@@ -15,10 +15,12 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSupabase } from '@/components/providers'
+import { useUserGraph } from '@/contexts/UserGraphContext'
 import ginkoLogo from '@/ginko-logo-green.png'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Dropdown } from '@/components/ui/dropdown'
+import { Select } from '@/components/ui/select'
 import { DashboardTabs } from './dashboard-tabs'
 import { ShortcutsHelp } from '@/components/graph/ShortcutsHelp'
 import { Menu, X, HelpCircle } from 'lucide-react'
@@ -96,6 +98,43 @@ interface DashboardNavProps {
   user: User
   /** Optional notification count - if undefined or 0, badge is hidden */
   notificationCount?: number
+}
+
+// Project selector component
+function ProjectSelector() {
+  const { projects, graphId, switchProject, isLoading } = useUserGraph()
+
+  // Hide if loading or no projects
+  if (isLoading || projects.length === 0) {
+    return null
+  }
+
+  // Single project - show name without dropdown
+  if (projects.length === 1) {
+    return (
+      <span className="text-sm font-mono text-muted-foreground px-2 hidden sm:block">
+        {projects[0].projectName}
+      </span>
+    )
+  }
+
+  // Multiple projects - show selector
+  const options = projects.map(p => ({
+    value: p.graphId,
+    label: p.projectName,
+  }))
+
+  return (
+    <div className="hidden sm:block">
+      <Select
+        options={options}
+        value={graphId || ''}
+        onValueChange={switchProject}
+        size="sm"
+        className="w-44 font-mono"
+      />
+    </div>
+  )
 }
 
 export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
@@ -214,7 +253,10 @@ export function DashboardNav({ user, notificationCount }: DashboardNavProps) {
         </div>
 
         {/* Right side */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {/* Project Selector */}
+          <ProjectSelector />
+
           {/* Keyboard Shortcuts Help */}
           <button
             onClick={() => setShowShortcutsHelp(true)}

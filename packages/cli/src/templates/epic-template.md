@@ -180,9 +180,14 @@ Stop when:
 
 ## Output Format
 
-After conversation, create files in `docs/sprints/`:
+After conversation, create files in the correct locations:
+- **Epic files** go in `docs/epics/`
+- **Sprint files** go in `docs/sprints/`
 
-### Epic File: `docs/sprints/EPIC-XXX-[name].md`
+**IMPORTANT:** Epic files MUST be in `docs/epics/`, NOT in `docs/sprints/`.
+If `docs/epics/` doesn't exist, create it first.
+
+### Epic File: `docs/epics/EPIC-XXX-[name].md`
 
 ```markdown
 ---

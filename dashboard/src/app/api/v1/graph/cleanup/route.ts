@@ -26,6 +26,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runQuery, verifyConnection } from '../_neo4j';
 import { verifyGraphAccessFromRequest } from '@/lib/graph/access';
+import { withAuth, AuthenticatedUser } from '@/lib/auth/middleware';
+
+// Admin user IDs that can perform cleanup on any graph
+const ADMIN_USER_IDS = [
+  'b27cb2ea-dcae-4255-9e77-9949daa53d77', // Chris Norton
+];
 
 interface OrphanAnalysis {
   nodeType: string;
@@ -219,6 +225,7 @@ export async function GET(request: NextRequest) {
           { action: 'dedupe-epics', description: 'Merge duplicate epics (keep detailed version)', estimatedMerges: analysis.duplicateEpics.length },
           { action: 'dedupe-tasks', description: 'Remove duplicate Task nodes (keep one per id)', estimatedDeletes: analysis.duplicateTasks.duplicateCount },
           { action: 'cleanup-stale', description: 'Delete nodes from stale/test graphIds', estimatedDeletes: staleResults.reduce((sum, r) => sum + toNumber(r.count), 0) },
+          { action: 'delete-project', description: 'DELETE ALL: Remove entire project (Neo4j + Supabase)', warning: 'DESTRUCTIVE - cannot be undone' },
         ],
         usage: 'DELETE /api/v1/graph/cleanup?graphId=X&action=ACTION&dryRun=false&confirm=CLEANUP_CONFIRMED',
       },
@@ -236,44 +243,53 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   console.log('[Cleanup API] DELETE /api/v1/graph/cleanup called');
 
-  try {
-    const isConnected = await verifyConnection();
-    if (!isConnected) {
-      return NextResponse.json(
-        { error: { code: 'SERVICE_UNAVAILABLE', message: 'Graph database unavailable' } },
-        { status: 503 }
-      );
-    }
+  return withAuth(request, async (user: AuthenticatedUser, _supabase: any) => {
+    try {
+      const isConnected = await verifyConnection();
+      if (!isConnected) {
+        return NextResponse.json(
+          { error: { code: 'SERVICE_UNAVAILABLE', message: 'Graph database unavailable' } },
+          { status: 503 }
+        );
+      }
 
-    const { searchParams } = new URL(request.url);
-    const graphId = searchParams.get('graphId');
-    const action = searchParams.get('action');
-    const dryRun = searchParams.get('dryRun') !== 'false';
-    const confirm = searchParams.get('confirm');
+      const { searchParams } = new URL(request.url);
+      const graphId = searchParams.get('graphId');
+      const action = searchParams.get('action');
+      const dryRun = searchParams.get('dryRun') !== 'false';
+      const confirm = searchParams.get('confirm');
 
-    if (!graphId || !action) {
-      return NextResponse.json(
-        { error: { code: 'VALIDATION_ERROR', message: 'graphId and action required' } },
-        { status: 400 }
-      );
-    }
+      if (!graphId || !action) {
+        return NextResponse.json(
+          { error: { code: 'VALIDATION_ERROR', message: 'graphId and action required' } },
+          { status: 400 }
+        );
+      }
 
-    // Require confirmation for non-dry-run
-    if (!dryRun && confirm !== 'CLEANUP_CONFIRMED') {
-      return NextResponse.json(
-        { error: { code: 'CONFIRMATION_REQUIRED', message: 'Add confirm=CLEANUP_CONFIRMED to execute destructive operation' } },
-        { status: 400 }
-      );
-    }
+      // Require confirmation for non-dry-run
+      if (!dryRun && confirm !== 'CLEANUP_CONFIRMED') {
+        return NextResponse.json(
+          { error: { code: 'CONFIRMATION_REQUIRED', message: 'Add confirm=CLEANUP_CONFIRMED to execute destructive operation' } },
+          { status: 400 }
+        );
+      }
 
-    // Require owner access
-    const access = await verifyGraphAccessFromRequest(request, graphId, 'write');
-    if (!access.hasAccess || access.role !== 'owner') {
-      return NextResponse.json(
-        { error: { code: 'ACCESS_DENIED', message: 'Owner access required for cleanup operations' } },
-        { status: 403 }
-      );
-    }
+      // Check if user is admin (can cleanup any graph)
+      const isAdmin = ADMIN_USER_IDS.includes(user.id);
+      if (isAdmin) {
+        console.log(`[Cleanup API] Admin access granted for user: ${user.id}`);
+      }
+
+      // Require owner access (or admin)
+      if (!isAdmin) {
+        const access = await verifyGraphAccessFromRequest(request, graphId, 'write');
+        if (!access.hasAccess || access.role !== 'owner') {
+          return NextResponse.json(
+            { error: { code: 'ACCESS_DENIED', message: 'Owner access required for cleanup operations' } },
+            { status: 403 }
+          );
+        }
+      }
 
     // Helper to safely convert Neo4j integers
     const toNumber = (val: any): number => {
@@ -409,6 +425,102 @@ export async function DELETE(request: NextRequest) {
         break;
       }
 
+      case 'delete-project': {
+        // DANGEROUS: Delete ALL nodes for this graphId and cleanup Supabase
+        // This completely removes a project from the system
+        if (dryRun) {
+          // Count all nodes that would be deleted
+          const countQuery = `
+            MATCH (n)
+            WHERE n.graphId = $graphId OR n.graph_id = $graphId
+            RETURN count(n) as count
+          `;
+          const countResult = await runQuery<{ count: number }>(countQuery, { graphId });
+
+          // Count Project nodes
+          const projectCountQuery = `
+            MATCH (p:Project)
+            WHERE p.graphId = $graphId
+            RETURN count(p) as count
+          `;
+          const projectCountResult = await runQuery<{ count: number }>(projectCountQuery, { graphId });
+
+          const nodeCount = toNumber(countResult[0]?.count);
+          const projectCount = toNumber(projectCountResult[0]?.count);
+
+          result = {
+            affected: nodeCount + projectCount,
+            details: `Dry run: would delete ${nodeCount} nodes + ${projectCount} Project nodes + Supabase teams/insights`,
+          };
+        } else {
+          // Use service role client for cleanup (need admin access)
+          const { createServiceRoleClient } = await import('@/lib/supabase/server');
+          const supabaseAdmin = createServiceRoleClient();
+
+          let totalDeleted = 0;
+          const details: string[] = [];
+
+          // 1. Delete all nodes with this graphId from Neo4j
+          const deleteNodesQuery = `
+            MATCH (n)
+            WHERE n.graphId = $graphId OR n.graph_id = $graphId
+            WITH n, labels(n)[0] as nodeType
+            DETACH DELETE n
+            RETURN count(n) as count
+          `;
+          const nodeDeleteResult = await runQuery<{ count: number }>(deleteNodesQuery, { graphId });
+          const nodesDeleted = toNumber(nodeDeleteResult[0]?.count);
+          totalDeleted += nodesDeleted;
+          details.push(`${nodesDeleted} graph nodes`);
+
+          // 2. Delete the Project node itself
+          const deleteProjectQuery = `
+            MATCH (p:Project)
+            WHERE p.graphId = $graphId
+            DETACH DELETE p
+            RETURN count(p) as count
+          `;
+          const projectDeleteResult = await runQuery<{ count: number }>(deleteProjectQuery, { graphId });
+          const projectsDeleted = toNumber(projectDeleteResult[0]?.count);
+          totalDeleted += projectsDeleted;
+          if (projectsDeleted > 0) {
+            details.push(`${projectsDeleted} Project node(s)`);
+          }
+
+          // 3. Delete teams from Supabase (team_members will cascade)
+          const { data: teamsDeleted, error: teamError } = await supabaseAdmin
+            .from('teams')
+            .delete()
+            .eq('graph_id', graphId)
+            .select('id');
+
+          if (teamError) {
+            console.error('[Cleanup API] Error deleting teams:', teamError);
+          } else if (teamsDeleted && teamsDeleted.length > 0) {
+            details.push(`${teamsDeleted.length} Supabase team(s)`);
+          }
+
+          // 4. Delete insight_runs from Supabase (insights will cascade)
+          const { data: insightsDeleted, error: insightError } = await supabaseAdmin
+            .from('insight_runs')
+            .delete()
+            .eq('graph_id', graphId)
+            .select('id');
+
+          if (insightError) {
+            console.error('[Cleanup API] Error deleting insights:', insightError);
+          } else if (insightsDeleted && insightsDeleted.length > 0) {
+            details.push(`${insightsDeleted.length} insight run(s)`);
+          }
+
+          result = {
+            affected: totalDeleted,
+            details: `Deleted: ${details.join(', ')}`,
+          };
+        }
+        break;
+      }
+
       default:
         return NextResponse.json(
           { error: { code: 'INVALID_ACTION', message: `Unknown action: ${action}` } },
@@ -422,11 +534,12 @@ export async function DELETE(request: NextRequest) {
       ...result,
     });
 
-  } catch (error) {
-    console.error('[Cleanup API] Error:', error);
-    return NextResponse.json(
-      { error: { code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Unknown error' } },
-      { status: 500 }
-    );
-  }
+    } catch (error) {
+      console.error('[Cleanup API] Error:', error);
+      return NextResponse.json(
+        { error: { code: 'INTERNAL_ERROR', message: error instanceof Error ? error.message : 'Unknown error' } },
+        { status: 500 }
+      );
+    }
+  });
 }
