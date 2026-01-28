@@ -28,6 +28,7 @@ import {
 import type { Charter, CharterContent, CharterConfidence, WorkMode } from '../types/charter.js';
 import { getUserEmail } from '../utils/helpers.js';
 import { requireAuth } from '../utils/auth-storage.js';
+import { existsSync } from 'fs';
 
 // ============================================================================
 // Types
@@ -40,6 +41,7 @@ interface CharterOptions {
   skipConversation?: boolean;
   outputPath?: string;
   noAi?: boolean;  // Run interactive mode (default is AI-assisted)
+  sync?: boolean;  // Sync charter to graph
 }
 
 // ============================================================================
@@ -70,6 +72,13 @@ export async function charterCommand(options: CharterOptions = {}): Promise<void
       // Require authentication for editing
       await requireAuth('charter');
       await editCharter(storage);
+      return;
+    }
+
+    // Handle --sync flag
+    if (options.sync) {
+      await requireAuth('charter');
+      await syncCharterToGraph(storage);
       return;
     }
 
@@ -316,6 +325,84 @@ async function editCharter(storage: CharterStorageManager): Promise<void> {
 }
 
 // ============================================================================
+// Sync Charter to Graph
+// ============================================================================
+
+/**
+ * Sync charter to graph database (UAT-006)
+ */
+async function syncCharterToGraph(storage: CharterStorageManager): Promise<void> {
+  console.log(chalk.blue('\n📡 Syncing charter to graph...\n'));
+
+  // Check for graph configuration
+  const projectRoot = process.cwd();
+  const graphConfigPath = path.join(projectRoot, '.ginko', 'graph', 'config.json');
+
+  if (!existsSync(graphConfigPath)) {
+    console.log(chalk.yellow('⚠️  Graph not configured'));
+    console.log(chalk.dim('   Run `ginko graph init` first\n'));
+    return;
+  }
+
+  // Load charter
+  const charter = await storage.load();
+  if (!charter) {
+    console.log(chalk.yellow('\n📋 No charter found for this project'));
+    console.log(chalk.dim('   Run `ginko charter` to create one first\n'));
+    return;
+  }
+
+  try {
+    // Read graph config
+    const graphConfig = JSON.parse(await fs.readFile(graphConfigPath, 'utf-8'));
+    const graphId = graphConfig.graphId;
+
+    if (!graphId) {
+      console.log(chalk.yellow('⚠️  No graph ID configured'));
+      console.log(chalk.dim('   Run `ginko graph init` to configure\n'));
+      return;
+    }
+
+    // Import API client dynamically
+    const { GraphApiClient } = await import('./graph/api-client.js');
+    const client = new GraphApiClient();
+
+    // Prepare charter data for sync
+    const charterData = {
+      graphId,
+      id: charter.id,
+      projectId: charter.projectId,
+      status: charter.status,
+      workMode: charter.workMode,
+      version: versionToString(charter.version),
+      purpose: charter.content.purpose,
+      users: charter.content.users,
+      successCriteria: charter.content.successCriteria,
+      inScope: charter.content.scope.inScope,
+      outOfScope: charter.content.scope.outOfScope,
+      tbd: charter.content.scope.tbd,
+      constraints: charter.content.constraints,
+      timeline: charter.content.timeline,
+      team: charter.content.team,
+      confidence: charter.confidence.overall,
+    };
+
+    console.log(chalk.dim(`  Syncing charter for ${charter.projectId}...`));
+
+    await client.syncCharter(charterData);
+
+    console.log(chalk.green(`\n✅ Charter synced to graph!`));
+    console.log(chalk.dim(`   Project: ${charter.projectId}`));
+    console.log(chalk.dim(`   Status: ${charter.status}`));
+    console.log(chalk.dim(`   Confidence: ${charter.confidence.overall}%\n`));
+
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Sync failed: ${error.message}`));
+    console.log(chalk.dim('   Check graph connection and authentication\n'));
+  }
+}
+
+// ============================================================================
 // Display Helpers
 // ============================================================================
 
@@ -362,69 +449,158 @@ function displayCharterPreview(charter: Charter): void {
 }
 
 /**
- * Display full charter
+ * Display full charter with improved formatting (UAT-005)
  */
 function displayCharterFull(charter: Charter): void {
-  console.log(chalk.green('\n╔════════════════════════════════════════════╗'));
-  console.log(chalk.green('║         Project Charter                  ║'));
-  console.log(chalk.green('╚════════════════════════════════════════════╝\n'));
+  // Calculate header width to fit project name
+  const projectName = charter.projectId || 'Project';
+  const title = `Project Charter: ${projectName}`;
+  const boxWidth = Math.max(50, title.length + 6);
+  const padding = Math.floor((boxWidth - title.length - 2) / 2);
+  const extraPad = (boxWidth - title.length - 2) % 2;
 
-  console.log(chalk.bold('Status:'), formatStatus(charter.status));
-  console.log(chalk.bold('Version:'), versionToString(charter.version));
-  console.log(chalk.bold('Work Mode:'), formatWorkMode(charter.workMode));
-  console.log(chalk.bold('Confidence:'), `${charter.confidence.overall}% (${confidenceLabel(charter.confidence.overall)})`);
+  console.log(chalk.green('\n╔' + '═'.repeat(boxWidth) + '╗'));
+  console.log(chalk.green('║' + ' '.repeat(padding) + title + ' '.repeat(padding + extraPad) + '║'));
+  console.log(chalk.green('╚' + '═'.repeat(boxWidth) + '╝\n'));
+
+  // Status bar with visual indicators
+  const statusIcon = charter.status === 'active' ? chalk.green('●') :
+                     charter.status === 'draft' ? chalk.yellow('○') :
+                     chalk.dim('◌');
+  const confidenceBar = createConfidenceBar(charter.confidence.overall);
+  const statusText = charter.status.charAt(0).toUpperCase() + charter.status.slice(1);
+  const modeText = formatWorkMode(charter.workMode);
+  const versionText = versionToString(charter.version);
+  const createdText = charter.createdAt.toLocaleDateString();
+  const updatedText = charter.updatedAt.toLocaleDateString();
+
+  console.log(`  ${statusIcon} ${chalk.bold('Status:')} ${statusText}  ${chalk.dim('|')}  ${chalk.bold('Version:')} ${versionText}`);
+  console.log(`  ${chalk.bold('Mode:')} ${modeText}  ${chalk.dim('|')}  ${chalk.bold('Confidence:')} ${confidenceBar}`);
+  console.log(`  ${chalk.dim('Created:')} ${createdText}  ${chalk.dim('|')}  ${chalk.dim('Updated:')} ${updatedText}`);
   console.log('');
 
-  console.log(chalk.bold('Purpose & Value:'));
-  console.log(charter.content.purpose);
+  // Purpose section
+  console.log(chalk.bold.cyan('📋 Purpose & Value'));
+  console.log(chalk.gray('─'.repeat(50)));
+  console.log(wrapText(charter.content.purpose, 50));
   console.log('');
 
+  // Users section
   if (charter.content.users.length > 0) {
-    console.log(chalk.bold('Users & Personas:'));
+    console.log(chalk.bold.cyan('👥 Users & Personas'));
+    console.log(chalk.gray('─'.repeat(50)));
     charter.content.users.forEach(user => {
-      console.log(`  • ${user}`);
+      console.log(`  ${chalk.dim('•')} ${user}`);
     });
     console.log('');
   }
 
-  console.log(chalk.bold('Success Criteria:'));
-  charter.content.successCriteria.forEach(criterion => {
-    console.log(`  • ${criterion}`);
+  // Success Criteria with checklist-style formatting
+  console.log(chalk.bold.cyan('🎯 Success Criteria'));
+  console.log(chalk.gray('─'.repeat(50)));
+  charter.content.successCriteria.forEach((criterion, idx) => {
+    const num = String(idx + 1).padStart(2, ' ');
+    console.log(`  ${chalk.dim(num + '.')} ${criterion}`);
   });
   console.log('');
 
-  console.log(chalk.bold('Scope & Boundaries:'));
-  console.log(chalk.underline('  In Scope:'));
-  charter.content.scope.inScope.forEach(item => {
-    console.log(chalk.green(`    ✓ ${item}`));
+  // Scope table
+  console.log(chalk.bold.cyan('🔍 Scope & Boundaries'));
+  console.log(chalk.gray('─'.repeat(50)));
+
+  const maxInScope = 5;
+  const maxOutScope = 5;
+
+  console.log(chalk.green('  ✓ In Scope'));
+  charter.content.scope.inScope.slice(0, maxInScope).forEach(item => {
+    console.log(chalk.green(`    • ${item}`));
   });
-  console.log(chalk.underline('  Out of Scope:'));
-  charter.content.scope.outOfScope.forEach(item => {
-    console.log(chalk.red(`    ✗ ${item}`));
+  if (charter.content.scope.inScope.length > maxInScope) {
+    console.log(chalk.dim(`    ... and ${charter.content.scope.inScope.length - maxInScope} more`));
+  }
+
+  console.log(chalk.red('\n  ✗ Out of Scope'));
+  charter.content.scope.outOfScope.slice(0, maxOutScope).forEach(item => {
+    console.log(chalk.red(`    • ${item}`));
   });
+  if (charter.content.scope.outOfScope.length > maxOutScope) {
+    console.log(chalk.dim(`    ... and ${charter.content.scope.outOfScope.length - maxOutScope} more`));
+  }
+
   if (charter.content.scope.tbd.length > 0) {
-    console.log(chalk.underline('  TBD:'));
+    console.log(chalk.yellow('\n  ? To Be Determined'));
     charter.content.scope.tbd.forEach(item => {
-      console.log(chalk.yellow(`    ? ${item}`));
+      console.log(chalk.yellow(`    • ${item}`));
     });
   }
   console.log('');
 
-  if (charter.content.constraints || charter.content.timeline || charter.content.team) {
-    console.log(chalk.bold('Context:'));
+  // Context section (if any data exists)
+  if (charter.content.constraints || charter.content.timeline || (charter.content.team && charter.content.team.length > 0)) {
+    console.log(chalk.bold.cyan('📌 Context & Constraints'));
+    console.log(chalk.gray('─'.repeat(50)));
     if (charter.content.constraints) {
-      console.log(`  Constraints: ${charter.content.constraints}`);
+      console.log(`  ${chalk.dim('Constraints:')} ${charter.content.constraints}`);
     }
     if (charter.content.timeline) {
-      console.log(`  Timeline: ${charter.content.timeline}`);
+      console.log(`  ${chalk.dim('Timeline:')} ${charter.content.timeline}`);
     }
     if (charter.content.team && charter.content.team.length > 0) {
-      console.log(`  Team: ${charter.content.team.join(', ')}`);
+      console.log(`  ${chalk.dim('Team:')} ${charter.content.team.join(', ')}`);
     }
     console.log('');
   }
 
-  console.log(chalk.dim('📄 Full charter: docs/PROJECT-CHARTER.md\n'));
+  // Risks (if full-planning mode)
+  if (charter.content.risks && charter.content.risks.length > 0) {
+    console.log(chalk.bold.cyan('⚠️  Risks'));
+    console.log(chalk.gray('─'.repeat(50)));
+    charter.content.risks.forEach(risk => {
+      console.log(`  ${chalk.yellow('!')} ${risk}`);
+    });
+    console.log('');
+  }
+
+  // Footer
+  console.log(chalk.gray('─'.repeat(50)));
+  console.log(chalk.dim(`📄 File: docs/PROJECT-CHARTER.md`));
+  console.log(chalk.dim(`💡 Edit: ginko charter --edit\n`));
+}
+
+/**
+ * Create a visual confidence bar
+ */
+function createConfidenceBar(percent: number): string {
+  const filled = Math.round(percent / 10);
+  const empty = 10 - filled;
+  const bar = '█'.repeat(filled) + '░'.repeat(empty);
+
+  const color = percent >= 70 ? chalk.green :
+                percent >= 40 ? chalk.yellow :
+                chalk.red;
+
+  return color(`[${bar}]`) + ` ${percent}%`;
+}
+
+/**
+ * Wrap text to specified width
+ */
+function wrapText(text: string, width: number): string {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    if ((currentLine + ' ' + word).trim().length <= width) {
+      currentLine = (currentLine + ' ' + word).trim();
+    } else {
+      if (currentLine) lines.push(currentLine);
+      currentLine = word;
+    }
+  }
+  if (currentLine) lines.push(currentLine);
+
+  return lines.map(line => '  ' + line).join('\n');
 }
 
 /**
@@ -556,4 +732,5 @@ export const charterExamples = [
   'ginko charter                # Create new charter via conversation',
   'ginko charter --view         # View existing charter',
   'ginko charter --edit         # Edit charter conversationally',
+  'ginko charter --sync         # Sync charter to graph database',
 ];

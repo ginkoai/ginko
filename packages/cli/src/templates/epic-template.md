@@ -304,18 +304,30 @@ Avoid: [gotcha-name]
 
 ---
 
-## Graph Sync
+## Graph Sync (IMPORTANT)
 
-After creating files, sync to graph with:
-- Epic node: `(:Epic {id, title, goal, status, progress})`
-- Sprint nodes: `(:Sprint {id, name, goal, progress})`
-- Task nodes: `(:Task {id, title, status, effort, priority})`
-- Relationships:
+After creating the epic and sprint files, **you must sync them to the graph** so they're available for team collaboration and tracking:
+
+```bash
+ginko epic --sync
+```
+
+This will:
+- Create Epic node: `(:Epic {id, title, goal, status, progress})`
+- Create Sprint nodes: `(:Sprint {id, name, goal, progress})`
+- Create Task nodes: `(:Task {id, title, status, effort, priority})`
+- Establish relationships:
   - `(Epic)-[:CONTAINS]->(Sprint)`
   - `(Sprint)-[:CONTAINS]->(Task)`
   - `(Task)-[:MUST_FOLLOW]->(ADR)`
   - `(Task)-[:APPLIES_PATTERN]->(Pattern)`
   - `(Task)-[:AVOID_GOTCHA]->(Gotcha)`
+
+**Complete workflow:**
+1. Create `docs/epics/EPIC-XXX-name.md` with epic content
+2. Create `docs/sprints/SPRINT-*.md` files for each sprint
+3. Run `ginko epic --sync` to sync everything to graph
+4. Confirm sync success message
 
 ---
 

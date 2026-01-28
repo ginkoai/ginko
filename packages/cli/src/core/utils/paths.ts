@@ -33,16 +33,34 @@ export interface PathConfig {
 }
 
 /**
+ * Check if current directory is in a git repository
+ */
+export function isInGitRepo(): boolean {
+  try {
+    execSync('git rev-parse --is-inside-work-tree', {
+      encoding: 'utf8',
+      cwd: process.cwd(),
+      stdio: ['pipe', 'pipe', 'ignore']
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Get project root by finding git repository root
  */
 function getProjectRoot(): string {
   try {
     const gitRoot = execSync('git rev-parse --show-toplevel', {
       encoding: 'utf8',
-      cwd: process.cwd()
+      cwd: process.cwd(),
+      stdio: ['pipe', 'pipe', 'ignore']  // Suppress stderr for non-git directories
     }).trim();
     return path.resolve(gitRoot);
   } catch (error) {
+    // Not in a git repo, use current directory
     return process.cwd();
   }
 }

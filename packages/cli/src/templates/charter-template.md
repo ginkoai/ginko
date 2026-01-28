@@ -251,4 +251,21 @@ updated: YYYY-MM-DD
 
 ---
 
+## Graph Sync (IMPORTANT)
+
+After creating the charter file, **you must sync it to the graph** so it's available for team collaboration and context retrieval:
+
+```bash
+ginko charter --sync
+```
+
+This creates a `ProjectCharter` node in the knowledge graph with relationships to the project.
+
+**Complete workflow:**
+1. Create `docs/PROJECT-CHARTER.md` with the charter content
+2. Run `ginko charter --sync` to sync to graph
+3. Confirm sync success message
+
+---
+
 **Remember:** The goal is a helpful conversation that produces a useful charter, not a perfect document. Quality over completeness. Natural over formal.

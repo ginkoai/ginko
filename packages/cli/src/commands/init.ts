@@ -22,7 +22,7 @@ import { OpenAIAdapter } from '../adapters/openai-adapter.js';
 import { GenericAdapter } from '../adapters/generic-adapter.js';
 import { CursorAdapter } from '../adapters/cursor-adapter.js';
 import { findGinkoRoot } from '../utils/ginko-root.js';
-import { pathManager } from '../core/utils/paths.js';
+import { pathManager, isInGitRepo } from '../core/utils/paths.js';
 import { getUserEmail } from '../utils/helpers.js';
 import { GinkoConfig, LocalConfig, DEFAULT_GINKO_CONFIG } from '../types/config.js';
 
@@ -48,6 +48,20 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       spinner.warn(`Ginko already initialized in parent directory: ${existingRoot}`);
       console.log(chalk.yellow('\nTip: Run ginko commands from any subdirectory - they will use the parent .ginko'));
       return;
+    }
+
+    // UAT-004: Warn if not in a git repository
+    if (!isInGitRepo()) {
+      spinner.warn('Not in a git repository');
+      console.log(chalk.yellow('\n⚠️  Ginko works best with git for version control and context tracking.'));
+      console.log(chalk.dim('   Some features may be limited without git:'));
+      console.log(chalk.dim('   • Session history and rollback'));
+      console.log(chalk.dim('   • Change tracking and diffs'));
+      console.log(chalk.dim('   • Team collaboration features'));
+      console.log('');
+      console.log(chalk.dim('   To initialize a git repository: git init'));
+      console.log('');
+      spinner.start('Continuing with initialization...');
     }
 
     // Create directory structure using pathManager
@@ -292,8 +306,9 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     // Success message
     console.log('\n' + chalk.green('✅ Initialization complete!'));
-    console.log('\n' + chalk.bold('Next step: ') + chalk.cyan('ginko start'));
-    console.log(chalk.dim('  Start your first session and begin building\n'));
+    console.log('\n' + chalk.bold('Next steps:'));
+    console.log('  1. ' + chalk.cyan('claude') + chalk.dim('         Start Claude Code (AI assistant)'));
+    console.log('  2. ' + chalk.cyan('ginko start') + chalk.dim('    Begin your first session\n'));
 
     if (deepAnalysis) {
       console.log('\n' + chalk.blue('Project analysis:'));

@@ -27,6 +27,7 @@ dotenv.config({ path: resolve(__dirname, '../../../.env') });
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { initCommand } from './commands/init.js';
+import { createCommand } from './commands/create.js';
 import { startCommand } from './commands/start/index.js';
 import { statusCommand } from './commands/status.js';
 import { contextCommand } from './commands/context.js';
@@ -94,7 +95,8 @@ program
   .addHelpText('after', `
 ${chalk.bold('Quick Start:')}
   ${chalk.cyan('ginko login')}              Authenticate with Ginko Cloud
-  ${chalk.cyan('ginko init')}               Initialize project (local + cloud graph)
+  ${chalk.cyan('ginko create <name>')}      Create a new project with Ginko
+  ${chalk.cyan('ginko init')}               Initialize Ginko in existing project
   ${chalk.cyan('ginko start')}              Start your first session
 
 ${chalk.dim('Designed for AI-mediated development - your AI partner interprets commands naturally')}
@@ -106,6 +108,14 @@ program
   .description('Initialize Ginko in your project (sets up local structure + cloud graph)')
   .option('--model <model>', 'Specify AI model (claude, gpt, generic)')
   .action((options) => initCommand(options));
+
+program
+  .command('create <project-name>')
+  .description('Create a new project with Ginko pre-configured')
+  .option('-t, --template <template>', 'Project template: basic, react, node, library', 'basic')
+  .option('-d, --description <description>', 'Project description')
+  .option('--non-interactive', 'Skip prompts (for CI/automation)')
+  .action((projectName, options) => createCommand(projectName, options));
 
 program
   .command('start [sessionId]')
@@ -174,6 +184,7 @@ program
   .option('--mode <mode>', 'Specify work mode: hack-ship, think-build, full-planning')
   .option('--skip-conversation', 'Skip conversation (testing/automation, requires --no-ai)')
   .option('--output-path <path>', 'Custom charter file path')
+  .option('--sync', 'Sync charter to graph database')
   .option('--examples', 'Show charter command examples')
   .action((options) => {
     if (options.examples) {

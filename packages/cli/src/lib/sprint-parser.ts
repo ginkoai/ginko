@@ -129,7 +129,10 @@ async function findActiveSprint(): Promise<string | null> {
  */
 async function findGitRoot(): Promise<string> {
   try {
-    const gitRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf-8' }).trim();
+    const gitRoot = execSync('git rev-parse --show-toplevel', {
+      encoding: 'utf-8',
+      stdio: ['pipe', 'pipe', 'ignore']  // Suppress stderr for non-git directories
+    }).trim();
     return gitRoot;
   } catch (error) {
     // Fallback to cwd if not in a git repo

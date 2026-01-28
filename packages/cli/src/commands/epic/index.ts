@@ -39,7 +39,7 @@ export function epicStatusCommand() {
     .addHelpText('after', `
 ${chalk.gray('Creation & Management:')}
   ${chalk.green('ginko epic')}              ${chalk.dim('Create new epic via AI conversation')}
-  ${chalk.green('ginko epic --list')}       ${chalk.dim('List existing epics')}
+  ${chalk.green('ginko epic list')}         ${chalk.dim('List existing epics')}
   ${chalk.green('ginko epic --view')}       ${chalk.dim('View epic details with sprints')}
   ${chalk.green('ginko epic --sync')}       ${chalk.dim('Sync epic to graph database')}
 
@@ -90,6 +90,14 @@ ${chalk.gray('Examples:')}
   // Add status commands (EPIC-015 Sprint 1)
   epic.addCommand(createEpicStatusCommands());
   addEpicStatusShortcuts(epic);
+
+  // Add 'list' subcommand for convenience (UAT-007)
+  epic
+    .command('list')
+    .description('List all existing epics')
+    .action(async () => {
+      await legacyEpicCommand({ list: true });
+    });
 
   return epic;
 }

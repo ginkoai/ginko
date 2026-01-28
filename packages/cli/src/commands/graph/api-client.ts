@@ -580,6 +580,18 @@ export class GraphApiClient {
   }
 
   /**
+   * Sync a charter to the graph database
+   * Creates ProjectCharter node with project relationships
+   */
+  async syncCharter(charterData: CharterSyncData): Promise<CharterSyncResponse> {
+    return this.request<CharterSyncResponse>(
+      'POST',
+      '/api/v1/charter/sync',
+      charterData
+    );
+  }
+
+  /**
    * Sync a sprint to the graph database
    * Creates Sprint and Task nodes with relationships
    */
@@ -1008,6 +1020,39 @@ export interface EpicSyncData {
   successCriteria: string[];
   inScope: string[];
   outOfScope: string[];
+}
+
+/**
+ * Charter sync data for graph database
+ */
+export interface CharterSyncData {
+  graphId: string;
+  id: string;
+  projectId: string;
+  status: string;
+  workMode: string;
+  version: string;
+  purpose: string;
+  users: string[];
+  successCriteria: string[];
+  inScope: string[];
+  outOfScope: string[];
+  tbd: string[];
+  constraints?: string;
+  timeline?: string;
+  team?: string[];
+  confidence: number;
+}
+
+export interface CharterSyncResponse {
+  success: boolean;
+  charter: {
+    id: string;
+    projectId: string;
+    status: string;
+  };
+  nodesCreated: number;
+  relationshipsCreated: number;
 }
 
 export interface EpicSyncResponse {
