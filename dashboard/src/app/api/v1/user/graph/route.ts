@@ -1,8 +1,8 @@
 /**
  * @fileType: api-route
  * @status: current
- * @updated: 2026-01-17
- * @tags: [api, user, graph, access-control, adhoc_260117_s01]
+ * @updated: 2026-01-29
+ * @tags: [api, user, graph, access-control, adhoc_260117_s01, BUG-003, BUG-004]
  * @related: [../../graph/init/route.ts, ../../../lib/graph/access.ts]
  * @priority: critical
  * @complexity: medium
@@ -105,6 +105,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 2. Find graphs via team membership (from Supabase)
+    // BUG-003/BUG-004 FIX: Only include teams that have valid Neo4j Project nodes
     try {
       const supabase = createServiceRoleClient();
 
@@ -117,38 +118,67 @@ export async function GET(request: NextRequest) {
       if (membershipError) {
         console.error('[User Graph API] Error querying team memberships:', membershipError);
       } else if (memberships) {
+        // Track seen graphIds to deduplicate
+        const seenGraphIds = new Set(projects.map(p => p.graphId));
+        let skippedInvalid = 0;
+        let skippedDuplicate = 0;
+
         for (const membership of memberships) {
           const team = membership.teams as any;
           if (team?.graph_id) {
-            // Check if this graph is already in the list (user might own it AND be a team member)
-            const existing = projects.find(p => p.graphId === team.graph_id);
-            if (!existing) {
-              // Get project name from Neo4j
-              let projectName = 'Team Project';
-              try {
-                const graphInfo = await runQuery<{ p: { projectName: string } }>(
-                  `MATCH (p:Project {graphId: $graphId}) RETURN p { .projectName } LIMIT 1`,
-                  { graphId: team.graph_id }
-                );
-                if (graphInfo.length > 0 && graphInfo[0].p?.projectName) {
-                  projectName = graphInfo[0].p.projectName;
-                }
-              } catch (e) {
-                // Use team name as fallback
-                projectName = team.name || 'Team Project';
-              }
+            // Skip if already in the list (user owns it or seen from another team)
+            if (seenGraphIds.has(team.graph_id)) {
+              skippedDuplicate++;
+              continue;
+            }
 
-              projects.push({
-                graphId: team.graph_id,
-                projectName,
-                source: 'team_member',
-                teamId: team.id,
-                teamName: team.name,
-              });
+            // Verify the project exists in Neo4j before adding
+            // BUG-003 FIX: Only add teams with valid Neo4j Project nodes
+            // BUG-004 FIX: Only include projects user owns OR has elevated team role
+            try {
+              const graphInfo = await runQuery<{ p: { projectName: string; userId: string } }>(
+                `MATCH (p:Project {graphId: $graphId}) RETURN p { .projectName, .userId } LIMIT 1`,
+                { graphId: team.graph_id }
+              );
+
+              if (graphInfo.length > 0 && graphInfo[0].p?.projectName) {
+                const projectOwnerId = graphInfo[0].p.userId;
+                const userRole = membership.role;
+
+                // BUG-004 FIX: Only include if user owns the project OR has elevated role
+                // This prevents showing projects from other users where current user
+                // was accidentally added as a basic team member
+                const isProjectOwner = projectOwnerId === userId;
+                const hasElevatedRole = userRole === 'owner' || userRole === 'admin';
+
+                if (isProjectOwner || hasElevatedRole) {
+                  // Valid project with proper access - add to list
+                  seenGraphIds.add(team.graph_id);
+                  projects.push({
+                    graphId: team.graph_id,
+                    projectName: graphInfo[0].p.projectName,
+                    source: 'team_member',
+                    teamId: team.id,
+                    teamName: team.name,
+                  });
+                } else {
+                  // User is only a basic member of someone else's project - skip
+                  skippedInvalid++;
+                  console.log(`[User Graph API] Skipping team ${team.id} (${team.name}): user is only '${userRole}' member of project owned by ${projectOwnerId}`);
+                }
+              } else {
+                // No valid project in Neo4j - skip this team
+                skippedInvalid++;
+                console.log(`[User Graph API] Skipping team ${team.id} (${team.name}): no valid Project node for graphId ${team.graph_id}`);
+              }
+            } catch (e) {
+              // Neo4j query failed - skip this team to avoid showing invalid projects
+              skippedInvalid++;
+              console.warn(`[User Graph API] Skipping team ${team.id}: Neo4j query failed`, e);
             }
           }
         }
-        console.log(`[User Graph API] Found ${memberships.length} team memberships`);
+        console.log(`[User Graph API] Found ${memberships.length} team memberships, added ${memberships.length - skippedInvalid - skippedDuplicate} valid, skipped ${skippedInvalid} invalid, ${skippedDuplicate} duplicates`);
       }
     } catch (error) {
       console.error('[User Graph API] Error querying team memberships:', error);

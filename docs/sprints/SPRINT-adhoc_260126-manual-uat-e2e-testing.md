@@ -353,7 +353,8 @@ gh --version           # GitHub CLI if installed
 
 | ID | Severity | Area | Description | Status |
 |----|----------|------|-------------|--------|
-| | | | | |
+| BUG-003 | HIGH | Dashboard | 40+ duplicate "Team Project" entries in project selector - Chris listed as member of many stale teams in Supabase that have no corresponding Neo4j Project nodes | Fixed - API now filters teams without valid Neo4j Project nodes |
+| BUG-004 | CRITICAL | Dashboard | User isolation failure: "uat-test-project" visible to Chris (should only be visible to test user) - indicates team membership data pollution | Fixed - API filters by ownership/elevated role + cleaned up test data |
 
 ---
 
