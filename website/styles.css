@@ -124,22 +124,22 @@
    ============================================================================ */
 
 [data-theme="dark"] {
-    --color-bg: #091014;
-    --color-surface: #091014;
+    --color-bg: #151e28;
+    --color-surface: #151e28;
     --color-surface-hover: #f6ffd6;
     --color-text: #f6ffd6;
     --color-text-secondary: #f6ffd6;
-    --color-text-tertiary: ##f6ffd6;
+    --color-text-tertiary: #CED6C2;
     --color-border: #282f33;
-    --color-border-strong: ##091014;
+    --color-border-strong: #091014;
 
     --color-accent: #D0F549;
     --color-accent-hover: #addc00;
     --color-accent-light: rgba(193, 245, 0, 0.15);
     --color-accent-dark: #99c200;
 
-    --color-terminal-bg: #060b0e;
-    --color-terminal-header: #091014;
+    --color-terminal-bg: #070a0d;
+    --color-terminal-header: ##0E141B;
     --color-terminal-prompt: #D0F549;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -832,7 +832,7 @@ pre {
    ============================================================================ */
 
 .hero {
-    padding: calc(var(--space-16) + 60px) 0 var(--space-12);
+    padding: 80px 0 var(--space-4);
     min-height: auto;
     display: flex;
     align-items: center;
@@ -843,9 +843,9 @@ pre {
 .hero-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-12);
+    gap: var(--space-6);
     align-items: center;
-    margin-bottom: var(--space-12);
+    margin-bottom: var(--space-4);
 }
 
 .hero-text {
@@ -856,6 +856,155 @@ pre {
     display: flex;
     justify-content: flex-end;
     align-items: center;
+}
+
+/* ============================================================================
+   CONTEXT GRAPH VISUALIZATION
+   ============================================================================ */
+
+.context-graph {
+    width: 120%;
+    max-width: none;
+    aspect-ratio: 1;
+    margin-right: -10%;
+}
+
+.graph-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Connection lines */
+.graph-line {
+    stroke: var(--color-border);
+    stroke-width: 1;
+    opacity: 0.3;
+}
+
+.graph-line-1 { animation: linePulse 4s ease-in-out infinite 0s; }
+.graph-line-2 { animation: linePulse 4s ease-in-out infinite 0.5s; }
+.graph-line-3 { animation: linePulse 4s ease-in-out infinite 1s; }
+.graph-line-4 { animation: linePulse 4s ease-in-out infinite 1.5s; }
+.graph-line-5 { animation: linePulse 4s ease-in-out infinite 2s; }
+.graph-line-6 { animation: linePulse 4s ease-in-out infinite 2.5s; }
+
+.graph-line-cross-1 { animation: linePulse 5s ease-in-out infinite 0.3s; }
+.graph-line-cross-2 { animation: linePulse 5s ease-in-out infinite 1.3s; }
+.graph-line-cross-3 { animation: linePulse 5s ease-in-out infinite 2.3s; }
+.graph-line-cross-4 { animation: linePulse 5s ease-in-out infinite 3.3s; }
+
+@keyframes linePulse {
+    0%, 100% {
+        opacity: 0.2;
+        stroke: var(--color-border);
+    }
+    50% {
+        opacity: 0.6;
+        stroke: var(--color-accent);
+    }
+}
+
+/* Node backgrounds */
+.node-bg {
+    fill: var(--color-surface);
+    stroke: var(--color-border);
+    stroke-width: 1;
+}
+
+.node-bg-center {
+    fill: #0C151C;
+}
+
+/* Node rings (animated) */
+.node-ring {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 2;
+    opacity: 0;
+}
+
+.node-ring-center {
+    stroke-width: 3;
+}
+
+.graph-node-1 .node-ring { animation: ringPulse 3s ease-in-out infinite 0s; }
+.graph-node-2 .node-ring { animation: ringPulse 3s ease-in-out infinite 0.4s; }
+.graph-node-3 .node-ring { animation: ringPulse 3s ease-in-out infinite 0.8s; }
+.graph-node-4 .node-ring { animation: ringPulse 3s ease-in-out infinite 1.2s; }
+.graph-node-5 .node-ring { animation: ringPulse 3s ease-in-out infinite 1.6s; }
+.graph-node-6 .node-ring { animation: ringPulse 3s ease-in-out infinite 2s; }
+
+.graph-node-center .node-ring { animation: ringPulseCenter 2s ease-in-out infinite; }
+
+@keyframes ringPulse {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 0.8; }
+}
+
+@keyframes ringPulseCenter {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/* Center node glow */
+.node-glow {
+    fill: none;
+    stroke: var(--color-accent);
+    stroke-width: 1;
+    opacity: 0.2;
+    animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        opacity: 0.1;
+        r: 56;
+    }
+    50% {
+        opacity: 0.3;
+        r: 62;
+    }
+}
+
+/* Node labels */
+.node-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--color-text-secondary);
+    text-anchor: middle;
+    dominant-baseline: middle;
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+
+.node-label-center {
+    font-size: 16px;
+    fill: var(--color-accent);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.node-sublabel {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    fill: var(--color-text-tertiary);
+    text-anchor: middle;
+    dominant-baseline: middle;
+    text-transform: lowercase;
+}
+
+/* Hover effects */
+.graph-node {
+    cursor: default;
+    transition: transform 0.3s ease;
+}
+
+.graph-node:hover .node-bg {
+    fill: #131F2A;
+}
+
+.graph-node:hover .node-label {
+    fill: var(--color-text);
 }
 
 .hero-badge {
@@ -905,6 +1054,96 @@ pre {
 
 .hero-title .highlight {
     color: var(--color-accent);
+}
+
+/* Hero line 1 - medium (You don't need...) */
+.hero-line-1 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.3;
+    margin-bottom: var(--space-2);
+}
+
+.hero-line-1 .hero-title-static {
+    color: var(--color-text-secondary);
+}
+
+.hero-line-1 .text-scramble {
+    color: var(--color-text);
+    display: inline-block;
+    min-width: 220px;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+/* Hero line 2 - large (You need living context...) */
+.hero-line-2 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-5xl);
+    font-weight: var(--font-weight-extrabold);
+    line-height: 1.1;
+    margin-bottom: var(--space-4);
+    color: var(--color-text-secondary);
+}
+
+.hero-line-2 strong {
+    color: var(--color-accent);
+    text-transform: uppercase;
+}
+
+/* Hero line 3 - tagline */
+.hero-line-3 {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2);
+    letter-spacing: 0.02em;
+}
+
+/* iykyg tagline with tooltip */
+.hero-tagline {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    letter-spacing: 0.2em;
+    text-transform: lowercase;
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-8);
+}
+
+.iykyg-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.iykyg-tooltip .iykyg-text {
+    transition: color 0.3s ease;
+}
+
+.iykyg-tooltip .iykyg-tooltip-text {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 4px;
+    font-size: var(--font-size-xs);
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.iykyg-tooltip:hover .iykyg-text {
+    color: var(--color-accent);
+}
+
+.iykyg-tooltip:hover .iykyg-tooltip-text {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .hero-subtitle {
@@ -2163,10 +2402,79 @@ button:hover .btn-hero-arrow .arrow-hover {
 .cta-title {
     font-family: var(--font-mono);
     font-size: 5rem;
-    margin-bottom: 0;
+    margin-bottom: var(--space-4);
     color: var(--color-text);
     text-transform: uppercase;
     line-height: 1.0;
+}
+
+/* iykyg expand reveal animation */
+.iykyg-reveal {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-tertiary);
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    min-width: 200px;
+    height: 1.5em;
+}
+
+.iykyg-short,
+.iykyg-full {
+    position: absolute;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+}
+
+.iykyg-short {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.iykyg-full {
+    opacity: 0;
+    transform: translateX(-20px);
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+}
+
+.iykyg-reveal:hover .iykyg-short {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.iykyg-reveal:hover .iykyg-full {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Centered CTA layout */
+.cta-content-centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.cta-content-centered .cta-title {
+    margin-bottom: var(--space-2);
+}
+
+.cta-content-centered .iykyg-reveal {
+    margin-bottom: var(--space-6);
+}
+
+.cta-content-centered .terminal-inline {
+    margin-bottom: var(--space-6);
+}
+
+.cta-buttons-centered {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
 }
 
 /* .cta h2 styles now handled by .cta-title */
@@ -2230,9 +2538,9 @@ button:hover .btn-hero-arrow .arrow-hover {
     color: var(--color-accent-dark);
 }
 
-/* CTA corner brackets in dark */
+/* CTA corner brackets - visible against dark terminal */
 .cta .corner-bracket {
-    border-color: rgba(10, 10, 10, 0.7);
+    border-color: var(--color-accent);
 }
 
 /* ============================================================================
@@ -2646,6 +2954,10 @@ button:hover .btn-hero-arrow .arrow-hover {
         order: 2;
     }
 
+    .context-graph {
+        max-width: 320px;
+    }
+
     .hero-subtitle {
         max-width: 100%;
     }
@@ -2660,6 +2972,18 @@ button:hover .btn-hero-arrow .arrow-hover {
 
     .hero-subtitle {
         font-size: var(--font-size-base);
+    }
+
+    .hero-line-1 {
+        font-size: var(--font-size-xl);
+    }
+
+    .hero-line-2 {
+        font-size: var(--font-size-3xl);
+    }
+
+    .hero-line-1 .text-scramble {
+        min-width: 160px;
     }
 
     .hero-stats {
@@ -2821,6 +3145,38 @@ button:hover .btn-hero-arrow .arrow-hover {
 
     .hero-title {
         font-size: var(--font-size-3xl);
+    }
+
+    .hero-line-1 {
+        font-size: var(--font-size-lg);
+    }
+
+    .hero-line-2 {
+        font-size: var(--font-size-2xl);
+    }
+
+    .hero-line-3 {
+        font-size: var(--font-size-base);
+    }
+
+    .hero-line-1 .text-scramble {
+        min-width: 120px;
+    }
+
+    .context-graph {
+        max-width: 280px;
+    }
+
+    .node-label {
+        font-size: 8px;
+    }
+
+    .node-label-center {
+        font-size: 12px;
+    }
+
+    .node-sublabel {
+        font-size: 9px;
     }
 
     .terminal-inline {
