@@ -5,7 +5,7 @@
 **Sprint Goal**: Coaching adapts to user's insight scores—more help when struggling, quieter when thriving
 **Duration**: 1 week
 **Type**: CLI + Dashboard integration
-**Progress:** 0% (0/5 tasks complete)
+**Progress:** 0% (0/6 tasks complete)
 **Prerequisite:** Sprint 4 complete (work pattern coaching working)
 
 **Key Insight**: The Coaching Insights dashboard already tracks Session Efficiency, Pattern Adoption, Collaboration Quality, and Anti-Patterns. Use these scores to automatically tune coaching intensity.
@@ -176,6 +176,45 @@ Override: None
 - Coaching interactions logged
 - Data available for future analysis
 - No user-facing changes (infrastructure only)
+
+---
+
+### e016_s05_t06: Workflow Milestone Nudging (2h)
+**Priority:** MEDIUM
+
+**Goal:** Nudge users about handoff at natural workflow inflection points
+
+**Triggers:**
+1. Sprint completion (`ginko sprint complete`)
+2. 10th task completion in a session (cumulative)
+
+**Nudge Content:**
+```
+✓ Sprint adhoc_260128_s01 marked complete
+
+💡 Great progress! Consider running `ginko handoff` to preserve
+   learnings before your next session or context reset.
+```
+
+**Implementation:**
+- Track task completion count in session state (`.ginko/sessions/<user>/session-state.json`)
+- Show handoff nudge when:
+  - Sprint completes, OR
+  - 10th task completes (show once per session)
+  - No handoff done this session
+- Respect coaching level (skip in minimal mode)
+
+**Files:**
+- Modify: `packages/cli/src/commands/task/status.ts` (complete action)
+- Modify: `packages/cli/src/commands/sprint/status.ts` (complete action)
+- New/Modify: Session state tracking for completion count
+- Use: `packages/cli/src/lib/coaching-level.ts` (check if nudging appropriate)
+
+**Acceptance Criteria:**
+- Sprint completion shows handoff tip
+- 10th task completion shows handoff tip (once)
+- Tip respects coaching level settings
+- Tip not shown if handoff already done this session
 
 ---
 
