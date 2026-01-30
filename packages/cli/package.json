@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc && chmod +x dist/index.js && npm run copy:templates",
-    "copy:templates": "mkdir -p dist/templates && cp src/templates/*.md dist/templates/ 2>/dev/null || true",
+    "copy:templates": "mkdir -p dist/templates && cp src/templates/*.md dist/templates/ 2>/dev/null || true && cp -r src/templates/skills dist/templates/skills 2>/dev/null || true",
     "dev": "tsc --watch",
     "test": "jest",
     "prepublishOnly": "npm run build"

@@ -107,6 +107,7 @@ program
   .command('init')
   .description('Initialize Ginko in your project (sets up local structure + cloud graph)')
   .option('--model <model>', 'Specify AI model (claude, gpt, generic)')
+  .option('--upgrade', 'Upgrade AI instructions and skills for an existing project')
   .action((options) => initCommand(options));
 
 program

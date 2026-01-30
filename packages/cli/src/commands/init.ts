@@ -14,6 +14,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import ora from 'ora';
 import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { ProjectAnalyzer } from '../analysis/project-analyzer.js';
 import { AiInstructionsTemplate, TemplateVariables, ProjectContext } from '../templates/ai-instructions-template.js';
 import { AiAdapter } from '../adapters/ai-adapter.js';
@@ -26,7 +30,7 @@ import { pathManager, isInGitRepo } from '../core/utils/paths.js';
 import { getUserEmail } from '../utils/helpers.js';
 import { GinkoConfig, LocalConfig, DEFAULT_GINKO_CONFIG } from '../types/config.js';
 
-export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string } = {}) {
+export async function initCommand(options: { quick?: boolean; analyze?: boolean; model?: string; upgrade?: boolean } = {}) {
   const spinner = ora('Initializing Ginko...').start();
   let deepAnalysis: any = null; // Track deep analysis results for output
 
@@ -38,15 +42,33 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     // Check if already initialized in current directory
     if (await fs.pathExists(ginkoDir)) {
+      if (options.upgrade) {
+        spinner.info('Upgrading existing Ginko project...');
+        await upgradeProject(projectRoot, spinner);
+        return;
+      }
       spinner.warn('Ginko already initialized in this directory');
+      console.log(chalk.dim('  Tip: Use --upgrade to update AI instructions and skills'));
       return;
     }
 
     // Check if already initialized in a parent directory
     const existingRoot = await findGinkoRoot();
     if (existingRoot && existingRoot !== projectRoot) {
+      if (options.upgrade) {
+        spinner.info(`Upgrading Ginko project at ${existingRoot}...`);
+        await upgradeProject(existingRoot, spinner);
+        return;
+      }
       spinner.warn(`Ginko already initialized in parent directory: ${existingRoot}`);
       console.log(chalk.yellow('\nTip: Run ginko commands from any subdirectory - they will use the parent .ginko'));
+      return;
+    }
+
+    // --upgrade on a non-initialized project should inform the user
+    if (options.upgrade) {
+      spinner.fail('No existing Ginko project found');
+      console.log(chalk.yellow('\n  Run `ginko init` first to initialize a new project.'));
       return;
     }
 
@@ -336,5 +358,89 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     spinner.fail('Initialization failed');
     console.error(chalk.red('Error:'), error instanceof Error ? error.message : String(error));
     process.exit(1);
+  }
+}
+
+/**
+ * Upgrade an existing Ginko project: regenerate CLAUDE.md and overwrite skills.
+ * Does NOT touch .ginko/ config, ginko.json, local.json, .gitignore, git, or graph.
+ */
+async function upgradeProject(projectRoot: string, spinner: ReturnType<typeof ora>) {
+  const updated: string[] = [];
+
+  // 1. Regenerate CLAUDE.md
+  spinner.start('Regenerating AI instructions (CLAUDE.md)...');
+  try {
+    const projectContext: ProjectContext = await new ProjectAnalyzer(projectRoot).analyze();
+
+    const variables: TemplateVariables = {
+      projectName: path.basename(projectRoot),
+      projectType: projectContext.projectType || 'unknown',
+      techStack: projectContext.techStack || [],
+      frameworks: projectContext.frameworks || [],
+      languages: projectContext.languages || [],
+      packageManager: projectContext.packageManager || 'unknown',
+      testCommand: projectContext.testCommand || 'npm test',
+      buildCommand: projectContext.buildCommand || 'npm run build',
+      hasTests: projectContext.hasTests || false,
+      userEmail: await getUserEmail(),
+      userName: 'Developer',
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    const instructions = AiInstructionsTemplate.generate(variables);
+    const instructionsPath = path.join(projectRoot, 'CLAUDE.md');
+    await fs.writeFile(instructionsPath, instructions);
+
+    spinner.succeed('AI instructions regenerated');
+    updated.push('CLAUDE.md');
+  } catch (error) {
+    spinner.warn('AI instructions generation failed');
+    console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+  }
+
+  // 2. Install/overwrite skills (no pathExists guard — upgrade means latest)
+  spinner.start('Updating AI skills...');
+  try {
+    const skillsDir = path.join(projectRoot, '.claude', 'skills');
+    const ginkoSkillDir = path.join(skillsDir, 'ginko');
+    await fs.ensureDir(ginkoSkillDir);
+
+    const templateSkillsDir = path.join(__dirname, '..', 'templates', 'skills');
+
+    await fs.copy(
+      path.join(templateSkillsDir, 'ginko', 'SKILL.md'),
+      path.join(ginkoSkillDir, 'SKILL.md')
+    );
+    await fs.copy(
+      path.join(templateSkillsDir, 'ginko', 'commands-reference.md'),
+      path.join(ginkoSkillDir, 'commands-reference.md')
+    );
+    await fs.copy(
+      path.join(templateSkillsDir, 'push.md'),
+      path.join(skillsDir, 'push.md')
+    );
+    await fs.copy(
+      path.join(templateSkillsDir, 'pull.md'),
+      path.join(skillsDir, 'pull.md')
+    );
+
+    spinner.succeed('AI skills updated');
+    updated.push('.claude/skills/ginko/SKILL.md');
+    updated.push('.claude/skills/ginko/commands-reference.md');
+    updated.push('.claude/skills/push.md');
+    updated.push('.claude/skills/pull.md');
+  } catch (error) {
+    spinner.warn('AI skills update failed');
+    console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+  }
+
+  // Summary
+  console.log('\n' + chalk.green('Upgrade complete!'));
+  if (updated.length > 0) {
+    console.log(chalk.gray('\nFiles updated:'));
+    for (const file of updated) {
+      console.log('  ' + chalk.gray(file));
+    }
   }
 }
