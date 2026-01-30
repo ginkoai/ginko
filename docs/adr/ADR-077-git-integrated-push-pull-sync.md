@@ -1,7 +1,7 @@
 # ADR-077: Git-Integrated Push/Pull Sync Architecture
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-01-28

@@ -13,6 +13,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { epicCommand as legacyEpicCommand, epicExamples } from '../epic.js';
 import { createEpicStatusCommands, addEpicStatusShortcuts } from './status.js';
+import { autoPush } from '../../lib/auto-push.js';
 
 /**
  * Epic command with status management and legacy functionality
@@ -78,6 +79,12 @@ ${chalk.gray('Examples:')}
         return;
       }
 
+      // ADR-077: Deprecation warning for --sync flag
+      if (options.sync) {
+        console.log(chalk.yellow('\u26a0\ufe0f  `ginko epic --sync` is deprecated. Use `ginko push epic` instead.'));
+        console.log('');
+      }
+
       // Delegate to legacy command for create/list/view/sync
       await legacyEpicCommand({
         view: options.view,
@@ -85,6 +92,11 @@ ${chalk.gray('Examples:')}
         sync: options.sync,
         noAi: !options.ai, // Commander handles --no-ai as options.ai = false
       });
+
+      // ADR-077: Auto-push after epic creation (if not --list or --view)
+      if (!options.list && !options.view && !options.sync) {
+        await autoPush({ entityType: 'epic' });
+      }
     });
 
   // Add status commands (EPIC-015 Sprint 1)

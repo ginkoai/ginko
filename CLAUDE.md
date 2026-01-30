@@ -69,22 +69,22 @@ Branch: main (12 uncommitted files)
 
 ### Auto-Sync on Staleness Warning
 
-When `ginko start` shows a staleness warning, **automatically run `ginko sync`**:
+When `ginko start` shows a staleness warning, **automatically run `ginko pull`**:
 
 **Detection:**
 ```
 🚨 Team context is critically stale
    Never synced - team context not loaded
-   Run `ginko sync` to pull team updates.
+   Run `ginko pull` to pull team updates.
 ```
 
-**Action:** Immediately run `ginko sync` without asking.
+**Action:** Immediately run `ginko pull` without asking.
 
 **Example:**
 ```
 [ginko start shows staleness warning]
 AI: Team context is stale. Syncing now...
-[Executes: ginko sync]
+[Executes: ginko pull]
 AI: ✓ Team context updated. Ready to work.
 ```
 
@@ -342,8 +342,13 @@ ginko graph health                   # API reliability metrics
 ```bash
 ginko assign e008_s04_t01 user@example.com           # Assign single task
 ginko assign --sprint e008_s04 --all user@example.com # Assign all tasks in sprint
-ginko sync                                            # Pull dashboard changes to local
-ginko sync --type ADR                                 # Sync only ADRs
+ginko push                                            # Push local changes to graph
+ginko push epic                                       # Push only changed epics
+ginko push sprint e001_s01                            # Push specific sprint
+ginko push --dry-run                                  # Preview what would be pushed
+ginko pull                                            # Pull dashboard changes to local
+ginko pull sprint                                     # Pull only sprint changes
+ginko diff epic/EPIC-001                              # Compare local vs graph
 ```
 
 **Team visibility:**

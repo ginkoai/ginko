@@ -1,8 +1,9 @@
 /**
  * @fileType: utility
- * @status: current
- * @updated: 2025-11-02
- * @tags: [write-dispatch, logging, session-log, adr-041]
+ * @status: deprecated
+ * @updated: 2026-01-30
+ * @tags: [write-dispatch, logging, session-log, adr-041, deprecated-by-adr-077]
+ * @deprecated WriteDispatcher replaced by ginko push/pull (ADR-077). Falls through to SessionLogManager directly.
  * @related: [../core/session-log-manager.ts, ../../../../src/write-dispatcher.ts, ../../../../src/adapters/graph-adapter.ts]
  * @priority: high
  * @complexity: medium

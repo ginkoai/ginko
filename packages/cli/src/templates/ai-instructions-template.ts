@@ -91,28 +91,28 @@ Branch: main (12 uncommitted files)
 
 ### Auto-Sync on Staleness Warning
 
-When \`ginko start\` shows a staleness warning, **automatically run \`ginko sync\`**:
+When \`ginko start\` shows a staleness warning, **automatically run \`ginko pull\`**:
 
 **Detection:**
 \`\`\`
 🚨 Team context is critically stale
    Never synced - team context not loaded
-   Run \`ginko sync\` to pull team updates.
+   Run \`ginko pull\` to pull team updates.
 \`\`\`
 
-**Action:** Immediately run \`ginko sync\` without asking.
+**Action:** Immediately run \`ginko pull\` without asking.
 
 **Example:**
 \`\`\`
 [ginko start shows staleness warning]
-AI: Team context is stale. Syncing now...
-[Executes: ginko sync]
+AI: Team context is stale. Pulling now...
+[Executes: ginko pull]
 AI: ✓ Team context updated. Ready to work.
 \`\`\`
 
 **Thresholds:**
-- 🚨 Critical (never synced or >7 days): Always auto-sync
-- ⚠️ Warning (1-7 days stale): Auto-sync at session start
+- 🚨 Critical (never synced or >7 days): Always auto-pull
+- ⚠️ Warning (1-7 days stale): Auto-pull at session start
 - No warning: Context is fresh, no action needed
 
 ### New Project Onboarding
@@ -311,8 +311,11 @@ ginko graph health                   # API reliability metrics
 \`\`\`bash
 ginko assign e008_s04_t01 user@example.com           # Assign single task
 ginko assign --sprint e008_s04 --all user@example.com # Assign all tasks in sprint
-ginko sync                                            # Pull dashboard changes to local
-ginko sync --type ADR                                 # Sync only ADRs
+ginko push                                            # Push local changes to graph
+ginko push epic                                       # Push only changed epics
+ginko push sprint e001_s01                            # Push specific sprint
+ginko pull                                            # Pull dashboard changes to local
+ginko pull sprint                                     # Pull only sprint changes
 \`\`\`
 
 ### Local Files (Fallback when graph unavailable)
@@ -390,6 +393,42 @@ ${modelSpecificContent || ''}
 - \`ginko handoff\` - Save progress for seamless continuation
 - \`ginko vibecheck\` - Quick realignment when stuck
 - \`ginko ship\` - Create PR-ready branch with context
+
+## Context Retrieval Protocol (ADR-077)
+**MANDATORY**: Before reading project files for context, query the graph first:
+1. \`ginko graph query "<topic>"\` — semantic search (<200ms)
+2. Only if graph returns no results → read local files
+3. Never use curl/fetch for graph API — always use ginko CLI
+
+## Sync Protocol (ADR-077)
+**MANDATORY**: Use push/pull for all sync operations:
+- After creating/modifying content → \`ginko push\`
+- Before starting work → \`ginko pull\` (if stale)
+- After task/sprint status changes → auto-push triggers automatically
+- After handoff → push runs automatically
+
+### Push/Pull Quick Reference
+| Command | Purpose |
+|---------|---------|
+| \`ginko push\` | Push all changes since last push |
+| \`ginko push epic\` | Push only changed epics |
+| \`ginko push sprint e001_s01\` | Push specific sprint |
+| \`ginko push charter\` | Push charter |
+| \`ginko push --dry-run\` | Preview what would be pushed |
+| \`ginko pull\` | Pull all changes from dashboard |
+| \`ginko pull sprint\` | Pull only sprint changes |
+| \`ginko pull --force\` | Overwrite local with graph |
+| \`ginko status\` | Show sync state (unpushed/unpulled) |
+| \`ginko diff epic/EPIC-001\` | Compare local vs graph |
+
+### Anti-Patterns (DO NOT)
+- ❌ Read 10+ files to find context → use \`ginko graph query\`
+- ❌ Use curl to hit graph API → use \`ginko push/pull\`
+- ❌ Skip push after entity creation → always auto-push
+- ❌ Parse local JSONL for session history → query graph (<200ms)
+- ❌ Use \`ginko sync\` → use \`ginko pull\` (deprecated)
+- ❌ Use \`ginko graph load\` → use \`ginko push\` (deprecated)
+- ❌ Use \`--sync\` flags → use \`ginko push epic/charter\` (deprecated)
 
 ## Privacy & Security
 - All context stored locally in \`.ginko/\`

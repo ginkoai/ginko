@@ -18,7 +18,8 @@ Execute ginko commands effectively for session management, task tracking, and kn
 | Mark sprint done | `ginko sprint complete <sprintId>` |
 | Search knowledge | `ginko graph query "topic"` |
 | View relationships | `ginko graph explore <nodeId>` |
-| Sync from dashboard | `ginko sync` |
+| Push to graph | `ginko push` |
+| Pull from dashboard | `ginko pull` |
 | Assign work | `ginko assign <taskId> <email>` |
 
 ## Session Lifecycle
@@ -31,7 +32,7 @@ GINKO_FORCE_TTY=1 ginko start
 - Displays "Next up" task based on assignment and status
 - Warns about uncommitted files or stale team context
 
-**On staleness warning**: Auto-run `ginko sync` to pull team updates.
+**On staleness warning**: Auto-run `ginko pull` to pull team updates.
 
 ### Ending Work
 ```bash
@@ -114,12 +115,36 @@ ginko assign e016_s03_t01 user@example.com
 ginko assign --sprint e016_s03 --all user@example.com
 ```
 
-### Sync Changes
+### Push/Pull Sync (ADR-077)
+
+**MANDATORY**: Use push/pull for all sync operations. Never use deprecated `ginko sync` or `ginko graph load`.
+
 ```bash
-ginko sync              # Pull all dashboard changes
-ginko sync --type ADR   # Sync only ADRs
-ginko sync --preview    # Preview without syncing
+# Push local changes to graph
+ginko push                        # Push all changes since last push
+ginko push epic                   # Push only changed epics
+ginko push sprint e001_s01        # Push specific sprint
+ginko push charter                # Push charter
+ginko push --dry-run              # Preview what would be pushed
+ginko push --all                  # Push all content (like graph load)
+
+# Pull dashboard changes to local
+ginko pull                        # Pull all changes from dashboard
+ginko pull sprint                 # Pull only sprint changes
+ginko pull --force                # Overwrite local with graph
+
+# Compare
+ginko diff epic/EPIC-001          # Show local vs graph diff
+ginko status                      # Show sync state (unpushed/unpulled)
 ```
+
+**Auto-push**: Fires automatically after task/sprint status changes and handoff.
+
+**Deprecated commands** (still work but show warnings):
+- `ginko sync` → use `ginko pull`
+- `ginko graph load` → use `ginko push --all`
+- `ginko epic --sync` → use `ginko push epic`
+- `ginko charter --sync` → use `ginko push charter`
 
 ## Sprint Planning
 
@@ -158,8 +183,8 @@ ginko sprint pause <id>        # Temporarily hold
 |-------|----------|
 | Task not found | Check ID format matches `e{NNN}_s{NN}_t{NN}` |
 | Sprint won't complete | Use `ginko sprint complete`, not `ginko task complete` |
-| Dashboard out of sync | Run `ginko task complete` for each task (updates graph property) |
-| Stale team context | Run `ginko sync` to pull updates |
+| Dashboard out of sync | Run `ginko push` to push local changes, or `ginko task complete` for status |
+| Stale team context | Run `ginko pull` to pull updates |
 | Graph query fails | Check `ginko graph health` for API issues |
 
 ## Common Workflows

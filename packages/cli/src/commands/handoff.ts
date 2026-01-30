@@ -15,6 +15,7 @@ import { pauseCurrentCursor, SessionCursor } from '../lib/session-cursor.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
 import { isQueueInitialized, getQueue } from '../lib/event-queue.js';
+import { pushAll } from '../lib/auto-push.js';
 import path from 'path';
 import { requireAuth } from '../utils/auth-storage.js';
 // EPIC-016 Sprint 4: Handoff reconciliation (t06)
@@ -81,7 +82,7 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       console.warn(chalk.dim('No event ID found in session log'));
     }
 
-    // 2. Flush event queue (sync pending events before pausing)
+    // 2. Flush event queue (legacy, deprecated by ADR-077)
     spinner.text = 'Flushing event queue...';
     if (isQueueInitialized()) {
       try {
@@ -89,8 +90,17 @@ export async function handoffCommand(options: HandoffOptions = {}) {
         await queue.flush();
         spinner.info(chalk.dim('Event queue flushed'));
       } catch (error) {
-        console.warn(chalk.yellow('⚠ Failed to flush event queue:'), error instanceof Error ? error.message : String(error));
+        console.warn(chalk.yellow('\u26a0 Failed to flush event queue:'), error instanceof Error ? error.message : String(error));
       }
+    }
+
+    // 2b. ADR-077: Push all uncommitted changes to graph
+    spinner.text = 'Pushing changes to graph...';
+    try {
+      await pushAll();
+      spinner.info(chalk.dim('Changes pushed to graph'));
+    } catch {
+      // Non-critical: push failure doesn't block handoff
     }
 
     // 3. Pause cursor and update position

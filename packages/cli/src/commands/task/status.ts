@@ -14,6 +14,7 @@ import readline from 'readline';
 import { GraphApiClient, TaskStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
 import { getCurrentUser } from '../../utils/auth-storage.js';
+import { autoPush } from '../../lib/auto-push.js';
 
 // =============================================================================
 // Types
@@ -190,6 +191,9 @@ export async function completeCommand(
         await checkSprintCompletion(client, graphId, sprintId, !!options.yes);
       }
     }
+
+    // ADR-077: Auto-push after status change
+    await autoPush();
   } catch (error) {
     handleError('complete', taskId, error);
   }
@@ -286,6 +290,9 @@ export async function startCommand(
     if (response.task.title) {
       console.log(chalk.dim(`  "${response.task.title}"`));
     }
+
+    // ADR-077: Auto-push after status change
+    await autoPush();
   } catch (error) {
     handleError('start', taskId, error);
   }
@@ -316,6 +323,9 @@ export async function pauseCommand(
     if (response.task.title) {
       console.log(chalk.dim(`  "${response.task.title}"`));
     }
+
+    // ADR-077: Auto-push after status change
+    await autoPush();
   } catch (error) {
     handleError('pause', taskId, error);
   }
@@ -361,6 +371,9 @@ export async function blockCommand(
       console.log(chalk.dim(`  "${response.task.title}"`));
     }
     console.log(chalk.dim(`  Reason: ${blockReason}`));
+
+    // ADR-077: Auto-push after status change
+    await autoPush();
   } catch (error) {
     handleError('block', taskId, error);
   }

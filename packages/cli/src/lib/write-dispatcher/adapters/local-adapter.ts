@@ -1,6 +1,7 @@
 /**
  * @fileType: adapter
- * @status: current
+ * @status: deprecated
+ * @deprecated: true
  * @updated: 2025-11-02
  * @tags: [write-adapter, local, filesystem, markdown, dual-write, adr-041]
  * @related: [../write-dispatcher.ts, graph-adapter.ts, ../../packages/cli/src/core/session-log-manager.ts]

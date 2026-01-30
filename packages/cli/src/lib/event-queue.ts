@@ -1,8 +1,9 @@
 /**
  * @fileType: utility
- * @status: current
- * @updated: 2025-11-04
- * @tags: [event-queue, async-sync, neo4j, adr-043]
+ * @status: deprecated
+ * @updated: 2026-01-30
+ * @tags: [event-queue, async-sync, neo4j, adr-043, deprecated-by-adr-077]
+ * @deprecated Replaced by ginko push (ADR-077). Events are now pushed via documents endpoint.
  * @related: [event-logger.ts, ../commands/graph/api-client.ts]
  * @priority: critical
  * @complexity: medium
