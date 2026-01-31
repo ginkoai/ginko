@@ -16,6 +16,7 @@ import chalk from 'chalk';
 import simpleGit from 'simple-git';
 import { ContextGatherer } from './context-gatherer.js';
 import { BacklogBase } from './base.js';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 /**
  * Backlog pipeline using Simple Builder Pattern
@@ -48,7 +49,9 @@ export class BacklogPipeline extends SimplePipelineBase {
     await this.backlog.init();
 
     // Set up backlog directory
-    this.backlogDir = path.join(process.cwd(), '.ginko', 'backlog');
+    let projectRoot: string;
+    try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
+    this.backlogDir = path.join(projectRoot, '.ginko', 'backlog');
     await fs.ensureDir(this.backlogDir);
 
     // Determine next item number

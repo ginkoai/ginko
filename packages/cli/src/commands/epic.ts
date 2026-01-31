@@ -14,6 +14,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { existsSync } from 'fs';
 import prompts from 'prompts';
+import { getProjectRoot } from '../utils/helpers.js';
 
 // ============================================================================
 // Types
@@ -41,7 +42,8 @@ interface EpicOptions {
  */
 export async function epicCommand(options: EpicOptions = {}): Promise<void> {
   try {
-    const projectRoot = process.cwd();
+    let projectRoot: string;
+    try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
 
     // Handle --list flag
     if (options.list) {

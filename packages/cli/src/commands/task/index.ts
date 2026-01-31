@@ -76,6 +76,7 @@ ${chalk.gray('Valid Task Statuses:')}
   task
     .command('start <taskId>')
     .description('Mark task as in progress')
+    .option('--yes', 'Skip confirmation prompts (auto-assign)')
     .option('-v, --verbose', 'Show detailed output')
     .action(async (taskId, options) => {
       await startCommand(taskId, options);

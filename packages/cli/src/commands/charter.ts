@@ -26,7 +26,7 @@ import {
   createInitialChangelog,
 } from '../lib/charter/charter-versioning.js';
 import type { Charter, CharterContent, CharterConfidence, WorkMode } from '../types/charter.js';
-import { getUserEmail } from '../utils/helpers.js';
+import { getUserEmail, getProjectRoot } from '../utils/helpers.js';
 import { requireAuth } from '../utils/auth-storage.js';
 import { existsSync } from 'fs';
 
@@ -58,7 +58,8 @@ interface CharterOptions {
  */
 export async function charterCommand(options: CharterOptions = {}): Promise<void> {
   try {
-    const projectRoot = process.cwd();
+    let projectRoot: string;
+    try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
     const storage = new CharterStorageManager(projectRoot, options.outputPath);
 
     // Handle --view flag
@@ -160,7 +161,7 @@ async function createCharter(
   // Skip conversation mode (testing/automation)
   if (options.skipConversation) {
     console.log(chalk.yellow('⚠️  Skipping conversation (--skipConversation flag)\n'));
-    const mockCharter = createMockCharter();
+    const mockCharter = await createMockCharter();
     await storage.save(mockCharter);
     displayCharterSaved(mockCharter);
     return;
@@ -173,7 +174,8 @@ async function createCharter(
   const result: FacilitatorResult = await facilitator.facilitate();
 
   // Build charter from conversation
-  const projectRoot = process.cwd();
+  let projectRoot: string;
+  try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
   const projectName = path.basename(projectRoot);
   const userEmail = await getUserEmail();
 
@@ -337,7 +339,8 @@ async function syncCharterToGraph(storage: CharterStorageManager): Promise<void>
   console.log(chalk.blue('\n📡 Syncing charter to graph...\n'));
 
   // Check for graph configuration
-  const projectRoot = process.cwd();
+  let projectRoot: string;
+  try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
   const graphConfigPath = path.join(projectRoot, '.ginko', 'graph', 'config.json');
 
   if (!existsSync(graphConfigPath)) {
@@ -693,8 +696,9 @@ function truncate(text: string, maxLength: number): string {
 // Mock Charter (for testing)
 // ============================================================================
 
-function createMockCharter(): Charter {
-  const projectRoot = process.cwd();
+async function createMockCharter(): Promise<Charter> {
+  let projectRoot: string;
+  try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
   const projectName = path.basename(projectRoot);
 
   return {

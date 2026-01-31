@@ -1267,9 +1267,17 @@ export async function createGraphEvents(events: any[]): Promise<void> {
 
   const client = new GraphApiClient();
 
-  // TODO: Get graphId from config or session context
-  // For now, use a placeholder that will be replaced in integration
-  const graphId = process.env.GINKO_GRAPH_ID || 'default';
+  // Load graphId from config file, fall back to env var
+  let graphId = process.env.GINKO_GRAPH_ID;
+  if (!graphId) {
+    const { loadGraphConfig } = await import('./config.js');
+    const config = await loadGraphConfig();
+    graphId = config?.graphId || undefined;
+  }
+
+  if (!graphId) {
+    throw new Error('No graph ID found. Run `ginko graph init` first.');
+  }
 
   await client.createEvents(graphId, events);
 }

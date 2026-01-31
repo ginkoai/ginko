@@ -46,8 +46,13 @@ async function requireGraphId(): Promise<string> {
 
 /**
  * Prompt user for confirmation
+ * Auto-returns true in non-TTY environments to prevent hanging.
  */
 async function confirm(message: string): Promise<boolean> {
+  if (!process.stdin.isTTY) {
+    return true;
+  }
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -273,7 +278,7 @@ export async function startCommand(
         console.log(chalk.dim(`  "${taskDetails.title}"`));
       }
 
-      const shouldAssign = await confirm(`Assign to you (${currentUser.email})?`);
+      const shouldAssign = options.yes || await confirm(`Assign to you (${currentUser.email})?`);
 
       if (shouldAssign) {
         await updateTaskAssignee(client, graphId, taskId, currentUser.email);

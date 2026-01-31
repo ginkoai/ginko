@@ -16,6 +16,7 @@ import chalk from 'chalk';
 import simpleGit from 'simple-git';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 const execAsync = promisify(exec);
 
@@ -43,7 +44,9 @@ export class ArchitecturePipeline extends SimplePipelineBase {
     this.git = simpleGit();
 
     // Set up ADR directory
-    this.adrDir = path.join(process.cwd(), 'docs', 'architecture');
+    let projectRoot: string;
+    try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
+    this.adrDir = path.join(projectRoot, 'docs', 'architecture');
     await fs.ensureDir(this.adrDir);
 
     // Determine next ADR number

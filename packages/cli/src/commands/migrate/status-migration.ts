@@ -29,6 +29,7 @@ import { promisify } from 'util';
 import chalk from 'chalk';
 import { GraphApiClient, TaskStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 const globAsync = promisify(glob);
 
@@ -339,7 +340,8 @@ export async function executeMigration(
  * Main migration command entry point
  */
 export async function runStatusMigration(options: StatusMigrationOptions = {}): Promise<void> {
-  const projectRoot = process.cwd();
+  let projectRoot: string;
+  try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
   const { dryRun = false, verbose = false } = options;
 
   console.log(chalk.bold('\nStatus Migration: Markdown -> Graph\n'));

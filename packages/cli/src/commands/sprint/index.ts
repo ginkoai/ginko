@@ -73,6 +73,8 @@ export function sprintCommand(): Command {
     .description('Create a new feature sprint (conversational)')
     .option('--adhoc', 'Link to Ad-Hoc epic (default: true)')
     .option('--epic <epicId>', 'Link to specific epic')
+    .option('-d, --description <text>', 'Feature description (required in non-interactive mode)')
+    .option('-y, --yes', 'Skip confirmation prompts')
     .action(async (options) => {
       await createSprintAction(options);
     });

@@ -13,7 +13,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import matter from 'gray-matter';
 import chalk from 'chalk';
-import { getGinkoDir } from '../../utils/helpers.js';
+import { getGinkoDir, getProjectRoot } from '../../utils/helpers.js';
 
 /**
  * Backlog item types
@@ -83,17 +83,11 @@ export class BacklogBase {
    * Find project root (where .ginko exists)
    */
   protected async findProjectRoot(): Promise<string> {
-    let currentDir = process.cwd();
-    
-    while (currentDir !== path.parse(currentDir).root) {
-      if (await fs.pathExists(path.join(currentDir, '.ginko'))) {
-        return currentDir;
-      }
-      currentDir = path.dirname(currentDir);
+    try {
+      return await getProjectRoot();
+    } catch {
+      return process.cwd();
     }
-    
-    // If no .ginko found, use current directory
-    return process.cwd();
   }
 
   /**

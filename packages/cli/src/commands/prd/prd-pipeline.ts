@@ -16,6 +16,7 @@ import chalk from 'chalk';
 import simpleGit from 'simple-git';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 const execAsync = promisify(exec);
 
@@ -44,7 +45,7 @@ export class PRDPipeline extends SimplePipelineBase {
     this.git = simpleGit();
 
     // Set up PRD directory
-    this.projectRoot = path.resolve(process.cwd(), '../..');
+    try { this.projectRoot = await getProjectRoot(); } catch { this.projectRoot = process.cwd(); }
     this.prdDir = path.join(this.projectRoot, 'docs', 'PRD');
     await fs.ensureDir(this.prdDir);
 

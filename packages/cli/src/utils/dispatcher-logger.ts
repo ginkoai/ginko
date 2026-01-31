@@ -150,7 +150,7 @@ export async function initializeWriteDispatcher(ginkoDir: string): Promise<void>
     });
 
     // Register adapters
-    const graphAdapter = createGraphAdapterFromEnv();
+    const graphAdapter = await createGraphAdapterFromEnv();
     const localAdapter = await createLocalAdapterFromEnv(ginkoDir);
 
     dispatcher.registerAdapter(graphAdapter);

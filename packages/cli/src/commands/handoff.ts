@@ -15,7 +15,7 @@ import { pauseCurrentCursor, SessionCursor } from '../lib/session-cursor.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
 import { isQueueInitialized, getQueue } from '../lib/event-queue.js';
-import { pushAll } from '../lib/auto-push.js';
+import { autoPush } from '../lib/auto-push.js';
 import path from 'path';
 import { requireAuth } from '../utils/auth-storage.js';
 // EPIC-016 Sprint 4: Handoff reconciliation (t06)
@@ -43,17 +43,20 @@ export async function handoffCommand(options: HandoffOptions = {}) {
   await requireAuth('handoff');
 
   // EPIC-016 Sprint 4 t06: Check for untracked work before handoff
-  try {
-    const reconciliation = await reconcileWork();
-    if (reconciliation.userAction === 'cancelled') {
-      console.log(chalk.dim('Handoff cancelled.'));
-      return;
+  // Skip in non-TTY environments (prompts would hang)
+  if (process.stdin.isTTY) {
+    try {
+      const reconciliation = await reconcileWork();
+      if (reconciliation.userAction === 'cancelled') {
+        console.log(chalk.dim('Handoff cancelled.'));
+        return;
+      }
+      if (reconciliation.taskCreated) {
+        console.log(chalk.dim(`Tracked as: ${reconciliation.taskCreated}`));
+      }
+    } catch {
+      // Non-critical - continue with handoff even if reconciliation fails
     }
-    if (reconciliation.taskCreated) {
-      console.log(chalk.dim(`Tracked as: ${reconciliation.taskCreated}`));
-    }
-  } catch {
-    // Non-critical - continue with handoff even if reconciliation fails
   }
 
   const spinner = ora('Pausing work...').start();
@@ -94,10 +97,10 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       }
     }
 
-    // 2b. ADR-077: Push all uncommitted changes to graph
+    // 2b. ADR-077: Push changes to graph (incremental, git-based change detection)
     spinner.text = 'Pushing changes to graph...';
     try {
-      await pushAll();
+      await autoPush();
       spinner.info(chalk.dim('Changes pushed to graph'));
     } catch {
       // Non-critical: push failure doesn't block handoff

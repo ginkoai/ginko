@@ -56,6 +56,8 @@ export interface CreateSprintResult {
 interface CreateSprintOptions {
   adhoc?: boolean;
   epic?: string;
+  description?: string;
+  yes?: boolean;
 }
 
 // =============================================================================
@@ -241,15 +243,26 @@ export async function createSprintCommand(
     return { success: false, message: 'No graph ID found' };
   }
 
-  // 2. Get feature description
-  const { description } = await prompts({
-    type: 'text',
-    name: 'description',
-    message: 'What are you building?',
-    validate: (value) => value.trim().length >= 10
-      ? true
-      : 'Please describe your feature in more detail (10+ chars)',
-  });
+  // 2. Get feature description (from flag or prompt)
+  let description = options.description;
+  if (!description) {
+    const isTTY = process.stdin.isTTY;
+    if (!isTTY) {
+      console.error(chalk.red('Error: --description (-d) is required in non-interactive mode.'));
+      console.error(chalk.dim('  Usage: ginko sprint create -d "Feature description"'));
+      return { success: false, message: 'Description required in non-interactive mode' };
+    }
+
+    const response = await prompts({
+      type: 'text',
+      name: 'description',
+      message: 'What are you building?',
+      validate: (value) => value.trim().length >= 10
+        ? true
+        : 'Please describe your feature in more detail (10+ chars)',
+    });
+    description = response.description;
+  }
 
   if (!description) {
     return { success: false, message: 'Cancelled' };
@@ -281,20 +294,27 @@ export async function createSprintCommand(
   console.log('');
   console.log(chalk.dim('This will be tracked under the Ad-Hoc Epic.'));
 
-  // 5. Confirm
-  const { action } = await prompts({
-    type: 'select',
-    name: 'action',
-    message: 'Look good?',
-    choices: [
-      { title: 'Yes, create it', value: 'yes' },
-      { title: 'Cancel', value: 'cancel' },
-    ],
-  });
+  // 5. Confirm (skip with --yes flag or non-TTY)
+  if (!options.yes) {
+    const isTTY = process.stdin.isTTY;
+    if (!isTTY) {
+      // Non-TTY without --yes: auto-confirm
+    } else {
+      const { action } = await prompts({
+        type: 'select',
+        name: 'action',
+        message: 'Look good?',
+        choices: [
+          { title: 'Yes, create it', value: 'yes' },
+          { title: 'Cancel', value: 'cancel' },
+        ],
+      });
 
-  if (action !== 'yes') {
-    console.log(chalk.dim('Cancelled.'));
-    return { success: false, message: 'Cancelled by user' };
+      if (action !== 'yes') {
+        console.log(chalk.dim('Cancelled.'));
+        return { success: false, message: 'Cancelled by user' };
+      }
+    }
   }
 
   // 6. Generate sprint ID and markdown
