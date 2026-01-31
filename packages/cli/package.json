@@ -1,6 +1,6 @@
 {
   "name": "@ginkoai/cli",
-  "version": "2.1.5",
+  "version": "2.2.0",
   "description": "Git-native session management and cloud context for AI-mediated development. AI Collaboration for Vibe Tribes.",
   "main": "dist/index.js",
   "bin": {
@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc && chmod +x dist/index.js && npm run copy:templates",
-    "copy:templates": "mkdir -p dist/templates && cp src/templates/*.md dist/templates/ 2>/dev/null || true && cp -r src/templates/skills dist/templates/skills 2>/dev/null || true",
+    "copy:templates": "mkdir -p dist/templates && cp src/templates/*.md dist/templates/ 2>/dev/null || true && rm -rf dist/templates/skills && cp -r src/templates/skills dist/templates/skills 2>/dev/null || true",
     "dev": "tsc --watch",
     "test": "jest",
     "prepublishOnly": "npm run build"

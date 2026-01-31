@@ -1,8 +1,9 @@
 /**
  * @fileType: utility
- * @status: current
- * @updated: 2025-12-07
- * @tags: [dead-letter-queue, dlq, resilience, event-retry, epic-004]
+ * @status: deprecated
+ * @updated: 2026-01-30
+ * @tags: [dead-letter-queue, dlq, resilience, event-retry, epic-004, deprecated-by-adr-077]
+ * @deprecated Replaced by ginko push retry logic (ADR-077). DLQ no longer needed.
  * @related: [event-queue.ts, event-logger.ts, api-client.ts]
  * @priority: high
  * @complexity: medium

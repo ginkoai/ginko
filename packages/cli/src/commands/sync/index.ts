@@ -17,12 +17,14 @@
  */
 
 import { Command } from 'commander';
+import chalk from 'chalk';
 import { syncCommand } from './sync-command.js';
+import { pullCommand } from '../pull/pull-command.js';
 import type { TeamSyncOptions, NodeType } from './types.js';
 
 export function createSyncCommand(): Command {
   const sync = new Command('sync')
-    .description('Pull dashboard knowledge edits to local git (ADR-054, EPIC-008)')
+    .description('Pull dashboard knowledge edits to local git (deprecated: use `ginko pull`)')
     .option('--preview', 'Preview team changes without syncing')
     .option('--dry-run', 'Preview what files would be synced')
     .option('--force', 'Overwrite local files with graph versions')
@@ -32,17 +34,18 @@ export function createSyncCommand(): Command {
     .option('--skip-team-check', 'Skip team membership verification');
 
   sync.action(async (options: Record<string, unknown>) => {
-    const syncOptions: TeamSyncOptions = {
+    // ADR-077: Deprecation warning
+    console.log(chalk.yellow('\u26a0\ufe0f  `ginko sync` is deprecated. Use `ginko pull` instead.'));
+    console.log(chalk.dim('   Migration: ginko sync → ginko pull'));
+    console.log(chalk.dim('   Migration: ginko sync --type Sprint → ginko pull sprint'));
+    console.log('');
+
+    // Delegate to pull command
+    await pullCommand({
       dryRun: options.dryRun === true,
       force: options.force === true,
-      type: options.type as NodeType | undefined,
-      interactive: true,
-      stalenessThresholdDays: parseInt(options.stalenessDays as string, 10) || 3,
-      skipMembershipCheck: options.skipTeamCheck === true,
-      preview: options.preview === true,
-    };
-
-    await syncCommand(syncOptions);
+      entityType: options.type as string | undefined,
+    });
   });
 
   return sync;

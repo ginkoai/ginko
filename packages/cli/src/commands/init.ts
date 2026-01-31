@@ -225,6 +225,57 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       }
     }
 
+    // Install Claude Code skills
+    spinner.start('Installing AI skills...');
+    try {
+      const skillsDir = path.join(projectRoot, '.claude', 'skills');
+      const ginkoSkillDir = path.join(skillsDir, 'ginko');
+
+      await fs.ensureDir(ginkoSkillDir);
+
+      // Resolve templates directory (works from both src/ and dist/)
+      const templateSkillsDir = path.join(__dirname, '..', 'templates', 'skills');
+
+      // Copy ginko skill files (don't overwrite existing)
+      const ginkoSkillPath = path.join(ginkoSkillDir, 'SKILL.md');
+      if (!await fs.pathExists(ginkoSkillPath)) {
+        await fs.copy(
+          path.join(templateSkillsDir, 'ginko', 'SKILL.md'),
+          ginkoSkillPath
+        );
+      }
+
+      const commandsRefPath = path.join(ginkoSkillDir, 'commands-reference.md');
+      if (!await fs.pathExists(commandsRefPath)) {
+        await fs.copy(
+          path.join(templateSkillsDir, 'ginko', 'commands-reference.md'),
+          commandsRefPath
+        );
+      }
+
+      // Copy push/pull skills (don't overwrite existing)
+      const pushSkillPath = path.join(skillsDir, 'push.md');
+      if (!await fs.pathExists(pushSkillPath)) {
+        await fs.copy(
+          path.join(templateSkillsDir, 'push.md'),
+          pushSkillPath
+        );
+      }
+
+      const pullSkillPath = path.join(skillsDir, 'pull.md');
+      if (!await fs.pathExists(pullSkillPath)) {
+        await fs.copy(
+          path.join(templateSkillsDir, 'pull.md'),
+          pullSkillPath
+        );
+      }
+
+      spinner.succeed('AI skills installed');
+    } catch (error) {
+      spinner.warn('AI skills installation failed');
+      console.warn(chalk.yellow('Skills error:', error instanceof Error ? error.message : String(error)));
+    }
+
     // Context rules
     spinner.start('Setting up context management...');
 
@@ -349,6 +400,7 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     console.log('  📄 ' + chalk.gray('ginko.json (team-shared configuration)'));
     console.log('  📄 ' + chalk.gray('.ginko/local.json (user-specific configuration)'));
     console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
+    console.log('  📄 ' + chalk.gray('.claude/skills/ (AI skill definitions)'));
     console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
     console.log('\n' + chalk.blue('💡 Configuration:'));
     console.log('  • ginko.json is tracked in git (team-shared structure)');

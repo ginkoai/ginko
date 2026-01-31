@@ -16,6 +16,8 @@ import { getUserEmail, getGinkoDir, formatTimeAgo, getProjectInfo } from '../uti
 import { ProgressiveLearning } from '../utils/progressive-learning.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 import { listCursors, SessionCursor } from '../lib/session-cursor.js';
+import { readSyncState } from '../lib/sync-state.js';
+import { getUnpushedCount } from '../lib/git-change-detector.js';
 
 export async function statusCommand(options: any = {}) {
   try {
@@ -89,6 +91,40 @@ export async function statusCommand(options: any = {}) {
     console.log(`  Staged: ${gitStatus.staged.length} files`);
     console.log(`  Untracked: ${gitStatus.not_added.length} files`);
     
+    // Sync state (ADR-077)
+    try {
+      const syncState = await readSyncState();
+      console.log(chalk.cyan('\n\u2b06\u2b07 Sync'));
+      if (syncState.lastPushTimestamp) {
+        console.log(`  Last push: ${formatTimeAgo(new Date(syncState.lastPushTimestamp))}`);
+        if (syncState.lastPushCommit) {
+          console.log(chalk.dim(`  Commit: ${syncState.lastPushCommit.substring(0, 8)}`));
+        }
+      } else {
+        console.log(`  Last push: ${chalk.dim('never')}`);
+      }
+      if (syncState.lastPullTimestamp) {
+        console.log(`  Last pull: ${formatTimeAgo(new Date(syncState.lastPullTimestamp))}`);
+      } else {
+        console.log(`  Last pull: ${chalk.dim('never')}`);
+      }
+
+      // Show unpushed count
+      try {
+        const unpushed = await getUnpushedCount(syncState.lastPushCommit);
+        if (unpushed > 0) {
+          console.log(chalk.yellow(`  Unpushed: ${unpushed} file(s)`));
+          console.log(chalk.dim(`  Run \`ginko push\` to sync changes to graph`));
+        } else {
+          console.log(chalk.green(`  Unpushed: 0 (up to date)`));
+        }
+      } catch {
+        // Non-fatal: skip unpushed count if git detection fails
+      }
+    } catch {
+      // Non-fatal: skip sync state if not available
+    }
+
     // Privacy status
     const config = await fs.readJSON(path.join(ginkoDir, 'config.json'));
     console.log(chalk.cyan('\n🔐 Privacy'));

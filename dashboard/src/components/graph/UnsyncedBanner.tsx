@@ -134,7 +134,7 @@ export function UnsyncedBanner({ graphId }: UnsyncedBannerProps) {
             </div>
             <p className="text-sm text-yellow-700">
               {unsyncedCount} knowledge {unsyncedCount === 1 ? 'node has been' : 'nodes have been'} edited in the dashboard.
-              Run <code className="bg-yellow-100 px-1.5 py-0.5 rounded font-mono text-xs">ginko sync</code> to pull changes to git.
+              Run <code className="bg-yellow-100 px-1.5 py-0.5 rounded font-mono text-xs">ginko pull</code> to pull changes to git.
             </p>
           </div>
         </div>

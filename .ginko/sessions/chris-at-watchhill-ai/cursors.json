@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "cursors": {
+    "ccba540a-50d7-4ca0-a22a-e6d4e6ee4bfb": {
+      "id": "ccba540a-50d7-4ca0-a22a-e6d4e6ee4bfb",
+      "user_id": "chris@watchhill.ai",
+      "organization_id": "org_chris",
+      "project_id": "ginko",
+      "branch": "feature/epic-push-pull-sync",
+      "current_event_id": "evt_1769802289016_3x49qy",
+      "started": "2026-01-30T19:44:49.016Z",
+      "last_active": "2026-01-31T20:06:31.046Z",
+      "status": "paused"
+    }
+  },
+  "last_updated": "2026-01-31T20:06:31.113Z"
+}

@@ -65,14 +65,21 @@ ${chalk.gray('Learn More:')}
       await initCommand(options);
     });
 
-  // Load documents
+  // Load documents (deprecated by ADR-077)
   graph
     .command('load')
-    .description('Upload documents to knowledge graph')
+    .description('Upload documents to knowledge graph (deprecated: use `ginko push`)')
     .option('--docs-only', 'Load ADRs and PRDs only (skip patterns, sessions)')
     .option('--extended-only', 'Load patterns, gotchas, sessions only (skip docs)')
     .option('--force', 'Reload all documents even if unchanged')
     .action(async (options) => {
+      // ADR-077: Deprecation warning
+      console.log(chalk.yellow('\u26a0\ufe0f  `ginko graph load` is deprecated. Use `ginko push` instead.'));
+      console.log(chalk.dim('   Migration: ginko graph load → ginko push --all'));
+      console.log(chalk.dim('   Migration: ginko graph load --force → ginko push --all --force'));
+      console.log('');
+
+      // Still delegate to legacy load command for now
       await loadCommand(options);
     });
 

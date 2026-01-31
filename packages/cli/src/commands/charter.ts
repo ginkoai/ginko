@@ -75,8 +75,10 @@ export async function charterCommand(options: CharterOptions = {}): Promise<void
       return;
     }
 
-    // Handle --sync flag
+    // Handle --sync flag (deprecated by ADR-077)
     if (options.sync) {
+      console.log(chalk.yellow('\u26a0\ufe0f  `ginko charter --sync` is deprecated. Use `ginko push charter` instead.'));
+      console.log('');
       await requireAuth('charter');
       await syncCharterToGraph(storage);
       return;

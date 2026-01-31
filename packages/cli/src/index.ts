@@ -76,6 +76,9 @@ import { roadmapCommand } from './commands/roadmap/index.js';
 import { taskStatusCommand } from './commands/task/index.js';
 import { migrateCommand } from './commands/migrate/index.js';
 import { nudgingCommand } from './commands/nudging/index.js';
+import { createPushCommand } from './commands/push/index.js';
+import { createPullCommand } from './commands/pull/index.js';
+import { createDiffCommand } from './commands/diff/index.js';
 
 const program = new Command();
 
@@ -565,6 +568,15 @@ program.addCommand(notificationsCommand());
 
 // Sync command: Pull dashboard edits to git (ADR-054, EPIC-005 Sprint 4)
 program.addCommand(createSyncCommand());
+
+// Push command: Push local changes to graph (ADR-077)
+program.addCommand(createPushCommand());
+
+// Pull command: Pull dashboard changes to local git (ADR-077)
+program.addCommand(createPullCommand());
+
+// Diff command: Compare local vs graph content (ADR-077)
+program.addCommand(createDiffCommand());
 
 // Roadmap view
 program.addCommand(roadmapCommand());

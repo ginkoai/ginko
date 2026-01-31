@@ -1,6 +1,7 @@
 /**
  * @fileType: adapter
- * @status: current
+ * @status: deprecated
+ * @deprecated: true
  * @updated: 2025-11-02
  * @tags: [write-adapter, graph, neo4j, cloud, multi-tenant, adr-041]
  * @related: [../write-dispatcher.ts, ../../api/v1/graph/_cloud-graph-client.ts, local-adapter.ts]
