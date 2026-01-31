@@ -391,6 +391,94 @@ const initCursorEasterEgg = () => {
 };
 
 // ============================================================================
+// TEXT SCRAMBLE ANIMATION
+// ============================================================================
+
+const initTextScramble = () => {
+  const element = document.querySelector('.text-scramble');
+  if (!element) return;
+
+  // Respect user's motion preferences
+  const prefersReducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  const words = JSON.parse(element.dataset.words || '[]');
+  if (words.length === 0) return;
+
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  let currentIndex = 0;
+  let isAnimating = false;
+
+  // If reduced motion, just cycle words without scramble
+  if (prefersReducedMotion) {
+    setInterval(() => {
+      currentIndex = (currentIndex + 1) % words.length;
+      element.textContent = words[currentIndex];
+    }, 3000);
+    return;
+  }
+
+  const scrambleText = (targetWord, callback) => {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const currentWord = element.textContent;
+    const maxLength = Math.max(currentWord.length, targetWord.length);
+    const duration = 600; // Total scramble duration in ms
+    const frameRate = 30; // ms per frame
+    const totalFrames = duration / frameRate;
+
+    let frame = 0;
+
+    const animate = () => {
+      frame++;
+      const progress = frame / totalFrames;
+
+      let result = '';
+      for (let i = 0; i < maxLength; i++) {
+        // Calculate when this character should "lock in"
+        const charProgress = i / maxLength;
+
+        if (progress > charProgress + 0.3) {
+          // Character is locked - show target
+          result += targetWord[i] || '';
+        } else if (i < targetWord.length) {
+          // Still scrambling
+          result += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+
+      element.textContent = result;
+
+      if (frame < totalFrames) {
+        setTimeout(animate, frameRate);
+      } else {
+        // Ensure final word is correct
+        element.textContent = targetWord;
+        isAnimating = false;
+        if (callback) callback();
+      }
+    };
+
+    animate();
+  };
+
+  const cycleWords = () => {
+    const nextIndex = (currentIndex + 1) % words.length;
+    const nextWord = words[nextIndex];
+
+    scrambleText(nextWord, () => {
+      currentIndex = nextIndex;
+      setTimeout(cycleWords, 2500); // Wait before next cycle
+    });
+  };
+
+  // Start cycling after initial delay
+  setTimeout(cycleWords, 2500);
+};
+
+// ============================================================================
 // HERO BUTTON TYPEWRITER ANIMATION
 // ============================================================================
 
@@ -492,6 +580,7 @@ function init() {
   initSmoothScroll();
   initScrollEffects();
   initScrollAnimations();
+  initTextScramble();
   initHeroButtonAnimation();
   initTerminalAnimation();
   initCopyButtons();

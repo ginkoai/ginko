@@ -70,11 +70,18 @@
                     <div class="hero-grid">
                         <!-- Left Column: Text Content -->
                         <div class="hero-text">
-                            <span class="hero-badge">NOW IN MONKEY BETA</span>
-                            <h1 class="hero-title" data-hero-title>Stop re-explaining your codebase to AI.
-                    </h1>
-                            <p class="hero-subtitle" data-hero-subtitle>Ginko keeps context in the collaboration graph. Resume in 30 seconds with your project, decisions, and patterns intact.
-                    </p>
+                            <span class="hero-badge">NOW IN PUBLIC BETA</span>
+                            <p class="hero-line-1">
+                                <span class="hero-title-static">You don't need another </span><span class="text-scramble" data-words='["wiki.", "knowledge base.", "onboarding doc.", "Notion page.", "README."]'>wiki.</span>
+                            </p>
+                            <h1 class="hero-line-2">
+                                You need <strong>live context</strong> that compounds.
+                            </h1>
+                            <p class="hero-line-3">Meet your AI with a memory.</p>
+                            <div class="hero-tagline iykyg-reveal">
+                                <span class="iykyg-short">iykyg</span>
+                                <span class="iykyg-full">if you know, you ginko</span>
+                            </div>
                             <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
                                 <div class="corner-bracket top-left"></div>
                                 <div class="corner-bracket top-right"></div>
@@ -112,12 +119,66 @@
                                 </a>
                             </div>
                         </div>
-                        <!-- Right Column: Product Visual -->
+                        <!-- Right Column: Context Graph Visual -->
                         <div class="hero-visual">
-                            <div class="hero-media">
-                                <div class="hero-media-placeholder">
-                                    <div class="play-icon"></div>
-                                </div>
+                            <div class="context-graph">
+                                <svg viewBox="0 0 400 400" class="graph-svg">
+                                    <!-- Connection lines -->
+                                    <g class="graph-connections">
+                                        <line x1="200" y1="200" x2="120" y2="100" class="graph-line graph-line-1"/>
+                                        <line x1="200" y1="200" x2="300" y2="120" class="graph-line graph-line-2"/>
+                                        <line x1="200" y1="200" x2="320" y2="220" class="graph-line graph-line-3"/>
+                                        <line x1="200" y1="200" x2="280" y2="320" class="graph-line graph-line-4"/>
+                                        <line x1="200" y1="200" x2="100" y2="280" class="graph-line graph-line-5"/>
+                                        <line x1="200" y1="200" x2="80" y2="180" class="graph-line graph-line-6"/>
+                                        <!-- Cross connections -->
+                                        <line x1="120" y1="100" x2="300" y2="120" class="graph-line graph-line-cross-1"/>
+                                        <line x1="300" y1="120" x2="320" y2="220" class="graph-line graph-line-cross-2"/>
+                                        <line x1="280" y1="320" x2="100" y2="280" class="graph-line graph-line-cross-3"/>
+                                        <line x1="80" y1="180" x2="120" y2="100" class="graph-line graph-line-cross-4"/>
+                                    </g>
+                                    <!-- Outer nodes -->
+                                    <g class="graph-nodes">
+                                        <g class="graph-node graph-node-1">
+                                            <circle cx="120" cy="100" r="28" class="node-bg"/>
+                                            <circle cx="120" cy="100" r="28" class="node-ring"/>
+                                            <text x="120" y="105" class="node-label">ADRs</text>
+                                        </g>
+                                        <g class="graph-node graph-node-2">
+                                            <circle cx="300" cy="120" r="38" class="node-bg"/>
+                                            <circle cx="300" cy="120" r="38" class="node-ring"/>
+                                            <text x="300" y="125" class="node-label">patterns</text>
+                                        </g>
+                                        <g class="graph-node graph-node-3">
+                                            <circle cx="320" cy="220" r="26" class="node-bg"/>
+                                            <circle cx="320" cy="220" r="26" class="node-ring"/>
+                                            <text x="320" y="225" class="node-label">tasks</text>
+                                        </g>
+                                        <g class="graph-node graph-node-4">
+                                            <circle cx="280" cy="320" r="38" class="node-bg"/>
+                                            <circle cx="280" cy="320" r="38" class="node-ring"/>
+                                            <text x="280" y="325" class="node-label">sessions</text>
+                                        </g>
+                                        <g class="graph-node graph-node-5">
+                                            <circle cx="100" cy="280" r="24" class="node-bg"/>
+                                            <circle cx="100" cy="280" r="24" class="node-ring"/>
+                                            <text x="100" y="285" class="node-label">files</text>
+                                        </g>
+                                        <g class="graph-node graph-node-6">
+                                            <circle cx="80" cy="180" r="36" class="node-bg"/>
+                                            <circle cx="80" cy="180" r="36" class="node-ring"/>
+                                            <text x="80" y="185" class="node-label">gotchas</text>
+                                        </g>
+                                    </g>
+                                    <!-- Center node (ginko) -->
+                                    <g class="graph-node graph-node-center">
+                                        <circle cx="200" cy="200" r="50" class="node-bg node-bg-center"/>
+                                        <circle cx="200" cy="200" r="50" class="node-ring node-ring-center"/>
+                                        <circle cx="200" cy="200" r="56" class="node-glow"/>
+                                        <text x="200" y="195" class="node-label node-label-center">context</text>
+                                        <text x="200" y="215" class="node-sublabel">graph</text>
+                                    </g>
+                                </svg>
                             </div>
                         </div>
                     </div>
@@ -380,7 +441,6 @@
             <section class="transformation">
                 <div class="container">
                     <div class="transformation-header">
-                        <span class="section-tag">THE PROBLEM</span>
                         <h2 class="section-title">Sound familiar?</h2>
                     </div>
                     <div class="transformation-grid">
@@ -430,7 +490,6 @@
             <section id="developers" class="solution">
                 <div class="container">
                     <div class="solution-header">
-                        <span class="section-tag">THE SOLUTION</span>
                         <h2 class="section-title">How ginko works</h2>
                     </div>
                     <div class="solution-demo">
@@ -505,7 +564,6 @@
             <section class="features">
                 <div class="container">
                     <div class="features-header">
-                        <span class="section-tag">FEATURES</span>
                         <h2 class="features-title">Tools that eliminate context friction</h2>
                     </div>
                     <div class="features-grid-unified">
@@ -569,7 +627,6 @@
             <section id="pricing" class="pricing">
                 <div class="container">
                     <div class="pricing-header">
-                        <span class="section-tag">PLANS</span>
                         <h2 class="section-title">Simple, transparent pricing</h2>
                     </div>
                     <div class="pricing-grid">
@@ -697,13 +754,12 @@
             <section class="faq">
                 <div class="container">
                     <div class="faq-header">
-                        <span class="section-tag">FAQ</span>
                         <h2 class="faq-title">Common questions</h2>
                     </div>
                     <div class="faq-accordion">
                         <div class="faq-item">
                             <button class="faq-question" aria-expanded="false">
-                                <span>What is ginko and how does it work?</span>
+                                <span><span class="faq-number">01/</span> What is ginko and how does it work?</span>
                                 <span class="faq-icon">+</span>
                             </button>
                             <div class="faq-answer">
@@ -715,7 +771,7 @@
                         </div>
                         <div class="faq-item">
                             <button class="faq-question" aria-expanded="false">
-                                <span>Does ginko work with my existing AI tools?</span>
+                                <span><span class="faq-number">02/</span> Does ginko work with my existing AI tools?</span>
                                 <span class="faq-icon">+</span>
                             </button>
                             <div class="faq-answer">
@@ -724,7 +780,7 @@
                         </div>
                         <div class="faq-item">
                             <button class="faq-question" aria-expanded="false">
-                                <span>Is my code sent to ginko's servers?</span>
+                                <span><span class="faq-number">03/</span> Is my code sent to ginko's servers?</span>
                                 <span class="faq-icon">+</span>
                             </button>
                             <div class="faq-answer">
@@ -736,7 +792,7 @@
                         </div>
                         <div class="faq-item">
                             <button class="faq-question" aria-expanded="false">
-                                <span>How is this different from just using a README?</span>
+                                <span><span class="faq-number">04/</span> How is this different from just using a README?</span>
                                 <span class="faq-icon">+</span>
                             </button>
                             <div class="faq-answer">
@@ -745,7 +801,7 @@
                         </div>
                         <div class="faq-item">
                             <button class="faq-question" aria-expanded="false">
-                                <span>What's the difference between Free and Pro?</span>
+                                <span><span class="faq-number">05/</span> What's the difference between Free and Pro?</span>
                                 <span class="faq-icon">+</span>
                             </button>
                             <div class="faq-answer">
@@ -754,7 +810,7 @@
                         </div>
                         <div class="faq-item">
                             <button class="faq-question" aria-expanded="false">
-                                <span>How long does it take to set up?</span>
+                                <span><span class="faq-number">06/</span> How long does it take to set up?</span>
                                 <span class="faq-icon">+</span>
                             </button>
                             <div class="faq-answer">
@@ -788,24 +844,25 @@
             <!-- CTA Section -->
             <section class="cta">
                 <div class="container">
-                    <div class="cta-content">
-                        <div class="cta-left">
-                            <h2 class="cta-title">Ready to<br>eliminate<br>context rot?</h2>
+                    <div class="cta-content cta-content-centered">
+                        <h2 class="cta-title">Stop the amnesia</h2>
+                        <div class="iykyg-reveal">
+                            <span class="iykyg-short">iykyg</span>
+                            <span class="iykyg-full">if you know, you ginko</span>
                         </div>
-                        <div class="cta-right">
-                            <div class="terminal-inline terminal-inline-cta terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
-                                <div class="corner-bracket top-left"></div>
-                                <div class="corner-bracket top-right"></div>
-                                <span class="terminal-prompt">$</span>
-                                <span class="terminal-command">npm install -g @ginkoai/cli</span>
-                                <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="final-cta">
-                                    <span class="copy-icon">⧉</span>
-                                    <span class="copy-success">✓</span>
-                                </button>
-                                <div class="corner-bracket bottom-left"></div>
-                                <div class="corner-bracket bottom-right"></div>
-                            </div>
-                            <div class="cta-buttons">
+                        <div class="terminal-inline terminal-inline-cta terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                            <div class="corner-bracket top-left"></div>
+                            <div class="corner-bracket top-right"></div>
+                            <span class="terminal-prompt">$</span>
+                            <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                            <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="final-cta">
+                                <span class="copy-icon">⧉</span>
+                                <span class="copy-success">✓</span>
+                            </button>
+                            <div class="corner-bracket bottom-left"></div>
+                            <div class="corner-bracket bottom-right"></div>
+                        </div>
+                        <div class="cta-buttons cta-buttons-centered">
                             <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="final-cta">
                                 <span class="btn-hero-text">GET STARTED</span>
                                 <span class="btn-hero-arrow btn-hero-arrow-dark">
@@ -828,7 +885,6 @@
                                     </svg>
                                 </span>
                             </a>
-                            </div>
                         </div>
                     </div>
                 </div>
