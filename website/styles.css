@@ -175,7 +175,7 @@ body {
     color: var(--color-text);
     background-color: var(--color-bg);
     transition: background-color var(--transition-base), color var(--transition-base);
-    overflow-x: hidden; /* Prevent horizontal scroll from corner brackets */
+    overflow-x: hidden;
 }
 
 /* Typography */
@@ -228,7 +228,7 @@ code {
     width: 100%;
     max-width: 1600px;
     margin: 0 auto;
-    padding: 0 var(--space-6);
+    padding: 0 var(--space-8);
 }
 
 section {
@@ -258,7 +258,8 @@ section {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4) var(--space-6);
+    padding: var(--space-4) var(--space-8);
+    padding-right: calc(var(--space-8) + 24px); /* Account for scrollbar width */
     max-width: 1600px;
     margin: 0 auto;
 }
@@ -509,26 +510,26 @@ html:not([data-theme="dark"]) .theme-icon-dark {
 }
 
 .corner-bracket.top-left {
-    top: calc(-1 * var(--bracket-size) / 2);
-    left: calc(-1 * var(--bracket-size) / 2);
+    top: 0;
+    left: 0;
     border-width: var(--bracket-thickness) 0 0 var(--bracket-thickness);
 }
 
 .corner-bracket.top-right {
-    top: calc(-1 * var(--bracket-size) / 2);
-    right: calc(-1 * var(--bracket-size) / 2);
+    top: 0;
+    right: 0;
     border-width: var(--bracket-thickness) var(--bracket-thickness) 0 0;
 }
 
 .corner-bracket.bottom-left {
-    bottom: calc(-1 * var(--bracket-size) / 2);
-    left: calc(-1 * var(--bracket-size) / 2);
+    bottom: 0;
+    left: 0;
     border-width: 0 0 var(--bracket-thickness) var(--bracket-thickness);
 }
 
 .corner-bracket.bottom-right {
-    bottom: calc(-1 * var(--bracket-size) / 2);
-    right: calc(-1 * var(--bracket-size) / 2);
+    bottom: 0;
+    right: 0;
     border-width: 0 var(--bracket-thickness) var(--bracket-thickness) 0;
 }
 
@@ -604,6 +605,11 @@ html:not([data-theme="dark"]) .theme-icon-dark {
     overflow: hidden;
     box-shadow: var(--shadow-xl);
     border: 1px solid var(--color-border);
+}
+
+/* Remove rounded corners on solution section terminal */
+.solution .terminal-window {
+    border-radius: 0;
 }
 
 .terminal-header {
@@ -1112,6 +1118,14 @@ pre {
     margin-bottom: var(--space-8);
 }
 
+/* Hero iykyg reveal - inherit hero-tagline sizing */
+.hero-tagline.iykyg-reveal {
+    font-size: var(--font-size-sm);
+    letter-spacing: 0.2em;
+    justify-content: flex-start;
+    min-width: auto;
+}
+
 .iykyg-tooltip {
     position: relative;
     display: inline-block;
@@ -1124,15 +1138,15 @@ pre {
 
 .iykyg-tooltip .iykyg-tooltip-text {
     position: absolute;
-    left: 0;
-    top: 100%;
-    margin-top: 4px;
+    left: 100%;
+    top: 0;
+    margin-left: 8px;
     font-size: var(--font-size-xs);
     color: var(--color-accent);
     letter-spacing: 0.05em;
     white-space: nowrap;
     opacity: 0;
-    transform: translateY(-5px);
+    transform: translateX(-10px);
     transition: all 0.3s ease;
     pointer-events: none;
 }
@@ -1143,7 +1157,7 @@ pre {
 
 .iykyg-tooltip:hover .iykyg-tooltip-text {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 .hero-subtitle {
@@ -1563,10 +1577,10 @@ pre {
     transition: transform 0.3s ease-out;
 }
 
-/* Text hover animation - scale from center */
+/* Text hover animation - subtle slide from left */
 a:hover .btn-hero-text,
 button:hover .btn-hero-text {
-    transform: scaleX(1.05);
+    transform: translateX(4px);
 }
 
 /* Arrow box base */
@@ -2257,6 +2271,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     gap: var(--space-6);
     max-width: 100%;
     margin: 0;
+    align-items: start; /* Prevent items from stretching to match row height */
 }
 
 .faq-item {
@@ -2289,6 +2304,11 @@ button:hover .btn-hero-arrow .arrow-hover {
     transition: color 0.2s ease;
     -webkit-tap-highlight-color: transparent;
     outline: none;
+}
+
+.faq-number {
+    color: #939da4;
+    margin-right: var(--space-2);
 }
 
 .faq-question:hover {
@@ -2582,19 +2602,10 @@ button:hover .btn-hero-arrow .arrow-hover {
     flex-grow: 1;
 }
 
-.pricing-card:hover {
-    box-shadow: var(--shadow-lg);
-    border-color: var(--color-accent);
-}
-
-/* Remove Pro card highlight when sibling cards are hovered */
-.pricing-grid:has(.pricing-card:hover) .pricing-card-featured:not(:hover) {
-    border-color: transparent;
-}
-
 .pricing-card-featured {
-    border-color: transparent;
+    border-color: var(--color-accent);
     border-width: 1px;
+    box-shadow: 0 0 20px rgba(208, 245, 73, 0.3);
 }
 
 .plan-header {
@@ -2873,10 +2884,15 @@ button:hover .btn-hero-arrow .arrow-hover {
 
     .nav-container {
         padding: var(--space-4);
+        padding-right: calc(var(--space-4) + 24px); /* Maintain scrollbar offset */
     }
 
     .hero-title {
         font-size: var(--font-size-5xl);
+    }
+
+    .transformation-grid {
+        grid-template-columns: 1fr;
     }
 
     .footer-content {
