@@ -58,8 +58,10 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     const user = await getCurrentUser();
     console.log(chalk.green('✓ Already authenticated'));
     console.log(chalk.dim(`  User: ${user?.email || user?.github_username || 'Unknown'}`));
-    console.log('\n' + chalk.bold('Next step: ') + chalk.cyan('ginko init'));
-    console.log(chalk.dim('  (Or use `ginko login --force` to re-authenticate)\n'));
+    console.log('\n' + chalk.bold('Next steps:'));
+    console.log(chalk.cyan('  ginko create <name>') + chalk.dim('  Create a new project'));
+    console.log(chalk.cyan('  ginko init') + chalk.dim('          Initialize Ginko in existing project'));
+    console.log(chalk.dim('\n  (Or use `ginko login --force` to re-authenticate)\n'));
     process.exit(0);
   }
 
@@ -129,8 +131,9 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     }
     console.log(chalk.dim('  Your credentials are stored in ~/.ginko/auth.json'));
 
-    console.log('\n' + chalk.bold('Next step: ') + chalk.cyan('ginko init'));
-    console.log(chalk.dim('  (Run this in your project directory)\n'));
+    console.log('\n' + chalk.bold('Next steps:'));
+    console.log(chalk.cyan('  ginko create <name>') + chalk.dim('  Create a new project'));
+    console.log(chalk.cyan('  ginko init') + chalk.dim('          Initialize Ginko in existing project\n'));
 
     // Exit cleanly after successful authentication
     process.exit(0);
