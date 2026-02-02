@@ -17,6 +17,7 @@ import { statusCommand } from './status.js';
 import { healthCommand } from './health.js';
 import { queryCommand } from './query.js';
 import { exploreCommand } from './explore.js';
+import { cleanupCommand } from './cleanup.js';
 import { migrate009Command } from './migrations/009-epic-roadmap-properties.js';
 import { migrate010Command } from './migrations/010-epic-graph-id.js';
 import { migrate011Command } from './migrations/011-sprint-epic-id.js';
@@ -122,6 +123,19 @@ ${chalk.gray('Learn More:')}
     .action(async (documentId, options) => {
       const depth = parseInt(options.depth, 10);
       await exploreCommand(documentId, { depth });
+    });
+
+  // Cleanup graph nodes (BUG-007)
+  graph
+    .command('cleanup')
+    .description('Analyze and clean up duplicate/orphan nodes in the graph')
+    .option('--dry-run', 'Preview changes without applying (default)')
+    .option('--execute', 'Apply cleanup operations')
+    .option('--action <action>', 'Run specific action (cleanup-orphans, dedupe-epics, dedupe-tasks, cleanup-default, cleanup-stale)')
+    .option('--yes', 'Skip confirmation prompt')
+    .option('-v, --verbose', 'Show sample node IDs')
+    .action(async (options) => {
+      await cleanupCommand(options);
     });
 
   // Run migrations

@@ -845,6 +845,45 @@ export class GraphApiClient {
   }
 
   /**
+   * Get cleanup analysis for a graph (BUG-007)
+   * Analyzes orphan nodes, duplicates, stale namespaces, etc.
+   *
+   * @param graphId - Graph namespace identifier
+   * @returns Analysis with actionable cleanup categories
+   */
+  async getCleanupAnalysis(graphId: string): Promise<CleanupAnalysisResponse> {
+    return this.request<CleanupAnalysisResponse>(
+      'GET',
+      `/api/v1/graph/cleanup?graphId=${encodeURIComponent(graphId)}`
+    );
+  }
+
+  /**
+   * Execute a cleanup action on the graph (BUG-007)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param action - Cleanup action to execute
+   * @param dryRun - If true, preview only without applying
+   * @returns Result with affected node count and details
+   */
+  async executeCleanup(
+    graphId: string,
+    action: string,
+    dryRun: boolean
+  ): Promise<CleanupExecuteResponse> {
+    const params = new URLSearchParams({
+      graphId,
+      action,
+      dryRun: String(dryRun),
+      ...(!dryRun ? { confirm: 'CLEANUP_CONFIRMED' } : {}),
+    });
+    return this.request<CleanupExecuteResponse>(
+      'DELETE',
+      `/api/v1/graph/cleanup?${params}`
+    );
+  }
+
+  /**
    * Get all sprints in an epic (for cascade completion checks)
    *
    * @param graphId - Graph namespace identifier
@@ -1254,6 +1293,60 @@ export interface EpicStatusResponse {
     status_updated_by: string;
   };
   previous_status: string;
+}
+
+// =============================================================================
+// BUG-007: Cleanup Analysis Types
+// =============================================================================
+
+/**
+ * Cleanup analysis response from GET /api/v1/graph/cleanup
+ */
+export interface CleanupAnalysisResponse {
+  graphId: string;
+  analysis: {
+    orphanNodes: {
+      total: number;
+      byType: Array<{ nodeType: string; count: number; sampleIds: string[] }>;
+    };
+    defaultGraphIdNodes: {
+      total: number;
+      byType: Array<{ nodeType: string; count: number; sampleIds: string[] }>;
+    };
+    duplicateEpics: Array<{
+      baseId: string;
+      duplicateId: string;
+      baseTitle: string;
+      duplicateTitle: string;
+    }>;
+    duplicateTasks: {
+      total: number;
+      uniqueIds: number;
+      duplicateCount: number;
+      samples: Array<{ taskId: string; count: number; sprintId: string }>;
+    };
+    staleGraphIds: Array<{ graphId: string; count: number }>;
+  };
+  actions: {
+    available: Array<{
+      action: string;
+      description: string;
+      estimatedDeletes?: number;
+      estimatedAffected?: number;
+      estimatedMerges?: number;
+      warning?: string;
+    }>;
+  };
+}
+
+/**
+ * Cleanup execute response from DELETE /api/v1/graph/cleanup
+ */
+export interface CleanupExecuteResponse {
+  action: string;
+  dryRun: boolean;
+  affected: number;
+  details: string;
 }
 
 /**
