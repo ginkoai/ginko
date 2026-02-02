@@ -274,7 +274,7 @@ export async function createSprintCommand(
   let plan: SprintPlan;
   const aiPlan = await breakdownFeatureWithAI(description);
 
-  if (aiPlan) {
+  if (aiPlan && Array.isArray(aiPlan.tasks) && aiPlan.tasks.length > 0) {
     plan = aiPlan;
     spinner.succeed('Tasks generated');
   } else {

@@ -30,6 +30,10 @@ interface CreateOptions {
  * Create a new project
  */
 export async function createProjectCommand(name: string, options: CreateOptions): Promise<void> {
+  // Confirm identity before creating project (BUG-021)
+  const { confirmAuthIdentity } = await import('../../utils/identity.js');
+  await confirmAuthIdentity('project create');
+
   const spinner = ora('Creating project...').start();
 
   try {

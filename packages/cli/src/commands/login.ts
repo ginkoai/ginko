@@ -131,6 +131,22 @@ export async function loginCommand(options: LoginOptions = {}): Promise<void> {
     }
     console.log(chalk.dim('  Your credentials are stored in ~/.ginko/auth.json'));
 
+    // Sync current project's local.json if we're inside a ginko project (BUG-021)
+    try {
+      const { findGinkoRoot } = await import('../utils/ginko-root.js');
+      const projectRoot = await findGinkoRoot();
+      if (projectRoot) {
+        const { syncLocalIdentity } = await import('../utils/identity.js');
+        const ginkoDir = (await import('path')).default.join(projectRoot, '.ginko');
+        const result = await syncLocalIdentity(ginkoDir);
+        if (result.updated) {
+          console.log(chalk.cyan(`\n✓ Updated project identity: ${result.oldEmail || '(unset)'} → ${result.newEmail}`));
+        }
+      }
+    } catch {
+      // Not in a ginko project or sync failed — that's fine
+    }
+
     console.log('\n' + chalk.bold('Next steps:'));
     console.log(chalk.cyan('  ginko create <name>') + chalk.dim('  Create a new project'));
     console.log(chalk.cyan('  ginko init') + chalk.dim('          Initialize Ginko in existing project\n'));

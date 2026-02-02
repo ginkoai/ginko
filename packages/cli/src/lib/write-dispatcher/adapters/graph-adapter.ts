@@ -21,7 +21,10 @@ import type {
  */
 export interface GraphAdapterConfig {
   apiUrl: string;
-  bearerToken: string;
+  /** Static bearer token (used if tokenResolver is not provided) */
+  bearerToken?: string;
+  /** Lazy token resolver — called at write time for fresh tokens */
+  tokenResolver?: () => Promise<string | null>;
   graphId: string;
   timeout?: number;
 }
@@ -57,21 +60,35 @@ export class GraphAdapter implements WriteAdapter {
     this.config = {
       apiUrl: config.apiUrl,
       bearerToken: config.bearerToken,
+      tokenResolver: config.tokenResolver,
       graphId: config.graphId,
       timeout: config.timeout || 10000,
     };
   }
 
   /**
+   * Resolve the bearer token at call time.
+   * Prefers tokenResolver (lazy) over static bearerToken.
+   */
+  private async resolveToken(): Promise<string> {
+    if (this.config.tokenResolver) {
+      const token = await this.config.tokenResolver();
+      if (token) return token;
+    }
+    return this.config.bearerToken || '';
+  }
+
+  /**
    * Check if adapter is enabled.
-   * Enabled when config has valid bearerToken + graphId.
+   * Enabled when config has a token source (static or resolver) + graphId.
    * GINKO_GRAPH_ENABLED=false can explicitly disable (opt-out override).
    */
   enabled(): boolean {
     if (process.env.GINKO_GRAPH_ENABLED === 'false') {
       return false;
     }
-    return !!this.config.bearerToken && !!this.config.graphId;
+    const hasTokenSource = !!this.config.bearerToken || !!this.config.tokenResolver;
+    return hasTokenSource && !!this.config.graphId;
   }
 
   /**
@@ -102,13 +119,16 @@ export class GraphAdapter implements WriteAdapter {
   }
 
   /**
-   * Create node in graph via REST API
+   * Create node in graph via REST API.
+   * Uses lazy token resolution and retries once on 401/403 with a fresh token.
    */
   private async createNode(
     label: string,
-    data: Record<string, any>
+    data: Record<string, any>,
+    isRetry: boolean = false
   ): Promise<{ nodeId: string; label: string; graphId: string; created: boolean }> {
     const url = `${this.config.apiUrl}/api/v1/graph/nodes`;
+    const bearerToken = await this.resolveToken();
 
     const payload = {
       graphId: this.config.graphId,
@@ -131,7 +151,7 @@ export class GraphAdapter implements WriteAdapter {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.bearerToken}`,
+          'Authorization': `Bearer ${bearerToken}`,
         },
         body: JSON.stringify(payload),
         signal: controller.signal,
@@ -142,6 +162,12 @@ export class GraphAdapter implements WriteAdapter {
 
       if (!response.ok) {
         const errorBody = await response.text().catch(() => 'Unknown error');
+
+        // Retry once on 401/403 with a fresh token (token may have been refreshed on disk)
+        if ((response.status === 401 || response.status === 403) && !isRetry) {
+          return this.createNode(label, data, true);
+        }
+
         throw new Error(`HTTP ${response.status}: ${errorBody}`);
       }
 
@@ -232,10 +258,25 @@ export async function createGraphAdapterFromEnv(): Promise<GraphAdapter> {
     }
   }
 
+  // Use lazy token resolver instead of loading token once at creation time.
+  // This ensures the adapter always uses the freshest token from disk,
+  // matching the pattern that works in GraphApiClient.requireAuth().
+  let tokenResolver: (() => Promise<string | null>) | undefined;
+
   if (!bearerToken) {
     try {
       const { getAccessToken } = await import('../../../utils/auth-storage.js');
-      bearerToken = await getAccessToken() || '';
+      // Try to load once to validate auth is available
+      const initialToken = await getAccessToken();
+      if (initialToken) {
+        // Set up lazy resolver for future calls
+        tokenResolver = async () => {
+          const { getAccessToken: getToken } = await import('../../../utils/auth-storage.js');
+          return getToken();
+        };
+        // Also set static token for enabled() check
+        bearerToken = initialToken;
+      }
     } catch {
       // Auth not available - continue without token
     }
@@ -248,6 +289,7 @@ export async function createGraphAdapterFromEnv(): Promise<GraphAdapter> {
   return new GraphAdapter({
     apiUrl,
     bearerToken,
+    tokenResolver,
     graphId,
     timeout: parseInt(process.env.GINKO_GRAPH_TIMEOUT || '10000', 10),
   });

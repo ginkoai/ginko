@@ -15,7 +15,6 @@ import path from 'path';
 import ora from 'ora';
 import { execSync } from 'child_process';
 import prompts from 'prompts';
-import { getCurrentUser } from '../utils/auth-storage.js';
 import { initCommand } from './init.js';
 
 interface CreateOptions {
@@ -54,15 +53,10 @@ export async function createCommand(projectName: string | undefined, options: Cr
     process.exit(1);
   }
 
-  // Check authentication
-  const user = await getCurrentUser();
-  if (!user) {
-    spinner.fail('Not authenticated');
-    console.log(chalk.yellow('\nPlease login first:'));
-    console.log(chalk.white('  ginko login\n'));
-    process.exit(1);
-  }
-
+  // Check authentication and confirm identity (BUG-021)
+  spinner.stop();
+  const { confirmAuthIdentity } = await import('../utils/identity.js');
+  const authSession = await confirmAuthIdentity('create');
   spinner.succeed('Prerequisites verified');
 
   // Gather project info

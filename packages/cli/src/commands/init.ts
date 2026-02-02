@@ -93,14 +93,28 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     await fs.ensureDir(pathConfig.ginko.context);
     await fs.ensureDir(pathManager.joinPaths(pathConfig.ginko.context, 'modules'));
 
-    // Get user info from git config
+    // Get user identity — ginko auth is authoritative (BUG-021)
     let userEmail = 'user@example.com';
     let userName = 'Developer';
-    try {
-      userEmail = execSync('git config user.email', { encoding: 'utf8' }).trim();
-      userName = execSync('git config user.name', { encoding: 'utf8' }).trim();
-    } catch (e) {
-      // Git not configured, use defaults
+
+    const { getAuthIdentity } = await import('../utils/identity.js');
+    const authSession = await getAuthIdentity();
+
+    if (authSession) {
+      userEmail = authSession.user.email;
+      userName = authSession.user.full_name || authSession.user.github_username || userName;
+      spinner.info(`Authenticated as: ${userName} (${userEmail})`);
+      spinner.start('Initializing Ginko...');
+    } else {
+      // Fall back to git config with a warning
+      try {
+        userEmail = execSync('git config user.email', { encoding: 'utf8' }).trim();
+        userName = execSync('git config user.name', { encoding: 'utf8' }).trim();
+      } catch {
+        // Git not configured, use defaults
+      }
+      console.log(chalk.yellow('\n⚠️  Not authenticated. Using git identity: ' + userEmail));
+      console.log(chalk.dim('   Run `ginko login` to link your Ginko account for full traceability.\n'));
     }
 
     // Create user session directory using pathManager

@@ -32,7 +32,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { GraphApiClient, type DocumentUpload } from '../graph/api-client.js';
 import { loadGraphConfig, isGraphInitialized, updateDocumentHash } from '../graph/config.js';
-import { readSyncState, recordPush } from '../../lib/sync-state.js';
+import { readSyncState, recordPush, recordGraphHashes } from '../../lib/sync-state.js';
 import { detectChanges, type ChangeDetectionResult } from '../../lib/git-change-detector.js';
 import { classifyFile, filterByType, type EntityType, type ClassifiedFile } from '../../lib/entity-classifier.js';
 import { parseSprintTasks, type ParsedTask, type SprintParseResult } from '../../lib/task-parser.js';
@@ -124,6 +124,45 @@ function displayProgress(current: number, total: number, label: string): void {
 }
 
 /**
+ * Extract a stable entity ID from a filename (BUG-007).
+ *
+ * Filenames often include a slug after the entity ID:
+ *   EPIC-001-strategic-context-and-dynamic-adaptivity.md → EPIC-001
+ *   SPRINT-2026-01-epic014-s02.md → extract sprint entity ID from content
+ *   ADR-039-event-stream-architecture.md → ADR-039
+ *   e005_s01_t01-some-task.md → e005_s01_t01
+ *
+ * Falls back to the full basename if no pattern matches.
+ */
+function extractEntityId(filename: string, entityType: string, content?: string): string {
+  // ADR-NNN, PRD-NNN, EPIC-NNN patterns
+  const docIdMatch = filename.match(/^((?:ADR|PRD|EPIC|GOTCHA|PATTERN)-\d+)/i);
+  if (docIdMatch) return docIdMatch[1].toUpperCase();
+
+  // ADR-052 entity naming: e001, e001_s01, e001_s01_t01, adhoc_260131_s01
+  const entityIdMatch = filename.match(/^((?:e\d{3}(?:_s\d{2}(?:_t\d{2})?)?)|(?:adhoc_\d{6}(?:_s\d{2}(?:_t\d{2})?)?))/i);
+  if (entityIdMatch) return entityIdMatch[1].toLowerCase();
+
+  // Sprint files: SPRINT-YYYY-MM-... → try to extract entity ID from content
+  if (entityType === 'Sprint' && content) {
+    const sprintIdMatch = content.match(/\*\*ID:\*\*\s*`?([a-z0-9_]+)`?/i);
+    if (sprintIdMatch) return sprintIdMatch[1].toLowerCase();
+    // Also try: **Sprint ID**: e014_s02 format
+    const altIdMatch = content.match(/Sprint(?:\s+ID)?[:\s]+`?(e\d{3}_s\d{2})`?/i);
+    if (altIdMatch) return altIdMatch[1].toLowerCase();
+  }
+
+  // CURRENT-SPRINT → keep as-is (canonical name)
+  if (filename === 'CURRENT-SPRINT') return filename;
+
+  // PROJECT-CHARTER → keep as-is
+  if (filename.startsWith('PROJECT-CHARTER')) return 'PROJECT-CHARTER';
+
+  // Fallback: full basename (preserves backward compat for unrecognized patterns)
+  return filename;
+}
+
+/**
  * Prepare a document for upload from a classified file
  */
 async function prepareDocument(
@@ -138,9 +177,10 @@ async function prepareDocument(
     const content = await fs.readFile(fullPath, 'utf-8');
     const hash = `sha256:${calculateHash(content)}`;
     const filename = path.basename(classified.filePath, '.md');
+    const id = extractEntityId(filename, classified.entityType, content);
 
     return {
-      id: filename,
+      id,
       type: classified.entityType,
       title: extractTitle(content),
       content,
@@ -369,6 +409,31 @@ export async function pushCommand(options: PushOptions): Promise<PushResult> {
     return result;
   }
 
+  // Pre-push conflict detection (BUG-018 Phase 1)
+  // Compare local hashes against last-pushed hashes to detect graph-side changes
+  if (!options.force && Object.keys(syncState.graphHashes).length > 0) {
+    const conflicts: Array<{ filePath: string; docId: string }> = [];
+
+    for (const doc of documents) {
+      const lastPushedHash = syncState.pushedFiles[doc.filePath];
+      const lastGraphHash = syncState.graphHashes[doc.filePath];
+
+      // If we have a record of what the graph had at last push,
+      // and the local file changed since then, flag for awareness
+      if (lastPushedHash && lastGraphHash && lastPushedHash !== doc.hash) {
+        // Local file changed since last push — this is expected.
+        // The conflict would be if the GRAPH also changed (which we can't
+        // cheaply check without an API call). For now, track the hash delta.
+        conflicts.push({ filePath: doc.filePath, docId: doc.id });
+      }
+    }
+
+    // Note: Full graph-side conflict detection requires a batch API endpoint
+    // to fetch current graph hashes. For now, we track state for future use.
+    // When the API supports it, we'll compare graphHashes[path] against
+    // the current graph content hash to detect external edits.
+  }
+
   // Upload documents
   const client = new GraphApiClient(config.apiEndpoint);
 
@@ -490,13 +555,17 @@ export async function pushCommand(options: PushOptions): Promise<PushResult> {
     }
   }
 
-  // Update sync state
+  // Update sync state (including graph hashes for conflict detection — BUG-018)
   try {
     const fileHashes: Record<string, string> = {};
+    const graphHashes: Record<string, string> = {};
     for (const doc of documents) {
       fileHashes[doc.filePath] = doc.hash;
+      // After a successful push, the graph content matches what we just pushed
+      graphHashes[doc.filePath] = doc.hash;
     }
     await recordPush(detection.headCommit, fileHashes);
+    await recordGraphHashes(graphHashes);
   } catch {
     // Non-fatal: sync state update failure
   }

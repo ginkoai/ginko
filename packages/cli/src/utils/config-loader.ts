@@ -182,13 +182,28 @@ export async function loadLocalConfig(): Promise<LocalConfig> {
  * @returns LocalConfig object
  */
 async function createLocalConfig(projectRoot: string): Promise<LocalConfig> {
-  // Get user email from git config or use default
+  // Priority: (1) auth email from ~/.ginko/auth.json, (2) git config user.email, (3) default
   let userEmail = 'user@example.com';
+
+  // Try authenticated email first (ensures new projects default to correct identity)
   try {
-    const { execSync } = await import('child_process');
-    userEmail = execSync('git config user.email', { encoding: 'utf8' }).trim();
-  } catch (e) {
-    // Git not configured, use default
+    const { loadAuthSession } = await import('./auth-storage.js');
+    const session = await loadAuthSession();
+    if (session?.user?.email) {
+      userEmail = session.user.email;
+    }
+  } catch {
+    // Auth not available - fall through to git
+  }
+
+  // Fall back to git config if auth didn't provide an email
+  if (userEmail === 'user@example.com') {
+    try {
+      const { execSync } = await import('child_process');
+      userEmail = execSync('git config user.email', { encoding: 'utf8' }).trim();
+    } catch {
+      // Git not configured, use default
+    }
   }
 
   const userSlug = userEmail.replace('@', '-at-').replace(/\./g, '-');

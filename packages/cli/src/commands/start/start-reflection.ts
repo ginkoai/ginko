@@ -882,6 +882,9 @@ export class StartReflectionCommand extends ReflectionCommand {
       // EPIC-008 Sprint 2: Check team context staleness (silent - no output)
       await this.checkTeamStaleness();
 
+      // BUG-021: Check identity mismatch between local.json and auth.json
+      await this.checkIdentityMismatch(ginkoDir);
+
       // EPIC-004: Push real-time cursor update on session start
       try {
         const { onSessionStart } = await import('../../lib/realtime-cursor.js');
@@ -2107,6 +2110,27 @@ Example output structure:
       }
     } catch {
       // Staleness check is non-critical - don't block session start
+    }
+  }
+
+  /**
+   * Sync project identity to match authenticated account (BUG-021).
+   *
+   * Ginko identity is authoritative. Within a project, git and ginko
+   * identities must agree for traceability. If local.json has a different
+   * email, auto-update it to match auth.json.
+   */
+  private async checkIdentityMismatch(ginkoDir: string): Promise<void> {
+    try {
+      const { syncLocalIdentity } = await import('../../utils/identity.js');
+      const result = await syncLocalIdentity(ginkoDir);
+
+      if (result.updated) {
+        console.log('');
+        console.log(chalk.cyan(`✓ Updated project identity: ${result.oldEmail || '(unset)'} → ${result.newEmail}`));
+      }
+    } catch {
+      // Non-critical - don't block session start
     }
   }
 

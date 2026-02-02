@@ -32,6 +32,8 @@ export interface SyncState {
   lastPullTimestamp: string | null;
   /** Record of file paths to their last-pushed content hashes */
   pushedFiles: Record<string, string>;
+  /** Record of file paths to graph-side hashes at push time (BUG-018) */
+  graphHashes: Record<string, string>;
 }
 
 const DEFAULT_STATE: SyncState = {
@@ -39,6 +41,7 @@ const DEFAULT_STATE: SyncState = {
   lastPushTimestamp: null,
   lastPullTimestamp: null,
   pushedFiles: {},
+  graphHashes: {},
 };
 
 /**
@@ -67,6 +70,7 @@ export async function readSyncState(): Promise<SyncState> {
       lastPushTimestamp: data.lastPushTimestamp ?? null,
       lastPullTimestamp: data.lastPullTimestamp ?? null,
       pushedFiles: data.pushedFiles ?? {},
+      graphHashes: data.graphHashes ?? {},
     };
   } catch {
     return { ...DEFAULT_STATE };
@@ -92,6 +96,16 @@ export async function recordPush(commitSha: string, files?: Record<string, strin
   if (files) {
     state.pushedFiles = { ...state.pushedFiles, ...files };
   }
+  await writeSyncState(state);
+}
+
+/**
+ * Record graph-side hashes after a successful push (BUG-018).
+ * Stores the graph's version so next push can detect graph-side changes.
+ */
+export async function recordGraphHashes(hashes: Record<string, string>): Promise<void> {
+  const state = await readSyncState();
+  state.graphHashes = { ...state.graphHashes, ...hashes };
   await writeSyncState(state);
 }
 
