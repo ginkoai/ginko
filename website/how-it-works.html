@@ -92,6 +92,257 @@
                 text-align: center;
             }
         }
+
+        /* Core Concepts - 2x2 grid layout */
+        .features .features-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0 !important;
+            border: 1px solid var(--card-border-color) !important;
+            position: relative !important;
+            overflow: visible !important;
+        }
+
+        .features .features-grid .feature-card-large {
+            border: none !important;
+            border-right: 1px solid var(--card-border-color) !important;
+            border-bottom: 1px solid var(--card-border-color) !important;
+            border-radius: 0 !important;
+            background: #0C151C !important;
+        }
+
+        .features .features-grid .feature-card-large:nth-child(2n) {
+            border-right: none !important;
+        }
+
+        .features .features-grid .feature-card-large:nth-child(n+3) {
+            border-bottom: none !important;
+        }
+
+        .features .features-grid .feature-card-large .corner-bracket {
+            display: none !important;
+        }
+
+        /* Add outer corner brackets to Core Concepts grid */
+        .features .features-grid::before {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            top: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        .features .features-grid::after {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            bottom: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        /* Graph features - connected card system */
+        .graph-features {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+            border: 1px solid var(--card-border-color) !important;
+            position: relative !important;
+        }
+
+        .graph-feature {
+            border: none !important;
+            border-bottom: 1px solid var(--card-border-color) !important;
+            border-radius: 0 !important;
+            background: #0C151C !important;
+            padding: var(--space-6) !important;
+        }
+
+        .graph-feature:last-child {
+            border-bottom: none !important;
+        }
+
+        .graph-feature .corner-bracket {
+            display: none !important;
+        }
+
+        /* Add outer corner brackets to graph-features */
+        .graph-features::before {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            top: -1px !important;
+            left: -1px !important;
+            right: -1px !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        .graph-features::after {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            bottom: -1px !important;
+            left: -1px !important;
+            right: -1px !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        /* Integrations - connected card system with outer brackets */
+        section.features:has(.problem-grid) .problem-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 0 !important;
+            border: 1px solid var(--card-border-color) !important;
+            border-radius: 0 !important;
+            position: relative !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+
+        section.features:has(.problem-grid) .problem-card {
+            border: none !important;
+            border-right: 1px solid var(--card-border-color) !important;
+            border-radius: 0 !important;
+            background: #0C151C !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        section.features:has(.problem-grid) .problem-card:last-child {
+            border-right: none !important;
+        }
+
+        section.features:has(.problem-grid) .problem-card .corner-bracket {
+            display: none !important;
+        }
+
+        /* Outer corner brackets for Integrations */
+        section.features:has(.problem-grid) .problem-grid::before {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            top: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        section.features:has(.problem-grid) .problem-grid::after {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            bottom: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        /* Graph example terminal - fix corner brackets */
+        .graph-example .terminal-window {
+            border-radius: 0 !important;
+            overflow: visible !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket {
+            display: block !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.top-left {
+            top: -1px !important;
+            left: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.top-right {
+            top: -1px !important;
+            right: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.bottom-left {
+            bottom: -1px !important;
+            left: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.bottom-right {
+            bottom: -1px !important;
+            right: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        /* CTA Section - centered stacked layout */
+        .cta .cta-content {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+
+        .cta .cta-title {
+            text-align: center !important;
+            width: 100% !important;
+        }
+
+        .cta .cta-subtitle {
+            text-align: center !important;
+            white-space: nowrap !important;
+            margin-bottom: var(--space-4) !important;
+        }
+
+        .cta .terminal-inline-cta {
+            margin: var(--space-4) auto !important;
+        }
+
+        .cta .cta-buttons {
+            justify-content: center !important;
+            width: 100% !important;
+        }
     </style>
 </head>
 <body>
@@ -135,13 +386,13 @@
     <main id="main">
     <section class="hero">
         <div class="container">
-            <div class="hero-content">
+            <div class="hero-content" style="text-align: center;">
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
-                <h1 class="hero-title">
+                <h1 class="hero-title" style="text-align: center;">
                     How ginko works.
                 </h1>
-                <p class="hero-subtitle">
+                <p class="hero-subtitle" style="text-align: center; margin-left: auto; margin-right: auto;">
                     Git-native context management that captures what matters and surfaces it exactly when you need it.
                 </p>
                 <div class="corner-bracket bottom-left"></div>
@@ -326,7 +577,7 @@
                     <div class="step-number">1</div>
                     <div class="step-content">
                         <h3 class="step-title">START</h3>
-                        <p class="step-description">Run <code>ginko start</code>. Context loads in under 2 seconds. Your AI knows where you left off.</p>
+                        <p class="step-description">Run <code>ginko start</code>.<br>Context loads in under 2 seconds.<br>Your AI knows where you left off.</p>
                     </div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
@@ -338,7 +589,7 @@
                     <div class="step-number">2</div>
                     <div class="step-content">
                         <h3 class="step-title">WORK</h3>
-                        <p class="step-description">Code as normal. Log insights with <code>ginko log</code>. Context captures automatically.</p>
+                        <p class="step-description">Code as normal.<br>Log insights with <code>ginko log</code>.<br>Context captures automatically.</p>
                     </div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
@@ -350,7 +601,7 @@
                     <div class="step-number">3</div>
                     <div class="step-content">
                         <h3 class="step-title">COMMIT</h3>
-                        <p class="step-description">Commit your code. Context is versioned alongside. Session logs included if you want.</p>
+                        <p class="step-description">Commit your code.<br>Context is versioned alongside.<br>Session logs included if you want.</p>
                     </div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
@@ -362,7 +613,7 @@
                     <div class="step-number">4</div>
                     <div class="step-content">
                         <h3 class="step-title">HANDOFF</h3>
-                        <p class="step-description">Optional: <code>ginko handoff</code> creates a summary. Tomorrow's session starts instantly.</p>
+                        <p class="step-description">Optional: <code>ginko handoff</code> creates a summary.<br>Tomorrow's session starts instantly.</p>
                     </div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
@@ -451,7 +702,7 @@
         <div class="container">
             <h2 class="section-title">The ginko collaboration graph</h2>
             <p class="section-subtitle">
-                Local context is powerful. Cloud-synced context is transformative. <span class="pro-badge">Pro</span>
+                Local context is powerful.<br>Cloud-synced context is transformative. <span class="pro-badge">Pro</span>
             </p>
 
             <div class="graph-overview">
@@ -662,7 +913,7 @@
                 <div class="corner-bracket top-left"></div>
                 <div class="corner-bracket top-right"></div>
                 <h2 class="cta-title">Ready to try it?</h2>
-                <p class="cta-subtitle">Install in 30 seconds. No account required for local use.</p>
+                <p class="cta-subtitle">Install in 30 seconds.<br>No account required for local use.</p>
                 <div class="terminal-inline terminal-inline-cta terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
