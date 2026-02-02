@@ -217,16 +217,8 @@ export async function initCommand(options: InitOptions): Promise<void> {
     console.log(chalk.green('✅ Initialization complete!'));
 
     // Suggest next steps
-    if (options.skipLoad) {
-      console.log(chalk.dim('\nNext steps:'));
-      console.log(chalk.dim('  ginko graph load       # Upload documents'));
-    } else {
-      console.log(chalk.dim('\nLoading documents automatically...'));
-
-      // Import and run load command
-      const { loadCommand } = await import('./load.js');
-      await loadCommand({});
-    }
+    console.log(chalk.dim('\nNext steps:'));
+    console.log(chalk.dim('  ginko push --all       # Upload documents to graph'));
 
   } catch (error) {
     if (error instanceof Error) {

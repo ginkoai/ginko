@@ -34,7 +34,7 @@ export function epicStatusCommand() {
     .description('Create and manage epics with status tracking (EPIC-015)')
     .option('--list', 'List existing epics')
     .option('--view', 'View epic details')
-    .option('--sync', 'Sync epic to graph database')
+    .option('--sync', 'REMOVED: Use `ginko push epic` instead')
     .option('--no-ai', 'Run interactive mode instead of AI-mediated')
     .option('--examples', 'Show epic command examples')
     .addHelpText('after', `
@@ -42,7 +42,7 @@ ${chalk.gray('Creation & Management:')}
   ${chalk.green('ginko epic')}              ${chalk.dim('Create new epic via AI conversation')}
   ${chalk.green('ginko epic list')}         ${chalk.dim('List existing epics')}
   ${chalk.green('ginko epic --view')}       ${chalk.dim('View epic details with sprints')}
-  ${chalk.green('ginko epic --sync')}       ${chalk.dim('Sync epic to graph database')}
+  ${chalk.green('ginko push epic')}        ${chalk.dim('Push epic to graph (ADR-077)')}
 
 ${chalk.gray('Status Commands:')}
   ${chalk.green('ginko epic start')} <id>     ${chalk.dim('Start epic (proposed -> active)')}
@@ -79,17 +79,17 @@ ${chalk.gray('Examples:')}
         return;
       }
 
-      // ADR-077: Deprecation warning for --sync flag
+      // ADR-077: --sync has been removed
       if (options.sync) {
-        console.log(chalk.yellow('\u26a0\ufe0f  `ginko epic --sync` is deprecated. Use `ginko push epic` instead.'));
-        console.log('');
+        console.log(chalk.red('\u2717 `ginko epic --sync` has been removed.'));
+        console.log(chalk.dim('  Use `ginko push epic` instead (ADR-077).\n'));
+        process.exit(1);
       }
 
-      // Delegate to legacy command for create/list/view/sync
+      // Delegate to legacy command for create/list/view
       await legacyEpicCommand({
         view: options.view,
         list: options.list,
-        sync: options.sync,
         noAi: !options.ai, // Commander handles --no-ai as options.ai = false
       });
 

@@ -28,7 +28,6 @@ import {
 import type { Charter, CharterContent, CharterConfidence, WorkMode } from '../types/charter.js';
 import { getUserEmail, getProjectRoot } from '../utils/helpers.js';
 import { requireAuth } from '../utils/auth-storage.js';
-import { existsSync } from 'fs';
 
 // ============================================================================
 // Types
@@ -76,13 +75,11 @@ export async function charterCommand(options: CharterOptions = {}): Promise<void
       return;
     }
 
-    // Handle --sync flag (deprecated by ADR-077)
+    // Handle --sync flag (removed — ADR-077)
     if (options.sync) {
-      console.log(chalk.yellow('\u26a0\ufe0f  `ginko charter --sync` is deprecated. Use `ginko push charter` instead.'));
-      console.log('');
-      await requireAuth('charter');
-      await syncCharterToGraph(storage);
-      return;
+      console.log(chalk.red('\u2717 `ginko charter --sync` has been removed.'));
+      console.log(chalk.dim('  Use `ginko push charter` instead (ADR-077).\n'));
+      process.exit(1);
     }
 
     // Default: AI-mediated mode (output template) unless --no-ai specified
@@ -326,85 +323,6 @@ async function editCharter(storage: CharterStorageManager): Promise<void> {
 
   console.log(chalk.green(`\n✅ Charter updated to v${versionToString(editResult.updated.version)}`));
   console.log(chalk.dim('   📄 docs/PROJECT-CHARTER.md\n'));
-}
-
-// ============================================================================
-// Sync Charter to Graph
-// ============================================================================
-
-/**
- * Sync charter to graph database (UAT-006)
- */
-async function syncCharterToGraph(storage: CharterStorageManager): Promise<void> {
-  console.log(chalk.blue('\n📡 Syncing charter to graph...\n'));
-
-  // Check for graph configuration
-  let projectRoot: string;
-  try { projectRoot = await getProjectRoot(); } catch { projectRoot = process.cwd(); }
-  const graphConfigPath = path.join(projectRoot, '.ginko', 'graph', 'config.json');
-
-  if (!existsSync(graphConfigPath)) {
-    console.log(chalk.yellow('⚠️  Graph not configured'));
-    console.log(chalk.dim('   Run `ginko graph init` first\n'));
-    return;
-  }
-
-  // Load charter
-  const charter = await storage.load();
-  if (!charter) {
-    console.log(chalk.yellow('\n📋 No charter found for this project'));
-    console.log(chalk.dim('   Run `ginko charter` to create one first\n'));
-    return;
-  }
-
-  try {
-    // Read graph config
-    const graphConfig = JSON.parse(await fs.readFile(graphConfigPath, 'utf-8'));
-    const graphId = graphConfig.graphId;
-
-    if (!graphId) {
-      console.log(chalk.yellow('⚠️  No graph ID configured'));
-      console.log(chalk.dim('   Run `ginko graph init` to configure\n'));
-      return;
-    }
-
-    // Import API client dynamically
-    const { GraphApiClient } = await import('./graph/api-client.js');
-    const client = new GraphApiClient();
-
-    // Prepare charter data for sync
-    const charterData = {
-      graphId,
-      id: charter.id,
-      projectId: charter.projectId,
-      status: charter.status,
-      workMode: charter.workMode,
-      version: versionToString(charter.version),
-      purpose: charter.content.purpose,
-      users: charter.content.users,
-      successCriteria: charter.content.successCriteria,
-      inScope: charter.content.scope.inScope,
-      outOfScope: charter.content.scope.outOfScope,
-      tbd: charter.content.scope.tbd,
-      constraints: charter.content.constraints,
-      timeline: charter.content.timeline,
-      team: charter.content.team,
-      confidence: charter.confidence.overall,
-    };
-
-    console.log(chalk.dim(`  Syncing charter for ${charter.projectId}...`));
-
-    await client.syncCharter(charterData);
-
-    console.log(chalk.green(`\n✅ Charter synced to graph!`));
-    console.log(chalk.dim(`   Project: ${charter.projectId}`));
-    console.log(chalk.dim(`   Status: ${charter.status}`));
-    console.log(chalk.dim(`   Confidence: ${charter.confidence.overall}%\n`));
-
-  } catch (error: any) {
-    console.error(chalk.red(`\n❌ Sync failed: ${error.message}`));
-    console.log(chalk.dim('   Check graph connection and authentication\n'));
-  }
 }
 
 // ============================================================================
@@ -738,5 +656,5 @@ export const charterExamples = [
   'ginko charter                # Create new charter via conversation',
   'ginko charter --view         # View existing charter',
   'ginko charter --edit         # Edit charter conversationally',
-  'ginko charter --sync         # Sync charter to graph database',
+  'ginko push charter           # Push charter to graph (ADR-077)',
 ];

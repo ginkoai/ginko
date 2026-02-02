@@ -26,6 +26,7 @@ const VALID_ACTIONS = [
   'cleanup-orphans',
   'cleanup-default',
   'dedupe-epics',
+  'normalize-epic-ids',
   'dedupe-tasks',
   'cleanup-stale',
 ];
@@ -54,7 +55,7 @@ function displayAnalysis(
   analysis: CleanupAnalysisResponse,
   verbose: boolean
 ): void {
-  const { orphanNodes, defaultGraphIdNodes, duplicateEpics, duplicateTasks, staleGraphIds } =
+  const { orphanNodes, defaultGraphIdNodes, duplicateEpics, nonCanonicalEpics, duplicateTasks, staleGraphIds } =
     analysis.analysis;
 
   console.log(chalk.bold('\nGraph Cleanup Analysis'));
@@ -117,6 +118,24 @@ function displayAnalysis(
     }
   }
 
+  // Non-canonical epics (ADR-052)
+  const nonCanonicalLabel = `Non-Canonical Epic IDs:`;
+  const nonCanonicalCount = nonCanonicalEpics?.length ?? 0;
+  console.log(
+    `\n${nonCanonicalLabel.padEnd(35)} ${chalk.cyan(nonCanonicalCount)} nodes`
+  );
+  if (nonCanonicalCount > 0) {
+    const shown = verbose ? nonCanonicalEpics : nonCanonicalEpics.slice(0, 5);
+    for (const epic of shown) {
+      console.log(
+        `  ${chalk.dim(`${epic.legacyId} → ${epic.canonicalId}`)}`
+      );
+    }
+    if (!verbose && nonCanonicalCount > 5) {
+      console.log(chalk.dim(`  ... and ${nonCanonicalCount - 5} more`));
+    }
+  }
+
   // Duplicate tasks
   const taskLabel = `Duplicate Tasks:`;
   console.log(
@@ -149,6 +168,7 @@ function displayAnalysis(
     orphanNodes.total +
     defaultGraphIdNodes.total +
     duplicateEpics.length +
+    nonCanonicalCount +
     duplicateTasks.duplicateCount +
     staleTotal;
 

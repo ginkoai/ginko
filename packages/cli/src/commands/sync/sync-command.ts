@@ -450,9 +450,11 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
       }
     }
 
-    // Update team sync timestamp if we synced anything (EPIC-008)
+    // Update team sync timestamp on any successful sync operation (EPIC-008)
+    // Timestamp should update even when nothing needed syncing — confirming
+    // you're up to date is still a valid sync that resets staleness.
     const totalUpdated = sprintResults.reduce((sum, r) => sum + r.tasksUpdated, 0);
-    if (totalUpdated > 0 && teamStatus?.isMember) {
+    if (teamStatus?.isMember) {
       const updated = await updateLastSyncTimestamp(graphId, token);
       if (updated) {
         console.log(chalk.dim('✓ Team sync timestamp updated'));
@@ -482,6 +484,12 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
 
   if (nodes.length === 0) {
     spinner.succeed('All nodes are synced. Nothing to do.');
+
+    // Still update the sync timestamp — confirming you're up to date is a valid sync
+    if (teamStatus?.isMember) {
+      await updateLastSyncTimestamp(graphId, token);
+    }
+
     return result;
   }
 
@@ -635,8 +643,10 @@ export async function syncCommand(options: TeamSyncOptions): Promise<SyncResult>
     }
   }
 
-  // Update team sync timestamp if we synced anything (EPIC-008)
-  if (result.synced.length > 0 && teamStatus?.isMember) {
+  // Update team sync timestamp on any successful sync operation (EPIC-008)
+  // Timestamp should update even when nothing needed syncing — confirming
+  // you're up to date is still a valid sync that resets staleness.
+  if (teamStatus?.isMember) {
     const updated = await updateLastSyncTimestamp(graphId, token);
     if (updated) {
       console.log(chalk.dim('✓ Team sync timestamp updated'));

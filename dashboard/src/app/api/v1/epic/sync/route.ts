@@ -73,6 +73,9 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(request: NextRequest) {
+  // ADR-077: This endpoint is deprecated. Use POST /api/v1/graph/documents instead.
+  console.warn('[Epic Sync] DEPRECATED: POST /api/v1/epic/sync called. Use /api/v1/graph/documents with `ginko push epic` instead.');
+
   try {
     // Extract Bearer token for authentication
     const authHeader = request.headers.get('authorization');
@@ -118,7 +121,11 @@ export async function POST(request: NextRequest) {
     // Sync epic to graph (pass user for createdBy tracking)
     const result = await syncEpicToGraph(body, userEmail);
 
-    return NextResponse.json(result);
+    const response = NextResponse.json(result);
+    response.headers.set('Deprecation', 'true');
+    response.headers.set('Sunset', '2026-04-01');
+    response.headers.set('Link', '</api/v1/graph/documents>; rel="successor-version"');
+    return response;
 
   } catch (error) {
     console.error('[Epic Sync] Error:', error);

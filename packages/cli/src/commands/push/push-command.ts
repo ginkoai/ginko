@@ -135,13 +135,20 @@ function displayProgress(current: number, total: number, label: string): void {
  * Falls back to the full basename if no pattern matches.
  */
 function extractEntityId(filename: string, entityType: string, content?: string): string {
-  // ADR-NNN, PRD-NNN, EPIC-NNN patterns
-  const docIdMatch = filename.match(/^((?:ADR|PRD|EPIC|GOTCHA|PATTERN)-\d+)/i);
-  if (docIdMatch) return docIdMatch[1].toUpperCase();
-
-  // ADR-052 entity naming: e001, e001_s01, e001_s01_t01, adhoc_260131_s01
+  // ADR-052 entity naming (check first — canonical format)
+  // e001, e001_s01, e001_s01_t01, adhoc_260131_s01
   const entityIdMatch = filename.match(/^((?:e\d{3}(?:_s\d{2}(?:_t\d{2})?)?)|(?:adhoc_\d{6}(?:_s\d{2}(?:_t\d{2})?)?))/i);
   if (entityIdMatch) return entityIdMatch[1].toLowerCase();
+
+  // Epic normalization: EPIC-NNN-slug → eNNN (ADR-052)
+  if (entityType === 'Epic') {
+    const epicMatch = filename.match(/^EPIC-(\d+)/i);
+    if (epicMatch) return `e${epicMatch[1].padStart(3, '0')}`;
+  }
+
+  // ADR-NNN, PRD-NNN, GOTCHA-NNN, PATTERN-NNN (unchanged)
+  const docIdMatch = filename.match(/^((?:ADR|PRD|GOTCHA|PATTERN)-\d+)/i);
+  if (docIdMatch) return docIdMatch[1].toUpperCase();
 
   // Sprint files: SPRINT-YYYY-MM-... → try to extract entity ID from content
   if (entityType === 'Sprint' && content) {

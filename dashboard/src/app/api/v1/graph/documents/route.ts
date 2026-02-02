@@ -184,6 +184,15 @@ export async function POST(request: NextRequest) {
     };
     const warnings: string[] = [];
 
+    // Validate Epic IDs against canonical format (ADR-052)
+    // Warn (but don't reject) during transition period
+    for (const doc of body.documents) {
+      if (doc.type === 'Epic' && !/^e\d{3}$/.test(doc.id)) {
+        console.warn(`[Documents API] Non-canonical Epic ID: "${doc.id}" (expected eNNN format per ADR-052)`);
+        warnings.push(`Epic "${doc.id}" uses non-canonical ID format. Expected eNNN (e.g., e001). Use \`ginko push epic\` to auto-normalize.`);
+      }
+    }
+
     // Initialize Voyage client for embeddings
     let voyageClient: VoyageEmbeddingClient | null = null;
     try {

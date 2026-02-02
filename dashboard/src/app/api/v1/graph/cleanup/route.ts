@@ -52,6 +52,12 @@ interface DuplicateTask {
   sprintId: string;
 }
 
+interface NonCanonicalEpic {
+  legacyId: string;
+  canonicalId: string;
+  title: string;
+}
+
 interface CleanupAnalysis {
   orphanNodes: {
     total: number;
@@ -62,6 +68,7 @@ interface CleanupAnalysis {
     byType: OrphanAnalysis[];
   };
   duplicateEpics: DuplicateEpic[];
+  nonCanonicalEpics: NonCanonicalEpic[];
   duplicateTasks: {
     total: number;
     uniqueIds: number;
@@ -140,6 +147,19 @@ export async function GET(request: NextRequest) {
     `;
     const duplicateResults = await runQuery<DuplicateEpic>(duplicateEpicQuery, { graphId });
 
+    // Find Epic nodes with non-canonical IDs (EPIC-NNN or EPIC-NNN-slug format)
+    // These should be normalized to eNNN format per ADR-052
+    const nonCanonicalEpicQuery = `
+      MATCH (e:Epic)
+      WHERE (e.graphId = $graphId OR e.graph_id = $graphId)
+        AND (e.id =~ 'EPIC-[0-9]+.*' OR e.id =~ 'EPIC-[0-9]+')
+      WITH e,
+        'e' + right('000' + substring(e.id, 5, 3), 3) as canonicalId
+      RETURN e.id as legacyId, canonicalId, e.title as title
+      ORDER BY e.id
+    `;
+    const nonCanonicalResults = await runQuery<NonCanonicalEpic>(nonCanonicalEpicQuery, { graphId });
+
     // Find duplicate tasks (same id, multiple nodes)
     const duplicateTaskQuery = `
       MATCH (t:Task)
@@ -199,6 +219,7 @@ export async function GET(request: NextRequest) {
         })),
       },
       duplicateEpics: duplicateResults,
+      nonCanonicalEpics: nonCanonicalResults,
       duplicateTasks: {
         total: toNumber(taskCountResult[0]?.total) || 0,
         uniqueIds: toNumber(taskCountResult[0]?.unique) || 0,
@@ -223,6 +244,7 @@ export async function GET(request: NextRequest) {
           { action: 'cleanup-orphans', description: 'Delete orphan nodes (no graphId)', estimatedDeletes: analysis.orphanNodes.total },
           { action: 'cleanup-default', description: 'Migrate or delete "default" graphId nodes', estimatedAffected: analysis.defaultGraphIdNodes.total },
           { action: 'dedupe-epics', description: 'Merge duplicate epics (keep detailed version)', estimatedMerges: analysis.duplicateEpics.length },
+          { action: 'normalize-epic-ids', description: 'Normalize EPIC-NNN IDs to eNNN format (ADR-052)', estimatedAffected: analysis.nonCanonicalEpics.length },
           { action: 'dedupe-tasks', description: 'Remove duplicate Task nodes (keep one per id)', estimatedDeletes: analysis.duplicateTasks.duplicateCount },
           { action: 'cleanup-stale', description: 'Delete nodes from stale/test graphIds', estimatedDeletes: staleResults.reduce((sum, r) => sum + toNumber(r.count), 0) },
           { action: 'delete-project', description: 'DELETE ALL: Remove entire project (Neo4j + Supabase)', warning: 'DESTRUCTIVE - cannot be undone' },
@@ -391,6 +413,117 @@ export async function DELETE(request: NextRequest) {
           `;
           const dedupeResult = await runQuery<{ count: number }>(dedupeQuery, { graphId });
           result = { affected: toNumber(dedupeResult[0]?.count), details: 'Deleted duplicate Task nodes (kept one per id)' };
+        }
+        break;
+      }
+
+      case 'normalize-epic-ids': {
+        // Normalize EPIC-NNN and EPIC-NNN-slug IDs to eNNN format (ADR-052)
+        if (dryRun) {
+          const countQuery = `
+            MATCH (e:Epic)
+            WHERE (e.graphId = $graphId OR e.graph_id = $graphId)
+              AND (e.id =~ 'EPIC-[0-9]+.*' OR e.id =~ 'EPIC-[0-9]+')
+            RETURN count(e) as count
+          `;
+          const countResult = await runQuery<{ count: number }>(countQuery, { graphId });
+          result = { affected: toNumber(countResult[0]?.count), details: 'Dry run: would normalize EPIC-NNN IDs to eNNN format' };
+        } else {
+          let totalAffected = 0;
+
+          // Step 1: Find all non-canonical Epic nodes and compute their canonical ID
+          const findQuery = `
+            MATCH (legacy:Epic)
+            WHERE (legacy.graphId = $graphId OR legacy.graph_id = $graphId)
+              AND (legacy.id =~ 'EPIC-[0-9]+.*' OR legacy.id =~ 'EPIC-[0-9]+')
+            WITH legacy,
+              'e' + right('000' + substring(legacy.id, 5, 3), 3) as canonicalId
+            OPTIONAL MATCH (canonical:Epic)
+            WHERE (canonical.graphId = $graphId OR canonical.graph_id = $graphId)
+              AND canonical.id = canonicalId
+              AND canonical <> legacy
+            RETURN legacy.id as legacyId, canonicalId,
+              elementId(legacy) as legacyElementId,
+              elementId(canonical) as canonicalElementId,
+              canonical IS NOT NULL as hasCanonical
+          `;
+          const entries = await runQuery<{
+            legacyId: string;
+            canonicalId: string;
+            legacyElementId: string;
+            canonicalElementId: string | null;
+            hasCanonical: boolean;
+          }>(findQuery, { graphId });
+
+          for (const entry of entries) {
+            if (entry.hasCanonical) {
+              // Canonical node exists — transfer relationships and delete legacy
+              // Transfer outgoing relationships
+              await runQuery(`
+                MATCH (legacy:Epic)
+                WHERE elementId(legacy) = $legacyElementId
+                MATCH (canonical:Epic)
+                WHERE elementId(canonical) = $canonicalElementId
+                MATCH (legacy)-[r]->(target)
+                WHERE NOT target = canonical
+                WITH canonical, target, type(r) as relType, properties(r) as relProps
+                CALL apoc.create.relationship(canonical, relType, relProps, target) YIELD rel
+                RETURN count(rel) as transferred
+              `, {
+                legacyElementId: entry.legacyElementId,
+                canonicalElementId: entry.canonicalElementId,
+              }).catch(() => {
+                // If APOC is not available, skip relationship transfer
+              });
+
+              // Transfer incoming relationships
+              await runQuery(`
+                MATCH (legacy:Epic)
+                WHERE elementId(legacy) = $legacyElementId
+                MATCH (canonical:Epic)
+                WHERE elementId(canonical) = $canonicalElementId
+                MATCH (source)-[r]->(legacy)
+                WHERE NOT source = canonical
+                WITH canonical, source, type(r) as relType, properties(r) as relProps
+                CALL apoc.create.relationship(source, relType, relProps, canonical) YIELD rel
+                RETURN count(rel) as transferred
+              `, {
+                legacyElementId: entry.legacyElementId,
+                canonicalElementId: entry.canonicalElementId,
+              }).catch(() => {
+                // If APOC is not available, skip relationship transfer
+              });
+
+              // Merge properties from legacy to canonical (don't overwrite existing)
+              await runQuery(`
+                MATCH (legacy:Epic)
+                WHERE elementId(legacy) = $legacyElementId
+                MATCH (canonical:Epic)
+                WHERE elementId(canonical) = $canonicalElementId
+                SET canonical.legacy_id = legacy.id
+                WITH legacy
+                DETACH DELETE legacy
+                RETURN count(legacy) as deleted
+              `, {
+                legacyElementId: entry.legacyElementId,
+                canonicalElementId: entry.canonicalElementId,
+              });
+            } else {
+              // No canonical node exists — rename legacy node's ID
+              await runQuery(`
+                MATCH (legacy:Epic)
+                WHERE elementId(legacy) = $legacyElementId
+                SET legacy.legacy_id = legacy.id, legacy.id = $canonicalId
+                RETURN legacy.id as newId
+              `, {
+                legacyElementId: entry.legacyElementId,
+                canonicalId: entry.canonicalId,
+              });
+            }
+            totalAffected++;
+          }
+
+          result = { affected: totalAffected, details: `Normalized ${totalAffected} Epic node(s) to eNNN format` };
         }
         break;
       }
