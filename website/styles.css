@@ -2020,6 +2020,26 @@ button:hover .btn-hero-arrow .arrow-hover {
     position: relative;
 }
 
+.terminal-window .corner-bracket {
+    border-width: 1px;
+}
+
+.terminal-window .corner-bracket.top-left {
+    border-width: 1px 0 0 1px;
+}
+
+.terminal-window .corner-bracket.top-right {
+    border-width: 1px 1px 0 0;
+}
+
+.terminal-window .corner-bracket.bottom-left {
+    border-width: 0 0 1px 1px;
+}
+
+.terminal-window .corner-bracket.bottom-right {
+    border-width: 0 1px 1px 0;
+}
+
 .demo-step {
     display: flex;
     gap: var(--space-8);
@@ -2456,10 +2476,24 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .iykyg-full {
     opacity: 0;
-    transform: translateX(-20px);
     color: var(--color-accent);
     letter-spacing: 0.05em;
+    display: flex;
+    gap: 0.3em;
 }
+
+.iykyg-word {
+    display: inline-block;
+    opacity: 0;
+    transform: scale(0.5) translateY(10px);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.iykyg-word:nth-child(1) { transition-delay: 0s; }
+.iykyg-word:nth-child(2) { transition-delay: 0.12s; }
+.iykyg-word:nth-child(3) { transition-delay: 0.24s; }
+.iykyg-word:nth-child(4) { transition-delay: 0.36s; }
+.iykyg-word:nth-child(5) { transition-delay: 0.48s; }
 
 .iykyg-reveal:hover .iykyg-short {
     opacity: 0;
@@ -2468,7 +2502,11 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .iykyg-reveal:hover .iykyg-full {
     opacity: 1;
-    transform: translateX(0);
+}
+
+.iykyg-reveal:hover .iykyg-word {
+    opacity: 1;
+    transform: scale(1) translateY(0);
 }
 
 /* Centered CTA layout */
