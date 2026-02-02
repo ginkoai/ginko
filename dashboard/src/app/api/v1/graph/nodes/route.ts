@@ -249,11 +249,12 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    // TODO: Verify token with Supabase in production
 
     // Parse request body
     const body = (await request.json()) as CreateNodeRequest;
-    console.log('[Nodes API] Request body:', {
+    console.log('[Nodes API] POST request:', {
+      tokenPrefix: token.substring(0, 5) + '...',
+      tokenType: token.startsWith('gk_') ? 'api_key' : 'oauth_jwt',
       graphId: body.graphId,
       label: body.label,
       dataKeys: Object.keys(body.data || {})

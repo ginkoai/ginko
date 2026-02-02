@@ -33,14 +33,14 @@ export interface GraphAdapterConfig {
  *
  * Environment Variables:
  * - GINKO_GRAPH_ENABLED: 'true' to enable graph writes
- * - GINKO_GRAPH_API_URL: Graph API endpoint (default: https://mcp.ginko.ai)
+ * - GINKO_GRAPH_API_URL: Graph API endpoint (default: https://app.ginkoai.com)
  * - GINKO_GRAPH_TOKEN: Bearer token for authentication
  * - GINKO_GRAPH_ID: Graph ID for user's namespace
  *
  * Usage:
  * ```typescript
  * const adapter = new GraphAdapter({
- *   apiUrl: process.env.GINKO_GRAPH_API_URL || 'https://mcp.ginko.ai',
+ *   apiUrl: process.env.GINKO_GRAPH_API_URL || 'https://app.ginkoai.com',
  *   bearerToken: process.env.GINKO_GRAPH_TOKEN || '',
  *   graphId: process.env.GINKO_GRAPH_ID || ''
  * });
@@ -201,7 +201,7 @@ export class GraphAdapter implements WriteAdapter {
  */
 export function createGraphAdapterFromEnv(): GraphAdapter {
   return new GraphAdapter({
-    apiUrl: process.env.GINKO_GRAPH_API_URL || 'https://mcp.ginko.ai',
+    apiUrl: process.env.GINKO_GRAPH_API_URL || 'https://app.ginkoai.com',
     bearerToken: process.env.GINKO_GRAPH_TOKEN || '',
     graphId: process.env.GINKO_GRAPH_ID || '',
     timeout: parseInt(process.env.GINKO_GRAPH_TIMEOUT || '10000', 10),

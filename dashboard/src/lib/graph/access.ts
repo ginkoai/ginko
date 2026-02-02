@@ -68,14 +68,18 @@ export async function verifyGraphAccess(
   requiredAccess: 'read' | 'write' = 'read'
 ): Promise<GraphAccessResult> {
   // 1. Resolve token to userId
+  const tokenType = token.startsWith('gk_') ? 'api_key' : 'oauth_jwt';
+  console.log(`[verifyGraphAccess] Resolving ${tokenType} token for graphId: ${graphId}, requiredAccess: ${requiredAccess}`);
   const userResult = await resolveUserId(token);
 
   if ('error' in userResult) {
+    console.log(`[verifyGraphAccess] Token resolution failed: ${userResult.error} (tokenType: ${tokenType})`);
     return {
       hasAccess: false,
       error: userResult.error,
     };
   }
+  console.log(`[verifyGraphAccess] Token resolved to userId: ${userResult.userId}, method: ${userResult.method}`);
 
   const { userId } = userResult;
 
