@@ -1,7 +1,8 @@
 # ADR-014: MCP Server Consolidation and Rationalization
 
-**Date**: 2025-08-06  
-**Status**: Accepted  
+**Date**: 2025-08-06
+**Status**: Deprecated (superseded by ADR-077 git-native CLI architecture)
+**Deprecated**: 2026-02-02
 **Authors**: Chris Norton, Claude  
 **Related**: [MCP-CONSOLIDATION-PLAN.md, ADR-013-mcp-server-project-separation.md]
 

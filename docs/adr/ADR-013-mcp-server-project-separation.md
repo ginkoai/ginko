@@ -1,7 +1,7 @@
 ---
 type: decision
-status: approved
-updated: 2025-08-05
+status: deprecated
+updated: 2026-02-02
 tags: [mcp, deployment, vercel, separation, production]
 related: [ADR-009-serverless-first-mvp-architecture.md]
 priority: high
@@ -12,8 +12,9 @@ dependencies: [ADR-009]
 
 # ADR-013: MCP Server Project Separation
 
-**Status:** Approved  
-**Date:** 2025-08-05  
+**Status:** Deprecated (superseded by ADR-077 git-native CLI architecture)
+**Date:** 2025-08-05
+**Deprecated:** 2026-02-02
 **Authors:** Claude Code Assistant, Chris Norton  
 **Reviewers:** Chris Norton  
 **Related:** [ADR-009](ADR-009-serverless-first-mvp-architecture.md)  

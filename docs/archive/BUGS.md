@@ -135,10 +135,10 @@ ALTER TABLE session_handoffs ALTER COLUMN team_id DROP NOT NULL;
 **Status**: **RESOLVED** - No more UUID format errors
 
 ### BUG-002: Claude Code Loses MCP Server Connection Mid-Session (HIGH)
-**Reported**: 2025-08-01  
-**Reporter**: Chris Norton  
-**Priority**: High  
-**Status**: Open  
+**Reported**: 2025-08-01
+**Reporter**: Chris Norton
+**Priority**: High
+**Status**: CLOSED (Obsolete) — MCP server architecture superseded by git-native CLI (ADR-077). Ginko no longer depends on persistent MCP connections. ADR-013, ADR-014, ADR-016 deprecated 2026-02-02.
 
 #### Problem Description
 Claude Code can lose connection to MCP server during extended sessions, even when MCP tools were working at session start. Tools become unavailable with "No such tool available" errors despite server running correctly.

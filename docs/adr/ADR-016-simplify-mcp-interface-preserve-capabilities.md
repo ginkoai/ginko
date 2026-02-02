@@ -1,7 +1,7 @@
 # ADR-016: Simplify MCP Interface While Preserving Internal Capabilities
 
 ## Status
-Accepted
+Deprecated (superseded by ADR-077 git-native CLI architecture, 2026-02-02)
 
 ## Context
 We're implementing a mode-aware session handoff system for Claude Code integration. During development, we identified tension between:
