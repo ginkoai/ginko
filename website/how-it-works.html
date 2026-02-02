@@ -94,6 +94,11 @@
         }
 
         /* Core Concepts - 2x2 grid layout */
+        .features,
+        .features .container {
+            overflow: visible !important;
+        }
+
         .features .features-grid {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
@@ -123,40 +128,75 @@
             display: none !important;
         }
 
-        /* Add outer corner brackets to Core Concepts grid */
-        .features .features-grid::before {
-            content: '' !important;
-            display: block !important;
-            position: absolute !important;
-            top: -1px !important;
-            left: -1px !important;
-            width: calc(100% + 2px) !important;
-            height: var(--card-bracket-size, 12px) !important;
-            background:
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
-            pointer-events: none !important;
-            z-index: 10 !important;
+        /* Disable ALL global bracket styling for this section */
+        .features .features-grid::before,
+        .features .features-grid::after,
+        .features .features-grid > *::before,
+        .features .features-grid > *::after {
+            display: none !important;
         }
 
-        .features .features-grid::after {
+        /* Simple wrapper */
+        .concepts-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        /* All bracket/junction markers - simple positioned elements */
+        .concepts-marker {
+            position: absolute !important;
+            width: 12px !important;
+            height: 12px !important;
+            pointer-events: none !important;
+            z-index: 100 !important;
+        }
+
+        .concepts-marker::before,
+        .concepts-marker::after {
             content: '' !important;
             display: block !important;
             position: absolute !important;
-            bottom: -1px !important;
-            left: -1px !important;
-            width: calc(100% + 2px) !important;
-            height: var(--card-bracket-size, 12px) !important;
-            background:
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 100% / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
-            pointer-events: none !important;
-            z-index: 10 !important;
+            background: var(--color-accent) !important;
         }
+
+        /* Corners - position and draw both lines */
+        .concepts-marker-tl { top: 0 !important; left: 0 !important; }
+        .concepts-marker-tl::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-tl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+
+        .concepts-marker-tr { top: 0 !important; right: 0 !important; }
+        .concepts-marker-tr::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-tr::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+
+        .concepts-marker-bl { bottom: 0 !important; left: 0 !important; }
+        .concepts-marker-bl::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-bl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+
+        .concepts-marker-br { bottom: 0 !important; right: 0 !important; }
+        .concepts-marker-br::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-br::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+
+        /* Edge junctions - all use left positioning for reliability */
+        .concepts-marker-top { top: 0 !important; left: calc(50% - 6px) !important; }
+        .concepts-marker-top::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-top::after { top: 0 !important; left: 5px !important; width: 1px !important; height: 12px !important; }
+
+        .concepts-marker-bottom { bottom: 0 !important; left: calc(50% - 6px) !important; }
+        .concepts-marker-bottom::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-bottom::after { top: 0 !important; left: 5px !important; width: 1px !important; height: 12px !important; }
+
+        .concepts-marker-left { top: calc(50% - 6px) !important; left: 0 !important; }
+        .concepts-marker-left::before { top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-left::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+
+        .concepts-marker-right { top: calc(50% - 6px) !important; right: 0 !important; }
+        .concepts-marker-right::before { top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-right::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+
+        /* Center junction */
+        .concepts-marker-center { top: calc(50% - 6px) !important; left: calc(50% - 6px) !important; }
+        .concepts-marker-center::before { top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .concepts-marker-center::after { top: 0 !important; left: 5px !important; width: 1px !important; height: 12px !important; }
 
         /* Graph features - connected card system */
         .graph-features {
@@ -183,39 +223,75 @@
             display: none !important;
         }
 
-        /* Add outer corner brackets to graph-features */
-        .graph-features::before {
-            content: '' !important;
-            display: block !important;
-            position: absolute !important;
-            top: -1px !important;
-            left: -1px !important;
-            right: -1px !important;
-            height: var(--card-bracket-size, 12px) !important;
-            background:
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
-            pointer-events: none !important;
-            z-index: 10 !important;
+        /* Add outer corner brackets to graph-features - disable pseudo-elements on grid and feature cards only */
+        .graph-features::before,
+        .graph-features::after,
+        .graph-features > .graph-feature::before,
+        .graph-features > .graph-feature::after {
+            display: none !important;
         }
 
-        .graph-features::after {
+        /* Wrapper needed for markers - add via CSS since we can't easily modify HTML */
+        .graph-features {
+            overflow: visible !important;
+        }
+
+        /* Use same marker approach as Core Concepts but only 4 corners */
+        .graph-marker {
+            position: absolute !important;
+            width: 12px !important;
+            height: 12px !important;
+            pointer-events: none !important;
+            z-index: 100 !important;
+        }
+
+        .graph-marker::before,
+        .graph-marker::after {
             content: '' !important;
             display: block !important;
             position: absolute !important;
-            bottom: -1px !important;
-            left: -1px !important;
-            right: -1px !important;
-            height: var(--card-bracket-size, 12px) !important;
-            background:
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 100% / var(--card-bracket-size, 12px) 1px no-repeat,
-                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
-            pointer-events: none !important;
-            z-index: 10 !important;
+            background: var(--color-accent) !important;
+        }
+
+        .graph-marker-tl { top: -1px !important; left: -1px !important; }
+        .graph-marker-tl::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .graph-marker-tl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+
+        .graph-marker-tr { top: -1px !important; right: -1px !important; }
+        .graph-marker-tr::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .graph-marker-tr::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+
+        .graph-marker-bl { bottom: -1px !important; left: -1px !important; }
+        .graph-marker-bl::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .graph-marker-bl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+
+        .graph-marker-br { bottom: -1px !important; right: -1px !important; }
+        .graph-marker-br::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
+        .graph-marker-br::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+
+        /* Junction markers for row dividers - positioned by JS or use nth-child calc */
+        .graph-marker-l1 { top: 25% !important; left: -1px !important; transform: translateY(-50%) !important; }
+        .graph-marker-l2 { top: 50% !important; left: -1px !important; transform: translateY(-50%) !important; }
+        .graph-marker-l3 { top: 75% !important; left: -1px !important; transform: translateY(-50%) !important; }
+
+        .graph-marker-r1 { top: 25% !important; right: -1px !important; transform: translateY(-50%) !important; }
+        .graph-marker-r2 { top: 50% !important; right: -1px !important; transform: translateY(-50%) !important; }
+        .graph-marker-r3 { top: 75% !important; right: -1px !important; transform: translateY(-50%) !important; }
+
+        /* Left junctions ├ */
+        .graph-marker-l1::before, .graph-marker-l2::before, .graph-marker-l3::before {
+            top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important;
+        }
+        .graph-marker-l1::after, .graph-marker-l2::after, .graph-marker-l3::after {
+            top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important;
+        }
+
+        /* Right junctions ┤ */
+        .graph-marker-r1::before, .graph-marker-r2::before, .graph-marker-r3::before {
+            top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important;
+        }
+        .graph-marker-r1::after, .graph-marker-r2::after, .graph-marker-r3::after {
+            top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important;
         }
 
         /* Integrations - connected card system with outer brackets */
@@ -342,6 +418,50 @@
         .cta .cta-buttons {
             justify-content: center !important;
             width: 100% !important;
+        }
+
+        /* Architecture section - enable corner brackets on arch-card */
+        .arch-card {
+            position: relative !important;
+            overflow: visible !important;
+            border-radius: 0 !important;
+        }
+
+        .arch-card .corner-bracket {
+            display: block !important;
+            position: absolute !important;
+            width: var(--card-bracket-size, 12px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        .arch-card .corner-bracket.top-left {
+            top: -1px !important;
+            left: -1px !important;
+            border-top: 1px solid var(--color-accent) !important;
+            border-left: 1px solid var(--color-accent) !important;
+        }
+
+        .arch-card .corner-bracket.top-right {
+            top: -1px !important;
+            right: -1px !important;
+            border-top: 1px solid var(--color-accent) !important;
+            border-right: 1px solid var(--color-accent) !important;
+        }
+
+        .arch-card .corner-bracket.bottom-left {
+            bottom: -1px !important;
+            left: -1px !important;
+            border-bottom: 1px solid var(--color-accent) !important;
+            border-left: 1px solid var(--color-accent) !important;
+        }
+
+        .arch-card .corner-bracket.bottom-right {
+            bottom: -1px !important;
+            right: -1px !important;
+            border-bottom: 1px solid var(--color-accent) !important;
+            border-right: 1px solid var(--color-accent) !important;
         }
     </style>
 </head>
@@ -499,8 +619,19 @@
     <section class="features">
         <div class="container">
             <h2 class="section-title">Core concepts</h2>
-            <div class="features-grid">
-                <div class="feature-card feature-card-large">
+            <div class="concepts-wrapper">
+                <!-- All 9 bracket/junction markers as explicit elements -->
+                <div class="concepts-marker concepts-marker-tl"></div>
+                <div class="concepts-marker concepts-marker-top"></div>
+                <div class="concepts-marker concepts-marker-tr"></div>
+                <div class="concepts-marker concepts-marker-left"></div>
+                <div class="concepts-marker concepts-marker-center"></div>
+                <div class="concepts-marker concepts-marker-right"></div>
+                <div class="concepts-marker concepts-marker-bl"></div>
+                <div class="concepts-marker concepts-marker-bottom"></div>
+                <div class="concepts-marker concepts-marker-br"></div>
+                <div class="features-grid">
+                    <div class="feature-card feature-card-large">
                     <div class="corner-bracket top-left"></div>
                     <div class="corner-bracket top-right"></div>
                     <div class="feature-label">EVENT_STREAM</div>
@@ -558,6 +689,7 @@
                     </div>
                     <div class="corner-bracket bottom-left"></div>
                     <div class="corner-bracket bottom-right"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -740,6 +872,18 @@
                 </div>
 
                 <div class="graph-features">
+                    <!-- Corner markers -->
+                    <div class="graph-marker graph-marker-tl"></div>
+                    <div class="graph-marker graph-marker-tr"></div>
+                    <div class="graph-marker graph-marker-bl"></div>
+                    <div class="graph-marker graph-marker-br"></div>
+                    <!-- Row junction markers -->
+                    <div class="graph-marker graph-marker-l1"></div>
+                    <div class="graph-marker graph-marker-l2"></div>
+                    <div class="graph-marker graph-marker-l3"></div>
+                    <div class="graph-marker graph-marker-r1"></div>
+                    <div class="graph-marker graph-marker-r2"></div>
+                    <div class="graph-marker graph-marker-r3"></div>
                     <div class="graph-feature">
                         <div class="corner-bracket top-left"></div>
                         <div class="corner-bracket top-right"></div>
