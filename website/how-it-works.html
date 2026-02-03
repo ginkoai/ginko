@@ -145,8 +145,8 @@
         /* All bracket/junction markers - simple positioned elements */
         .concepts-marker {
             position: absolute !important;
-            width: 12px !important;
-            height: 12px !important;
+            width: var(--bracket-size) !important;
+            height: var(--bracket-size) !important;
             pointer-events: none !important;
             z-index: 100 !important;
         }
@@ -161,53 +161,92 @@
 
         /* Corners - position and draw both lines */
         .concepts-marker-tl { top: 0 !important; left: 0 !important; }
-        .concepts-marker-tl::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-tl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+        .concepts-marker-tl::before { top: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-tl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: var(--bracket-size) !important; }
 
         .concepts-marker-tr { top: 0 !important; right: 0 !important; }
-        .concepts-marker-tr::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-tr::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+        .concepts-marker-tr::before { top: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-tr::after { top: 0 !important; left: calc(var(--bracket-size) - 1px) !important; width: 1px !important; height: var(--bracket-size) !important; }
 
         .concepts-marker-bl { bottom: 0 !important; left: 0 !important; }
-        .concepts-marker-bl::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-bl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+        .concepts-marker-bl::before { bottom: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-bl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: var(--bracket-size) !important; }
 
         .concepts-marker-br { bottom: 0 !important; right: 0 !important; }
-        .concepts-marker-br::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-br::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+        .concepts-marker-br::before { bottom: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-br::after { top: 0 !important; left: calc(var(--bracket-size) - 1px) !important; width: 1px !important; height: var(--bracket-size) !important; }
 
-        /* Edge junctions - all use left positioning for reliability */
-        .concepts-marker-top { top: 0 !important; left: calc(50% - 6px) !important; }
-        .concepts-marker-top::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-top::after { top: 0 !important; left: 5px !important; width: 1px !important; height: 12px !important; }
+        /* Edge junctions - double width for proper T-junction shape */
+        /* Top ┬ - horizontal line with vertical going down */
+        .concepts-marker-top {
+            top: 0 !important;
+            left: calc(50% - var(--bracket-size)) !important;
+            width: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 100% 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 50% 0 / 1px 100% no-repeat !important;
+        }
+        .concepts-marker-top::before, .concepts-marker-top::after { display: none !important; }
 
-        .concepts-marker-bottom { bottom: 0 !important; left: calc(50% - 6px) !important; }
-        .concepts-marker-bottom::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-bottom::after { top: 0 !important; left: 5px !important; width: 1px !important; height: 12px !important; }
+        /* Bottom ┴ - horizontal line with vertical going up */
+        .concepts-marker-bottom {
+            bottom: 0 !important;
+            left: calc(50% - var(--bracket-size)) !important;
+            width: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / 100% 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 50% 0 / 1px 100% no-repeat !important;
+        }
+        .concepts-marker-bottom::before, .concepts-marker-bottom::after { display: none !important; }
 
-        .concepts-marker-left { top: calc(50% - 6px) !important; left: 0 !important; }
-        .concepts-marker-left::before { top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-left::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+        /* Left ├ - vertical line with horizontal going right */
+        .concepts-marker-left {
+            top: calc(50% - var(--bracket-size)) !important;
+            left: 0 !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
+        }
+        .concepts-marker-left::before, .concepts-marker-left::after { display: none !important; }
 
-        .concepts-marker-right { top: calc(50% - 6px) !important; right: 0 !important; }
-        .concepts-marker-right::before { top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-right::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+        /* Right ┤ - vertical line with horizontal going left */
+        .concepts-marker-right {
+            top: calc(50% - var(--bracket-size)) !important;
+            right: 0 !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
+        }
+        .concepts-marker-right::before, .concepts-marker-right::after { display: none !important; }
 
-        /* Center junction */
-        .concepts-marker-center { top: calc(50% - 6px) !important; left: calc(50% - 6px) !important; }
-        .concepts-marker-center::before { top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .concepts-marker-center::after { top: 0 !important; left: 5px !important; width: 1px !important; height: 12px !important; }
+        /* Center ┼ - cross junction, double size both directions */
+        .concepts-marker-center {
+            top: calc(50% - var(--bracket-size)) !important;
+            left: calc(50% - var(--bracket-size)) !important;
+            width: calc(var(--bracket-size) * 2) !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 50% 0 / 1px 100% no-repeat !important;
+        }
+        .concepts-marker-center::before, .concepts-marker-center::after { display: none !important; }
 
-        /* Graph features - connected card system */
+        /* ============================================
+           Graph Features - Clean rebuild
+           ============================================ */
         .graph-features {
-            display: grid !important;
-            grid-template-columns: 1fr !important;
+            display: flex !important;
+            flex-direction: column !important;
             gap: 0 !important;
             border: 1px solid var(--card-border-color) !important;
             position: relative !important;
+            overflow: visible !important;
         }
 
         .graph-feature {
+            position: relative !important;
             border: none !important;
             border-bottom: 1px solid var(--card-border-color) !important;
             border-radius: 0 !important;
@@ -223,30 +262,22 @@
             display: none !important;
         }
 
-        /* Add outer corner brackets to graph-features - disable pseudo-elements on grid and feature cards only */
-        .graph-features::before,
-        .graph-features::after,
-        .graph-features > .graph-feature::before,
-        .graph-features > .graph-feature::after {
+        /* Disable all pseudo-elements */
+        .graph-features::before, .graph-features::after,
+        .graph-feature::before, .graph-feature::after {
             display: none !important;
         }
 
-        /* Wrapper needed for markers - add via CSS since we can't easily modify HTML */
-        .graph-features {
-            overflow: visible !important;
-        }
-
-        /* Use same marker approach as Core Concepts but only 4 corners */
+        /* Corner markers for container */
         .graph-marker {
             position: absolute !important;
-            width: 12px !important;
-            height: 12px !important;
+            width: var(--bracket-size) !important;
+            height: var(--bracket-size) !important;
             pointer-events: none !important;
             z-index: 100 !important;
         }
 
-        .graph-marker::before,
-        .graph-marker::after {
+        .graph-marker::before, .graph-marker::after {
             content: '' !important;
             display: block !important;
             position: absolute !important;
@@ -254,44 +285,45 @@
         }
 
         .graph-marker-tl { top: -1px !important; left: -1px !important; }
-        .graph-marker-tl::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .graph-marker-tl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+        .graph-marker-tl::before { top: 0; left: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-tl::after { top: 0; left: 0; width: 1px; height: var(--bracket-size); }
 
         .graph-marker-tr { top: -1px !important; right: -1px !important; }
-        .graph-marker-tr::before { top: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .graph-marker-tr::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+        .graph-marker-tr::before { top: 0; right: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-tr::after { top: 0; right: 0; width: 1px; height: var(--bracket-size); }
 
         .graph-marker-bl { bottom: -1px !important; left: -1px !important; }
-        .graph-marker-bl::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .graph-marker-bl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important; }
+        .graph-marker-bl::before { bottom: 0; left: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-bl::after { bottom: 0; left: 0; width: 1px; height: var(--bracket-size); }
 
         .graph-marker-br { bottom: -1px !important; right: -1px !important; }
-        .graph-marker-br::before { bottom: 0 !important; left: 0 !important; width: 12px !important; height: 1px !important; }
-        .graph-marker-br::after { top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important; }
+        .graph-marker-br::before { bottom: 0; right: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-br::after { bottom: 0; right: 0; width: 1px; height: var(--bracket-size); }
 
-        /* Junction markers for row dividers - positioned by JS or use nth-child calc */
-        .graph-marker-l1 { top: 25% !important; left: -1px !important; transform: translateY(-50%) !important; }
-        .graph-marker-l2 { top: 50% !important; left: -1px !important; transform: translateY(-50%) !important; }
-        .graph-marker-l3 { top: 75% !important; left: -1px !important; transform: translateY(-50%) !important; }
-
-        .graph-marker-r1 { top: 25% !important; right: -1px !important; transform: translateY(-50%) !important; }
-        .graph-marker-r2 { top: 50% !important; right: -1px !important; transform: translateY(-50%) !important; }
-        .graph-marker-r3 { top: 75% !important; right: -1px !important; transform: translateY(-50%) !important; }
-
-        /* Left junctions ├ */
-        .graph-marker-l1::before, .graph-marker-l2::before, .graph-marker-l3::before {
-            top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important;
-        }
-        .graph-marker-l1::after, .graph-marker-l2::after, .graph-marker-l3::after {
-            top: 0 !important; left: 0 !important; width: 1px !important; height: 12px !important;
+        /* Row junction markers - double height so vertical extends up and down */
+        .graph-junction {
+            position: absolute !important;
+            bottom: calc(-1 * var(--bracket-size)) !important;
+            width: var(--bracket-size) !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            pointer-events: none !important;
+            z-index: 100 !important;
         }
 
-        /* Right junctions ┤ */
-        .graph-marker-r1::before, .graph-marker-r2::before, .graph-marker-r3::before {
-            top: 5px !important; left: 0 !important; width: 12px !important; height: 1px !important;
+        /* Left T-junction (├) - vertical line on left, horizontal extends right */
+        .graph-junction-left {
+            left: 0 !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
         }
-        .graph-marker-r1::after, .graph-marker-r2::after, .graph-marker-r3::after {
-            top: 0 !important; left: 11px !important; width: 1px !important; height: 12px !important;
+
+        /* Right T-junction (┤) - vertical line on right, horizontal extends left */
+        .graph-junction-right {
+            right: 0 !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
         }
 
         /* Integrations - connected card system with outer brackets */
@@ -872,64 +904,47 @@
                 </div>
 
                 <div class="graph-features">
-                    <!-- Corner markers -->
+                    <!-- Corner markers only - row junctions use ::before/::after on .graph-feature -->
                     <div class="graph-marker graph-marker-tl"></div>
                     <div class="graph-marker graph-marker-tr"></div>
                     <div class="graph-marker graph-marker-bl"></div>
                     <div class="graph-marker graph-marker-br"></div>
-                    <!-- Row junction markers -->
-                    <div class="graph-marker graph-marker-l1"></div>
-                    <div class="graph-marker graph-marker-l2"></div>
-                    <div class="graph-marker graph-marker-l3"></div>
-                    <div class="graph-marker graph-marker-r1"></div>
-                    <div class="graph-marker graph-marker-r2"></div>
-                    <div class="graph-marker graph-marker-r3"></div>
                     <div class="graph-feature">
-                        <div class="corner-bracket top-left"></div>
-                        <div class="corner-bracket top-right"></div>
                         <div class="feature-label">REAL_TIME_SYNC</div>
                         <p class="feature-description">
                             Events sync to the cloud as you work. Team members see updates instantly.
                             No manual exports, no stale context.
                         </p>
-                        <div class="corner-bracket bottom-left"></div>
-                        <div class="corner-bracket bottom-right"></div>
+                        <div class="graph-junction graph-junction-left"></div>
+                        <div class="graph-junction graph-junction-right"></div>
                     </div>
 
                     <div class="graph-feature">
-                        <div class="corner-bracket top-left"></div>
-                        <div class="corner-bracket top-right"></div>
                         <div class="feature-label">SEMANTIC_SEARCH</div>
                         <p class="feature-description">
                             Ask questions in natural language. "How do we handle authentication?" returns
                             relevant ADRs, patterns, and recent decisions.
                         </p>
-                        <div class="corner-bracket bottom-left"></div>
-                        <div class="corner-bracket bottom-right"></div>
+                        <div class="graph-junction graph-junction-left"></div>
+                        <div class="graph-junction graph-junction-right"></div>
                     </div>
 
                     <div class="graph-feature">
-                        <div class="corner-bracket top-left"></div>
-                        <div class="corner-bracket top-right"></div>
                         <div class="feature-label">KNOWLEDGE_TRAVERSAL</div>
                         <p class="feature-description">
                             AI navigates relationships: Pattern → related ADR → implementing sprint →
                             relevant gotchas. Context arrives pre-connected.
                         </p>
-                        <div class="corner-bracket bottom-left"></div>
-                        <div class="corner-bracket bottom-right"></div>
+                        <div class="graph-junction graph-junction-left"></div>
+                        <div class="graph-junction graph-junction-right"></div>
                     </div>
 
                     <div class="graph-feature">
-                        <div class="corner-bracket top-left"></div>
-                        <div class="corner-bracket top-right"></div>
                         <div class="feature-label">TEAM_CONTEXT</div>
                         <p class="feature-description">
                             See what teammates discovered. Patterns from Sarah's session surface in yours
                             when relevant. Knowledge compounds across the team.
                         </p>
-                        <div class="corner-bracket bottom-left"></div>
-                        <div class="corner-bracket bottom-right"></div>
                     </div>
                 </div>
             </div>
