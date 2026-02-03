@@ -246,6 +246,7 @@ export async function GET(request: NextRequest) {
           { action: 'dedupe-epics', description: 'Merge duplicate epics (keep detailed version)', estimatedMerges: analysis.duplicateEpics.length },
           { action: 'normalize-epic-ids', description: 'Normalize EPIC-NNN IDs to eNNN format (ADR-052)', estimatedAffected: analysis.nonCanonicalEpics.length },
           { action: 'dedupe-tasks', description: 'Remove duplicate Task nodes (keep one per id)', estimatedDeletes: analysis.duplicateTasks.duplicateCount },
+          { action: 'cleanup-phantom-entities', description: 'Delete phantom epics ("unknown") and slug-based sprint duplicates, rebuild task relationships' },
           { action: 'cleanup-stale', description: 'Delete nodes from stale/test graphIds', estimatedDeletes: staleResults.reduce((sum, r) => sum + toNumber(r.count), 0) },
           { action: 'delete-project', description: 'DELETE ALL: Remove entire project (Neo4j + Supabase)', warning: 'DESTRUCTIVE - cannot be undone' },
         ],
@@ -524,6 +525,82 @@ export async function DELETE(request: NextRequest) {
           }
 
           result = { affected: totalAffected, details: `Normalized ${totalAffected} Epic node(s) to eNNN format` };
+        }
+        break;
+      }
+
+      case 'cleanup-phantom-entities': {
+        // Delete phantom entities created by task sync with bad IDs:
+        // - Epic nodes with id "unknown"
+        // - Sprint nodes with non-canonical slug-based IDs
+        // Then rebuild BELONGS_TO relationships for orphaned tasks
+        if (dryRun) {
+          const unknownEpicQuery = `
+            MATCH (e:Epic)
+            WHERE (e.graph_id = $graphId OR e.graphId = $graphId)
+              AND e.id = 'unknown'
+            RETURN count(e) as count
+          `;
+          const slugSprintQuery = `
+            MATCH (s:Sprint)
+            WHERE (s.graph_id = $graphId OR s.graphId = $graphId)
+              AND NOT s.id =~ '^e\\\\d+_s\\\\d+$'
+              AND NOT s.id =~ '^adhoc_\\\\d+_s\\\\d+$'
+            RETURN count(s) as count
+          `;
+          const epicCount = await runQuery<{ count: number }>(unknownEpicQuery, { graphId });
+          const sprintCount = await runQuery<{ count: number }>(slugSprintQuery, { graphId });
+          const total = toNumber(epicCount[0]?.count) + toNumber(sprintCount[0]?.count);
+          result = { affected: total, details: `Dry run: would delete ${toNumber(epicCount[0]?.count)} phantom epic(s), ${toNumber(sprintCount[0]?.count)} slug-based sprint(s)` };
+        } else {
+          let totalAffected = 0;
+
+          // 1. Delete Epic with id "unknown"
+          const deleteUnknownEpic = await runQuery<{ count: number }>(`
+            MATCH (e:Epic)
+            WHERE (e.graph_id = $graphId OR e.graphId = $graphId)
+              AND e.id = 'unknown'
+            DETACH DELETE e
+            RETURN count(e) as count
+          `, { graphId });
+          totalAffected += toNumber(deleteUnknownEpic[0]?.count);
+
+          // 2. Delete slug-based Sprint nodes (non-canonical IDs)
+          const deleteSlugSprints = await runQuery<{ count: number }>(`
+            MATCH (s:Sprint)
+            WHERE (s.graph_id = $graphId OR s.graphId = $graphId)
+              AND NOT s.id =~ '^e\\\\d+_s\\\\d+$'
+              AND NOT s.id =~ '^adhoc_\\\\d+_s\\\\d+$'
+            DETACH DELETE s
+            RETURN count(s) as count
+          `, { graphId });
+          totalAffected += toNumber(deleteSlugSprints[0]?.count);
+
+          // 3. Rebuild BELONGS_TO relationships for tasks using their sprint_id/epic_id properties
+          await runQuery(`
+            MATCH (t:Task)
+            WHERE (t.graph_id = $graphId OR t.graphId = $graphId)
+              AND t.sprint_id IS NOT NULL
+              AND NOT (t)-[:BELONGS_TO]->(:Sprint)
+            MATCH (s:Sprint)
+            WHERE (s.graph_id = $graphId OR s.graphId = $graphId)
+              AND s.id = t.sprint_id
+            MERGE (t)-[:BELONGS_TO]->(s)
+          `, { graphId });
+
+          await runQuery(`
+            MATCH (t:Task)
+            WHERE (t.graph_id = $graphId OR t.graphId = $graphId)
+              AND t.epic_id IS NOT NULL
+              AND NOT (t)-[:BELONGS_TO]->(:Sprint)-[:BELONGS_TO]->(:Epic)
+            MATCH (e:Epic)
+            WHERE (e.graph_id = $graphId OR e.graphId = $graphId)
+              AND e.id = t.epic_id
+            MATCH (t)-[:BELONGS_TO]->(s:Sprint)
+            MERGE (s)-[:BELONGS_TO]->(e)
+          `, { graphId });
+
+          result = { affected: totalAffected, details: `Deleted phantom entities and rebuilt task relationships` };
         }
         break;
       }

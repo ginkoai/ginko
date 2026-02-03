@@ -28,6 +28,7 @@ const VALID_ACTIONS = [
   'dedupe-epics',
   'normalize-epic-ids',
   'dedupe-tasks',
+  'cleanup-phantom-entities',
   'cleanup-stale',
 ];
 
