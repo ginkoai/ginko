@@ -405,11 +405,12 @@ function extractSprintMetadata(content: string, filePath: string): ParsedSprint 
     };
   }
 
-  // Ad-hoc pattern: SPRINT-adhoc_260119-...
-  const adhocMatch = filename.match(/SPRINT-(adhoc_\d{6})-/i);
+  // Ad-hoc pattern: SPRINT-adhoc_260119-... or SPRINT-adhoc_251209_s01-...
+  const adhocMatch = filename.match(/SPRINT-(adhoc_\d{6}(?:_s\d{2})?)-/i);
   if (adhocMatch) {
     const adhocId = adhocMatch[1].toLowerCase();
-    const sprintId = `${adhocId}_s01`; // Default to s01 for adhoc
+    // Default to _s01 if no sprint suffix embedded in the match
+    const sprintId = adhocId.match(/_s\d{2}$/) ? adhocId : `${adhocId}_s01`;
 
     const titleMatch = content.match(/^#\s+(.+?)(?:\s+\(|$)/m);
     const name = titleMatch ? titleMatch[1].trim() : filename;

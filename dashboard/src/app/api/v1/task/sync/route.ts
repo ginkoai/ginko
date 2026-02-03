@@ -41,6 +41,7 @@ interface ParsedTask {
   sprint_id: string;
   epic_id: string;
   title: string;
+  sprint_title?: string;  // Optional sprint title from CLI
   estimate: string | null;
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   assignee: string | null;
@@ -224,12 +225,25 @@ export async function POST(request: NextRequest) {
               `
               MATCH (t:Task {id: $taskId, graph_id: $graphId})
               MERGE (s:Sprint {id: $sprintId, graph_id: $graphId})
-              ON CREATE SET s.created_at = datetime(), s.synced_at = datetime()
+              ON CREATE SET
+                s.title = $sprintTitle,
+                s.epic_id = $epicId,
+                s.status = 'not_started',
+                s.created_at = datetime(),
+                s.synced_at = datetime()
+              ON MATCH SET
+                s.synced_at = datetime()
               MERGE (t)-[r:BELONGS_TO]->(s)
               ON CREATE SET r.created_at = datetime()
               RETURN count(r) as count
               `,
-              { taskId: task.id, graphId, sprintId: task.sprint_id }
+              {
+                taskId: task.id,
+                graphId,
+                sprintId: task.sprint_id,
+                sprintTitle: task.sprint_title || `Sprint ${task.sprint_id}`,
+                epicId: task.epic_id,
+              }
             );
 
             if (sprintRel.records[0]?.get('count')?.toNumber() > 0) {
