@@ -49,14 +49,14 @@
     "docs/adr/ADR-011-best-practices-claude-code-integration.md": "sha256:ce83bb55f52838d11673d5d449cce3b54ff3f17ea5c3610547d4f6682de6bede",
     "docs/adr/ADR-012-ginko-command-architecture.md": "sha256:1f6e9bfe8c810292b9c0d1db14c5d54c9dccceff47798caf974b922ab2eede96",
     "docs/adr/ADR-012-legacy-context-migration-strategy.md": "sha256:248c02b031b1fe0303d50ee4a5b4c52ff598de07a77ecefd05b6fc309c68e08f",
-    "docs/adr/ADR-013-mcp-server-project-separation.md": "sha256:a018047fd3e0c53cdd7bab1cfe54b73d80992a28bd2ab49bafa5dcfa1e256074",
+    "docs/adr/ADR-013-mcp-server-project-separation.md": "sha256:47635b49cf512af7dcc1d8b494bb0e5592925d50975d90d96094114e62ad6513",
     "docs/adr/ADR-013-simple-builder-pattern.md": "sha256:d698bf5b4ff2586a68d366ba64063e6cf6a3a251b8f6eb887775e64aa62db309",
     "docs/adr/ADR-014-enhanced-handoff-quality.md": "sha256:0cd2dba01f36f739fe1622584a38c038147dd56e84af27bcfd0e0a302f3b6221",
-    "docs/adr/ADR-014-mcp-server-consolidation-and-rationalization.md": "sha256:eb75e4975efecf9e7f617fa7df33953f3834fff142c794d811b4869fed157a8e",
+    "docs/adr/ADR-014-mcp-server-consolidation-and-rationalization.md": "sha256:0371504781f923755cbd7143460ca500f1cef978bda17c8bf0a2c3c6be541fc4",
     "docs/adr/ADR-014-safe-defaults-reflector-pattern.md": "sha256:59dc498bea70335a47d35b62a96a34a0a53f7fd427db440a7f324d7ab078eb7d",
     "docs/adr/ADR-015-monorepo-migration-architecture.md": "sha256:58762ecd62f44304a5b05f0be089ae189e18508431601022023d8970ec372062",
     "docs/adr/ADR-016-handoff-tool-consolidation-and-vibecheck.md": "sha256:a0699b0b4d44aa1f8fd799246b0d647e2f68956d4402cede22ec5e559880916b",
-    "docs/adr/ADR-016-simplify-mcp-interface-preserve-capabilities.md": "sha256:3273037327517d6c7f6aaa3a1121d284ad505495c42bb6fe81a6239b3db3b534",
+    "docs/adr/ADR-016-simplify-mcp-interface-preserve-capabilities.md": "sha256:90d8e03c32b231262009bd838608ade91eaa3c44978ed453ae00923e87848856",
     "docs/adr/ADR-017-ai-driven-handoff-prompt-architecture.md": "sha256:48dadc0778fd53d230b7a76ec677028b2fe26a9f048ce7553cb14f9d9211fbff",
     "docs/adr/ADR-018-collaborative-slash-commands.md": "sha256:d6a22ea4dd33f211c4cfae5352ab1c7137f97217f725fee1c1b88c09a4a198d7",
     "docs/adr/ADR-019-claude-sdk-gamification.md": "sha256:e916cb766ed8a6c0b99c95c0b012fbe6dce8a9619a545e81fb8294ac9f6ca3eb",
@@ -902,7 +902,7 @@
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-11-155Z.md": "sha256:84ee7258b835cbe0dec0dd4f0a4bee9192ced691b096ca83f806026ef1ee2fa2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-47-459Z.md": "sha256:f4acd1560044d88d062017f215cdadffb7cbe6769f52c85b759b5a85f8ee90b2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-51-05-126Z.md": "sha256:a7e81ebe41d99155adb0524c726f48f9b365f817b546da839ab66f31d316ba19",
-    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:05b9116c306a5128eedfa80e4ac342c87cdd9ec23693f804b5eefd1e94d82c84",
+    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:b3a54dcccc36925c86670000ab5f4a1631aa5ae397b9f27a62365a8a4ba23975",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-19-epic015-sprint2.md": "sha256:ffe4de352b4879b640bebbf745782454e78f32638cfcf416579615bc519b4b9e",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-20-data-cleanup.md": "sha256:fb3dcabc1838aabe639c99920fdff2bc21baed270d46706bc136a0c082d126d6",
     ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-01-20-epic015-s02-verification.md": "sha256:999c480085af7d6730d5403145b0d70e6807b6c00535b8fd1511ac4c893405e2",
@@ -993,7 +993,7 @@
     "docs/architecture/subsystems/context/context-card-strategy.md": "sha256:b627396b25eb24f4bfb533a99e5b349e8aa1b617c2dd0406aecaa64fdc0df4cc",
     "docs/architecture/system-design/overview.md": "sha256:1a5c3b5ea95288e7c216a31d17acd3c3f90b2cab4a9490354ec0acca0126e702",
     "docs/archive/ADR-033-SUMMARY.md": "sha256:b3a34f62ae363bd5cf169e0b172706f86242857ffe3c74c120591065cef9e7cf",
-    "docs/archive/BUGS.md": "sha256:2be24d081e8dba97def0563cb6b5b6df0935ae1a1eb7651b0457d1a11f0754b8",
+    "docs/archive/BUGS.md": "sha256:660f31be8424bce76b1486c23e1fdbc9cafe5ed6ba1c971cb65923e05ab13ca4",
     "docs/archive/CHANGELOG.md": "sha256:c647c45a391a62a8c0168249c62a3f9e1bb9144194b647fe6786b853b4424221",
     "docs/archive/GIT-NATIVE-HANDOFFS.md": "sha256:8bf8f83de0a1b3c72772b547d829a671458f823fffc20fc4f6ef8589bfb608e9",
     "docs/archive/HANDOFF-IMPROVEMENTS.md": "sha256:41569c1ae6af3fc915c7507722f7d264a3c724f2dcd8266bbe9e2beb76654dca",
@@ -1240,7 +1240,8 @@
     "docs/enforcing-behavior.md": "sha256:916b82fd71fe9268ebf8d2dd1447a4783c481283e308320fff90a0dafcb3cbb7",
     "docs/gotchas/GOTCHA-repetition-gotcha.md": "sha256:d70bfe754cd5ba231a820bacdab0bb46010afab20fd3873518659f63a143a1db",
     "docs/sprints/SPRINT-adhoc_260131-uat-e2e-round3.md": "sha256:f116a657a3006d8947a83ba6eda213dcbdfd23a200842cde375dc8e65dab0a07",
-    "docs/sprints/SPRINT-adhoc_260201-uat-r3-bug-fixes.md": "sha256:bc05e3b2fa1416a917098fc1f7100e055c070b865cff5f78702b366d600fe1ce"
+    "docs/sprints/SPRINT-adhoc_260201-uat-r3-bug-fixes.md": "sha256:050aa120c682f9a7bb0f31f1ccd1e10c30e055bf350cc010a7f63885f5db5ea0",
+    ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-02-02-bug005.md": "sha256:6eedc59c64b67568b7f8f998000e112b064ceeefddca8113de9e92b784ddea08"
   },
-  "lastSync": "2026-02-02T19:12:58.780Z"
+  "lastSync": "2026-02-03T21:29:41.143Z"
 }
