@@ -157,6 +157,15 @@ function extractEntityId(filename: string, entityType: string, content?: string)
     // Also try: **Sprint ID**: e014_s02 format
     const altIdMatch = content.match(/Sprint(?:\s+ID)?[:\s]+`?(e\d{3}_s\d{2})`?/i);
     if (altIdMatch) return altIdMatch[1].toLowerCase();
+
+    // Heuristic: derive from sprint number in filename + EPIC-NNN in content
+    const sprintNumMatch = filename.match(/sprint[_-]?(\d+)/i);
+    const epicRefMatch = content.match(/EPIC-(\d+)/i);
+    if (sprintNumMatch && epicRefMatch) {
+      const epicId = `e${epicRefMatch[1].padStart(3, '0')}`;
+      const sprintNum = sprintNumMatch[1].padStart(2, '0');
+      return `${epicId}_s${sprintNum}`;
+    }
   }
 
   // CURRENT-SPRINT → keep as-is (canonical name)

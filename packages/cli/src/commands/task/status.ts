@@ -84,6 +84,31 @@ async function prompt(message: string): Promise<string> {
 }
 
 /**
+ * Validate task ID is non-empty and matches expected patterns.
+ * Exits with clear error message if invalid.
+ *
+ * Valid formats:
+ *   e001_s01_t01         (standard)
+ *   adhoc_260202_s01_t01 (ad-hoc)
+ */
+function validateTaskId(taskId: string): void {
+  if (!taskId || taskId.trim().length === 0) {
+    console.error(chalk.red('✗ Task ID is required and cannot be empty'));
+    console.error(chalk.dim('  Usage: ginko task <command> <taskId>'));
+    console.error(chalk.dim('  Example: ginko task start e015_s01_t01'));
+    process.exit(1);
+  }
+
+  const trimmed = taskId.trim();
+  const validPattern = /^(e\d+_s\d+_t\d+|adhoc_\d{6}_s\d+_t\d+)$/;
+  if (!validPattern.test(trimmed)) {
+    console.error(chalk.red(`✗ Invalid task ID: "${taskId}"`));
+    console.error(chalk.dim('  Expected format: e001_s01_t01 or adhoc_260202_s01_t01'));
+    process.exit(1);
+  }
+}
+
+/**
  * Extract sprint ID from task ID
  * e.g., e015_s01_t01 -> e015_s01
  */
@@ -171,6 +196,7 @@ export async function completeCommand(
   taskId: string,
   options: StatusCommandOptions = {}
 ): Promise<void> {
+  validateTaskId(taskId);
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -256,6 +282,7 @@ export async function startCommand(
   taskId: string,
   options: StatusCommandOptions = {}
 ): Promise<void> {
+  validateTaskId(taskId);
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -311,6 +338,7 @@ export async function pauseCommand(
   taskId: string,
   options: StatusCommandOptions = {}
 ): Promise<void> {
+  validateTaskId(taskId);
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -345,6 +373,7 @@ export async function blockCommand(
   reason?: string,
   options: StatusCommandOptions = {}
 ): Promise<void> {
+  validateTaskId(taskId);
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -392,6 +421,7 @@ export async function showCommand(
   taskId: string,
   options: StatusCommandOptions = {}
 ): Promise<void> {
+  validateTaskId(taskId);
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -428,17 +458,22 @@ function formatStatus(status: TaskStatus): string {
 
 function handleError(action: string, taskId: string, error: unknown): never {
   if (error instanceof Error) {
-    if (error.message.includes('TASK_NOT_FOUND') || error.message.includes('not found')) {
+    const msg = error.message;
+    if (msg.includes('TASK_NOT_FOUND') || msg.includes('not found')) {
       console.error(chalk.red(`✗ Task not found: ${taskId}`));
       console.error(chalk.dim('  Make sure the task ID is correct and exists in the graph'));
-    } else if (error.message.includes('AUTH_REQUIRED')) {
+    } else if (msg.includes('AUTH_REQUIRED')) {
       console.error(chalk.red('✗ Authentication required'));
       console.error(chalk.dim('  Run `ginko login` first'));
-    } else if (error.message.includes('SERVICE_UNAVAILABLE')) {
+    } else if (msg.includes('SERVICE_UNAVAILABLE')) {
       console.error(chalk.red('✗ Graph database unavailable'));
       console.error(chalk.dim('  Please try again later'));
+    } else if (msg.includes('<!DOCTYPE') || msg.includes('<html') || msg.includes('Unexpected token')) {
+      console.error(chalk.red(`✗ Unexpected response from API while trying to ${action} task ${taskId}`));
+      console.error(chalk.dim('  The server returned an HTML error page instead of JSON.'));
+      console.error(chalk.dim('  This usually means the task ID or endpoint is invalid.'));
     } else {
-      console.error(chalk.red(`✗ Failed to ${action} task: ${error.message}`));
+      console.error(chalk.red(`✗ Failed to ${action} task: ${msg}`));
     }
   } else {
     console.error(chalk.red(`✗ Failed to ${action} task`));

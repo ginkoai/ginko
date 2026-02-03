@@ -299,13 +299,22 @@ export function parseTaskBlock(
 
   // Parse hierarchy
   let hierarchy = parseTaskHierarchy(taskId);
+  let canonicalTaskId = taskId;
 
-  // For legacy TASK-N format, use sprint context
+  // For legacy TASK-N format, use sprint context and synthesize canonical ID
   if (!hierarchy && sprintContext) {
     hierarchy = {
       sprint_id: sprintContext.sprint_id,
       epic_id: sprintContext.epic_id,
     };
+
+    // Synthesize canonical task ID to avoid collisions across sprints.
+    // TASK-3 in sprint e001_s02 → e001_s02_t03
+    const taskNumMatch = taskId.match(/^TASK-(\d+)$/i);
+    if (taskNumMatch) {
+      const taskNum = taskNumMatch[1].padStart(2, '0');
+      canonicalTaskId = `${sprintContext.sprint_id}_t${taskNum}`;
+    }
   }
 
   if (!hierarchy) {
@@ -350,7 +359,7 @@ export function parseTaskBlock(
   const relatedADRs = extractRelatedADRs(blockText);
 
   return {
-    id: taskId.toLowerCase(),
+    id: canonicalTaskId.toLowerCase(),
     sprint_id: hierarchy.sprint_id,
     epic_id: hierarchy.epic_id,
     title,
@@ -428,6 +437,33 @@ function extractSprintMetadata(content: string, filePath: string): ParsedSprint 
       epic_id: epicId,
       file_path: filePath,
     };
+  }
+
+  // Heuristic: extract sprint number from filename and try to find epic reference in content.
+  // Handles AI-generated filenames like SPRINT-2026-02-happyhour-sprint3.md
+  const sprintNumFromFilename = filename.match(/sprint[_-]?(\d+)/i);
+  if (sprintNumFromFilename) {
+    const sprintNum = sprintNumFromFilename[1].padStart(2, '0');
+
+    // Try to find EPIC-NNN reference in file content
+    const epicRefInContent = content.match(/EPIC-(\d+)/i);
+    // Also try epic_id in frontmatter
+    const epicIdFrontmatter = content.match(/epic_id:\s*(?:EPIC-)?(\d+)/i);
+
+    const epicNum = epicRefInContent?.[1] || epicIdFrontmatter?.[1];
+    if (epicNum) {
+      const epicId = `e${epicNum.padStart(3, '0')}`;
+      const sprintId = `${epicId}_s${sprintNum}`;
+      const titleMatch = content.match(/^#\s+(?:SPRINT:\s+)?(.+?)(?:\s+\(|$)/m);
+      const name = titleMatch ? titleMatch[1].trim() : filename;
+
+      return {
+        id: sprintId,
+        name,
+        epic_id: epicId,
+        file_path: filePath,
+      };
+    }
   }
 
   // Fallback: generate from filename

@@ -93,19 +93,21 @@
 **Ask:** "For each sprint, what are the specific tasks? Let's estimate effort."
 
 **For each task, capture:**
-- Task ID and title
+- Task ID and title (MUST use canonical format: `eNNN_sNN_tNN`)
 - Effort estimate (hours or t-shirt size)
 - Priority (HIGH/MEDIUM/LOW)
 - Key files to modify
 - Related ADRs/patterns/gotchas
 
-**Example:**
-> **TASK-1: Design Graph Schema (4h)**
+**CRITICAL: Task IDs must be globally unique.** Use the format `eNNN_sNN_tNN` where NNN is the epic number, NN is the sprint number, and NN is the task number. Do NOT use `TASK-1`, `TASK-2` etc. — those collide across sprints.
+
+**Example (for EPIC-005, Sprint 1):**
+> **e005_s01_t01: Design Graph Schema (4h)**
 > Priority: HIGH
 > Files: src/graph/schema/patterns.cypher
 > Follow: ADR-002
 >
-> **TASK-2: Create Pattern API (8h)**
+> **e005_s01_t02: Create Pattern API (8h)**
 > Priority: HIGH
 > Files: dashboard/src/app/api/v1/task/[id]/patterns/route.ts
 > Apply: retry-pattern
@@ -245,14 +247,18 @@ updated: YYYY-MM-DD
 - Participants: [user email], Claude
 ```
 
-### Sprint Files: `docs/sprints/SPRINT-YYYY-MM-[epic]-sprint[N].md`
+### Sprint Files: `docs/sprints/SPRINT-YYYY-MM-eNNN-sNN-[title].md`
+
+**IMPORTANT: Sprint filenames MUST include the canonical epic and sprint IDs.**
+Example: `SPRINT-2026-02-e005-s01-core-infrastructure.md`
 
 ```markdown
-# SPRINT: [Epic Name] Sprint [N] - [Sprint Title]
+# SPRINT: [Epic Name] Sprint [N] - [Sprint Title] (EPIC-NNN Sprint N)
 
 ## Sprint Overview
 
 **Sprint Goal**: [What this sprint achieves]
+**ID:** eNNN_sNN
 **Duration**: [X weeks] (YYYY-MM-DD to YYYY-MM-DD)
 **Type**: [Infrastructure|Feature|Polish] sprint
 **Progress:** 0% (0/N tasks complete)
@@ -265,8 +271,9 @@ updated: YYYY-MM-DD
 
 ## Sprint Tasks
 
-### TASK-1: [Task Title] ([Effort])
+### eNNN_sNN_t01: [Task Title] ([Effort])
 **Priority:** HIGH
+**Status:** [ ]
 
 **Goal:** [What this task achieves]
 
@@ -282,8 +289,9 @@ Avoid: [gotcha-name]
 
 ---
 
-### TASK-2: [Task Title] ([Effort])
+### eNNN_sNN_t02: [Task Title] ([Effort])
 **Priority:** MEDIUM
+**Status:** [ ]
 
 ...
 
@@ -309,24 +317,18 @@ Avoid: [gotcha-name]
 After creating the epic and sprint files, **you must sync them to the graph** so they're available for team collaboration and tracking:
 
 ```bash
-ginko epic --sync
+ginko push epic
 ```
 
 This will:
-- Create Epic node: `(:Epic {id, title, goal, status, progress})`
-- Create Sprint nodes: `(:Sprint {id, name, goal, progress})`
-- Create Task nodes: `(:Task {id, title, status, effort, priority})`
-- Establish relationships:
-  - `(Epic)-[:CONTAINS]->(Sprint)`
-  - `(Sprint)-[:CONTAINS]->(Task)`
-  - `(Task)-[:MUST_FOLLOW]->(ADR)`
-  - `(Task)-[:APPLIES_PATTERN]->(Pattern)`
-  - `(Task)-[:AVOID_GOTCHA]->(Gotcha)`
+- Upload Epic and Sprint documents to the graph
+- Parse tasks from sprint files and create Task nodes
+- Create BELONGS_TO relationships (Task→Sprint→Epic)
 
 **Complete workflow:**
 1. Create `docs/epics/EPIC-XXX-name.md` with epic content
-2. Create `docs/sprints/SPRINT-*.md` files for each sprint
-3. Run `ginko epic --sync` to sync everything to graph
+2. Create `docs/sprints/SPRINT-YYYY-MM-eNNN-sNN-title.md` files for each sprint
+3. Run `ginko push epic` to sync everything to graph
 4. Confirm sync success message
 
 ---
