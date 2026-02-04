@@ -29,6 +29,7 @@ const VALID_ACTIONS = [
   'normalize-epic-ids',
   'dedupe-tasks',
   'cleanup-phantom-entities',
+  'merge-duplicate-structural-nodes',
   'cleanup-stale',
 ];
 

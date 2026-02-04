@@ -247,6 +247,7 @@ export async function GET(request: NextRequest) {
           { action: 'normalize-epic-ids', description: 'Normalize EPIC-NNN IDs to eNNN format (ADR-052)', estimatedAffected: analysis.nonCanonicalEpics.length },
           { action: 'dedupe-tasks', description: 'Remove duplicate Task nodes (keep one per id)', estimatedDeletes: analysis.duplicateTasks.duplicateCount },
           { action: 'cleanup-phantom-entities', description: 'Delete phantom epics ("unknown") and slug-based sprint duplicates, rebuild task relationships' },
+          { action: 'merge-duplicate-structural-nodes', description: 'Merge duplicate Sprint/Epic nodes created by dual creation paths (doc upload + task sync)' },
           { action: 'cleanup-stale', description: 'Delete nodes from stale/test graphIds', estimatedDeletes: staleResults.reduce((sum, r) => sum + toNumber(r.count), 0) },
           { action: 'delete-project', description: 'DELETE ALL: Remove entire project (Neo4j + Supabase)', warning: 'DESTRUCTIVE - cannot be undone' },
         ],
@@ -603,6 +604,266 @@ export async function DELETE(request: NextRequest) {
           result = { affected: totalAffected, details: `Deleted phantom entities and rebuilt task relationships` };
         }
         break;
+      }
+
+      case 'merge-duplicate-structural-nodes': {
+        // Merge duplicate Sprint/Epic nodes created by dual creation paths
+        // (document upload + task sync). Picks the structural node as survivor,
+        // merges content properties from document node, transfers relationships,
+        // and deletes the orphan.
+
+        interface NodeRecord {
+          type: string;
+          elementId: string;
+          id: string;
+          properties: Record<string, any>;
+        }
+
+        interface DuplicateGroup {
+          type: string;
+          canonicalId: string;
+          nodes: Array<{
+            elementId: string;
+            id: string;
+            properties: Record<string, any>;
+          }>;
+          count: number;
+        }
+
+        interface MergeDetail {
+          type: string;
+          canonicalId: string;
+          survivorId: string;
+          orphanId: string;
+          propertiesMerged: string[];
+          relationshipsTransferred: number;
+        }
+
+        // Normalize Sprint/Epic IDs to canonical form for duplicate detection.
+        // Handles: e001_s01, 2026_02_e001_sprint1, e001-sprint1, EPIC-001, etc.
+        function normalizeStructuralId(id: string, type: string): string {
+          const lower = id.toLowerCase().replace(/-/g, '_');
+
+          if (type === 'Epic') {
+            // EPIC-001 → e001
+            const epicMatch = lower.match(/epic[_]?(\d+)/);
+            if (epicMatch) return `e${epicMatch[1].padStart(3, '0')}`;
+            // e001 already canonical
+            const canonMatch = lower.match(/^e(\d{3})$/);
+            if (canonMatch) return lower;
+            // Date-prefixed: 2026_02_e001 → e001
+            const datePrefixed = lower.match(/\d{4}_\d{2}_e(\d{3})$/);
+            if (datePrefixed) return `e${datePrefixed[1]}`;
+            return lower;
+          }
+
+          // Sprint normalization
+          // Already canonical: e001_s01
+          const canonMatch = lower.match(/^(e\d{3}_s\d{2}[a-z]?)$/);
+          if (canonMatch) return canonMatch[1];
+          // Adhoc canonical: adhoc_260203_s01
+          const adhocCanon = lower.match(/^(adhoc_\d{6}_s\d{2})$/);
+          if (adhocCanon) return adhocCanon[1];
+          // Hybrid/legacy: e001_sprint1 or 2026_02_e001_sprint1
+          const sprintMatch = lower.match(/(e\d{3})[_]sprint(\d+)/);
+          if (sprintMatch) return `${sprintMatch[1]}_s${sprintMatch[2].padStart(2, '0')}`;
+          // Date-prefixed canonical: 2026_02_e001_s01 → e001_s01
+          const dateCanon = lower.match(/\d{4}_\d{2}_(e\d{3}_s\d{2})/);
+          if (dateCanon) return dateCanon[1];
+          return lower;
+        }
+
+        // Step 1: Fetch ALL Sprint/Epic nodes, then group by normalized ID in JS
+        const findAllQuery = `
+          MATCH (n)
+          WHERE (n.graph_id = $graphId OR n.graphId = $graphId)
+            AND (n:Sprint OR n:Epic)
+          RETURN labels(n)[0] as type,
+                 elementId(n) as elementId,
+                 n.id as id,
+                 properties(n) as properties
+          ORDER BY labels(n)[0], n.id
+        `;
+
+        const allNodes = await runQuery<NodeRecord>(findAllQuery, { graphId });
+
+        // Group by (type, normalizedId)
+        const groupMap = new Map<string, DuplicateGroup>();
+        for (const node of allNodes) {
+          const normalized = normalizeStructuralId(node.id, node.type);
+          const key = `${node.type}::${normalized}`;
+          if (!groupMap.has(key)) {
+            groupMap.set(key, { type: node.type, canonicalId: normalized, nodes: [], count: 0 });
+          }
+          const group = groupMap.get(key)!;
+          group.nodes.push({ elementId: node.elementId, id: node.id, properties: node.properties });
+          group.count = group.nodes.length;
+        }
+
+        // Filter to only groups with duplicates
+        const duplicateGroups: DuplicateGroup[] = Array.from(groupMap.values()).filter(g => g.count > 1);
+
+        if (duplicateGroups.length === 0) {
+          result = { affected: 0, details: 'No duplicate structural nodes found' };
+          return NextResponse.json({
+            action,
+            dryRun,
+            merged: 0,
+            details: [],
+          });
+        }
+
+        if (dryRun) {
+          // Preview mode: return what would be merged without executing
+          const mergeDetails: MergeDetail[] = duplicateGroups.map(group => {
+            const nodes = group.nodes;
+            // Pick survivor: prefer the node with structural properties
+            // (epic_id for Sprint, or status set by task sync)
+            const survivor = nodes.find(n =>
+              n.properties.epic_id || n.properties.sprint_id ||
+              (n.properties.status && !n.properties.content)
+            ) || nodes[0];
+            const orphan = nodes.find(n => n.elementId !== survivor.elementId) || nodes[1];
+
+            // Determine which content properties would be merged
+            const contentProps = ['content', 'summary', 'embedding', 'embedding_model', 'has_embedding', 'filePath', 'hash'];
+            const propsToMerge = contentProps.filter(prop => orphan.properties[prop] !== undefined);
+
+            return {
+              type: group.type,
+              canonicalId: group.canonicalId,
+              survivorId: survivor.elementId,
+              orphanId: orphan.elementId,
+              propertiesMerged: propsToMerge,
+              relationshipsTransferred: 0, // Unknown in dry-run
+            };
+          });
+
+          return NextResponse.json({
+            action,
+            dryRun,
+            merged: mergeDetails.length,
+            details: mergeDetails,
+          });
+        }
+
+        // Execute mode: perform actual merges
+        const mergeDetails: MergeDetail[] = [];
+        let totalMerged = 0;
+
+        for (const group of duplicateGroups) {
+          const nodes = group.nodes;
+
+          // Pick survivor: prefer the node with structural properties
+          const survivor = nodes.find(n =>
+            n.properties.epic_id || n.properties.sprint_id ||
+            (n.properties.status && !n.properties.content)
+          ) || nodes[0];
+          const orphan = nodes.find(n => n.elementId !== survivor.elementId) || nodes[1];
+
+          if (!orphan || survivor.elementId === orphan.elementId) continue;
+
+          let relsTransferred = 0;
+          const contentProps = ['content', 'summary', 'embedding', 'embedding_model', 'has_embedding', 'filePath', 'hash'];
+          const propsToMerge = contentProps.filter(prop => orphan.properties[prop] !== undefined);
+
+          try {
+            // Step 2: Transfer outgoing relationships from orphan to survivor
+            const transferOutgoing = await runQuery<{ transferred: number }>(`
+              MATCH (orphan)
+              WHERE elementId(orphan) = $orphanElementId
+              MATCH (orphan)-[r]->(target)
+              MATCH (survivor)
+              WHERE elementId(survivor) = $survivorElementId
+              WITH survivor, target, type(r) as relType, r
+              WHERE NOT exists((survivor)-[]->(target))
+              CALL {
+                WITH survivor, target, relType
+                WITH survivor, target, relType
+                MERGE (survivor)-[newR:\`PLACEHOLDER\`]->(target)
+                RETURN count(newR) as cnt
+              }
+              RETURN count(*) as transferred
+            `.replace('PLACEHOLDER', 'TRANSFERRED'), {
+              orphanElementId: orphan.elementId,
+              survivorElementId: survivor.elementId,
+            }).catch(() => [{ transferred: 0 }]);
+            relsTransferred += toNumber(transferOutgoing[0]?.transferred);
+
+            // Step 3: Transfer incoming relationships from orphan to survivor
+            const transferIncoming = await runQuery<{ transferred: number }>(`
+              MATCH (orphan)
+              WHERE elementId(orphan) = $orphanElementId
+              MATCH (source)-[r]->(orphan)
+              MATCH (survivor)
+              WHERE elementId(survivor) = $survivorElementId
+              WITH survivor, source, type(r) as relType, r
+              WHERE NOT exists((source)-[]->(survivor))
+              CALL {
+                WITH survivor, source, relType
+                WITH survivor, source, relType
+                MERGE (source)-[newR:\`PLACEHOLDER\`]->(survivor)
+                RETURN count(newR) as cnt
+              }
+              RETURN count(*) as transferred
+            `.replace('PLACEHOLDER', 'TRANSFERRED'), {
+              orphanElementId: orphan.elementId,
+              survivorElementId: survivor.elementId,
+            }).catch(() => [{ transferred: 0 }]);
+            relsTransferred += toNumber(transferIncoming[0]?.transferred);
+
+            // Step 4: Merge content properties from orphan onto survivor
+            const propsToSet: Record<string, any> = {};
+            for (const prop of propsToMerge) {
+              if (orphan.properties[prop] !== undefined && orphan.properties[prop] !== null) {
+                propsToSet[prop] = orphan.properties[prop];
+              }
+            }
+
+            if (Object.keys(propsToSet).length > 0) {
+              await runQuery(`
+                MATCH (survivor)
+                WHERE elementId(survivor) = $survivorElementId
+                SET survivor += $propsToSet
+                RETURN count(*) as propertiesMerged
+              `, {
+                survivorElementId: survivor.elementId,
+                propsToSet,
+              });
+            }
+
+            // Step 5: Delete orphan node
+            await runQuery(`
+              MATCH (orphan)
+              WHERE elementId(orphan) = $orphanElementId
+              DETACH DELETE orphan
+              RETURN count(*) as deleted
+            `, {
+              orphanElementId: orphan.elementId,
+            });
+
+            mergeDetails.push({
+              type: group.type,
+              canonicalId: group.canonicalId,
+              survivorId: survivor.elementId,
+              orphanId: orphan.elementId,
+              propertiesMerged: propsToMerge,
+              relationshipsTransferred: relsTransferred,
+            });
+
+            totalMerged++;
+          } catch (mergeError) {
+            console.error(`[Cleanup API] Error merging ${group.type} ${group.canonicalId}:`, mergeError);
+            // Continue with next group
+          }
+        }
+
+        return NextResponse.json({
+          action,
+          dryRun,
+          merged: totalMerged,
+          details: mergeDetails,
+        });
       }
 
       case 'cleanup-stale': {

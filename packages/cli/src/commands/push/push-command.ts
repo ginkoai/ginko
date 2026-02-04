@@ -150,21 +150,56 @@ function extractEntityId(filename: string, entityType: string, content?: string)
   const docIdMatch = filename.match(/^((?:ADR|PRD|GOTCHA|PATTERN)-\d+)/i);
   if (docIdMatch) return docIdMatch[1].toUpperCase();
 
-  // Sprint files: SPRINT-YYYY-MM-... → try to extract entity ID from content
-  if (entityType === 'Sprint' && content) {
-    const sprintIdMatch = content.match(/\*\*ID:\*\*\s*`?([a-z0-9_]+)`?/i);
-    if (sprintIdMatch) return sprintIdMatch[1].toLowerCase();
-    // Also try: **Sprint ID**: e014_s02 format
-    const altIdMatch = content.match(/Sprint(?:\s+ID)?[:\s]+`?(e\d{3}_s\d{2})`?/i);
-    if (altIdMatch) return altIdMatch[1].toLowerCase();
+  // Sprint files: SPRINT-YYYY-MM-... → try to extract entity ID from filename or content
+  if (entityType === 'Sprint') {
+    // --- Filename-based extraction (before content-based) ---
 
-    // Heuristic: derive from sprint number in filename + EPIC-NNN in content
-    const sprintNumMatch = filename.match(/sprint[_-]?(\d+)/i);
-    const epicRefMatch = content.match(/EPIC-(\d+)/i);
-    if (sprintNumMatch && epicRefMatch) {
-      const epicId = `e${epicRefMatch[1].padStart(3, '0')}`;
-      const sprintNum = sprintNumMatch[1].padStart(2, '0');
+    // Extract embedded canonical ID from SPRINT filenames: e.g. SPRINT-2026-01-e014-s02-name
+    const embeddedCanonical = filename.match(/(e\d{3})[_-](s\d{2}[a-z]?)/i);
+    if (embeddedCanonical) return `${embeddedCanonical[1].toLowerCase()}_${embeddedCanonical[2].toLowerCase()}`;
+
+    // Extract embedded adhoc ID: e.g. SPRINT-adhoc_260119-name or SPRINT-adhoc_251209_s01-name
+    const embeddedAdhoc = filename.match(/(adhoc_\d{6}(?:[_-]s\d{2})?)/i);
+    if (embeddedAdhoc) {
+      const adhocId = embeddedAdhoc[1].toLowerCase().replace(/-/g, '_');
+      // If no sprint suffix, default to _s01
+      return adhocId.match(/_s\d{2}$/) ? adhocId : `${adhocId}_s01`;
+    }
+
+    // Hybrid filenames: e001-sprint1 or e001_sprint2 (canonical epic prefix with legacy sprint suffix)
+    const hybridFilename = filename.match(/(e\d{3})[-_]sprint(\d+)/i);
+    if (hybridFilename) {
+      const epicId = hybridFilename[1].toLowerCase();
+      const sprintNum = hybridFilename[2].padStart(2, '0');
       return `${epicId}_s${sprintNum}`;
+    }
+
+    // Legacy filenames: epic002-sprint1 or epic002-phase1
+    const legacyFilename = filename.match(/epic(\d+)[-_](?:sprint|phase)(\d+)/i);
+    if (legacyFilename) {
+      const epicId = `e${legacyFilename[1].padStart(3, '0')}`;
+      const sprintNum = legacyFilename[2].padStart(2, '0');
+      return `${epicId}_s${sprintNum}`;
+    }
+
+    // --- Content-based extraction ---
+    if (content) {
+      const sprintIdMatch = content.match(/\*\*ID:\*\*\s*`?([a-z0-9_]+)`?/i);
+      if (sprintIdMatch) return sprintIdMatch[1].toLowerCase();
+      // Also try: **Sprint ID:** e014_s02 format (handle optional ** bold markers)
+      const altIdMatch = content.match(/\*{0,2}Sprint(?:\s+ID)?\*{0,2}:?\*{0,2}\s+`?(e\d{3}_s\d{2}[a-z]?)`?/i);
+      if (altIdMatch) return altIdMatch[1].toLowerCase();
+
+      // Heuristic: derive from sprint number in filename + EPIC-NNN in content
+      // Skip matches where the digit follows SPRINT- prefix (e.g. SPRINT-2025 captures the year)
+      const sprintNumMatch = filename.match(/(?:^|-)(?!SPRINT).*sprint[_-]?(\d+)/i)
+        || filename.match(/[-_]sprint[_-]?(\d+)/i);
+      const epicRefMatch = content.match(/EPIC-(\d+)/i);
+      if (sprintNumMatch && epicRefMatch) {
+        const epicId = `e${epicRefMatch[1].padStart(3, '0')}`;
+        const sprintNum = sprintNumMatch[1].padStart(2, '0');
+        return `${epicId}_s${sprintNum}`;
+      }
     }
   }
 

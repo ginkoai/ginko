@@ -269,21 +269,49 @@ export async function POST(request: NextRequest) {
               properties.embedding = embedding;
             }
 
-            // Use MERGE to create or update
+            // Build property lists for Cypher SET clauses
             const propsList = Object.keys(properties)
               .filter(key => properties[key] !== null && properties[key] !== undefined)
               .map(key => `${key}: $${key}`)
               .join(', ');
 
-            await tx.run(
-              `MERGE (n:${doc.type} {id: $id, graph_id: $graph_id})
-               ON CREATE SET n = {${propsList}}
-               ON MATCH SET n += {${propsList.replace('id: $id, ', '').replace('graph_id: $graph_id, ', '')}}
-               WITH n
-               MATCH (g:Graph {graphId: $graph_id})
-               MERGE (g)-[:CONTAINS]->(n)`,
-              properties
-            );
+            // Structural types (Sprint, Epic): use MATCH+SET (enrich-only).
+            // Task sync is the sole creator of structural nodes. Document upload
+            // should never create Sprint/Epic nodes from scratch (prevents duplicates).
+            const structuralTypes = ['Sprint', 'Epic'];
+            const isStructural = structuralTypes.includes(doc.type);
+
+            if (isStructural) {
+              // Enrich existing node only — task sync creates the node
+              const contentPropsList = Object.keys(properties)
+                .filter(key => properties[key] !== null && properties[key] !== undefined)
+                .map(key => `${key}: $${key}`)
+                .join(', ');
+
+              const result = await tx.run(
+                `MATCH (n:${doc.type} {id: $id, graph_id: $graph_id})
+                 SET n += {${contentPropsList}}
+                 WITH n
+                 MATCH (g:Graph {graphId: $graph_id})
+                 MERGE (g)-[:CONTAINS]->(n)`,
+                properties
+              );
+
+              if (result.records.length === 0) {
+                console.warn(`[Documents API] Structural node ${doc.type}:${doc.id} not found. Task sync may not have run yet.`);
+              }
+            } else {
+              // Original MERGE behavior for non-structural types (ADR, Pattern, etc.)
+              await tx.run(
+                `MERGE (n:${doc.type} {id: $id, graph_id: $graph_id})
+                 ON CREATE SET n = {${propsList}}
+                 ON MATCH SET n += {${propsList.replace('id: $id, ', '').replace('graph_id: $graph_id, ', '')}}
+                 WITH n
+                 MATCH (g:Graph {graphId: $graph_id})
+                 MERGE (g)-[:CONTAINS]->(n)`,
+                properties
+              );
+            }
 
             progress.uploaded++;
           }
