@@ -5269,122 +5269,126 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 /* T-junction brackets at top and bottom of dividers
-   Creates: ──┬── at top and ──┴── at bottom */
+   Creates: ──┬── at top and ──┴── at bottom
+   Only applies above 1024px breakpoint (multi-column layouts) */
+@media (min-width: 1025px) {
+    /* Top T-junction: double height so vertical extends up and down */
+    .transformation-card:not(:last-child)::before,
+    .feature-card:not(:last-child)::before,
+    .feature-cell:not(:last-child)::before,
+    .stat-card:not(:last-child)::before,
+    .step-card:not(:last-child)::before,
+    .pricing-card:not(:last-child)::before,
+    .problem-card:not(:last-child)::before,
+    .command-card:not(:last-child)::before,
+    .faq-item:not(:last-child)::before {
+        content: '';
+        position: absolute;
+        right: calc(-1 * var(--card-bracket-size));
+        top: calc(-1 * var(--card-bracket-size));
+        width: calc(var(--card-bracket-size) * 2);
+        height: calc(var(--card-bracket-size) * 2);
+        background:
+            /* horizontal line at center */
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
+            /* vertical line full height */
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat;
+        z-index: 11;
+    }
 
-/* Top T-junction: double height so vertical extends up and down */
-.transformation-card:not(:last-child)::before,
-.feature-card:not(:last-child)::before,
-.feature-cell:not(:last-child)::before,
-.stat-card:not(:last-child)::before,
-.step-card:not(:last-child)::before,
-.pricing-card:not(:last-child)::before,
-.problem-card:not(:last-child)::before,
-.command-card:not(:last-child)::before,
-.faq-item:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    right: calc(-1 * var(--card-bracket-size));
-    top: calc(-1 * var(--card-bracket-size));
-    width: calc(var(--card-bracket-size) * 2);
-    height: calc(var(--card-bracket-size) * 2);
-    background:
-        /* horizontal line at center */
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
-        /* vertical line full height */
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat;
-    z-index: 11;
+    /* Bottom T-junction: double height so vertical extends up and down */
+    .transformation-card:not(:last-child)::after,
+    .feature-card:not(:last-child)::after,
+    .feature-cell:not(:last-child)::after,
+    .stat-card:not(:last-child)::after,
+    .step-card:not(:last-child)::after,
+    .pricing-card:not(:last-child)::after,
+    .problem-card:not(:last-child)::after,
+    .command-card:not(:last-child)::after,
+    .faq-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        right: calc(-1 * var(--card-bracket-size));
+        bottom: calc(-1 * var(--card-bracket-size));
+        width: calc(var(--card-bracket-size) * 2);
+        height: calc(var(--card-bracket-size) * 2);
+        background:
+            /* horizontal line at center */
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
+            /* vertical line full height */
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat;
+        z-index: 2;
+    }
 }
 
-/* Bottom T-junction: double height so vertical extends up and down */
-.transformation-card:not(:last-child)::after,
-.feature-card:not(:last-child)::after,
-.feature-cell:not(:last-child)::after,
-.stat-card:not(:last-child)::after,
-.step-card:not(:last-child)::after,
-.pricing-card:not(:last-child)::after,
-.problem-card:not(:last-child)::after,
-.command-card:not(:last-child)::after,
-.faq-item:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: calc(-1 * var(--card-bracket-size));
-    bottom: calc(-1 * var(--card-bracket-size));
-    width: calc(var(--card-bracket-size) * 2);
-    height: calc(var(--card-bracket-size) * 2);
-    background:
-        /* horizontal line at center */
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
-        /* vertical line full height */
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat;
-    z-index: 2;
-}
+/* Hide T-junction marks on cards at row edges (no divider to the right)
+   Only applies above 1024px breakpoint (multi-column layouts) */
+@media (min-width: 1025px) {
+    /* First row junctions should be ┬ (T down), not ┼ (cross) */
+    /* 2-column grids: first 2 cards */
+    .features-grid-unified > .feature-cell:nth-child(-n+2):not(:nth-child(2n))::before,
+    .value-stats > .stat-card:nth-child(-n+2):not(:nth-child(2n))::before {
+        top: 0 !important;
+        height: var(--card-bracket-size) !important;
+        background:
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / 100% var(--card-bracket-thickness) no-repeat,
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
+    }
 
-/* Hide T-junction marks on cards at row edges (no divider to the right) */
+    /* FAQ top-middle ┬ junction - needs complete rule since item ::before is used for left-T */
+    .faq-accordion > .faq-item:nth-child(1)::before {
+        content: '' !important;
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        right: calc(-1 * var(--card-bracket-size)) !important;
+        left: auto !important;
+        width: calc(var(--card-bracket-size) * 2) !important;
+        height: var(--card-bracket-size) !important;
+        background:
+            /* horizontal line at top */
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / 100% var(--card-bracket-thickness) no-repeat,
+            /* vertical line going down from center */
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
+        z-index: 3 !important;
+    }
 
-/* First row junctions should be ┬ (T down), not ┼ (cross) */
-/* 2-column grids: first 2 cards */
-.features-grid-unified > .feature-cell:nth-child(-n+2):not(:nth-child(2n))::before,
-.value-stats > .stat-card:nth-child(-n+2):not(:nth-child(2n))::before {
-    top: 0 !important;
-    height: var(--card-bracket-size) !important;
-    background:
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / 100% var(--card-bracket-thickness) no-repeat,
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-}
+    /* 3-column grids: first 3 cards */
+    .transformation-grid > .transformation-card:nth-child(-n+3):not(:nth-child(3n))::before,
+    .problem-grid > .problem-card:nth-child(-n+3):not(:nth-child(3n))::before,
+    .pricing-grid > .pricing-card:nth-child(-n+3):not(:nth-child(3n))::before,
+    .features-grid > .feature-card:nth-child(-n+3):not(:nth-child(3n))::before {
+        top: 0 !important;
+        height: var(--card-bracket-size) !important;
+        background:
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / 100% var(--card-bracket-thickness) no-repeat,
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
+    }
 
-/* FAQ top-middle ┬ junction - needs complete rule since item ::before is used for left-T */
-.faq-accordion > .faq-item:nth-child(1)::before {
-    content: '' !important;
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    right: calc(-1 * var(--card-bracket-size)) !important;
-    left: auto !important;
-    width: calc(var(--card-bracket-size) * 2) !important;
-    height: var(--card-bracket-size) !important;
-    background:
-        /* horizontal line at top */
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / 100% var(--card-bracket-thickness) no-repeat,
-        /* vertical line going down from center */
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-    z-index: 3 !important;
-}
+    /* Last row junctions should be ┴ (T up), not ┼ (cross) */
+    /* 2-column grids: last 2 cards */
+    .features-grid-unified > .feature-cell:nth-last-child(-n+2):not(:nth-child(2n))::after,
+    .faq-accordion > .faq-item:nth-last-child(-n+2):not(:nth-child(2n))::after,
+    .value-stats > .stat-card:nth-last-child(-n+2):not(:nth-child(2n))::after {
+        bottom: 0 !important;
+        height: var(--card-bracket-size) !important;
+        background:
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / 100% var(--card-bracket-thickness) no-repeat,
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
+    }
 
-/* 3-column grids: first 3 cards */
-.transformation-grid > .transformation-card:nth-child(-n+3):not(:nth-child(3n))::before,
-.problem-grid > .problem-card:nth-child(-n+3):not(:nth-child(3n))::before,
-.pricing-grid > .pricing-card:nth-child(-n+3):not(:nth-child(3n))::before,
-.features-grid > .feature-card:nth-child(-n+3):not(:nth-child(3n))::before {
-    top: 0 !important;
-    height: var(--card-bracket-size) !important;
-    background:
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / 100% var(--card-bracket-thickness) no-repeat,
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-}
-
-/* Last row junctions should be ┴ (T up), not ┼ (cross) */
-/* 2-column grids: last 2 cards */
-.features-grid-unified > .feature-cell:nth-last-child(-n+2):not(:nth-child(2n))::after,
-.faq-accordion > .faq-item:nth-last-child(-n+2):not(:nth-child(2n))::after,
-.value-stats > .stat-card:nth-last-child(-n+2):not(:nth-child(2n))::after {
-    bottom: 0 !important;
-    height: var(--card-bracket-size) !important;
-    background:
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / 100% var(--card-bracket-thickness) no-repeat,
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-}
-
-/* 3-column grids: last 3 cards */
-.transformation-grid > .transformation-card:nth-last-child(-n+3):not(:nth-child(3n))::after,
-.problem-grid > .problem-card:nth-last-child(-n+3):not(:nth-child(3n))::after,
-.pricing-grid > .pricing-card:nth-last-child(-n+3):not(:nth-child(3n))::after,
-.features-grid > .feature-card:nth-last-child(-n+3):not(:nth-child(3n))::after {
-    bottom: 0 !important;
-    height: var(--card-bracket-size) !important;
-    background:
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / 100% var(--card-bracket-thickness) no-repeat,
-        linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-    z-index: 10 !important;
+    /* 3-column grids: last 3 cards */
+    .transformation-grid > .transformation-card:nth-last-child(-n+3):not(:nth-child(3n))::after,
+    .problem-grid > .problem-card:nth-last-child(-n+3):not(:nth-child(3n))::after,
+    .pricing-grid > .pricing-card:nth-last-child(-n+3):not(:nth-child(3n))::after,
+    .features-grid > .feature-card:nth-last-child(-n+3):not(:nth-child(3n))::after {
+        bottom: 0 !important;
+        height: var(--card-bracket-size) !important;
+        background:
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / 100% var(--card-bracket-thickness) no-repeat,
+            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
+        z-index: 10 !important;
+    }
 }
 
 /* FAQ grid wrapper for positioning cross junction markers */
@@ -5577,15 +5581,17 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     border-bottom: 1px solid var(--card-border-color) !important;
 }
 
-/* Left-T junction (├) at left edge of row dividers */
-/* First column cards with bottom border need ├ at bottom-left */
-/* 3-column grids: 1st, 4th, 7th, etc. (3n+1) that have bottom border */
-/* NOTE: steps-grid excluded - it has its own specific rules for single-column layout */
-.transformation-grid > .transformation-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
-.features-grid > .feature-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
-.problem-grid > .problem-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
-.pricing-grid > .pricing-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
-.commands-grid > .command-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after {
+/* Horizontal row divider junctions - only on desktop (>= 1025px) */
+@media (min-width: 1025px) {
+    /* Left-T junction (├) at left edge of row dividers */
+    /* First column cards with bottom border need ├ at bottom-left */
+    /* 3-column grids: 1st, 4th, 7th, etc. (3n+1) that have bottom border */
+    /* NOTE: steps-grid excluded - it has its own specific rules for single-column layout */
+    .transformation-grid > .transformation-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
+    .features-grid > .feature-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
+    .problem-grid > .problem-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
+    .pricing-grid > .pricing-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after,
+    .commands-grid > .command-card:nth-child(3n+1):not(:nth-last-child(-n+3))::after {
     content: '' !important;
     display: block !important;
     position: absolute !important;
@@ -5697,6 +5703,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
     z-index: 3 !important;
 }
+} /* End @media (min-width: 1025px) for horizontal row divider junctions */
 
 /* Hide all HTML corner-bracket elements - we're using CSS gradients instead */
 .corner-bracket {

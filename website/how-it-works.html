@@ -536,6 +536,20 @@
             .concepts-marker-center {
                 display: none !important;
             }
+
+            /* Integrations section: collapse to single column on mobile/tablet */
+            section.features:has(.problem-grid) .problem-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            section.features:has(.problem-grid) .problem-card {
+                border-right: none !important;
+                border-bottom: 1px solid var(--card-border-color) !important;
+            }
+
+            section.features:has(.problem-grid) .problem-card:last-child {
+                border-bottom: none !important;
+            }
         }
     </style>
 </head>
