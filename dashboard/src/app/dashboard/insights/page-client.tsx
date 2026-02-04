@@ -188,6 +188,7 @@ export function InsightsPageClient({ userId, userEmail }: InsightsPageClientProp
             currentUserEmail={userEmail}
             selectedMemberId={selectedMemberId}
             onMemberChange={handleMemberChange}
+            graphId={graphId}
           />
           <button
             onClick={() => loadInsights()}

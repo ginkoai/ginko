@@ -136,6 +136,16 @@ export async function createCommand(projectName: string | undefined, options: Cr
     console.log(chalk.dim(`  You can run "ginko init" manually in the project directory`));
   }
 
+  // Create initial commit so HEAD exists (required by ginko push)
+  const commitSpinner = ora('Creating initial commit...').start();
+  try {
+    execSync('git add .', { cwd: projectPath, stdio: 'pipe' });
+    execSync('git commit -m "chore: initialize project with ginko"', { cwd: projectPath, stdio: 'pipe' });
+    commitSpinner.succeed('Initial commit created');
+  } catch {
+    commitSpinner.warn('Could not create initial commit');
+  }
+
   // Success message
   console.log(chalk.green.bold('\n🎉 Project created successfully!\n'));
 
