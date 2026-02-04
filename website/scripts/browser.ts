@@ -16,8 +16,11 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const SCREENSHOTS_DIR = path.join(__dirname, '..', 'screenshots');
+const SCREENSHOTS_DIR = '/tmp/ginko-screenshots';
 const DEFAULT_BASE_URL = 'http://localhost:3000';
+
+// Anthropic API limit: images in multi-image requests cannot exceed 2000px on either dimension
+const MAX_SCREENSHOT_DIMENSION = 1999;
 
 interface BrowserAction {
   action: 'screenshot' | 'click' | 'type' | 'navigate' | 'scroll' | 'wait' | 'pdf';
@@ -25,6 +28,8 @@ interface BrowserAction {
   value?: string;
   fullPage?: boolean;
   selector?: string;
+  width?: number;
+  height?: number;
 }
 
 async function ensureScreenshotsDir() {
@@ -60,11 +65,41 @@ async function takeScreenshot(page: Page, target: string, fullPage: boolean = tr
   const filename = generateFilename(pageName || 'page', 'png');
   const filepath = path.join(SCREENSHOTS_DIR, filename);
 
-  await page.screenshot({
-    path: filepath,
-    fullPage,
-    animations: 'disabled'
-  });
+  // Get page dimensions to check if we need to cap height
+  const viewport = page.viewportSize();
+  const viewportWidth = viewport?.width || 1280;
+
+  if (fullPage) {
+    // Get full page height
+    const bodyHeight = await page.evaluate(() => document.body.scrollHeight);
+
+    if (bodyHeight > MAX_SCREENSHOT_DIMENSION || viewportWidth > MAX_SCREENSHOT_DIMENSION) {
+      // Cap dimensions to avoid Anthropic API limits
+      const cappedWidth = Math.min(viewportWidth, MAX_SCREENSHOT_DIMENSION);
+      const cappedHeight = Math.min(bodyHeight, MAX_SCREENSHOT_DIMENSION);
+
+      console.log(`⚠️  Page exceeds ${MAX_SCREENSHOT_DIMENSION}px limit (${viewportWidth}x${bodyHeight}), capping to ${cappedWidth}x${cappedHeight}`);
+
+      await page.screenshot({
+        path: filepath,
+        clip: { x: 0, y: 0, width: cappedWidth, height: cappedHeight },
+        animations: 'disabled'
+      });
+    } else {
+      await page.screenshot({
+        path: filepath,
+        fullPage: true,
+        animations: 'disabled'
+      });
+    }
+  } else {
+    // Viewport-only screenshot
+    await page.screenshot({
+      path: filepath,
+      fullPage: false,
+      animations: 'disabled'
+    });
+  }
 
   return filepath;
 }
@@ -112,17 +147,21 @@ async function scrollPage(page: Page, direction: 'top' | 'bottom' | 'up' | 'down
   await page.waitForTimeout(300);
 }
 
-async function executeActions(actions: BrowserAction[]): Promise<{ results: string[]; errors: string[] }> {
+async function executeActions(actions: BrowserAction[], viewportWidth?: number, viewportHeight?: number): Promise<{ results: string[]; errors: string[] }> {
   const results: string[] = [];
   const errors: string[] = [];
 
   let browser: Browser | null = null;
   let page: Page | null = null;
 
+  // Cap viewport dimensions to API limits
+  const width = Math.min(viewportWidth || 1280, MAX_SCREENSHOT_DIMENSION);
+  const height = Math.min(viewportHeight || 720, MAX_SCREENSHOT_DIMENSION);
+
   try {
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({
-      viewport: { width: 1280, height: 720 }
+      viewport: { width, height }
     });
     page = await context.newPage();
 
@@ -211,14 +250,29 @@ async function main() {
     console.log(`Usage: npx ts-node scripts/browser.ts <action> [options]
 
 Actions:
-  screenshot <url|path> [--viewport]  Take a screenshot
-  pdf <url|path>                       Save page as PDF
+  screenshot <url|path> [options]  Take a screenshot
+  pdf <url|path>                   Save page as PDF
+
+Options:
+  --viewport           Capture viewport only (not full page)
+  --width <pixels>     Set viewport width (default: 1280, max: ${MAX_SCREENSHOT_DIMENSION})
+  --height <pixels>    Set viewport height (default: 720, max: ${MAX_SCREENSHOT_DIMENSION})
+
+Responsive Testing Presets:
+  --mobile             375x667 (iPhone SE)
+  --tablet             768x1024 (iPad)
+  --desktop            1280x720 (default)
+  --wide               1920x1080 (Full HD)
 
 Examples:
-  npx ts-node scripts/browser.ts screenshot /
-  npx ts-node scripts/browser.ts screenshot /about --viewport
-  npx ts-node scripts/browser.ts pdf /pricing
-  npx ts-node scripts/browser.ts screenshot https://example.com
+  npx tsx scripts/browser.ts screenshot /
+  npx tsx scripts/browser.ts screenshot /about --viewport
+  npx tsx scripts/browser.ts screenshot / --mobile
+  npx tsx scripts/browser.ts screenshot / --tablet --viewport
+  npx tsx scripts/browser.ts screenshot / --width 390 --height 844
+  npx tsx scripts/browser.ts pdf /pricing
+
+Note: Screenshots are automatically capped at ${MAX_SCREENSHOT_DIMENSION}px to avoid API limits.
 `);
     process.exit(0);
   }
@@ -227,6 +281,33 @@ Examples:
   const target = args[1];
   const fullPage = !args.includes('--viewport');
 
+  // Parse viewport dimensions
+  let width = 1280;
+  let height = 720;
+
+  // Responsive presets
+  if (args.includes('--mobile')) {
+    width = 375;
+    height = 667;
+  } else if (args.includes('--tablet')) {
+    width = 768;
+    height = 1024;
+  } else if (args.includes('--wide')) {
+    width = 1920;
+    height = 1080;
+  }
+
+  // Custom dimensions override presets
+  const widthIndex = args.indexOf('--width');
+  if (widthIndex !== -1 && args[widthIndex + 1]) {
+    width = parseInt(args[widthIndex + 1], 10);
+  }
+
+  const heightIndex = args.indexOf('--height');
+  if (heightIndex !== -1 && args[heightIndex + 1]) {
+    height = parseInt(args[heightIndex + 1], 10);
+  }
+
   if (!target && (action === 'screenshot' || action === 'pdf' || action === 'navigate')) {
     console.error(`Error: ${action} requires a target URL or path`);
     process.exit(1);
@@ -234,7 +315,7 @@ Examples:
 
   const { results, errors } = await executeActions([
     { action, target, fullPage }
-  ]);
+  ], width, height);
 
   results.forEach(r => console.log(r));
   errors.forEach(e => console.error(e));
