@@ -497,8 +497,8 @@ export async function pushCommand(options: PushOptions): Promise<PushResult> {
       console.log(chalk.dim('Uploading documents...'));
     }
 
-    // Batch documents (500 per batch, matching load.ts)
-    const batchSize = 500;
+    // Batch documents (50 per batch — Vercel serverless has ~4.5MB body limit)
+    const batchSize = 50;
     const batches: DocumentUpload[][] = [];
     for (let i = 0; i < documents.length; i += batchSize) {
       batches.push(documents.slice(i, i + batchSize));
