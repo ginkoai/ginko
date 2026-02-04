@@ -7,14 +7,18 @@
     "build": "node build-blog.js",
     "build:blog": "node build-blog.js",
     "watch:blog": "node watch-blog.js",
-    "dev": "node watch-blog.js"
+    "serve": "npx serve . -p 3000",
+    "dev": "npx serve . -p 3000"
   },
   "dependencies": {
-    "marked": "^11.1.1",
     "gray-matter": "^4.0.3",
-    "highlight.js": "^11.9.0"
+    "highlight.js": "^11.9.0",
+    "marked": "^11.1.1"
   },
   "devDependencies": {
-    "chokidar": "^3.5.3"
+    "@playwright/test": "^1.58.1",
+    "chokidar": "^3.5.3",
+    "serve": "^14.2.5",
+    "tsx": "^4.21.0"
   }
 }
