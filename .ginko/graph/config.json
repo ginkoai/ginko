@@ -902,7 +902,7 @@
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-11-155Z.md": "sha256:84ee7258b835cbe0dec0dd4f0a4bee9192ced691b096ca83f806026ef1ee2fa2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-47-459Z.md": "sha256:f4acd1560044d88d062017f215cdadffb7cbe6769f52c85b759b5a85f8ee90b2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-51-05-126Z.md": "sha256:a7e81ebe41d99155adb0524c726f48f9b365f817b546da839ab66f31d316ba19",
-    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:e212bcb414bbe97d9cccec497fc8f0512e6dc2b30264a2c63495856aa1f77d43",
+    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:80f5c98433a78023013b314357e1e92768d247c3f0ae89807e138f275c58b885",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-19-epic015-sprint2.md": "sha256:ffe4de352b4879b640bebbf745782454e78f32638cfcf416579615bc519b4b9e",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-20-data-cleanup.md": "sha256:fb3dcabc1838aabe639c99920fdff2bc21baed270d46706bc136a0c082d126d6",
     ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-01-20-epic015-s02-verification.md": "sha256:999c480085af7d6730d5403145b0d70e6807b6c00535b8fd1511ac4c893405e2",
@@ -1243,7 +1243,9 @@
     "docs/sprints/SPRINT-adhoc_260201-uat-r3-bug-fixes.md": "sha256:050aa120c682f9a7bb0f31f1ccd1e10c30e055bf350cc010a7f63885f5db5ea0",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-02-02-bug005.md": "sha256:6eedc59c64b67568b7f8f998000e112b064ceeefddca8113de9e92b784ddea08",
     "docs/gotchas/GOTCHA-css-bracket-junction-overlap.md": "sha256:61b2e9d495267c8e7028f41db4060b105aab6b9605b4a05f523793eb5eb81454",
-    "docs/sprints/SPRINT-adhoc_260203-unify-graph-nodes.md": "sha256:c0c40ceb64f2db339fa13019966f0074cdfa6913228bcccd9980a3004257be5b"
+    "docs/sprints/SPRINT-adhoc_260203-unify-graph-nodes.md": "sha256:c0c40ceb64f2db339fa13019966f0074cdfa6913228bcccd9980a3004257be5b",
+    ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-02-04-epic-id-team-fix.md": "sha256:c9a0b79b198f84bf878248d652899d6f47190a6f4efee4624beacc6992daa80b",
+    "docs/epics/EPIC-e099-test-entity-id-fix.md": "sha256:2af389cffce43bcdd731477b2e88a69bbfba25ea4f0426f318881b4d7cbc1940"
   },
-  "lastSync": "2026-02-04T16:26:05.505Z"
+  "lastSync": "2026-02-04T19:00:21.676Z"
 }
