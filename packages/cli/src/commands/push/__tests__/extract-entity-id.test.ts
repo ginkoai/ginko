@@ -116,6 +116,14 @@ function extractEntityId(filename: string, entityType: string, content?: string)
       return adhocId.match(/_s\d{2}$/) ? adhocId : `${adhocId}_s01`;
     }
 
+    // Hybrid filenames: e001-sprint1 or e001_sprint2 (canonical epic prefix with legacy sprint suffix)
+    const hybridFilename = filename.match(/(e\d{3})[-_]sprint(\d+)/i);
+    if (hybridFilename) {
+      const epicId = hybridFilename[1].toLowerCase();
+      const sprintNum = hybridFilename[2].padStart(2, '0');
+      return `${epicId}_s${sprintNum}`;
+    }
+
     // Legacy filenames: epic002-sprint1 or epic002-phase1
     const legacyFilename = filename.match(/epic(\d+)[-_](?:sprint|phase)(\d+)/i);
     if (legacyFilename) {
@@ -258,6 +266,32 @@ Tasks here...
     const result = extractEntityId(filename, 'Sprint', content);
     // BUG-A FIXED: legacy filename pattern now matches epic004-sprint4
     expect(result).toBe('e004_s04');
+  });
+
+  // Hybrid pattern: canonical epic prefix (e001) with legacy sprint suffix (sprint1)
+  // This is Ed's actual naming convention
+  it('extracts sprint ID from hybrid e001-sprint1 filename', () => {
+    const filename = 'SPRINT-2026-02-e001-sprint1-Project-Setup-Navigation';
+    const result = extractEntityId(filename, 'Sprint');
+    expect(result).toBe('e001_s01');
+  });
+
+  it('extracts sprint ID from hybrid e001-sprint2 filename', () => {
+    const filename = 'SPRINT-2026-02-e001-sprint2-Contact-Import';
+    const result = extractEntityId(filename, 'Sprint');
+    expect(result).toBe('e001_s02');
+  });
+
+  it('extracts sprint ID from hybrid e001-sprint6 filename', () => {
+    const filename = 'SPRINT-2026-04-e001-sprint6-Polish';
+    const result = extractEntityId(filename, 'Sprint');
+    expect(result).toBe('e001_s06');
+  });
+
+  it('extracts sprint ID from hybrid with underscore separator', () => {
+    const filename = 'SPRINT-2026-03-e002_sprint3-Feature';
+    const result = extractEntityId(filename, 'Sprint');
+    expect(result).toBe('e002_s03');
   });
 
   it('normalizes EPIC-NNN to eNNN for epic files', () => {

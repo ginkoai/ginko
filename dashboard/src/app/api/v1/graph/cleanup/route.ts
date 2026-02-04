@@ -612,6 +612,13 @@ export async function DELETE(request: NextRequest) {
         // merges content properties from document node, transfers relationships,
         // and deletes the orphan.
 
+        interface NodeRecord {
+          type: string;
+          elementId: string;
+          id: string;
+          properties: Record<string, any>;
+        }
+
         interface DuplicateGroup {
           type: string;
           canonicalId: string;
@@ -632,24 +639,69 @@ export async function DELETE(request: NextRequest) {
           relationshipsTransferred: number;
         }
 
-        // Step 1: Find duplicate Sprint/Epic nodes grouped by canonical ID
-        // A node is structural if it has epic_id (Sprint) or status from task sync
-        // A node is document-based if it has content, summary, embedding
-        const findDuplicatesQuery = `
+        // Normalize Sprint/Epic IDs to canonical form for duplicate detection.
+        // Handles: e001_s01, 2026_02_e001_sprint1, e001-sprint1, EPIC-001, etc.
+        function normalizeStructuralId(id: string, type: string): string {
+          const lower = id.toLowerCase().replace(/-/g, '_');
+
+          if (type === 'Epic') {
+            // EPIC-001 → e001
+            const epicMatch = lower.match(/epic[_]?(\d+)/);
+            if (epicMatch) return `e${epicMatch[1].padStart(3, '0')}`;
+            // e001 already canonical
+            const canonMatch = lower.match(/^e(\d{3})$/);
+            if (canonMatch) return lower;
+            // Date-prefixed: 2026_02_e001 → e001
+            const datePrefixed = lower.match(/\d{4}_\d{2}_e(\d{3})$/);
+            if (datePrefixed) return `e${datePrefixed[1]}`;
+            return lower;
+          }
+
+          // Sprint normalization
+          // Already canonical: e001_s01
+          const canonMatch = lower.match(/^(e\d{3}_s\d{2}[a-z]?)$/);
+          if (canonMatch) return canonMatch[1];
+          // Adhoc canonical: adhoc_260203_s01
+          const adhocCanon = lower.match(/^(adhoc_\d{6}_s\d{2})$/);
+          if (adhocCanon) return adhocCanon[1];
+          // Hybrid/legacy: e001_sprint1 or 2026_02_e001_sprint1
+          const sprintMatch = lower.match(/(e\d{3})[_]sprint(\d+)/);
+          if (sprintMatch) return `${sprintMatch[1]}_s${sprintMatch[2].padStart(2, '0')}`;
+          // Date-prefixed canonical: 2026_02_e001_s01 → e001_s01
+          const dateCanon = lower.match(/\d{4}_\d{2}_(e\d{3}_s\d{2})/);
+          if (dateCanon) return dateCanon[1];
+          return lower;
+        }
+
+        // Step 1: Fetch ALL Sprint/Epic nodes, then group by normalized ID in JS
+        const findAllQuery = `
           MATCH (n)
           WHERE (n.graph_id = $graphId OR n.graphId = $graphId)
             AND (n:Sprint OR n:Epic)
-          WITH labels(n)[0] as type, n.id as nodeId, collect({
-            elementId: elementId(n),
-            id: n.id,
-            properties: properties(n)
-          }) as nodes
-          WHERE size(nodes) > 1
-          RETURN type, nodeId as canonicalId, nodes, size(nodes) as count
-          ORDER BY type, canonicalId
+          RETURN labels(n)[0] as type,
+                 elementId(n) as elementId,
+                 n.id as id,
+                 properties(n) as properties
+          ORDER BY labels(n)[0], n.id
         `;
 
-        const duplicateGroups = await runQuery<DuplicateGroup>(findDuplicatesQuery, { graphId });
+        const allNodes = await runQuery<NodeRecord>(findAllQuery, { graphId });
+
+        // Group by (type, normalizedId)
+        const groupMap = new Map<string, DuplicateGroup>();
+        for (const node of allNodes) {
+          const normalized = normalizeStructuralId(node.id, node.type);
+          const key = `${node.type}::${normalized}`;
+          if (!groupMap.has(key)) {
+            groupMap.set(key, { type: node.type, canonicalId: normalized, nodes: [], count: 0 });
+          }
+          const group = groupMap.get(key)!;
+          group.nodes.push({ elementId: node.elementId, id: node.id, properties: node.properties });
+          group.count = group.nodes.length;
+        }
+
+        // Filter to only groups with duplicates
+        const duplicateGroups: DuplicateGroup[] = Array.from(groupMap.values()).filter(g => g.count > 1);
 
         if (duplicateGroups.length === 0) {
           result = { affected: 0, details: 'No duplicate structural nodes found' };

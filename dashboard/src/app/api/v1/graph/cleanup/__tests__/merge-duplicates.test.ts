@@ -15,19 +15,11 @@
  * Validates the merge-duplicate-structural-nodes cleanup action which:
  * - Detects duplicate Sprint/Epic nodes created by dual creation paths
  *   (document upload + task sync)
+ * - Normalizes IDs before grouping (e.g., 2026_02_e001_sprint1 → e001_s01)
  * - Merges content properties from document node into structural node
  * - Transfers relationships (CONTAINS, BELONGS_TO) from orphan to survivor
  * - Deletes orphan node after merge
  * - Supports dryRun mode for preview
- *
- * Test Categories:
- * 1. Duplicate detection - finds Sprint/Epic nodes with same canonical ID
- * 2. Property merging - content, summary, embedding from document node
- * 3. Relationship transfer - CONTAINS, BELONGS_TO moved to survivor
- * 4. Orphan deletion - orphan node removed after merge
- * 5. Dry-run mode - preview without changes
- * 6. No-op cases - handles no duplicates gracefully
- * 7. Type handling - works for both Sprint and Epic types
  */
 
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
@@ -36,7 +28,6 @@ import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 // Mocks - must be before imports that use them
 // -----------------------------------------------------------------------
 
-// Track all Cypher queries and their results
 var mockRunResults: any[] = [];
 var mockRunCallIndex = 0;
 var mockRun = jest.fn().mockImplementation(() => {
@@ -56,7 +47,6 @@ var mockSession = {
   close: jest.fn().mockResolvedValue(undefined as never),
 };
 
-// Mock _neo4j module
 jest.mock('../../../graph/_neo4j', () => ({
   verifyConnection: jest.fn().mockResolvedValue(true),
   getDriver: jest.fn().mockReturnValue({
@@ -67,7 +57,6 @@ jest.mock('../../../graph/_neo4j', () => ({
   runQuery: jest.fn().mockImplementation(() => {
     const result = mockRunResults[mockRunCallIndex] || { records: [] };
     mockRunCallIndex++;
-    // runQuery returns the mapped records (array of objects), not raw result
     if (result.records && Array.isArray(result.records)) {
       return Promise.resolve(result.records.map((r: any) => r.toObject ? r.toObject() : r));
     }
@@ -75,22 +64,17 @@ jest.mock('../../../graph/_neo4j', () => ({
   }),
 }));
 
-// Mock auth middleware to auto-authenticate
 jest.mock('@/lib/auth/middleware', () => ({
   withAuth: jest.fn().mockImplementation(
     (_request: any, handler: (user: any, supabase: any) => Promise<any>) => {
       return handler(
-        {
-          id: 'b27cb2ea-dcae-4255-9e77-9949daa53d77',
-          email: 'chris@watchhill.ai',
-        },
+        { id: 'b27cb2ea-dcae-4255-9e77-9949daa53d77', email: 'chris@watchhill.ai' },
         {}
       );
     }
   ),
 }));
 
-// Mock graph access verification
 jest.mock('@/lib/graph/access', () => ({
   verifyGraphAccessFromRequest: jest.fn().mockResolvedValue({
     hasAccess: true,
@@ -103,9 +87,6 @@ jest.mock('@/lib/graph/access', () => ({
 // Helpers
 // -----------------------------------------------------------------------
 
-/**
- * Build a NextRequest-compatible object for the DELETE handler.
- */
 function makeDeleteRequest(params: {
   graphId: string;
   action: string;
@@ -119,58 +100,15 @@ function makeDeleteRequest(params: {
   if (params.confirm) searchParams.set('confirm', params.confirm);
 
   const url = `http://localhost/api/v1/graph/cleanup?${searchParams.toString()}`;
-  return new Request(url, {
-    method: 'DELETE',
-    headers: {
-      Authorization: 'Bearer test-token',
-    },
-  });
+  return new Request(url, { method: 'DELETE', headers: { Authorization: 'Bearer test-token' } });
 }
 
-/**
- * Create a mock Neo4j record with toObject() for runQuery mapping.
- */
 function mockRecord(obj: Record<string, any>) {
-  return {
-    ...obj,
-    toObject: () => obj,
-    get: (key: string) => obj[key],
-  };
+  return { ...obj, toObject: () => obj, get: (key: string) => obj[key] };
 }
 
-/**
- * Helper to create a mock result set for runQuery responses.
- */
 function mockQueryResult(records: Record<string, any>[]) {
-  return {
-    records: records.map(mockRecord),
-  };
-}
-
-/**
- * Get the Cypher query from a specific call index to mockRun or runQuery.
- */
-function getCypherForRunQueryCall(callIndex: number): string {
-  const { runQuery } = require('../../../graph/_neo4j');
-  if (callIndex >= runQuery.mock.calls.length) {
-    throw new Error(
-      `runQuery was only called ${runQuery.mock.calls.length} times; requested index ${callIndex}`
-    );
-  }
-  return runQuery.mock.calls[callIndex][0] as string;
-}
-
-/**
- * Get the params from a specific call index to runQuery.
- */
-function getParamsForRunQueryCall(callIndex: number): Record<string, any> {
-  const { runQuery } = require('../../../graph/_neo4j');
-  if (callIndex >= runQuery.mock.calls.length) {
-    throw new Error(
-      `runQuery was only called ${runQuery.mock.calls.length} times; requested index ${callIndex}`
-    );
-  }
-  return runQuery.mock.calls[callIndex][1] as Record<string, any>;
+  return { records: records.map(mockRecord) };
 }
 
 // -----------------------------------------------------------------------
@@ -184,88 +122,45 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
     jest.clearAllMocks();
     mockRunResults = [];
     mockRunCallIndex = 0;
-
-    // Reset the runQuery mock call index
     const { runQuery } = require('../../../graph/_neo4j');
     runQuery.mockClear();
     mockRunCallIndex = 0;
-
-    // Dynamic import so mocks are in place
     const mod = await import('../route');
     DELETE = mod.DELETE as unknown as (request: Request) => Promise<Response>;
   });
 
   // =====================================================================
-  // 1. Duplicate detection
+  // 1. Duplicate detection (same raw ID)
   // =====================================================================
   describe('Duplicate detection', () => {
 
-    it('should detect duplicate Sprint nodes by canonical ID', async () => {
-      // Setup: Query returns two Sprint nodes with same canonical ID
+    it('should detect duplicate Sprint nodes with same ID', async () => {
       mockRunResults = [
-        // First query: find duplicates grouped by canonical ID
+        // Flat node records — two Sprint nodes with same id
         mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e005_s01',
-            nodes: [
-              {
-                elementId: 'elem-1',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005', status: 'in_progress' },
-              },
-              {
-                elementId: 'elem-2',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Sprint markdown content', summary: 'Sprint summary' },
-              },
-            ],
-            count: 2,
-          },
+          { type: 'Sprint', elementId: 'elem-1', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005', status: 'in_progress' } },
+          { type: 'Sprint', elementId: 'elem-2', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Sprint markdown content', summary: 'Sprint summary' } },
         ]),
-        // Subsequent queries for merge operations
         mockQueryResult([{ transferred: 1 }]),
         mockQueryResult([{ transferred: 1 }]),
         mockQueryResult([{ propertiesMerged: 3 }]),
         mockQueryResult([{ deleted: 1 }]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
       const body = await res.json();
       expect(body.action).toBe('merge-duplicate-structural-nodes');
-      expect(body.merged).toBeGreaterThanOrEqual(0);
+      expect(body.merged).toBeGreaterThanOrEqual(1);
     });
 
-    it('should detect duplicate Epic nodes by canonical ID', async () => {
-      // Setup: Query returns two Epic nodes with same canonical ID
+    it('should detect duplicate Epic nodes with same ID', async () => {
       mockRunResults = [
         mockQueryResult([
-          {
-            type: 'Epic',
-            canonicalId: 'e005',
-            nodes: [
-              {
-                elementId: 'elem-1',
-                id: 'e005',
-                properties: { id: 'e005', graph_id: 'gin_test', status: 'active' },
-              },
-              {
-                elementId: 'elem-2',
-                id: 'e005',
-                properties: { id: 'e005', graph_id: 'gin_test', content: 'Epic description', summary: 'Epic summary' },
-              },
-            ],
-            count: 2,
-          },
+          { type: 'Epic', elementId: 'elem-1', id: 'e005', properties: { id: 'e005', graph_id: 'gin_test', status: 'active' } },
+          { type: 'Epic', elementId: 'elem-2', id: 'e005', properties: { id: 'e005', graph_id: 'gin_test', content: 'Epic description', summary: 'Epic summary' } },
         ]),
         mockQueryResult([{ transferred: 0 }]),
         mockQueryResult([{ transferred: 0 }]),
@@ -273,176 +168,79 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
         mockQueryResult([{ deleted: 1 }]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
-
       const body = await res.json();
       expect(body.action).toBe('merge-duplicate-structural-nodes');
     });
   });
 
   // =====================================================================
-  // 2. Property merging
+  // 2. ID normalization — different raw IDs, same canonical form
   // =====================================================================
-  describe('Property merging', () => {
+  describe('ID normalization', () => {
 
-    it('should merge content properties from document node into structural node', async () => {
-      // The structural node (from task sync) has epic_id, status, etc.
-      // The document node (from doc upload) has content, summary, embedding.
-      // After merge, the survivor should have all properties.
+    it('should group 2026_02_e001_sprint1 and e001_s01 as duplicates', async () => {
+      // This is Ed's actual scenario: document upload created nodes with
+      // date-prefixed IDs, task sync created nodes with canonical IDs
       mockRunResults = [
         mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e005_s01',
-            nodes: [
-              {
-                elementId: 'structural-node',
-                id: 'e005_s01',
-                properties: {
-                  id: 'e005_s01',
-                  graph_id: 'gin_test',
-                  epic_id: 'e005',
-                  status: 'in_progress',
-                  title: 'Sprint 1',
-                },
-              },
-              {
-                elementId: 'document-node',
-                id: 'e005_s01',
-                properties: {
-                  id: 'e005_s01',
-                  graph_id: 'gin_test',
-                  content: 'Full sprint content here',
-                  summary: 'Sprint summary from doc upload',
-                  embedding: [0.1, 0.2, 0.3],
-                  embedding_model: 'voyage-3',
-                },
-              },
-            ],
-            count: 2,
-          },
+          { type: 'Sprint', elementId: 'structural-1', id: 'e001_s01', properties: { id: 'e001_s01', graph_id: 'gin_ed', epic_id: 'e001', status: 'not_started', title: 'Sprint 1' } },
+          { type: 'Sprint', elementId: 'document-1', id: '2026_02_e001_sprint1', properties: { id: '2026_02_e001_sprint1', graph_id: 'gin_ed', content: 'Sprint doc', summary: 'Summary' } },
         ]),
-        // Transfer outgoing rels
         mockQueryResult([{ transferred: 0 }]),
-        // Transfer incoming rels
-        mockQueryResult([{ transferred: 2 }]),
-        // Merge properties
-        mockQueryResult([{ propertiesMerged: 4 }]),
-        // Delete orphan
-        mockQueryResult([{ deleted: 1 }]),
-      ];
-
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
-
-      const res = await DELETE(req);
-      expect(res.status).toBe(200);
-
-      const body = await res.json();
-      expect(body.merged).toBeGreaterThanOrEqual(1);
-      // Verify the details array includes info about what was merged
-      if (body.details && body.details.length > 0) {
-        const detail = body.details[0];
-        expect(detail.type).toBe('Sprint');
-        expect(detail.canonicalId).toBe('e005_s01');
-        expect(detail.survivorId).toBeDefined();
-        expect(detail.orphanId).toBeDefined();
-      }
-    });
-  });
-
-  // =====================================================================
-  // 3. Relationship transfer
-  // =====================================================================
-  describe('Relationship transfer', () => {
-
-    it('should transfer CONTAINS and BELONGS_TO relationships from orphan to survivor', async () => {
-      mockRunResults = [
-        mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e005_s01',
-            nodes: [
-              {
-                elementId: 'survivor-elem',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' },
-              },
-              {
-                elementId: 'orphan-elem',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Doc content' },
-              },
-            ],
-            count: 2,
-          },
-        ]),
-        // Transfer outgoing relationships
-        mockQueryResult([{ transferred: 3 }]),
-        // Transfer incoming relationships
         mockQueryResult([{ transferred: 1 }]),
-        // Merge properties
         mockQueryResult([{ propertiesMerged: 2 }]),
-        // Delete orphan
         mockQueryResult([{ deleted: 1 }]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_ed', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
       const body = await res.json();
-      expect(body.merged).toBeGreaterThanOrEqual(1);
-
-      if (body.details && body.details.length > 0) {
-        expect(body.details[0].relationshipsTransferred).toBeGreaterThanOrEqual(0);
-      }
+      expect(body.merged).toBe(1);
+      expect(body.details[0].canonicalId).toBe('e001_s01');
     });
-  });
 
-  // =====================================================================
-  // 4. Orphan deletion
-  // =====================================================================
-  describe('Orphan deletion', () => {
-
-    it('should delete orphan node after merge', async () => {
+    it('should group multiple date-prefixed sprints with their canonical counterparts', async () => {
       mockRunResults = [
         mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e005_s01',
-            nodes: [
-              {
-                elementId: 'keep-this',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' },
-              },
-              {
-                elementId: 'delete-this',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Content' },
-              },
-            ],
-            count: 2,
-          },
+          // Sprint 1 pair
+          { type: 'Sprint', elementId: 's1-struct', id: 'e001_s01', properties: { id: 'e001_s01', graph_id: 'gin_ed', epic_id: 'e001' } },
+          { type: 'Sprint', elementId: 's1-doc', id: '2026_02_e001_sprint1', properties: { id: '2026_02_e001_sprint1', graph_id: 'gin_ed', content: 'S1 content' } },
+          // Sprint 2 pair
+          { type: 'Sprint', elementId: 's2-struct', id: 'e001_s02', properties: { id: 'e001_s02', graph_id: 'gin_ed', epic_id: 'e001' } },
+          { type: 'Sprint', elementId: 's2-doc', id: '2026_02_e001_sprint2', properties: { id: '2026_02_e001_sprint2', graph_id: 'gin_ed', content: 'S2 content' } },
+          // Singleton (no duplicate)
+          { type: 'Sprint', elementId: 's3-only', id: 'e001_s03', properties: { id: 'e001_s03', graph_id: 'gin_ed', epic_id: 'e001' } },
+        ]),
+        // Sprint 1 merge (4 queries)
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ propertiesMerged: 1 }]),
+        mockQueryResult([{ deleted: 1 }]),
+        // Sprint 2 merge (4 queries)
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ propertiesMerged: 1 }]),
+        mockQueryResult([{ deleted: 1 }]),
+      ];
+
+      const req = makeDeleteRequest({ graphId: 'gin_ed', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
+      const res = await DELETE(req);
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.merged).toBe(2); // Only 2 groups had duplicates
+    });
+
+    it('should normalize e001_sprint3 (no date prefix) to e001_s03', async () => {
+      mockRunResults = [
+        mockQueryResult([
+          { type: 'Sprint', elementId: 'struct', id: 'e001_s03', properties: { id: 'e001_s03', graph_id: 'gin_test', epic_id: 'e001' } },
+          { type: 'Sprint', elementId: 'doc', id: 'e001_sprint3', properties: { id: 'e001_sprint3', graph_id: 'gin_test', content: 'Content' } },
         ]),
         mockQueryResult([{ transferred: 0 }]),
         mockQueryResult([{ transferred: 0 }]),
@@ -450,13 +248,91 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
         mockQueryResult([{ deleted: 1 }]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'true' });
+      const res = await DELETE(req);
+      const body = await res.json();
+      expect(body.merged).toBe(1);
+      expect(body.details[0].canonicalId).toBe('e001_s03');
+    });
+  });
 
+  // =====================================================================
+  // 3. Property merging
+  // =====================================================================
+  describe('Property merging', () => {
+
+    it('should merge content properties from document node into structural node', async () => {
+      mockRunResults = [
+        mockQueryResult([
+          { type: 'Sprint', elementId: 'structural-node', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005', status: 'in_progress', title: 'Sprint 1' } },
+          { type: 'Sprint', elementId: 'document-node', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Full sprint content', summary: 'Sprint summary', embedding: [0.1, 0.2, 0.3], embedding_model: 'voyage-3' } },
+        ]),
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ transferred: 2 }]),
+        mockQueryResult([{ propertiesMerged: 4 }]),
+        mockQueryResult([{ deleted: 1 }]),
+      ];
+
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
+      const res = await DELETE(req);
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.merged).toBeGreaterThanOrEqual(1);
+      if (body.details.length > 0) {
+        expect(body.details[0].type).toBe('Sprint');
+        expect(body.details[0].canonicalId).toBe('e005_s01');
+      }
+    });
+  });
+
+  // =====================================================================
+  // 4. Relationship transfer
+  // =====================================================================
+  describe('Relationship transfer', () => {
+
+    it('should transfer relationships from orphan to survivor', async () => {
+      mockRunResults = [
+        mockQueryResult([
+          { type: 'Sprint', elementId: 'survivor-elem', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' } },
+          { type: 'Sprint', elementId: 'orphan-elem', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Doc content' } },
+        ]),
+        mockQueryResult([{ transferred: 3 }]),
+        mockQueryResult([{ transferred: 1 }]),
+        mockQueryResult([{ propertiesMerged: 2 }]),
+        mockQueryResult([{ deleted: 1 }]),
+      ];
+
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
+      const res = await DELETE(req);
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.merged).toBeGreaterThanOrEqual(1);
+      if (body.details.length > 0) {
+        expect(body.details[0].relationshipsTransferred).toBeGreaterThanOrEqual(0);
+      }
+    });
+  });
+
+  // =====================================================================
+  // 5. Orphan deletion
+  // =====================================================================
+  describe('Orphan deletion', () => {
+
+    it('should delete orphan node after merge', async () => {
+      mockRunResults = [
+        mockQueryResult([
+          { type: 'Sprint', elementId: 'keep-this', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' } },
+          { type: 'Sprint', elementId: 'delete-this', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Content' } },
+        ]),
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ transferred: 0 }]),
+        mockQueryResult([{ propertiesMerged: 1 }]),
+        mockQueryResult([{ deleted: 1 }]),
+      ];
+
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
@@ -467,57 +343,21 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
   });
 
   // =====================================================================
-  // 5. Dry-run mode
+  // 6. Dry-run mode
   // =====================================================================
   describe('Dry-run mode', () => {
 
     it('should return preview without making changes when dryRun is true', async () => {
       mockRunResults = [
-        // Find duplicates query
         mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e005_s01',
-            nodes: [
-              {
-                elementId: 'elem-1',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' },
-              },
-              {
-                elementId: 'elem-2',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Content' },
-              },
-            ],
-            count: 2,
-          },
-          {
-            type: 'Epic',
-            canonicalId: 'e005',
-            nodes: [
-              {
-                elementId: 'elem-3',
-                id: 'e005',
-                properties: { id: 'e005', graph_id: 'gin_test', status: 'active' },
-              },
-              {
-                elementId: 'elem-4',
-                id: 'e005',
-                properties: { id: 'e005', graph_id: 'gin_test', content: 'Epic content' },
-              },
-            ],
-            count: 2,
-          },
+          { type: 'Sprint', elementId: 'elem-1', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' } },
+          { type: 'Sprint', elementId: 'elem-2', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Content' } },
+          { type: 'Epic', elementId: 'elem-3', id: 'e005', properties: { id: 'e005', graph_id: 'gin_test', status: 'active' } },
+          { type: 'Epic', elementId: 'elem-4', id: 'e005', properties: { id: 'e005', graph_id: 'gin_test', content: 'Epic content' } },
         ]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'true',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'true' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
@@ -525,74 +365,58 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
       expect(body.dryRun).toBe(true);
       expect(body.merged).toBe(2);
       expect(body.details).toHaveLength(2);
-      // Verify no merge/delete queries were executed after the detection query
       const { runQuery } = require('../../../graph/_neo4j');
-      // In dry-run, only the detection query should run (1 call)
       expect(runQuery.mock.calls.length).toBe(1);
     });
 
     it('should show details of what would be merged in dry-run', async () => {
       mockRunResults = [
         mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e014_s02',
-            nodes: [
-              {
-                elementId: 'structural-1',
-                id: 'e014_s02',
-                properties: { id: 'e014_s02', graph_id: 'gin_test', epic_id: 'e014', status: 'in_progress' },
-              },
-              {
-                elementId: 'document-1',
-                id: 'e014_s02',
-                properties: { id: 'e014_s02', graph_id: 'gin_test', content: 'Sprint docs', summary: 'Summary', embedding: [0.1] },
-              },
-            ],
-            count: 2,
-          },
+          { type: 'Sprint', elementId: 'structural-1', id: 'e014_s02', properties: { id: 'e014_s02', graph_id: 'gin_test', epic_id: 'e014', status: 'in_progress' } },
+          { type: 'Sprint', elementId: 'document-1', id: 'e014_s02', properties: { id: 'e014_s02', graph_id: 'gin_test', content: 'Sprint docs', summary: 'Summary', embedding: [0.1] } },
         ]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'true',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'true' });
       const res = await DELETE(req);
       const body = await res.json();
 
       expect(body.dryRun).toBe(true);
       expect(body.details).toHaveLength(1);
+      expect(body.details[0].type).toBe('Sprint');
+      expect(body.details[0].canonicalId).toBe('e014_s02');
+      expect(body.details[0].survivorId).toBeDefined();
+      expect(body.details[0].orphanId).toBeDefined();
+      expect(body.details[0].propertiesMerged).toBeDefined();
+    });
 
-      const detail = body.details[0];
-      expect(detail.type).toBe('Sprint');
-      expect(detail.canonicalId).toBe('e014_s02');
-      expect(detail.survivorId).toBeDefined();
-      expect(detail.orphanId).toBeDefined();
-      expect(detail.propertiesMerged).toBeDefined();
+    it('should detect cross-ID duplicates in dry-run mode', async () => {
+      mockRunResults = [
+        mockQueryResult([
+          { type: 'Sprint', elementId: 'struct', id: 'e001_s01', properties: { id: 'e001_s01', graph_id: 'gin_ed', epic_id: 'e001' } },
+          { type: 'Sprint', elementId: 'doc', id: '2026_02_e001_sprint1', properties: { id: '2026_02_e001_sprint1', graph_id: 'gin_ed', content: 'Content' } },
+        ]),
+      ];
+
+      const req = makeDeleteRequest({ graphId: 'gin_ed', action: 'merge-duplicate-structural-nodes', dryRun: 'true' });
+      const res = await DELETE(req);
+      const body = await res.json();
+
+      expect(body.dryRun).toBe(true);
+      expect(body.merged).toBe(1);
+      expect(body.details[0].canonicalId).toBe('e001_s01');
     });
   });
 
   // =====================================================================
-  // 6. No-op cases
+  // 7. No-op cases
   // =====================================================================
   describe('No-op cases', () => {
 
     it('should handle case where no duplicates exist', async () => {
-      // Return empty result set - no duplicates found
-      mockRunResults = [
-        mockQueryResult([]),
-      ];
+      mockRunResults = [mockQueryResult([])];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
@@ -602,16 +426,9 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
     });
 
     it('should handle empty graph gracefully', async () => {
-      mockRunResults = [
-        mockQueryResult([]),
-      ];
+      mockRunResults = [mockQueryResult([])];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_empty',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'true',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_empty', action: 'merge-duplicate-structural-nodes', dryRun: 'true' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
@@ -619,71 +436,52 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
       expect(body.merged).toBe(0);
       expect(body.details).toHaveLength(0);
     });
+
+    it('should not group singletons as duplicates', async () => {
+      // Each node has a unique canonical ID — no duplicates
+      mockRunResults = [
+        mockQueryResult([
+          { type: 'Sprint', elementId: 'a', id: 'e001_s01', properties: { id: 'e001_s01', graph_id: 'gin_test', epic_id: 'e001' } },
+          { type: 'Sprint', elementId: 'b', id: 'e001_s02', properties: { id: 'e001_s02', graph_id: 'gin_test', epic_id: 'e001' } },
+          { type: 'Sprint', elementId: 'c', id: 'e001_s03', properties: { id: 'e001_s03', graph_id: 'gin_test', epic_id: 'e001' } },
+        ]),
+      ];
+
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
+      const res = await DELETE(req);
+      expect(res.status).toBe(200);
+
+      const body = await res.json();
+      expect(body.merged).toBe(0);
+    });
   });
 
   // =====================================================================
-  // 7. Type handling (Sprint and Epic)
+  // 8. Type handling (Sprint and Epic)
   // =====================================================================
   describe('Type handling', () => {
 
     it('should handle Sprint and Epic duplicates in the same run', async () => {
       mockRunResults = [
-        // Detection returns both Sprint and Epic duplicates
         mockQueryResult([
-          {
-            type: 'Sprint',
-            canonicalId: 'e005_s01',
-            nodes: [
-              {
-                elementId: 'sprint-structural',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' },
-              },
-              {
-                elementId: 'sprint-document',
-                id: 'e005_s01',
-                properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Sprint content' },
-              },
-            ],
-            count: 2,
-          },
-          {
-            type: 'Epic',
-            canonicalId: 'e005',
-            nodes: [
-              {
-                elementId: 'epic-structural',
-                id: 'e005',
-                properties: { id: 'e005', graph_id: 'gin_test', status: 'active' },
-              },
-              {
-                elementId: 'epic-document',
-                id: 'e005',
-                properties: { id: 'e005', graph_id: 'gin_test', content: 'Epic content' },
-              },
-            ],
-            count: 2,
-          },
+          { type: 'Sprint', elementId: 'sprint-structural', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', epic_id: 'e005' } },
+          { type: 'Sprint', elementId: 'sprint-document', id: 'e005_s01', properties: { id: 'e005_s01', graph_id: 'gin_test', content: 'Sprint content' } },
+          { type: 'Epic', elementId: 'epic-structural', id: 'e005', properties: { id: 'e005', graph_id: 'gin_test', status: 'active' } },
+          { type: 'Epic', elementId: 'epic-document', id: 'e005', properties: { id: 'e005', graph_id: 'gin_test', content: 'Epic content' } },
         ]),
-        // Sprint merge operations (4 queries)
+        // Sprint merge (4 queries)
         mockQueryResult([{ transferred: 0 }]),
         mockQueryResult([{ transferred: 0 }]),
         mockQueryResult([{ propertiesMerged: 1 }]),
         mockQueryResult([{ deleted: 1 }]),
-        // Epic merge operations (4 queries)
+        // Epic merge (4 queries)
         mockQueryResult([{ transferred: 0 }]),
         mockQueryResult([{ transferred: 0 }]),
         mockQueryResult([{ propertiesMerged: 1 }]),
         mockQueryResult([{ deleted: 1 }]),
       ];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        confirm: 'CLEANUP_CONFIRMED',
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false', confirm: 'CLEANUP_CONFIRMED' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
 
@@ -691,7 +489,6 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
       expect(body.merged).toBe(2);
       expect(body.details).toHaveLength(2);
 
-      // Verify both types are represented
       const types = body.details.map((d: any) => d.type);
       expect(types).toContain('Sprint');
       expect(types).toContain('Epic');
@@ -699,18 +496,12 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
   });
 
   // =====================================================================
-  // 8. Validation
+  // 9. Validation
   // =====================================================================
   describe('Validation', () => {
 
     it('should require confirmation for non-dry-run execution', async () => {
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'false',
-        // No confirm parameter
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'false' });
       const res = await DELETE(req);
       expect(res.status).toBe(400);
 
@@ -719,17 +510,9 @@ describe('DELETE /api/v1/graph/cleanup?action=merge-duplicate-structural-nodes',
     });
 
     it('should not require confirmation for dry-run', async () => {
-      mockRunResults = [
-        mockQueryResult([]),
-      ];
+      mockRunResults = [mockQueryResult([])];
 
-      const req = makeDeleteRequest({
-        graphId: 'gin_test',
-        action: 'merge-duplicate-structural-nodes',
-        dryRun: 'true',
-        // No confirm parameter - should be fine for dry run
-      });
-
+      const req = makeDeleteRequest({ graphId: 'gin_test', action: 'merge-duplicate-structural-nodes', dryRun: 'true' });
       const res = await DELETE(req);
       expect(res.status).toBe(200);
     });

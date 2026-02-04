@@ -166,6 +166,14 @@ function extractEntityId(filename: string, entityType: string, content?: string)
       return adhocId.match(/_s\d{2}$/) ? adhocId : `${adhocId}_s01`;
     }
 
+    // Hybrid filenames: e001-sprint1 or e001_sprint2 (canonical epic prefix with legacy sprint suffix)
+    const hybridFilename = filename.match(/(e\d{3})[-_]sprint(\d+)/i);
+    if (hybridFilename) {
+      const epicId = hybridFilename[1].toLowerCase();
+      const sprintNum = hybridFilename[2].padStart(2, '0');
+      return `${epicId}_s${sprintNum}`;
+    }
+
     // Legacy filenames: epic002-sprint1 or epic002-phase1
     const legacyFilename = filename.match(/epic(\d+)[-_](?:sprint|phase)(\d+)/i);
     if (legacyFilename) {
