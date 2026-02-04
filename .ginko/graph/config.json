@@ -902,7 +902,7 @@
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-11-155Z.md": "sha256:84ee7258b835cbe0dec0dd4f0a4bee9192ced691b096ca83f806026ef1ee2fa2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-47-459Z.md": "sha256:f4acd1560044d88d062017f215cdadffb7cbe6769f52c85b759b5a85f8ee90b2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-51-05-126Z.md": "sha256:a7e81ebe41d99155adb0524c726f48f9b365f817b546da839ab66f31d316ba19",
-    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:b3a54dcccc36925c86670000ab5f4a1631aa5ae397b9f27a62365a8a4ba23975",
+    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:9f434943c86c1959a0dda12fff1f3743f2af8d130020ee7b9dc33f97299ce411",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-19-epic015-sprint2.md": "sha256:ffe4de352b4879b640bebbf745782454e78f32638cfcf416579615bc519b4b9e",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-20-data-cleanup.md": "sha256:fb3dcabc1838aabe639c99920fdff2bc21baed270d46706bc136a0c082d126d6",
     ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-01-20-epic015-s02-verification.md": "sha256:999c480085af7d6730d5403145b0d70e6807b6c00535b8fd1511ac4c893405e2",
@@ -1241,7 +1241,9 @@
     "docs/gotchas/GOTCHA-repetition-gotcha.md": "sha256:d70bfe754cd5ba231a820bacdab0bb46010afab20fd3873518659f63a143a1db",
     "docs/sprints/SPRINT-adhoc_260131-uat-e2e-round3.md": "sha256:f116a657a3006d8947a83ba6eda213dcbdfd23a200842cde375dc8e65dab0a07",
     "docs/sprints/SPRINT-adhoc_260201-uat-r3-bug-fixes.md": "sha256:050aa120c682f9a7bb0f31f1ccd1e10c30e055bf350cc010a7f63885f5db5ea0",
-    ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-02-02-bug005.md": "sha256:6eedc59c64b67568b7f8f998000e112b064ceeefddca8113de9e92b784ddea08"
+    ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-02-02-bug005.md": "sha256:6eedc59c64b67568b7f8f998000e112b064ceeefddca8113de9e92b784ddea08",
+    "docs/gotchas/GOTCHA-css-bracket-junction-overlap.md": "sha256:61b2e9d495267c8e7028f41db4060b105aab6b9605b4a05f523793eb5eb81454",
+    "docs/sprints/SPRINT-adhoc_260203-unify-graph-nodes.md": "sha256:c0c40ceb64f2db339fa13019966f0074cdfa6913228bcccd9980a3004257be5b"
   },
-  "lastSync": "2026-02-03T21:29:41.143Z"
+  "lastSync": "2026-02-04T15:25:37.592Z"
 }
