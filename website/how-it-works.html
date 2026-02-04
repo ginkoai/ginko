@@ -33,6 +33,21 @@
 
     <!-- Page-specific styles -->
     <style>
+        /* Graph section overrides */
+        .graph-overview {
+            align-items: start !important;
+        }
+        .graph-overview .graph-visual {
+            border: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+        }
+        .graph-overview .context-graph {
+            width: 100% !important;
+            max-width: 700px !important;
+            margin: -120px 0 0 0 !important;
+        }
+
         /* Workflow steps - horizontal layout with number on left */
         .workflow-timeline {
             display: flex;
@@ -243,6 +258,8 @@
             border: 1px solid var(--card-border-color) !important;
             position: relative !important;
             overflow: visible !important;
+            align-self: start !important;
+            height: fit-content !important;
         }
 
         .graph-feature {
@@ -869,38 +886,67 @@
                 Local context is powerful.<br>Cloud-synced context is transformative. <span class="pro-badge">Pro</span>
             </p>
 
-            <div class="graph-overview">
-                <div class="graph-visual">
-                    <div class="corner-bracket top-left"></div>
-                    <div class="corner-bracket top-right"></div>
-                    <div class="graph-diagram">
-                        <div class="graph-node graph-node-center">
-                            <span class="node-label">PROJECT</span>
-                        </div>
-                        <div class="graph-connections">
-                            <div class="graph-node graph-node-satellite">
-                                <span class="node-label">Events</span>
-                            </div>
-                            <div class="graph-node graph-node-satellite">
-                                <span class="node-label">Patterns</span>
-                            </div>
-                            <div class="graph-node graph-node-satellite">
-                                <span class="node-label">ADRs</span>
-                            </div>
-                            <div class="graph-node graph-node-satellite">
-                                <span class="node-label">Sprints</span>
-                            </div>
-                            <div class="graph-node graph-node-satellite">
-                                <span class="node-label">Gotchas</span>
-                            </div>
-                            <div class="graph-node graph-node-satellite">
-                                <span class="node-label">Team</span>
-                            </div>
-                        </div>
+            <div class="graph-overview" style="align-items: start;">
+                <div class="graph-visual" style="border: none; padding: 0; background: none;">
+                    <div class="context-graph" style="width: 100%; max-width: 650px; margin: 0;">
+                        <svg viewBox="0 0 400 400" class="graph-svg">
+                            <!-- Connection lines -->
+                            <g class="graph-connections">
+                                <line x1="200" y1="200" x2="120" y2="100" class="graph-line graph-line-1"/>
+                                <line x1="200" y1="200" x2="300" y2="120" class="graph-line graph-line-2"/>
+                                <line x1="200" y1="200" x2="320" y2="220" class="graph-line graph-line-3"/>
+                                <line x1="200" y1="200" x2="280" y2="320" class="graph-line graph-line-4"/>
+                                <line x1="200" y1="200" x2="100" y2="280" class="graph-line graph-line-5"/>
+                                <line x1="200" y1="200" x2="80" y2="180" class="graph-line graph-line-6"/>
+                                <!-- Cross connections -->
+                                <line x1="120" y1="100" x2="300" y2="120" class="graph-line graph-line-cross-1"/>
+                                <line x1="300" y1="120" x2="320" y2="220" class="graph-line graph-line-cross-2"/>
+                                <line x1="280" y1="320" x2="100" y2="280" class="graph-line graph-line-cross-3"/>
+                                <line x1="80" y1="180" x2="120" y2="100" class="graph-line graph-line-cross-4"/>
+                            </g>
+                            <!-- Outer nodes -->
+                            <g class="graph-nodes">
+                                <g class="graph-node graph-node-1">
+                                    <circle cx="120" cy="100" r="28" class="node-bg"/>
+                                    <circle cx="120" cy="100" r="28" class="node-ring"/>
+                                    <text x="120" y="105" class="node-label">ADRs</text>
+                                </g>
+                                <g class="graph-node graph-node-2">
+                                    <circle cx="300" cy="120" r="38" class="node-bg"/>
+                                    <circle cx="300" cy="120" r="38" class="node-ring"/>
+                                    <text x="300" y="125" class="node-label">patterns</text>
+                                </g>
+                                <g class="graph-node graph-node-3">
+                                    <circle cx="320" cy="220" r="26" class="node-bg"/>
+                                    <circle cx="320" cy="220" r="26" class="node-ring"/>
+                                    <text x="320" y="225" class="node-label">tasks</text>
+                                </g>
+                                <g class="graph-node graph-node-4">
+                                    <circle cx="280" cy="320" r="38" class="node-bg"/>
+                                    <circle cx="280" cy="320" r="38" class="node-ring"/>
+                                    <text x="280" y="325" class="node-label">sessions</text>
+                                </g>
+                                <g class="graph-node graph-node-5">
+                                    <circle cx="100" cy="280" r="24" class="node-bg"/>
+                                    <circle cx="100" cy="280" r="24" class="node-ring"/>
+                                    <text x="100" y="285" class="node-label">files</text>
+                                </g>
+                                <g class="graph-node graph-node-6">
+                                    <circle cx="80" cy="180" r="36" class="node-bg"/>
+                                    <circle cx="80" cy="180" r="36" class="node-ring"/>
+                                    <text x="80" y="185" class="node-label">gotchas</text>
+                                </g>
+                            </g>
+                            <!-- Center node (ginko) -->
+                            <g class="graph-node graph-node-center">
+                                <circle cx="200" cy="200" r="50" class="node-bg node-bg-center"/>
+                                <circle cx="200" cy="200" r="50" class="node-ring node-ring-center"/>
+                                <circle cx="200" cy="200" r="56" class="node-glow"/>
+                                <text x="200" y="195" class="node-label node-label-center">context</text>
+                                <text x="200" y="215" class="node-sublabel">graph</text>
+                            </g>
+                        </svg>
                     </div>
-                    <p class="graph-caption">Neo4j-powered knowledge graph with vector embeddings</p>
-                    <div class="corner-bracket bottom-left"></div>
-                    <div class="corner-bracket bottom-right"></div>
                 </div>
 
                 <div class="graph-features">
@@ -1167,6 +1213,9 @@
                     <a href="#">Terms of Service</a>
                 </div>
             </div>
+        </div>
+        <div class="footer-iykyg">
+            <img src="iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
         </div>
     </footer>
 

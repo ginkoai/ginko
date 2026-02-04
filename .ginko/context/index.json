@@ -1798,5 +1798,22 @@
       "config-system",
       "validation-layer"
     ]
+  },
+  "gotcha-gotcha-css-pseudoelement-junct.md": {
+    "type": "gotcha",
+    "tags": [
+      "auth",
+      "authentication",
+      "ci",
+      "frontend",
+      "gotcha"
+    ],
+    "area": "/",
+    "created": "2026-02-03",
+    "updated": "2026-02-03",
+    "relevance": "medium",
+    "dependencies": [
+      ""
+    ]
   }
 }

@@ -874,19 +874,28 @@ pre {
    ============================================================================ */
 
 .hero {
-    padding: 80px 0 var(--space-4);
+    padding: 120px 0 var(--space-4);
     min-height: auto;
     display: flex;
     align-items: center;
     background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
 }
 
-/* Z-Pattern Hero Grid Layout */
+/* Z-Pattern Hero Grid Layout - reduced padding for pages with graph */
+.hero:has(.hero-grid) {
+    padding-top: 100px !important;
+}
+
+/* Move the graph up on hero pages */
+.hero-visual .context-graph {
+    margin-top: -80px;
+}
+
 .hero-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-6);
-    align-items: center;
+    align-items: start;
     margin-bottom: var(--space-4);
 }
 
@@ -2962,7 +2971,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .footer {
     background-color: var(--color-terminal-bg);
     color: #F6FFD6;
-    padding: var(--space-16) 0 var(--space-8);
+    padding: var(--space-16) 0 0;
 }
 
 .footer-content {
@@ -3053,6 +3062,19 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .footer-links a:hover {
     color: var(--color-accent);
+}
+
+/* Footer IYKYG Logo */
+.footer-iykyg {
+    margin-top: var(--space-16);
+    width: 100%;
+}
+
+.footer-iykyg-logo {
+    width: 100%;
+    height: auto;
+    opacity: 0.85;
+    display: block;
 }
 
 /* ============================================================================
@@ -3231,6 +3253,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         flex-direction: column;
         gap: var(--space-4);
         text-align: center;
+    }
+
+    .footer-iykyg {
+        margin-top: var(--space-8);
+    }
+
+    .footer-iykyg-logo {
+        width: 100%;
     }
 
     .pricing-card.featured {
@@ -4720,7 +4750,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .logo-marquee {
     position: relative;
     overflow: hidden;
-    margin-top: 3rem;
+    margin-top: 1rem;
     padding: 1rem 0;
     /* Transparent to let hero gradient show through */
     background: transparent;

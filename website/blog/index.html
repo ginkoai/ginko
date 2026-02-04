@@ -79,7 +79,7 @@
 
         /* Blog Grid */
         .blog-section {
-            padding: calc(var(--space-16) + 80px) 0 var(--space-20);
+            padding: var(--space-12) 0 var(--space-20);
             background-color: var(--color-bg);
         }
 
@@ -475,17 +475,17 @@
         .blog-filters {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             gap: var(--space-6);
             margin-bottom: var(--space-8);
             padding-bottom: var(--space-6);
-            border-bottom: 1px solid var(--color-border);
         }
 
         .blog-filter-tags {
             display: flex;
             gap: var(--space-3);
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         .filter-tag {
@@ -710,7 +710,7 @@
 
             .blog-filters {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: center;
             }
 
             .newsletter-form {
@@ -770,6 +770,20 @@
             </div>
         </div>
     </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content" style="text-align: center;">
+                <h1 class="hero-title" style="text-align: center;">
+                    The Blog.
+                </h1>
+                <p class="hero-subtitle" style="text-align: center; margin-left: auto; margin-right: auto;">
+                    Lessons from the frontier of human-AI collaboration.
+                </p>
+            </div>
+        </div>
+    </section>
 
     <!-- Blog Section -->
     <section class="blog-section">
@@ -1003,9 +1017,8 @@
             </div>
         </div>
 
-        <!-- Giant footer logo -->
-        <div class="footer-giant-logo">
-            <img src="../iykyg-footer.svg" alt="iykyg" class="footer-giant-logo-img">
+        <div class="footer-iykyg">
+            <img src="../iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
         </div>
     </footer>
 
