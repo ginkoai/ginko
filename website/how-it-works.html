@@ -512,6 +512,31 @@
             border-bottom: 1px solid var(--color-accent) !important;
             border-right: 1px solid var(--color-accent) !important;
         }
+
+        /* Mobile responsive: stack Core Concepts to single column */
+        @media (max-width: 768px) {
+            .features .features-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .features .features-grid .feature-card-large {
+                border-right: none !important;
+                border-bottom: 1px solid var(--card-border-color) !important;
+            }
+
+            .features .features-grid .feature-card-large:last-child {
+                border-bottom: none !important;
+            }
+
+            /* Hide junction markers on mobile (no grid intersections) */
+            .concepts-marker-top,
+            .concepts-marker-bottom,
+            .concepts-marker-left,
+            .concepts-marker-right,
+            .concepts-marker-center {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
