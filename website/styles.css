@@ -5038,57 +5038,12 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         border-bottom: none !important;
     }
 
-    /* 2-column junction marks: Left T (├) on odd cards with bottom border */
-    .value-stats > .stat-card:nth-child(odd):not(:nth-last-child(-n+2))::after,
-    .features-grid > .feature-card:nth-child(odd):not(:nth-last-child(-n+2))::after {
-        content: '' !important;
-        display: block !important;
-        position: absolute !important;
-        left: -1px !important;
-        right: auto !important;
-        bottom: calc(-1 * var(--card-bracket-size) / 2) !important;
-        width: var(--card-bracket-size) !important;
-        height: var(--card-bracket-size) !important;
-        background:
-            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
-            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-        z-index: 3 !important;
-    }
-
-    /* 2-column junction marks: Right T (┤) on even cards with bottom border */
-    .value-stats > .stat-card:nth-child(even):not(:nth-last-child(-n+2))::after,
-    .features-grid > .feature-card:nth-child(even):not(:nth-last-child(-n+2))::after {
-        content: '' !important;
-        display: block !important;
-        position: absolute !important;
-        right: 0 !important;
-        left: auto !important;
-        bottom: calc(-1 * var(--card-bracket-size) / 2) !important;
-        width: var(--card-bracket-size) !important;
-        height: var(--card-bracket-size) !important;
-        background:
-            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
-            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-        z-index: 3 !important;
-    }
-
-    /* 2-column cross junction (┼): odd cards need cross at bottom-right where column divider meets row divider */
-    /* Use ::before since ::after is already used for ├ at bottom-left */
-    .value-stats > .stat-card:nth-child(odd):not(:nth-last-child(-n+2))::before,
-    .features-grid > .feature-card:nth-child(odd):not(:nth-last-child(-n+2))::before {
-        content: '' !important;
-        display: block !important;
-        position: absolute !important;
-        right: calc(-1 * var(--card-bracket-size) / 2) !important;
-        left: auto !important;
-        bottom: calc(-1 * var(--card-bracket-size) / 2) !important;
-        width: var(--card-bracket-size) !important;
-        height: var(--card-bracket-size) !important;
-        /* Cross junction: horizontal line + vertical line through center */
-        background:
-            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 100% var(--card-bracket-thickness) no-repeat,
-            linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat !important;
-        z-index: 3 !important;
+    /* Hide all junction marks on tablet - junctions only show on desktop (>= 1025px) */
+    .value-stats > .stat-card::before,
+    .value-stats > .stat-card::after,
+    .features-grid > .feature-card::before,
+    .features-grid > .feature-card::after {
+        display: none !important;
     }
 
     /* transformation-grid, steps-grid, pricing-grid stack to 1 column at 1024px */
