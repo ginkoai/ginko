@@ -27,6 +27,7 @@ export interface GraphInitResponse {
   status: 'created' | 'initializing' | 'ready';
   estimatedProcessingTime: number;
   createdAt: string;
+  teamId?: string;
 }
 
 export interface TeamCreateResponse {

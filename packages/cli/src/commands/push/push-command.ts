@@ -142,8 +142,12 @@ function extractEntityId(filename: string, entityType: string, content?: string)
 
   // Epic normalization: EPIC-NNN-slug → eNNN (ADR-052)
   if (entityType === 'Epic') {
+    // EPIC-001-slug → e001
     const epicMatch = filename.match(/^EPIC-(\d+)/i);
     if (epicMatch) return `e${epicMatch[1].padStart(3, '0')}`;
+    // EPIC-e001-slug → e001 (user used canonical prefix in filename)
+    const epicCanonicalMatch = filename.match(/^EPIC-(e\d{3})/i);
+    if (epicCanonicalMatch) return epicCanonicalMatch[1].toLowerCase();
   }
 
   // ADR-NNN, PRD-NNN, GOTCHA-NNN, PATTERN-NNN (unchanged)

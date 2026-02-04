@@ -35,6 +35,7 @@ interface GraphInitResponse {
   status: 'created' | 'initializing' | 'ready';
   estimatedProcessingTime: number;
   createdAt: string;
+  teamId?: string;
 }
 
 /**
@@ -162,6 +163,7 @@ export async function POST(request: NextRequest) {
 
     // Create Supabase team linked to this graph (TASK adhoc_260117_s01_t09)
     // This enables team collaboration features like invites and access control
+    let createdTeamId: string | undefined;
     try {
       const supabase = createServiceRoleClient();
 
@@ -189,6 +191,7 @@ export async function POST(request: NextRequest) {
         console.error('[Graph Init API] Failed to create Supabase team:', teamError);
       } else {
         console.log('[Graph Init API] Supabase team created:', team.id);
+        createdTeamId = team.id;
 
         // Add user as team owner
         const { error: memberError } = await supabase
@@ -219,6 +222,7 @@ export async function POST(request: NextRequest) {
       status: totalDocs > 0 ? 'initializing' : 'created',
       estimatedProcessingTime: Math.ceil(estimatedProcessingTime),
       createdAt,
+      teamId: createdTeamId,
     };
 
     console.log('[Graph Init API] Returning success response:', response);
