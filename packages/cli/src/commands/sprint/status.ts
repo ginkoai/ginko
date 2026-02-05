@@ -15,6 +15,9 @@ import readline from 'readline';
 import { GraphApiClient, SprintStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
 import { setUserCurrentSprint } from '../../lib/user-sprint.js';
+import { findSprintFileById } from '../../lib/sprint-loader.js';
+import { parseSprintFile, assessTaskContentQuality, type ParsedTask } from '../../lib/task-parser.js';
+import { getProjectRoot } from '../../utils/helpers.js';
 
 // =============================================================================
 // Helpers
@@ -103,6 +106,64 @@ function formatStatus(status: SprintStatus): string {
   }
 }
 
+/**
+ * Display investigation phase prompt for thin tasks (EPIC-018 Sprint 3)
+ *
+ * Shows thin tasks and offers user choice to enrich or proceed.
+ * Philosophy: Questions at sprint start = thoughtfulness, not weakness.
+ */
+async function showInvestigationPhase(
+  thinTasks: ParsedTask[],
+  sprintId: string
+): Promise<'enrich' | 'proceed' | 'review'> {
+  console.log(chalk.yellow(`\n📋 INVESTIGATION PHASE`));
+  console.log(chalk.dim('─'.repeat(50)));
+  console.log(chalk.cyan(`Sprint ${sprintId} has ${thinTasks.length} task(s) that may need clarification:\n`));
+
+  for (const task of thinTasks) {
+    const quality = assessTaskContentQuality(task);
+    const icon = quality === 'thin' ? chalk.red('○') : chalk.yellow('◐');
+    console.log(`  ${icon} ${chalk.bold(task.id)}: ${task.title}`);
+    if (!task.problem && !task.goal) {
+      console.log(chalk.dim('      Missing: problem statement'));
+    }
+    if (task.acceptance_criteria.length === 0) {
+      console.log(chalk.dim('      Missing: acceptance criteria'));
+    }
+  }
+
+  console.log(chalk.dim('\n─'.repeat(50)));
+  console.log(chalk.cyan.bold('\nThis is the time to clarify ambiguities and make choices.'));
+  console.log(chalk.dim('Questions now = thoughtfulness, not weakness.\n'));
+
+  console.log('How would you like to proceed?');
+  console.log(chalk.green('  [1]') + ' Enrich tasks now ' + chalk.dim('(recommended)'));
+  console.log(chalk.yellow('  [2]') + ' Proceed anyway ' + chalk.dim('(will need clarification later)'));
+  console.log(chalk.dim('  [3]') + ' Review sprint goals first');
+
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question('\nChoice [1/2/3]: ', (answer) => {
+      rl.close();
+      const choice = answer.trim();
+      if (choice === '2') {
+        console.log(chalk.yellow('\n⚡ Proceeding with thin tasks. You may need to clarify as you go.\n'));
+        resolve('proceed');
+      } else if (choice === '3') {
+        console.log(chalk.dim('\nReview the sprint file and goals, then run `ginko sprint start` again.\n'));
+        resolve('review');
+      } else {
+        console.log(chalk.green('\n✓ Great choice! Use `ginko task show <id>` to view tasks and enrich them.\n'));
+        resolve('enrich');
+      }
+    });
+  });
+}
+
 function handleError(action: string, sprintId: string, error: unknown): never {
   if (error instanceof Error) {
     if (error.message.includes('SPRINT_NOT_FOUND') || error.message.includes('not found')) {
@@ -135,6 +196,9 @@ interface SprintStatusOptions {
 
 /**
  * Start sprint (planned -> active)
+ *
+ * EPIC-018 Sprint 3: Includes investigation phase for thin tasks.
+ * If thin tasks are detected, prompts user to enrich or proceed.
  */
 async function startSprintCommand(
   sprintId: string,
@@ -147,13 +211,41 @@ async function startSprintCommand(
     const current = await client.getSprintStatus(graphId, sprintId);
     const epicId = extractEpicId(sprintId) || sprintId.split('_')[0];
 
+    // EPIC-018 Sprint 3: Investigation phase for thin tasks
+    // Check local sprint file for task quality before starting
+    let projectRoot: string;
+    try {
+      projectRoot = await getProjectRoot();
+    } catch {
+      projectRoot = process.cwd();
+    }
+
+    const sprintFile = await findSprintFileById(sprintId, projectRoot);
+    if (sprintFile) {
+      const sprintData = await parseSprintFile(sprintFile);
+      if (sprintData && sprintData.tasks.length > 0) {
+        const thinTasks = sprintData.tasks.filter(
+          task => assessTaskContentQuality(task) === 'thin'
+        );
+
+        if (thinTasks.length > 0 && !options.yes) {
+          const choice = await showInvestigationPhase(thinTasks, sprintId);
+          if (choice === 'review') {
+            // User wants to review first - don't start sprint
+            return;
+          }
+          // 'enrich' or 'proceed' both continue to start the sprint
+        }
+      }
+    }
+
     if (current.status === 'active') {
       console.log(chalk.yellow(`Sprint ${sprintId} is already active`));
       // Still set as user's focus sprint (they want to work on this)
       await setUserCurrentSprint({
         sprintId,
         epicId,
-        sprintFile: '', // No file needed for graph-based sprints
+        sprintFile: sprintFile || '', // Use found file if available
         sprintName: sprintId,
         assignedAt: new Date().toISOString(),
         assignedBy: 'manual',
@@ -171,7 +263,7 @@ async function startSprintCommand(
     await setUserCurrentSprint({
       sprintId,
       epicId,
-      sprintFile: '', // No file needed for graph-based sprints
+      sprintFile: sprintFile || '', // Use found file if available
       sprintName: response.sprint.name || sprintId,
       assignedAt: new Date().toISOString(),
       assignedBy: 'manual',

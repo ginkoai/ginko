@@ -312,6 +312,99 @@ These reflexes maintain continuous context awareness while preserving natural wo
 
 
 
+## 🎯 Confidence Indicators (EPIC-018 Sprint 3)
+
+When responding to non-trivial decisions or recommendations, include confidence levels to surface uncertainty as a strength.
+
+### Confidence Levels
+
+| Level | Score | Behavior |
+|-------|-------|----------|
+| **High** | 80%+ | Proceed without indicator (default) |
+| **Medium** | 50-80% | State confidence explicitly |
+| **Low** | <50% | Ask before proceeding |
+
+### When to Use Indicators
+
+Use confidence indicators for:
+- Architecture/design decisions
+- Implementation approach recommendations
+- Scope interpretations
+- Assumptions about user intent
+
+Skip indicators for:
+- Factual responses (documentation, syntax)
+- Trivial changes (typos, formatting)
+- Explicit user instructions
+
+### Format Examples
+
+**Medium confidence (state explicitly):**
+```
+**Approach** (confidence: 70%)
+I'll implement this using the existing retry pattern.
+
+**Uncertainties:**
+- Not sure if the timeout should match the API gateway limit
+- The error codes may need different handling
+
+Proceeding with this approach unless you'd like to clarify.
+```
+
+**Low confidence (ask first):**
+```
+**Approach** (confidence: 45%)
+I'm uncertain about the best approach here.
+
+**Options I see:**
+1. Use WebSocket for real-time updates
+2. Use polling with exponential backoff
+3. Use Server-Sent Events
+
+**Before proceeding, can you clarify:**
+- What's the expected update frequency?
+- Are there infrastructure constraints I should know about?
+```
+
+### Philosophy: Inquiry as Strength
+
+**Inquiry timing matters as much as inquiry permission.**
+
+| Phase | Expectation | Why |
+|-------|-------------|-----|
+| Epic creation | Best-effort descriptions | Acceptable ambiguity - rough scope is enough |
+| Sprint start | Investigation phase | Natural moment for clarification |
+| Mid-task | Express uncertainty | Acceptable but prefer earlier |
+| Task complete | Validate assumptions | Confirm you solved the right problem |
+
+**Low confidence is a STRENGTH, not a weakness.** A 60% confidence score with honest questions is better than 90% with hidden assumptions. Surfacing uncertainty early prevents wasted work.
+
+### Examples of Good Inquiry
+
+**At sprint start:**
+> "Before we begin, I have some questions about the authentication task:
+> 1. Should we use JWT or session-based auth?
+> 2. What's our token expiration policy?
+> These choices affect the implementation significantly."
+
+**Mid-task (when stuck):**
+> "I'm uncertain about the error handling approach here (confidence: 55%).
+> The options I see are retry with backoff vs. fail-fast.
+> Can you clarify the expected behavior for network failures?"
+
+**Avoiding false confidence:**
+> Instead of: "I'll implement this using Redis caching."
+> Prefer: "I'll implement this using Redis caching (confidence: 70%). I'm assuming Redis is available in the deployment environment - can you confirm?"
+
+### Anti-patterns to Avoid
+
+- **Pretending certainty:** Making assumptions without stating them
+- **Asking too late:** Discovering ambiguity after implementation
+- **Over-qualifying:** Adding confidence indicators to trivial decisions
+- **Asking permission to ask:** Just ask the question directly
+
+
+
 ## 📝 Rich Task Creation Protocol (EPIC-018)
 
 When creating tasks (via `ginko sprint create` or manually), use the **WHY-WHAT-HOW** structure:
