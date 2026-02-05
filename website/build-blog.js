@@ -48,7 +48,9 @@ const __dirname = path.dirname(__filename);
 const CONFIG = {
   contentDir: path.join(__dirname, 'content', 'blog'),
   templatesDir: path.join(__dirname, 'templates'),
+  partialsDir: path.join(__dirname, 'partials'),
   outputDir: path.join(__dirname, 'blog'),
+  websiteDir: __dirname,
   baseUrl: 'https://ginkoai.com',
   siteName: 'Ginko Blog',
   siteDescription: 'Insights on AI-assisted development and context management',
@@ -468,6 +470,92 @@ function escapeXml(str) {
 }
 
 /**
+ * Load a partial file
+ * @param {string} partialName - Partial file name
+ * @returns {Promise<string>} Partial content
+ */
+async function loadPartial(partialName) {
+  const partialPath = path.join(CONFIG.partialsDir, partialName);
+  try {
+    return await fs.readFile(partialPath, 'utf-8');
+  } catch (error) {
+    console.warn(`⚠ Partial not found: ${partialName}`);
+    return '';
+  }
+}
+
+/**
+ * Find all HTML files in a directory recursively
+ * @param {string} dir - Directory to search
+ * @param {Array<string>} excludeDirs - Directories to exclude
+ * @returns {Promise<Array<string>>} Array of file paths
+ */
+async function findHtmlFiles(dir, excludeDirs = []) {
+  const files = [];
+
+  async function scan(currentDir) {
+    const entries = await fs.readdir(currentDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+      const relativePath = path.relative(dir, fullPath);
+
+      if (entry.isDirectory()) {
+        // Skip excluded directories
+        if (!excludeDirs.includes(entry.name) && !excludeDirs.includes(relativePath)) {
+          await scan(fullPath);
+        }
+      } else if (entry.name.endsWith('.html')) {
+        files.push(fullPath);
+      }
+    }
+  }
+
+  await scan(dir);
+  return files;
+}
+
+/**
+ * Inject footer partial into all HTML files
+ * Replaces <!-- FOOTER_PLACEHOLDER --> with footer content
+ */
+async function injectFooter() {
+  console.log('\n🦶 Injecting footer into all pages...');
+
+  const footerContent = await loadPartial('footer.html');
+  if (!footerContent) {
+    console.warn('⚠ No footer partial found, skipping footer injection');
+    return;
+  }
+
+  // Find all HTML files, excluding templates and partials directories
+  const htmlFiles = await findHtmlFiles(CONFIG.websiteDir, ['templates', 'partials', 'node_modules', 'content']);
+
+  let injectedCount = 0;
+  let skippedCount = 0;
+
+  for (const filePath of htmlFiles) {
+    try {
+      let content = await fs.readFile(filePath, 'utf-8');
+
+      if (content.includes('<!-- FOOTER_PLACEHOLDER -->')) {
+        content = content.replace('<!-- FOOTER_PLACEHOLDER -->', footerContent);
+        await fs.writeFile(filePath, content, 'utf-8');
+        injectedCount++;
+        const relativePath = path.relative(CONFIG.websiteDir, filePath);
+        console.log(`✓ Injected footer: ${relativePath}`);
+      } else {
+        skippedCount++;
+      }
+    } catch (error) {
+      console.error(`✗ Error processing ${filePath}: ${error.message}`);
+    }
+  }
+
+  console.log(`✓ Footer injected into ${injectedCount} files (${skippedCount} skipped - no placeholder)`);
+}
+
+/**
  * Generate build statistics
  * @param {Array} posts - Array of post objects
  */
@@ -573,6 +661,9 @@ async function build() {
     // Generate RSS feed
     console.log('\n📡 Generating RSS feed...');
     await generateRSSFeed(posts);
+
+    // Inject footer into all HTML pages
+    await injectFooter();
 
     // Print statistics
     printBuildStats(posts);
