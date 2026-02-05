@@ -35,18 +35,265 @@
             color: var(--color-accent) !important;
         }
 
+        /* Subscribe button style (dark with accent/green text) */
+        .btn-hero-subscribe {
+            background-color: #0A0A0A !important;
+            color: var(--color-accent) !important;
+            border: none !important;
+        }
+
+        .btn-hero-subscribe .btn-hero-text {
+            color: var(--color-accent) !important;
+        }
+
+        .btn-hero-subscribe .btn-hero-arrow {
+            background-color: var(--color-accent) !important;
+        }
+
+        .btn-hero-subscribe .arrow-icon {
+            stroke: #0A0A0A !important;
+        }
+
+        .btn-hero-subscribe:hover {
+            background-color: #171717 !important;
+        }
+
         /* Blog Grid */
         .blog-section {
-            padding: var(--space-12) 0 var(--space-20);
+            padding: calc(var(--space-16) + 80px) 0 var(--space-20);
             background-color: var(--color-bg);
+        }
+
+        /* Blog Grid - Connected card system with corner brackets */
+        .blog-grid-wrapper {
+            --card-bracket-size: 16px;
+            --card-bracket-thickness: 2px;
+            --card-bracket-color: var(--color-accent);
+            --card-border-color: rgba(255, 255, 255, 0.1);
+            --junction-size: 20px;
+
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .blog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: var(--space-8);
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: repeat(3, 1fr);
+            grid-auto-rows: 1fr;
+            gap: 0;
+            border: 1px solid var(--card-border-color);
+            position: relative;
+        }
+
+        /* Junction connectors */
+        .junction {
+            position: absolute;
+            width: var(--junction-size);
+            height: var(--junction-size);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* T-junction pointing down (top edge) */
+        .junction-t-down::before,
+        .junction-t-down::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .junction-t-down::before {
+            width: 100%;
+            height: var(--card-bracket-thickness);
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        .junction-t-down::after {
+            width: var(--card-bracket-thickness);
+            height: 50%;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* T-junction pointing up (bottom edge) */
+        .junction-t-up::before,
+        .junction-t-up::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .junction-t-up::before {
+            width: 100%;
+            height: var(--card-bracket-thickness);
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        .junction-t-up::after {
+            width: var(--card-bracket-thickness);
+            height: 50%;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* T-junction pointing right (left edge) */
+        .junction-t-right::before,
+        .junction-t-right::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .junction-t-right::before {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .junction-t-right::after {
+            height: var(--card-bracket-thickness);
+            width: 50%;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* T-junction pointing left (right edge) */
+        .junction-t-left::before,
+        .junction-t-left::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .junction-t-left::before {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .junction-t-left::after {
+            height: var(--card-bracket-thickness);
+            width: 50%;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Cross junction (+) for internal intersections */
+        .junction-cross::before,
+        .junction-cross::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .junction-cross::before {
+            width: 100%;
+            height: var(--card-bracket-thickness);
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        .junction-cross::after {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+        /* Blog grid outer corner brackets */
+        .blog-grid-wrapper::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            height: var(--card-bracket-size);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .blog-grid-wrapper::after {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -1px;
+            left: -1px;
+            right: -1px;
+            height: var(--card-bracket-size);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Junction positioning */
+        .blog-grid .junction {
+            position: absolute;
+            z-index: 20;
+        }
+
+        /* Top edge T-junctions */
+        .junction-top-1 {
+            top: -1px;
+            left: calc(100% / 3);
+            transform: translate(-50%, -50%);
+        }
+        .junction-top-2 {
+            top: -1px;
+            left: calc(200% / 3);
+            transform: translate(-50%, -50%);
+        }
+
+        /* Bottom edge T-junctions */
+        .junction-bottom-1 {
+            bottom: -1px;
+            left: calc(100% / 3);
+            transform: translate(-50%, 50%);
+        }
+        .junction-bottom-2 {
+            bottom: -1px;
+            left: calc(200% / 3);
+            transform: translate(-50%, 50%);
+        }
+
+        /* Left edge T-junction (at row boundary) */
+        .junction-left-1 {
+            top: 50%;
+            left: -1px;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Right edge T-junction */
+        .junction-right-1 {
+            top: 50%;
+            right: -1px;
+            transform: translate(50%, -50%);
+        }
+
+        /* Internal cross junctions */
+        .junction-cross-1 {
+            top: 50%;
+            left: calc(100% / 3);
+            transform: translate(-50%, -50%);
+        }
+        .junction-cross-2 {
+            top: 50%;
+            left: calc(200% / 3);
+            transform: translate(-50%, -50%);
         }
 
         /* Post Card */
@@ -55,18 +302,28 @@
             display: flex;
             flex-direction: column;
             background-color: var(--color-surface);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-lg);
+            border: none;
+            border-right: 1px solid var(--card-border-color);
+            border-bottom: 1px solid var(--card-border-color);
+            border-radius: 0;
             padding: var(--space-8);
             text-decoration: none;
             transition: all var(--transition-fast);
             height: 100%;
         }
 
+        /* Remove right border on last column */
+        .post-card:nth-child(3n + 8) {
+            border-right: none;
+        }
+
+        /* Remove bottom border on last row */
+        .post-card:nth-last-child(-n+3) {
+            border-bottom: none;
+        }
+
         .post-card:hover {
-            border-color: var(--color-accent);
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
+            background-color: rgba(174, 255, 0, 0.03);
         }
 
         .post-card-header {
@@ -113,9 +370,9 @@
             font-size: 10px;
             background-color: var(--color-bg);
             color: var(--color-text-tertiary);
-            padding: 2px 8px;
+            padding: 4px 10px;
             border: 1px solid var(--color-border);
-            border-radius: 9999px;
+            border-radius: var(--radius-sm);
             text-transform: lowercase;
         }
 
@@ -127,18 +384,19 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             color: var(--color-accent);
+            background-color: transparent;
+            border: 1px solid var(--color-accent);
+            border-radius: var(--radius-md);
+            padding: var(--space-2) var(--space-4);
             text-decoration: none;
             transition: all var(--transition-fast);
             margin-top: auto;
             align-self: flex-end;
-            padding: var(--space-2) var(--space-4);
-            border: 1px solid var(--color-accent);
-            border-radius: var(--radius-md);
         }
 
         .post-read-cta:hover {
-            gap: var(--space-3);
-            background-color: rgba(208, 245, 73, 0.1);
+            background-color: var(--color-accent);
+            color: #0A0A0A;
         }
 
         .post-read-cta::after {
@@ -187,14 +445,14 @@
         .blog-filters {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: var(--space-6);
             margin-bottom: var(--space-8);
             padding-bottom: var(--space-6);
+            border-bottom: 1px solid var(--color-border);
         }
 
         .blog-filter-tags {
-            justify-content: center;
             display: flex;
             gap: var(--space-3);
             flex-wrap: wrap;
@@ -205,9 +463,9 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-medium);
             background-color: transparent;
-            color: #ffffff;
-            padding: var(--space-2) var(--space-5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: var(--color-text-secondary);
+            padding: var(--space-2) var(--space-4);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
             cursor: pointer;
             transition: all var(--transition-fast);
@@ -217,7 +475,7 @@
         .filter-tag.active {
             border-color: var(--color-accent);
             color: var(--color-accent);
-            background-color: rgba(208, 245, 73, 0.15);
+            background-color: var(--color-accent-light);
         }
 
         /* Pagination */
@@ -237,7 +495,7 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             padding: var(--space-3) var(--space-6);
-            border-radius: 9999px;
+            border-radius: var(--radius-md);
             background-color: transparent;
             color: var(--color-text);
             border: 2px solid var(--color-border-strong);
@@ -269,7 +527,7 @@
             font-family: var(--font-mono);
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
-            border-radius: 50%;
+            border-radius: var(--radius-md);
             background-color: transparent;
             color: var(--color-text);
             border: 1px solid var(--color-border);
@@ -337,37 +595,58 @@
             color: rgba(10, 10, 10, 0.5);
         }
 
-        .newsletter-submit {
-            font-family: var(--font-mono);
-            font-size: var(--font-size-base);
-            font-weight: var(--font-weight-semibold);
-            padding: var(--space-4) var(--space-8);
-            border-radius: 9999px;
-            background-color: #0A0A0A;
-            color: var(--color-accent);
-            border: 2px solid #0A0A0A;
-            cursor: pointer;
-            transition: all var(--transition-fast);
+        /* Responsive - Tablet (2 columns) */
+        @media (max-width: 1024px) {
+            .blog-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Hide 3-column junctions, show 2-column junctions */
+            .junction-top-2,
+            .junction-bottom-2,
+            .junction-cross-2 {
+                display: none;
+            }
+
+            .junction-top-1 {
+                left: 50%;
+            }
+            .junction-bottom-1 {
+                left: 50%;
+            }
+            .junction-cross-1 {
+                left: 50%;
+            }
+
+            /* Adjust border removal for 2-column grid */
+            .post-card:nth-child(3n + 8) {
+                border-right: 1px solid var(--card-border-color);
+            }
+            .post-card:nth-child(2n + 8) {
+                border-right: none;
+            }
         }
 
-        .newsletter-submit:hover {
-            background-color: #171717;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Responsive */
+        /* Responsive - Mobile (1 column) */
         @media (max-width: 768px) {
-            .blog-hero-title {
-                font-size: var(--font-size-4xl);
-            }
-
-            .blog-hero-subtitle {
-                font-size: var(--font-size-base);
-            }
-
             .blog-grid {
                 grid-template-columns: 1fr;
+            }
+
+            /* Hide all column junctions on mobile */
+            .junction-top-1,
+            .junction-top-2,
+            .junction-bottom-1,
+            .junction-bottom-2,
+            .junction-cross-1,
+            .junction-cross-2 {
+                display: none;
+            }
+
+            /* Keep left/right T-junctions for row separators */
+            .junction-left-1,
+            .junction-right-1 {
+                display: block;
             }
 
             .post-card-featured {
@@ -376,7 +655,7 @@
 
             .blog-filters {
                 flex-direction: column;
-                align-items: center;
+                align-items: flex-start;
             }
 
             .newsletter-form {
@@ -384,8 +663,14 @@
             }
 
             .newsletter-input,
-            .newsletter-submit {
+            .newsletter-form .btn-hero {
                 width: 100%;
+            }
+
+            /* Reset border removal for single column */
+            .post-card:nth-child(3n + 8),
+            .post-card:nth-child(2n + 8) {
+                border-right: none;
             }
         }
 
@@ -437,20 +722,6 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content" style="text-align: center;">
-                <h1 class="hero-title" style="text-align: center;">
-                    The Blog.
-                </h1>
-                <p class="hero-subtitle" style="text-align: center; margin-left: auto; margin-right: auto;">
-                    Lessons from the frontier of human-AI collaboration.
-                </p>
-            </div>
-        </div>
-    </section>
-
     <!-- Blog Section -->
     <section class="blog-section">
         <div class="container">
@@ -466,8 +737,19 @@
             </div>
 
             <!-- Blog Grid -->
-            <div class="blog-grid">
-                {{posts}}
+            <div class="blog-grid-wrapper">
+                <div class="blog-grid">
+                    <!-- Junction connectors -->
+                    <div class="junction junction-t-down junction-top-1"></div>
+                    <div class="junction junction-t-down junction-top-2"></div>
+                    <div class="junction junction-t-up junction-bottom-1"></div>
+                    <div class="junction junction-t-up junction-bottom-2"></div>
+                    <div class="junction junction-t-right junction-left-1"></div>
+                    <div class="junction junction-t-left junction-right-1"></div>
+                    <div class="junction junction-cross junction-cross-1"></div>
+                    <div class="junction junction-cross junction-cross-2"></div>
+                    {{posts}}
+                </div>
             </div>
 
             <!-- Pagination -->
@@ -505,8 +787,16 @@
                         required
                         aria-label="Email address"
                     >
-                    <button type="submit" class="newsletter-submit">
-                        Subscribe
+                    <button type="submit" class="btn-hero btn-hero-subscribe">
+                        <span class="btn-hero-text">SUBSCRIBE</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-accent">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
                     </button>
                 </form>
 
