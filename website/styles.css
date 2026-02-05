@@ -1679,6 +1679,21 @@ pre {
     border: none;
 }
 
+/* Outline button - transparent bg, accent border */
+.btn-hero-outline {
+    background-color: transparent;
+    color: var(--color-accent);
+    border: 2px solid var(--color-accent);
+}
+
+.btn-hero-outline .btn-hero-text {
+    color: var(--color-accent);
+}
+
+.btn-hero-outline:hover {
+    background-color: rgba(174, 255, 0, 0.1);
+}
+
 /* Small button variant (for nav) */
 .btn-hero-sm {
     gap: var(--space-3);
@@ -3760,11 +3775,15 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-weight: var(--font-weight-semibold);
     text-decoration: none;
     z-index: 10000;
-    transition: top var(--transition-fast);
+    opacity: 0;
+    pointer-events: none;
+    transition: top var(--transition-fast), opacity var(--transition-fast);
 }
 
 .skip-link:focus {
     top: var(--space-4);
+    opacity: 1;
+    pointer-events: auto;
 }
 
 /* Screen reader only content */

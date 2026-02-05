@@ -329,29 +329,21 @@ function renderTemplate(template, data) {
  */
 function generatePostNavigation(prevPost, nextPost) {
   const prevHtml = prevPost ? `
-        <a href="/blog/${prevPost.slug}/" class="nav-card nav-prev" rel="prev">
-            <div class="corner-bracket top-left"></div>
-            <div class="corner-bracket top-right"></div>
-            <span class="nav-label"><span class="nav-arrow">←</span> Previous</span>
-            <span class="nav-title">${prevPost.title}</span>
-            <div class="corner-bracket bottom-left"></div>
-            <div class="corner-bracket bottom-right"></div>
-        </a>` : `<div class="nav-card nav-prev nav-empty"></div>`;
+                <a href="/blog/${prevPost.slug}/" class="blog-nav-cell nav-prev" rel="prev">
+                    <span class="nav-label"><span class="nav-arrow">&lt;</span> PREVIOUS</span>
+                    <span class="nav-title">${prevPost.title}</span>
+                </a>` : `<div class="blog-nav-cell nav-prev nav-empty"></div>`;
 
   const nextHtml = nextPost ? `
-        <a href="/blog/${nextPost.slug}/" class="nav-card nav-next" rel="next">
-            <div class="corner-bracket top-left"></div>
-            <div class="corner-bracket top-right"></div>
-            <span class="nav-label">Next <span class="nav-arrow">→</span></span>
-            <span class="nav-title">${nextPost.title}</span>
-            <div class="corner-bracket bottom-left"></div>
-            <div class="corner-bracket bottom-right"></div>
-        </a>` : `<div class="nav-card nav-next nav-empty"></div>`;
+                <a href="/blog/${nextPost.slug}/" class="blog-nav-cell nav-next" rel="next">
+                    <span class="nav-label">NEXT <span class="nav-arrow">&gt;</span></span>
+                    <span class="nav-title">${nextPost.title}</span>
+                </a>` : `<div class="blog-nav-cell nav-next nav-empty"></div>`;
 
-  return `<nav class="post-navigation" aria-label="Post navigation">
-        ${prevHtml}
-        ${nextHtml}
-    </nav>`;
+  return `<nav class="blog-nav-row" aria-label="Post navigation">
+                ${prevHtml}
+                ${nextHtml}
+            </nav>`;
 }
 
 /**
