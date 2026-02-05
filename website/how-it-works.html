@@ -513,6 +513,17 @@
             border-right: 1px solid var(--color-accent) !important;
         }
 
+        /* Tablet: hide internal junctions at 2-column breakpoint (corners remain) */
+        @media (max-width: 1024px) {
+            .concepts-marker-top,
+            .concepts-marker-bottom,
+            .concepts-marker-left,
+            .concepts-marker-right,
+            .concepts-marker-center {
+                display: none !important;
+            }
+        }
+
         /* Mobile responsive: stack Core Concepts to single column */
         @media (max-width: 768px) {
             .features .features-grid {
@@ -526,6 +537,11 @@
 
             .features .features-grid .feature-card-large:last-child {
                 border-bottom: none !important;
+            }
+
+            /* High specificity to override desktop "last 2 cards" rule */
+            .features .features-grid .feature-card-large:nth-child(n):not(:last-child) {
+                border-bottom: 1px solid var(--card-border-color) !important;
             }
 
             /* Hide junction markers on mobile (no grid intersections) */
@@ -566,8 +582,9 @@
                 <a href="developers.html" class="nav-link">Developers</a>
                 <a href="teams.html" class="nav-link">Teams</a>
                 <a href="how-it-works.html" class="nav-link nav-link-active">How It Works</a>
-                <a href="blog/" class="nav-link">Blog</a>
+                <a href="blog/index.html" class="nav-link">Blog</a>
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+                <a href="get-started.html" class="nav-link nav-link-cta">Get Started</a>
             </div>
             <div class="nav-actions">
                 <a href="get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
@@ -1239,8 +1256,8 @@
                     <h4>Company</h4>
                     <ul>
                         <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
-                        <li><a href="#">Privacy</a></li>
-                        <li><a href="#">Terms</a></li>
+                        <li><a href="privacy.html">Privacy</a></li>
+                        <li><a href="terms.html">Terms</a></li>
                     </ul>
                 </div>
             </div>
@@ -1248,8 +1265,8 @@
             <div class="footer-bottom">
                 <p>&copy; 2025 ginko. All rights reserved.</p>
                 <div class="footer-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
                 </div>
             </div>
         </div>
