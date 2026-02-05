@@ -332,7 +332,7 @@ function generatePostNavigation(prevPost, nextPost) {
         <a href="/blog/${prevPost.slug}/" class="nav-card nav-prev" rel="prev">
             <div class="corner-bracket top-left"></div>
             <div class="corner-bracket top-right"></div>
-            <span class="nav-label">← Previous</span>
+            <span class="nav-label"><span class="nav-arrow">←</span> Previous</span>
             <span class="nav-title">${prevPost.title}</span>
             <div class="corner-bracket bottom-left"></div>
             <div class="corner-bracket bottom-right"></div>
@@ -342,7 +342,7 @@ function generatePostNavigation(prevPost, nextPost) {
         <a href="/blog/${nextPost.slug}/" class="nav-card nav-next" rel="next">
             <div class="corner-bracket top-left"></div>
             <div class="corner-bracket top-right"></div>
-            <span class="nav-label">Next →</span>
+            <span class="nav-label">Next <span class="nav-arrow">→</span></span>
             <span class="nav-title">${nextPost.title}</span>
             <div class="corner-bracket bottom-left"></div>
             <div class="corner-bracket bottom-right"></div>
