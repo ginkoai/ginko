@@ -1,27 +1,31 @@
 /**
  * @fileType: command
  * @status: current
- * @updated: 2026-01-26
- * @tags: [sprint, create, conversational, ai, epic-016-s04]
- * @related: [index.ts, quick-fix.ts, ../../lib/planning-menu.ts]
+ * @updated: 2026-02-05
+ * @tags: [sprint, create, ai-mediated, reflection, epic-018]
+ * @related: [index.ts, quick-fix.ts, ../../templates/sprint-template.md]
  * @priority: high
  * @complexity: medium
- * @dependencies: [prompts, chalk, ora, ai-service]
+ * @dependencies: [prompts, chalk, ora, ai-service, fs]
  */
 
 /**
- * Conversational Sprint Creation (EPIC-016 Sprint 4 t03)
+ * Sprint Creation Command (EPIC-018)
  *
- * Lightweight flow for creating feature sprints:
- * 1. User describes what they're building
- * 2. AI breaks down into tasks
- * 3. User confirms or edits
- * 4. Sprint created and assigned
+ * Two modes following ADR-032 Reflection Pattern:
+ *
+ * 1. AI-Mediated (default): Outputs sprint-template.md for AI partner to read.
+ *    The AI conducts natural conversation, gathers context from graph,
+ *    generates rich tasks with WHY-WHAT-HOW, and creates the sprint file.
+ *
+ * 2. Direct (--no-ai): Interactive prompts with AI service breakdown.
+ *    For humans using CLI directly without AI partner.
  */
 
 import prompts from 'prompts';
 import chalk from 'chalk';
 import ora from 'ora';
+import * as fs from 'fs/promises';
 import { getUserEmail } from '../../utils/helpers.js';
 import { GraphApiClient } from '../graph/api-client.js';
 import { getGraphId, isGraphInitialized } from '../graph/config.js';
@@ -34,16 +38,36 @@ import {
 // Types
 // =============================================================================
 
+/**
+ * Rich task breakdown with WHY-WHAT-HOW structure (EPIC-018)
+ */
 interface TaskBreakdown {
   title: string;
+  problem: string;      // WHY: motivation/pain point
+  solution: string;     // WHAT: desired outcome
+  approach: string;     // HOW: implementation strategy
+  scope: string;        // Boundaries: in/out of scope
+  acceptance_criteria: string[];  // Done when
   estimate: string;
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  confidence: number;   // 0-100: AI confidence in task clarity
 }
 
 interface SprintPlan {
   name: string;
   goal: string;
   tasks: TaskBreakdown[];
+  /** Average confidence across all tasks */
+  composite_confidence?: number;
+}
+
+/**
+ * Low-confidence task flagged for clarification
+ */
+interface FlaggedTask {
+  index: number;
+  task: TaskBreakdown;
+  reason: string;
 }
 
 export interface CreateSprintResult {
@@ -58,6 +82,7 @@ interface CreateSprintOptions {
   epic?: string;
   description?: string;
   yes?: boolean;
+  noAi?: boolean;  // Use interactive mode instead of AI-mediated
 }
 
 // =============================================================================
@@ -101,35 +126,65 @@ async function generateNextAdhocSprintId(graphId: string): Promise<string> {
 // =============================================================================
 
 /**
- * Use AI to break down a feature description into tasks
+ * Use AI to break down a feature description into tasks (EPIC-018)
+ *
+ * Generates rich task content with WHY-WHAT-HOW structure.
+ * Each task includes a confidence score (0-100) indicating
+ * how clear the requirements are to the AI.
  */
 async function breakdownFeatureWithAI(description: string): Promise<SprintPlan | null> {
   try {
     const { createAIService } = await import('../../services/ai-service.js');
     const aiService = createAIService();
 
-    const prompt = `You are a software project manager. Given a feature description, break it down into 2-6 actionable tasks.
+    const prompt = `You are a software project manager breaking down a feature into actionable tasks.
 
 Feature: ${description}
 
 Return JSON with this structure:
 {
-  "name": "Sprint name (3-5 words, no quotes)",
+  "name": "Sprint name (3-5 words)",
   "goal": "One sentence describing the sprint goal",
   "tasks": [
-    { "title": "Task title (action-oriented)", "estimate": "2h", "priority": "HIGH" }
+    {
+      "title": "Task title (action-oriented verb phrase)",
+      "problem": "WHY: 1-2 sentences explaining the pain point or motivation",
+      "solution": "WHAT: 1-2 sentences describing the desired outcome",
+      "approach": "HOW: 2-3 sentences on implementation strategy",
+      "scope": "Includes: X, Y. Excludes: Z (what's explicitly out)",
+      "acceptance_criteria": ["Criterion 1", "Criterion 2", "Tests pass"],
+      "estimate": "2h",
+      "priority": "HIGH",
+      "confidence": 85
+    }
   ]
 }
 
 Guidelines:
-- Sprint name should be concise and descriptive
-- Each task should be completable in 1-4 hours
+- Break into 2-6 tasks, each completable in 1-4 hours
 - Use CRITICAL/HIGH/MEDIUM/LOW for priority
 - First task should enable the core feature
-- Include a testing/validation task
-- Estimates should be realistic (1h, 2h, 3h, 4h)`;
+- Include a testing/validation task at the end
+
+CONFIDENCE SCORING (critical):
+- 90-100: Crystal clear requirements, obvious implementation
+- 70-89: Good clarity, minor assumptions made
+- 50-69: Moderate ambiguity, would benefit from clarification
+- Below 50: Significant uncertainty, needs human input
+
+Be honest about confidence. Low scores trigger clarification - this is GOOD.
+A score of 60 with questions is better than 90 with hidden assumptions.
+
+If you're uncertain about something, lower the confidence and note it in the approach.`;
 
     const plan = await aiService.extractJSON<SprintPlan>(prompt);
+
+    // Calculate composite confidence
+    if (plan && plan.tasks && plan.tasks.length > 0) {
+      const avgConfidence = plan.tasks.reduce((sum, t) => sum + (t.confidence || 50), 0) / plan.tasks.length;
+      plan.composite_confidence = Math.round(avgConfidence);
+    }
+
     return plan;
   } catch (error) {
     console.error(chalk.dim('AI breakdown failed, using simple structure'));
@@ -138,15 +193,36 @@ Guidelines:
 }
 
 /**
- * Create a simple sprint plan without AI
+ * Create a simple sprint plan without AI (fallback)
  */
 function createSimpleSprintPlan(description: string): SprintPlan {
   return {
     name: description.slice(0, 50),
     goal: description,
+    composite_confidence: 50, // Low confidence - needs clarification
     tasks: [
-      { title: 'Implement core functionality', estimate: '2h', priority: 'HIGH' },
-      { title: 'Test and validate', estimate: '1h', priority: 'MEDIUM' },
+      {
+        title: 'Implement core functionality',
+        problem: 'Feature needs to be implemented as described.',
+        solution: 'Working implementation that meets the requirements.',
+        approach: 'Analyze requirements, implement, and verify.',
+        scope: 'Includes: Core feature. Excludes: TBD.',
+        acceptance_criteria: ['Implementation complete', 'Tests passing'],
+        estimate: '2h',
+        priority: 'HIGH',
+        confidence: 50,
+      },
+      {
+        title: 'Test and validate',
+        problem: 'Implementation needs verification.',
+        solution: 'Confirmed working feature with test coverage.',
+        approach: 'Write tests, run validation, fix issues.',
+        scope: 'Includes: Unit tests, manual testing. Excludes: Load testing.',
+        acceptance_criteria: ['All tests pass', 'Manual verification complete'],
+        estimate: '1h',
+        priority: 'MEDIUM',
+        confidence: 50,
+      },
     ]
   };
 }
@@ -156,7 +232,9 @@ function createSimpleSprintPlan(description: string): SprintPlan {
 // =============================================================================
 
 /**
- * Generate sprint markdown compatible with sync API
+ * Generate sprint markdown compatible with sync API (EPIC-018)
+ *
+ * Outputs rich task content with WHY-WHAT-HOW structure.
  */
 function generateSprintMarkdown(
   sprintId: string,
@@ -192,15 +270,23 @@ function generateSprintMarkdown(
     const taskId = `${sprintId}_t${taskNum}`;
 
     markdown += `### ${taskId}: ${task.title} (${task.estimate})
+
 **Status:** [ ] Not Started
 **Priority:** ${task.priority}
 **Owner:** ${userEmail}
+**Confidence:** ${task.confidence}%
 
-**Goal:** ${task.title}
+**Problem:** ${task.problem}
+
+**Solution:** ${task.solution}
+
+**Approach:** ${task.approach}
+
+**Scope:**
+${task.scope.split(/[.;]/).filter(s => s.trim()).map(s => `  - ${s.trim()}`).join('\n')}
 
 **Acceptance Criteria:**
-- [ ] Implementation complete
-- [ ] Tests passing
+${task.acceptance_criteria.map(c => `- [ ] ${c}`).join('\n')}
 
 ---
 
@@ -222,15 +308,154 @@ function generateSprintMarkdown(
 }
 
 // =============================================================================
+// Inquiry Flow (EPIC-018)
+// =============================================================================
+
+const CONFIDENCE_THRESHOLD = 75;
+
+/**
+ * Identify tasks that need clarification
+ */
+function flagLowConfidenceTasks(plan: SprintPlan): FlaggedTask[] {
+  return plan.tasks
+    .map((task, index) => ({ index, task, confidence: task.confidence || 50 }))
+    .filter(t => t.confidence < CONFIDENCE_THRESHOLD)
+    .map(t => ({
+      index: t.index,
+      task: t.task,
+      reason: t.confidence < 50
+        ? 'Significant uncertainty - needs human input'
+        : 'Moderate ambiguity - would benefit from clarification',
+    }));
+}
+
+/**
+ * Display low-confidence tasks and request clarification (EPIC-018)
+ *
+ * When composite confidence < 75%, this triggers an honest inquiry.
+ * Philosophy: Inquiry is a strength, not weakness. Better to ask now
+ * than produce wrong work.
+ */
+async function runInquiryFlow(
+  plan: SprintPlan,
+  flaggedTasks: FlaggedTask[]
+): Promise<SprintPlan | null> {
+  console.log('');
+  console.log(chalk.yellow('⚠️  Some tasks need clarification before we proceed.'));
+  console.log(chalk.dim(`   Composite confidence: ${plan.composite_confidence}% (threshold: ${CONFIDENCE_THRESHOLD}%)`));
+  console.log('');
+  console.log(chalk.dim('Flagged tasks:'));
+
+  for (const flagged of flaggedTasks) {
+    console.log(chalk.yellow(`  ${flagged.index + 1}. ${flagged.task.title}`));
+    console.log(chalk.dim(`     Confidence: ${flagged.task.confidence}% - ${flagged.reason}`));
+    console.log(chalk.dim(`     Approach: ${flagged.task.approach.slice(0, 80)}...`));
+  }
+
+  console.log('');
+  console.log(chalk.cyan('This is a good thing! Better to clarify now than build the wrong thing.'));
+  console.log('');
+
+  const isTTY = process.stdin.isTTY;
+  if (!isTTY) {
+    console.log(chalk.yellow('Non-interactive mode: proceeding with current plan.'));
+    console.log(chalk.dim('For better results, run interactively or provide more detail in description.'));
+    return plan;
+  }
+
+  const { action } = await prompts({
+    type: 'select',
+    name: 'action',
+    message: 'How would you like to proceed?',
+    choices: [
+      { title: 'Provide clarification (recommended)', value: 'clarify' },
+      { title: 'Proceed anyway - let AI use best judgment', value: 'proceed' },
+      { title: 'Cancel and start over with more detail', value: 'cancel' },
+    ],
+  });
+
+  if (action === 'cancel') {
+    return null;
+  }
+
+  if (action === 'proceed') {
+    console.log(chalk.dim('Proceeding with AI best judgment. Tasks may need refinement later.'));
+    return plan;
+  }
+
+  // Clarification flow
+  console.log('');
+  console.log(chalk.cyan('Let\'s clarify the flagged tasks. For each, provide additional context:'));
+  console.log('');
+
+  for (const flagged of flaggedTasks) {
+    console.log(chalk.bold(`Task ${flagged.index + 1}: ${flagged.task.title}`));
+    console.log(chalk.dim(`Current approach: ${flagged.task.approach}`));
+    console.log('');
+
+    const { clarification } = await prompts({
+      type: 'text',
+      name: 'clarification',
+      message: 'Additional context or constraints (or press Enter to skip):',
+    });
+
+    if (clarification && clarification.trim()) {
+      // Append clarification to approach
+      plan.tasks[flagged.index].approach += ` User clarification: ${clarification.trim()}`;
+      // Boost confidence since human provided input
+      plan.tasks[flagged.index].confidence = Math.min(100, (flagged.task.confidence || 50) + 20);
+    }
+  }
+
+  // Recalculate composite confidence
+  const newAvg = plan.tasks.reduce((sum, t) => sum + (t.confidence || 50), 0) / plan.tasks.length;
+  plan.composite_confidence = Math.round(newAvg);
+
+  console.log('');
+  console.log(chalk.green(`✓ Updated composite confidence: ${plan.composite_confidence}%`));
+
+  return plan;
+}
+
+// =============================================================================
 // Main Command
 // =============================================================================
 
 /**
- * Create a new feature sprint (conversational flow)
+ * Output sprint template for AI-mediated creation (EPIC-018)
+ * The AI partner will read this, conduct a natural conversation, and create the sprint
+ */
+async function outputSprintTemplate(): Promise<CreateSprintResult> {
+  const templatePath = new URL('../../templates/sprint-template.md', import.meta.url);
+
+  try {
+    const template = await fs.readFile(templatePath, 'utf-8');
+
+    // Output template to stdout (AI partner will read this)
+    console.log(template);
+
+    return { success: true, message: 'Template output for AI-mediated creation' };
+  } catch (error: any) {
+    console.error(chalk.red(`\n❌ Error reading sprint template: ${error.message}`));
+    return { success: false, message: 'Failed to read sprint template' };
+  }
+}
+
+/**
+ * Create a new feature sprint
+ *
+ * Default (AI-mediated): Outputs template for AI partner
+ * --no-ai: Interactive prompts with AI service breakdown
  */
 export async function createSprintCommand(
   options: CreateSprintOptions = {}
 ): Promise<CreateSprintResult> {
+  // AI-mediated mode (default): Output template for AI partner
+  if (!options.noAi) {
+    return outputSprintTemplate();
+  }
+
+  // --no-ai mode: Interactive flow (original behavior)
   // 1. Check prerequisites
   if (!await isGraphInitialized()) {
     console.log(chalk.yellow('Graph not initialized.'));
@@ -276,10 +501,24 @@ export async function createSprintCommand(
 
   if (aiPlan && Array.isArray(aiPlan.tasks) && aiPlan.tasks.length > 0) {
     plan = aiPlan;
-    spinner.succeed('Tasks generated');
+    spinner.succeed(`Tasks generated (confidence: ${plan.composite_confidence}%)`);
   } else {
     plan = createSimpleSprintPlan(description);
-    spinner.info('Using simple task structure');
+    spinner.info('Using simple task structure (low confidence - consider adding detail)');
+  }
+
+  // 3.5 Confidence check - trigger inquiry if composite score < threshold (EPIC-018)
+  const flaggedTasks = flagLowConfidenceTasks(plan);
+  if (plan.composite_confidence && plan.composite_confidence < CONFIDENCE_THRESHOLD) {
+    const updatedPlan = await runInquiryFlow(plan, flaggedTasks);
+    if (!updatedPlan) {
+      return { success: false, message: 'Cancelled during clarification' };
+    }
+    plan = updatedPlan;
+  } else if (flaggedTasks.length > 0) {
+    // Individual low-confidence tasks exist but composite is OK
+    console.log('');
+    console.log(chalk.dim(`Note: ${flaggedTasks.length} task(s) have lower confidence and may need refinement.`));
   }
 
   // 4. Display plan for confirmation
@@ -289,9 +528,14 @@ export async function createSprintCommand(
   console.log('');
   console.log(chalk.dim('Tasks:'));
   plan.tasks.forEach((task, i) => {
-    console.log(chalk.dim(`  ${i + 1}. ${task.title} (${task.estimate})`));
+    const confColor = task.confidence >= 80 ? chalk.green : task.confidence >= 60 ? chalk.yellow : chalk.red;
+    console.log(chalk.dim(`  ${i + 1}. ${task.title} (${task.estimate}) `) + confColor(`[${task.confidence}%]`));
   });
   console.log('');
+  if (plan.composite_confidence) {
+    const compColor = plan.composite_confidence >= 80 ? chalk.green : plan.composite_confidence >= 60 ? chalk.yellow : chalk.red;
+    console.log(chalk.dim('Composite confidence: ') + compColor(`${plan.composite_confidence}%`));
+  }
   console.log(chalk.dim('This will be tracked under the Ad-Hoc Epic.'));
 
   // 5. Confirm (skip with --yes flag or non-TTY)

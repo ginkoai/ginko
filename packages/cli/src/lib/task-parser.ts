@@ -32,7 +32,19 @@ import path from 'path';
 export type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'complete' | 'paused';
 
 /**
+ * Task content quality assessment (EPIC-018)
+ */
+export type TaskContentQuality = 'thin' | 'adequate' | 'rich';
+
+/**
  * Parsed task from sprint markdown
+ *
+ * EPIC-018: Rich task content follows WHY-WHAT-HOW structure:
+ * - problem: WHY this task exists (motivation)
+ * - solution: WHAT we're achieving (outcome)
+ * - approach: HOW we'll implement it (strategy)
+ * - scope: boundaries (in/out of scope)
+ * - acceptance_criteria: done when (definition of done)
  */
 export interface ParsedTask {
   /** Task ID (e.g., e015_s00a_t01, TASK-1, adhoc_260119_s01_t01) */
@@ -51,16 +63,32 @@ export interface ParsedTask {
   assignee: string | null;
   /** Initial status from checkbox (used only on CREATE) */
   initial_status: TaskStatus;
-  /** Task goal/description */
-  goal: string | null;
-  /** Approach/implementation notes (e014_s02_t04) */
+
+  // WHY-WHAT-HOW structure (EPIC-018)
+  /** WHY: Problem/motivation - why this task exists */
+  problem: string | null;
+  /** WHAT: Solution/outcome - what we're achieving */
+  solution: string | null;
+  /** HOW: Approach/strategy - implementation notes */
   approach: string | null;
-  /** Acceptance criteria list */
+  /** Boundaries: What's in/out of scope */
+  scope: string | null;
+
+  /** @deprecated Use 'solution' instead. Kept for backward compatibility. */
+  goal: string | null;
+
+  /** Acceptance criteria list (definition of done) */
   acceptance_criteria: string[];
   /** Referenced files */
   files: string[];
   /** Related ADR references */
   related_adrs: string[];
+
+  // Quality metadata (EPIC-018)
+  /** AI confidence score (0-100) when task was created */
+  confidence: number | null;
+  /** Assessed content quality */
+  content_quality: TaskContentQuality;
 }
 
 /**
@@ -182,6 +210,112 @@ function extractApproach(blockText: string): string | null {
     .trim();
 
   return approach.length > 0 ? approach : null;
+}
+
+/**
+ * Extract problem/motivation from task block (EPIC-018)
+ *
+ * Parses the **Problem:** section - WHY this task exists.
+ */
+function extractProblem(blockText: string): string | null {
+  const problemMatch = blockText.match(
+    /\*\*Problem:\*\*\s+([\s\S]*?)(?=\n\*\*(?!Problem)|\n###|\n---|\n##|$)/i
+  );
+
+  if (!problemMatch) return null;
+
+  const problem = problemMatch[1]
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join(' ')
+    .trim();
+
+  return problem.length > 0 ? problem : null;
+}
+
+/**
+ * Extract solution/outcome from task block (EPIC-018)
+ *
+ * Parses the **Solution:** section - WHAT we're achieving.
+ */
+function extractSolution(blockText: string): string | null {
+  const solutionMatch = blockText.match(
+    /\*\*Solution:\*\*\s+([\s\S]*?)(?=\n\*\*(?!Solution)|\n###|\n---|\n##|$)/i
+  );
+
+  if (!solutionMatch) return null;
+
+  const solution = solutionMatch[1]
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+    .join(' ')
+    .trim();
+
+  return solution.length > 0 ? solution : null;
+}
+
+/**
+ * Extract scope/boundaries from task block (EPIC-018)
+ *
+ * Parses the **Scope:** section - what's in/out of scope.
+ * Handles both inline text and bullet list format.
+ */
+function extractScope(blockText: string): string | null {
+  const scopeMatch = blockText.match(
+    /\*\*Scope:\*\*\s+([\s\S]*?)(?=\n\*\*(?!Scope)|\n###|\n---|\n##|$)/i
+  );
+
+  if (!scopeMatch) return null;
+
+  // Preserve structure for bullet lists, join inline text
+  const lines = scopeMatch[1]
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0);
+
+  // If it's a bullet list, preserve newlines
+  const hasBullets = lines.some(line => line.startsWith('-'));
+  const scope = hasBullets ? lines.join('\n') : lines.join(' ');
+
+  return scope.length > 0 ? scope.trim() : null;
+}
+
+/**
+ * Extract confidence score from task block (EPIC-018)
+ *
+ * Parses **Confidence:** N% or **Confidence:** N (0-100)
+ */
+function extractConfidence(blockText: string): number | null {
+  const confidenceMatch = blockText.match(/\*\*Confidence:\*\*\s*(\d+)%?/i);
+  if (!confidenceMatch) return null;
+
+  const value = parseInt(confidenceMatch[1], 10);
+  return value >= 0 && value <= 100 ? value : null;
+}
+
+/**
+ * Assess task content quality (EPIC-018)
+ *
+ * Evaluates whether a task has enough content to work autonomously.
+ * - thin: Missing critical fields (problem, acceptance criteria)
+ * - adequate: Has basics but missing approach or scope
+ * - rich: Complete WHY-WHAT-HOW structure
+ */
+export function assessTaskContentQuality(task: ParsedTask): TaskContentQuality {
+  const hasContent = (s: string | null) => s && s.length >= 20;
+
+  // Thin: Missing problem statement or acceptance criteria
+  if (!hasContent(task.problem) && !hasContent(task.goal)) return 'thin';
+  if (task.acceptance_criteria.length === 0) return 'thin';
+
+  // Adequate: Has basics but missing approach or scope
+  if (!hasContent(task.approach)) return 'adequate';
+  if (!hasContent(task.scope) && !hasContent(task.solution)) return 'adequate';
+
+  // Rich: Complete structure
+  return 'rich';
 }
 
 /**
@@ -342,12 +476,16 @@ export function parseTaskBlock(
     }
   }
 
-  // Extract goal
+  // Extract goal (legacy, backward compatibility)
   const goalMatch = blockText.match(/\*\*Goal:\*\*\s+([^\n]+)/i);
   const goal = goalMatch ? goalMatch[1].trim() : null;
 
-  // Extract approach (e014_s02_t04)
+  // Extract WHY-WHAT-HOW fields (EPIC-018)
+  const problem = extractProblem(blockText);
+  const solution = extractSolution(blockText);
   const approach = extractApproach(blockText);
+  const scope = extractScope(blockText);
+  const confidence = extractConfidence(blockText);
 
   // Extract acceptance criteria
   const acceptanceCriteria = extractAcceptanceCriteria(blockText);
@@ -358,7 +496,8 @@ export function parseTaskBlock(
   // Extract related ADRs
   const relatedADRs = extractRelatedADRs(blockText);
 
-  return {
+  // Build the parsed task
+  const parsedTask: ParsedTask = {
     id: canonicalTaskId.toLowerCase(),
     sprint_id: hierarchy.sprint_id,
     epic_id: hierarchy.epic_id,
@@ -367,12 +506,26 @@ export function parseTaskBlock(
     priority,
     assignee,
     initial_status: initialStatus,
-    goal,
+    // WHY-WHAT-HOW (EPIC-018)
+    problem,
+    solution,
     approach,
+    scope,
+    // Legacy
+    goal,
+    // Done when
     acceptance_criteria: acceptanceCriteria,
     files,
     related_adrs: relatedADRs,
+    // Quality metadata
+    confidence,
+    content_quality: 'thin', // Will be assessed below
   };
+
+  // Assess content quality
+  parsedTask.content_quality = assessTaskContentQuality(parsedTask);
+
+  return parsedTask;
 }
 
 /**

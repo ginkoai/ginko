@@ -1073,7 +1073,7 @@
     "docs/design/SITE-ARCHITECTURE-EPIC003.md": "sha256:cc41e4d1f5e28006a5bdaa6e759be517ad23f311c0f0197e3a25131f395e8171",
     "docs/design/TASK-002-COMPLETION-SUMMARY.md": "sha256:024c37e97221126321721c2026f1517e31ca30da3154ae5021b6e7019df39a85",
     "docs/epics/EPIC-017-git-integrated-push-pull-sync.md": "sha256:e5a4dd06dcd5d3162dc07874fd05e1802bfa4f775f80ae3601d62c7ebe1a95a1",
-    "docs/epics/EPIC-INDEX.md": "sha256:ef02e8894fe6e31d6dbfd62659a97cfb754e317e4b21627050f690a06434a865",
+    "docs/epics/EPIC-INDEX.md": "sha256:48853426d52ef1cd2132dd0908738e6537d794a925dcd0ec9726bd1493e4403e",
     "docs/examples/charter-conversations/full-planning-example.md": "sha256:6d04906abbfb92baac3bcdfb096791f279371184b89d190be251204ce88f363b",
     "docs/examples/charter-conversations/hack-ship-example.md": "sha256:59013f92f3ead41660247ad07eb9dae36645369630ab96b64dfef1258c4dcd8b",
     "docs/examples/charter-conversations/think-build-example.md": "sha256:a011a61c41e83695a68cfa9753601a0c211713dae0828c45c0a5ffde427bdd80",
@@ -1245,7 +1245,9 @@
     "docs/gotchas/GOTCHA-css-bracket-junction-overlap.md": "sha256:61b2e9d495267c8e7028f41db4060b105aab6b9605b4a05f523793eb5eb81454",
     "docs/sprints/SPRINT-adhoc_260203-unify-graph-nodes.md": "sha256:c0c40ceb64f2db339fa13019966f0074cdfa6913228bcccd9980a3004257be5b",
     ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-02-04-epic-id-team-fix.md": "sha256:c9a0b79b198f84bf878248d652899d6f47190a6f4efee4624beacc6992daa80b",
-    "docs/epics/EPIC-e099-test-entity-id-fix.md": "sha256:2af389cffce43bcdd731477b2e88a69bbfba25ea4f0426f318881b4d7cbc1940"
+    "docs/epics/EPIC-e099-test-entity-id-fix.md": "sha256:2af389cffce43bcdd731477b2e88a69bbfba25ea4f0426f318881b4d7cbc1940",
+    "docs/epics/EPIC-018-flow-state-optimization.md": "sha256:eeee3def11bae8a7d8675be0348b2ed16c625af0ccac32a275dd64f4068398b6",
+    "docs/sprints/SPRINT-2026-02-adhoc_260205_s02-dashboard-bug-verification.md": "sha256:d4f5d8b96e84764e9ffccbfeb5f6c256b42aa492b25939b97a799583c07de599"
   },
-  "lastSync": "2026-02-04T19:00:21.676Z"
+  "lastSync": "2026-02-05T21:18:40.160Z"
 }

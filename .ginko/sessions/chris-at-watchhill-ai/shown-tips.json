@@ -1,15 +1,8 @@
 {
-  "sessionId": "session-1770218595231-8xbb5tbz1",
+  "sessionId": "session-1770301265504-zsc5skmxz",
   "shownTipIds": [
     "efficiency-handoff",
-    "patterns-structure",
-    "quality-log-decisions",
-    "antipatterns-review",
-    "antipatterns-patterns",
-    "patterns-quick-fix",
-    "quality-team-sync",
-    "antipatterns-adr",
-    "efficiency-context-loading"
+    "patterns-structure"
   ],
-  "lastUpdated": "2026-02-04T17:20:07.374Z"
+  "lastUpdated": "2026-02-05T16:35:21.604Z"
 }

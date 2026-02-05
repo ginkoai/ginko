@@ -312,6 +312,110 @@ These reflexes maintain continuous context awareness while preserving natural wo
 
 
 
+## 📝 Rich Task Creation Protocol (EPIC-018)
+
+When creating tasks (via `ginko sprint create` or manually), use the **WHY-WHAT-HOW** structure:
+
+### Task Format
+
+```markdown
+### e018_s02_t01: Define task content schema (2h)
+
+**Status:** [ ] Not Started
+**Priority:** HIGH
+**Confidence:** 85%
+
+**Problem:** Task titles alone require clarification cycles. Human and AI
+partners guess at intent, leading to wrong work or wasted time.
+
+**Solution:** Use a structured rich-content schema for Tasks that minimizes
+guesswork and research time.
+
+**Approach:** Extend ParsedTask interface in task-parser.ts, add extraction
+functions following existing patterns (extractGoal, extractApproach).
+
+**Scope:**
+  - Includes: TypeScript interface, parser extraction, graph sync
+  - Excludes: UI changes, backward compatibility for old tasks
+
+**Acceptance Criteria:**
+  - [ ] ParsedTask interface includes problem, scope fields
+  - [ ] Parser extracts new fields from markdown
+  - [ ] Fields sync to Neo4j task nodes
+```
+
+### Field Guide
+
+| Field | Purpose | Quality Bar |
+|-------|---------|-------------|
+| **Problem** | WHY: motivation/pain point | 1-2 sentences explaining the need |
+| **Solution** | WHAT: desired outcome | 1-2 sentences describing what success looks like |
+| **Approach** | HOW: implementation strategy | 2-3 sentences on technical approach |
+| **Scope** | Boundaries: in/out | Both what's included AND what's excluded |
+| **Acceptance Criteria** | Definition of done | Specific, testable items |
+| **Confidence** | AI certainty (0-100%) | See scoring below |
+
+### Confidence Scoring
+
+When creating tasks, assess your confidence honestly:
+
+| Score | Meaning | Action |
+|-------|---------|--------|
+| 90-100% | Crystal clear requirements | Proceed confidently |
+| 70-89% | Good clarity, minor assumptions | Note assumptions in approach |
+| 50-69% | Moderate ambiguity | Flag for clarification |
+| Below 50% | Significant uncertainty | Trigger inquiry flow |
+
+**Philosophy:** Low confidence is a STRENGTH, not a weakness. A score of 60 with honest questions is better than 90 with hidden assumptions.
+
+### Composite Score Guard
+
+When average task confidence across a sprint drops below 75%, trigger an honest inquiry:
+
+```
+⚠️ Composite confidence: 62% (threshold: 75%)
+
+Some tasks need clarification before we proceed.
+This is a good thing! Better to clarify now than build the wrong thing.
+
+How would you like to proceed?
+[1] Provide clarification (recommended)
+[2] Proceed anyway - let AI use best judgment
+[3] Cancel and start over with more detail
+```
+
+### Content Quality Assessment
+
+Tasks are assessed as:
+
+| Quality | Criteria | Display |
+|---------|----------|---------|
+| **Rich** ● | Has problem, solution, approach, scope, criteria | Green |
+| **Adequate** ◐ | Has basics but missing approach or scope | Yellow |
+| **Thin** ○ | Missing problem or acceptance criteria | Red - needs enrichment |
+
+Use `ginko task show <id>` to see full task content and quality assessment.
+
+### Sprint-Start Investigation
+
+At sprint start, thin tasks should trigger enrichment:
+
+```
+Sprint has 3 tasks that need enrichment:
+  - e018_s01_t02: Add files-touched tracking (thin)
+  - e018_s01_t04: Optimize context load performance (thin)
+
+INVESTIGATION PHASE
+This is the time to clarify ambiguities and make choices.
+Questions now = thoughtfulness, not weakness.
+
+Would you like to:
+[1] Enrich tasks now (recommended)
+[2] Proceed with thin tasks (will need clarification later)
+```
+
+
+
 ## 🔍 Answering Project Questions (EPIC-003)
 
 When users ask factual questions about the project, use ginko CLI commands to query the knowledge graph.
