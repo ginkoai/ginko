@@ -601,21 +601,16 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            /* Hide 3-column junctions, show 2-column junctions */
+            /* Hide all junctions on tablet - row count varies so fixed positions don't work */
+            .junction-top-1,
             .junction-top-2,
+            .junction-bottom-1,
             .junction-bottom-2,
-            .junction-cross-2 {
+            .junction-cross-1,
+            .junction-cross-2,
+            .junction-left-1,
+            .junction-right-1 {
                 display: none;
-            }
-
-            .junction-top-1 {
-                left: 50%;
-            }
-            .junction-bottom-1 {
-                left: 50%;
-            }
-            .junction-cross-1 {
-                left: 50%;
             }
 
             /* Adjust border removal for 2-column grid */
