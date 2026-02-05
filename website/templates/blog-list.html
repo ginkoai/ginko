@@ -131,10 +131,14 @@
             transition: all var(--transition-fast);
             margin-top: auto;
             align-self: flex-end;
+            padding: var(--space-2) var(--space-4);
+            border: 1px solid var(--color-accent);
+            border-radius: var(--radius-md);
         }
 
         .post-read-cta:hover {
             gap: var(--space-3);
+            background-color: rgba(208, 245, 73, 0.1);
         }
 
         .post-read-cta::after {
@@ -201,10 +205,10 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-medium);
             background-color: transparent;
-            color: var(--color-text-secondary);
-            padding: var(--space-2) var(--space-4);
-            border: 1px solid var(--color-border);
-            border-radius: 9999px;
+            color: #ffffff;
+            padding: var(--space-2) var(--space-5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-md);
             cursor: pointer;
             transition: all var(--transition-fast);
         }
@@ -213,7 +217,7 @@
         .filter-tag.active {
             border-color: var(--color-accent);
             color: var(--color-accent);
-            background-color: var(--color-accent-light);
+            background-color: rgba(208, 245, 73, 0.15);
         }
 
         /* Pagination */
@@ -413,7 +417,17 @@
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
             </div>
             <div class="nav-actions">
-                <a href="../get-started.html" class="btn-primary">Get Started</a>
+                <a href="../get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
+                    <span class="btn-hero-text">GET STARTED</span>
+                    <span class="btn-hero-arrow btn-hero-arrow-dark">
+                        <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                        <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </span>
+                </a>
                 <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
                     <span></span>
                     <span></span>

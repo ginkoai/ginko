@@ -35,295 +35,18 @@
             color: var(--color-accent) !important;
         }
 
-        /* Giant footer logo */
-        .footer-giant-logo {
-            width: 100%;
-            overflow: hidden;
-            margin-top: var(--space-12);
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-        }
-
-        .footer-giant-logo-img {
-            width: 100%;
-            max-width: none;
-            height: auto;
-            opacity: 1;
-            object-fit: contain;
-            object-position: bottom;
-        }
-
-        /* Subscribe button style (dark with accent/green text) */
-        .btn-hero-subscribe {
-            background-color: #0A0A0A !important;
-            color: var(--color-accent) !important;
-            border: none !important;
-        }
-
-        .btn-hero-subscribe .btn-hero-text {
-            color: var(--color-accent) !important;
-        }
-
-        .btn-hero-subscribe .btn-hero-arrow {
-            background-color: var(--color-accent) !important;
-        }
-
-        .btn-hero-subscribe .arrow-icon {
-            stroke: #0A0A0A !important;
-        }
-
-        .btn-hero-subscribe:hover {
-            background-color: #171717 !important;
-        }
-
         /* Blog Grid */
         .blog-section {
             padding: var(--space-12) 0 var(--space-20);
             background-color: var(--color-bg);
         }
 
-        /* Blog Grid - Connected card system with corner brackets */
-        .blog-grid-wrapper {
-            --card-bracket-size: 16px;
-            --card-bracket-thickness: 2px;
-            --card-bracket-color: var(--color-accent);
-            --card-border-color: rgba(255, 255, 255, 0.1);
-            --junction-size: 20px;
-
-            position: relative;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
         .blog-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-auto-rows: 1fr; /* Equal height rows */
-            gap: 0;
-            border: 1px solid var(--card-border-color);
-            position: relative;
-        }
-
-        /* Junction connectors */
-        .junction {
-            position: absolute;
-            width: var(--junction-size);
-            height: var(--junction-size);
-            z-index: 20;
-            pointer-events: none;
-        }
-
-        /* T-junction pointing down (top edge) */
-        .junction-t-down::before,
-        .junction-t-down::after {
-            content: '';
-            position: absolute;
-            background-color: var(--card-bracket-color);
-        }
-        .junction-t-down::before {
-            /* Horizontal line */
-            width: 100%;
-            height: var(--card-bracket-thickness);
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-        }
-        .junction-t-down::after {
-            /* Vertical line going down */
-            width: var(--card-bracket-thickness);
-            height: 50%;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* T-junction pointing up (bottom edge) */
-        .junction-t-up::before,
-        .junction-t-up::after {
-            content: '';
-            position: absolute;
-            background-color: var(--card-bracket-color);
-        }
-        .junction-t-up::before {
-            /* Horizontal line */
-            width: 100%;
-            height: var(--card-bracket-thickness);
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-        }
-        .junction-t-up::after {
-            /* Vertical line going up */
-            width: var(--card-bracket-thickness);
-            height: 50%;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* T-junction pointing right (left edge) */
-        .junction-t-right::before,
-        .junction-t-right::after {
-            content: '';
-            position: absolute;
-            background-color: var(--card-bracket-color);
-        }
-        .junction-t-right::before {
-            /* Vertical line */
-            height: 100%;
-            width: var(--card-bracket-thickness);
-            left: 50%;
-            top: 0;
-            transform: translateX(-50%);
-        }
-        .junction-t-right::after {
-            /* Horizontal line going right */
-            height: var(--card-bracket-thickness);
-            width: 50%;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* T-junction pointing left (right edge) */
-        .junction-t-left::before,
-        .junction-t-left::after {
-            content: '';
-            position: absolute;
-            background-color: var(--card-bracket-color);
-        }
-        .junction-t-left::before {
-            /* Vertical line */
-            height: 100%;
-            width: var(--card-bracket-thickness);
-            left: 50%;
-            top: 0;
-            transform: translateX(-50%);
-        }
-        .junction-t-left::after {
-            /* Horizontal line going left */
-            height: var(--card-bracket-thickness);
-            width: 50%;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* Cross junction (+) for internal intersections */
-        .junction-cross::before,
-        .junction-cross::after {
-            content: '';
-            position: absolute;
-            background-color: var(--card-bracket-color);
-        }
-        .junction-cross::before {
-            /* Horizontal line */
-            width: 100%;
-            height: var(--card-bracket-thickness);
-            top: 50%;
-            left: 0;
-            transform: translateY(-50%);
-        }
-        .junction-cross::after {
-            /* Vertical line */
-            height: 100%;
-            width: var(--card-bracket-thickness);
-            left: 50%;
-            top: 0;
-            transform: translateX(-50%);
-        }
-
-        /* Blog grid outer corner brackets */
-        .blog-grid-wrapper::before {
-            content: '';
-            display: block;
-            position: absolute;
-            top: -1px;
-            left: -1px;
-            right: -1px;
-            height: var(--card-bracket-size);
-            background:
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .blog-grid-wrapper::after {
-            content: '';
-            display: block;
-            position: absolute;
-            bottom: -1px;
-            left: -1px;
-            right: -1px;
-            height: var(--card-bracket-size);
-            background:
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
-                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        /* Junction positioning - all inside .blog-grid */
-        /* Grid cells divide at 1/3 and 2/3 */
-        .blog-grid .junction {
-            position: absolute;
-            z-index: 20;
-        }
-
-        /* Top edge T-junctions - positioned on outer border */
-        .junction-top-1 {
-            top: -1px;
-            left: calc(100% / 3);
-            transform: translate(-50%, -50%);
-        }
-        .junction-top-2 {
-            top: -1px;
-            left: calc(200% / 3);
-            transform: translate(-50%, -50%);
-        }
-
-        /* Bottom edge T-junctions */
-        .junction-bottom-1 {
-            bottom: -1px;
-            left: calc(100% / 3);
-            transform: translate(-50%, 50%);
-        }
-        .junction-bottom-2 {
-            bottom: -1px;
-            left: calc(200% / 3);
-            transform: translate(-50%, 50%);
-        }
-
-        /* Left edge T-junction (at row boundary - 50% for 2 rows) */
-        .junction-left-1 {
-            top: 50%;
-            left: -1px;
-            transform: translate(-50%, -50%);
-        }
-
-        /* Right edge T-junction */
-        .junction-right-1 {
-            top: 50%;
-            right: -1px;
-            transform: translate(50%, -50%);
-        }
-
-        /* Internal cross junctions - at cell boundaries */
-        .junction-cross-1 {
-            top: 50%;
-            left: calc(100% / 3);
-            transform: translate(-50%, -50%);
-        }
-        .junction-cross-2 {
-            top: 50%;
-            left: calc(200% / 3);
-            transform: translate(-50%, -50%);
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: var(--space-8);
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         /* Post Card */
@@ -332,28 +55,18 @@
             display: flex;
             flex-direction: column;
             background-color: var(--color-surface);
-            border: none;
-            border-right: 1px solid var(--card-border-color);
-            border-bottom: 1px solid var(--card-border-color);
-            border-radius: 0;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
             padding: var(--space-8);
             text-decoration: none;
             transition: all var(--transition-fast);
             height: 100%;
         }
 
-        /* Remove right border on last column */
-        .post-card:nth-child(3n) {
-            border-right: none;
-        }
-
-        /* Remove bottom border on last row */
-        .post-card:nth-last-child(-n+3) {
-            border-bottom: none;
-        }
-
         .post-card:hover {
-            background-color: rgba(174, 255, 0, 0.03);
+            border-color: var(--color-accent);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
         }
 
         .post-card-header {
@@ -400,9 +113,9 @@
             font-size: 10px;
             background-color: var(--color-bg);
             color: var(--color-text-tertiary);
-            padding: 4px 10px;
+            padding: 2px 8px;
             border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
+            border-radius: 9999px;
             text-transform: lowercase;
         }
 
@@ -414,19 +127,18 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             color: var(--color-accent);
-            background-color: transparent;
-            border: 1px solid var(--color-accent);
-            border-radius: var(--radius-md);
-            padding: var(--space-2) var(--space-4);
             text-decoration: none;
             transition: all var(--transition-fast);
             margin-top: auto;
             align-self: flex-end;
+            padding: var(--space-2) var(--space-4);
+            border: 1px solid var(--color-accent);
+            border-radius: var(--radius-md);
         }
 
         .post-read-cta:hover {
-            background-color: var(--color-accent);
-            color: #0A0A0A;
+            gap: var(--space-3);
+            background-color: rgba(208, 245, 73, 0.1);
         }
 
         .post-read-cta::after {
@@ -482,10 +194,10 @@
         }
 
         .blog-filter-tags {
+            justify-content: center;
             display: flex;
             gap: var(--space-3);
             flex-wrap: wrap;
-            justify-content: center;
         }
 
         .filter-tag {
@@ -493,9 +205,9 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-medium);
             background-color: transparent;
-            color: var(--color-text-secondary);
-            padding: var(--space-2) var(--space-4);
-            border: 1px solid var(--color-border);
+            color: #ffffff;
+            padding: var(--space-2) var(--space-5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: var(--radius-md);
             cursor: pointer;
             transition: all var(--transition-fast);
@@ -505,7 +217,7 @@
         .filter-tag.active {
             border-color: var(--color-accent);
             color: var(--color-accent);
-            background-color: var(--color-accent-light);
+            background-color: rgba(208, 245, 73, 0.15);
         }
 
         /* Pagination */
@@ -525,7 +237,7 @@
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
             padding: var(--space-3) var(--space-6);
-            border-radius: var(--radius-md);
+            border-radius: 9999px;
             background-color: transparent;
             color: var(--color-text);
             border: 2px solid var(--color-border-strong);
@@ -557,7 +269,7 @@
             font-family: var(--font-mono);
             font-size: var(--font-size-sm);
             font-weight: var(--font-weight-semibold);
-            border-radius: var(--radius-md);
+            border-radius: 50%;
             background-color: transparent;
             color: var(--color-text);
             border: 1px solid var(--color-border);
@@ -609,7 +321,7 @@
             font-family: var(--font-mono);
             font-size: var(--font-size-base);
             padding: var(--space-4) var(--space-5);
-            border-radius: var(--radius-md);
+            border-radius: 9999px;
             border: 2px solid transparent;
             background-color: white;
             color: #0A0A0A;
@@ -625,47 +337,26 @@
             color: rgba(10, 10, 10, 0.5);
         }
 
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .blog-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .post-card:nth-child(3n) {
-                border-right: 1px solid var(--card-border-color);
-            }
-
-            .post-card:nth-child(2n) {
-                border-right: none;
-            }
-
-            .post-card:nth-last-child(-n+3) {
-                border-bottom: 1px solid var(--card-border-color);
-            }
-
-            .post-card:nth-last-child(-n+2) {
-                border-bottom: none;
-            }
-
-            /* Hide third column junctions, reposition for 2-column */
-            .junction-top-2,
-            .junction-bottom-2,
-            .junction-cross-2 {
-                display: none;
-            }
-
-            .junction-top-1 {
-                left: calc(50% - var(--junction-size) / 2);
-            }
-            .junction-bottom-1 {
-                left: calc(50% - var(--junction-size) / 2);
-            }
-            .junction-cross-1 {
-                left: calc(50% - var(--junction-size) / 2);
-            }
+        .newsletter-submit {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            padding: var(--space-4) var(--space-8);
+            border-radius: 9999px;
+            background-color: #0A0A0A;
+            color: var(--color-accent);
+            border: 2px solid #0A0A0A;
+            cursor: pointer;
+            transition: all var(--transition-fast);
         }
 
+        .newsletter-submit:hover {
+            background-color: #171717;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .blog-hero-title {
                 font-size: var(--font-size-4xl);
@@ -677,31 +368,6 @@
 
             .blog-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .post-card {
-                border-right: none !important;
-                border-bottom: 1px solid var(--card-border-color) !important;
-            }
-
-            .post-card:last-child {
-                border-bottom: none !important;
-            }
-
-            /* Hide all column junctions on mobile (single column) */
-            .junction-top-1,
-            .junction-top-2,
-            .junction-bottom-1,
-            .junction-bottom-2,
-            .junction-cross-1,
-            .junction-cross-2 {
-                display: none;
-            }
-
-            /* Keep left/right T-junctions for row separators */
-            .junction-left-1,
-            .junction-right-1 {
-                display: block;
             }
 
             .post-card-featured {
@@ -718,7 +384,7 @@
             }
 
             .newsletter-input,
-            .newsletter-form .btn-hero {
+            .newsletter-submit {
                 width: 100%;
             }
         }
@@ -751,7 +417,7 @@
                 <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
             </div>
             <div class="nav-actions">
-                <a href="../get-started.html" class="btn-hero btn-hero-primary btn-hero-sm">
+                <a href="../get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
                     <span class="btn-hero-text">GET STARTED</span>
                     <span class="btn-hero-arrow btn-hero-arrow-dark">
                         <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -800,22 +466,7 @@
             </div>
 
             <!-- Blog Grid -->
-            <div class="blog-grid-wrapper">
-                <div class="blog-grid">
-                    <!-- All junctions inside grid for consistent positioning -->
-                    <!-- Top edge T-junctions -->
-                    <div class="junction junction-t-down junction-top-1"></div>
-                    <div class="junction junction-t-down junction-top-2"></div>
-                    <!-- Bottom edge T-junctions -->
-                    <div class="junction junction-t-up junction-bottom-1"></div>
-                    <div class="junction junction-t-up junction-bottom-2"></div>
-                    <!-- Left edge T-junction -->
-                    <div class="junction junction-t-right junction-left-1"></div>
-                    <!-- Right edge T-junction -->
-                    <div class="junction junction-t-left junction-right-1"></div>
-                    <!-- Internal cross junctions -->
-                    <div class="junction junction-cross junction-cross-1"></div>
-                    <div class="junction junction-cross junction-cross-2"></div>
+            <div class="blog-grid">
                 
     <a href="/blog/why-our-6-week-estimate-took-3-days/" class="post-card" data-category="ai-development">
       <div class="post-card-header">
@@ -905,8 +556,7 @@
       
       <span class="post-read-cta">Read</span>
     </a>
-
-                </div>
+  
             </div>
 
             <!-- Pagination -->
@@ -944,16 +594,8 @@
                         required
                         aria-label="Email address"
                     >
-                    <button type="submit" class="btn-hero btn-hero-subscribe">
-                        <span class="btn-hero-text">SUBSCRIBE</span>
-                        <span class="btn-hero-arrow btn-hero-arrow-accent">
-                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-                            </svg>
-                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
-                            </svg>
-                        </span>
+                    <button type="submit" class="newsletter-submit">
+                        Subscribe
                     </button>
                 </form>
 
@@ -966,61 +608,56 @@
     <div class="section-divider--inverted section-divider"></div>
 
     <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <a href="../index.html" class="footer-logo">
-                        <img src="../ginko-logo.svg" alt="ginko" class="logo-image" height="48">
-                    </a>
-                    <p class="footer-tagline">Context that flows with you</p>
-                </div>
-
-                <div class="footer-section">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="../developers.html">For Developers</a></li>
-                        <li><a href="../index.html#pricing">Pricing</a></li>
-                        <li><a href="https://docs.ginko.ai">Documentation</a></li>
-                        <li><a href="https://github.com/ginkoai">GitHub</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="../teams.html">For Teams</a></li>
-                        <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
-                        <li><a href="#">Privacy</a></li>
-                        <li><a href="#">Terms</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-section">
-                    <h4>Resources</h4>
-                    <ul>
-                        <li><a href="../get-started.html">Getting Started</a></li>
-                        <li><a href="https://docs.ginko.ai/api">API Reference</a></li>
-                        <li><a href="https://github.com/ginkoai/examples">Examples</a></li>
-                        <li><a href="blog-list.html">Blog</a></li>
-                    </ul>
-                </div>
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <a href="/" class="footer-logo">
+                    <img src="/ginko-logo.svg" alt="ginko" class="logo-image" height="48">
+                </a>
+                <p class="footer-tagline">Context that flows with you</p>
             </div>
-
-            <div class="footer-bottom">
-                <p>&copy; 2026 ginko. All rights reserved.</p>
-                <div class="footer-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">Security</a>
-                </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/developers.html">For Developers</a></li>
+                    <li><a href="/index.html#pricing">Pricing</a></li>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                    <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/teams.html">For Teams</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                    <li><a href="/privacy.html">Privacy</a></li>
+                    <li><a href="/terms.html">Terms</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                    <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                    <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                </ul>
             </div>
         </div>
-
-        <div class="footer-iykyg">
-            <img src="../iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
+        <div class="footer-bottom">
+            <p>&copy;2026 ginko. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
         </div>
-    </footer>
+    </div>
+    <div class="footer-iykyg">
+        <img src="/iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
+    </div>
+</footer>
+
 
     <!-- Toast notification -->
     <div id="toast" class="toast">Copied!</div>
