@@ -30,7 +30,7 @@ import { initCommand } from './commands/init.js';
 import { createCommand } from './commands/create.js';
 import { startCommand } from './commands/start/index.js';
 import { statusCommand } from './commands/status.js';
-import { contextCommand } from './commands/context.js';
+import { createContextCommand } from './commands/context/index.js';
 import { configCommand } from './commands/config.js';
 import vibecheckCommand from './commands/vibecheck-final.js';
 import { vibecheckAiCommand } from './commands/vibecheck-ai.js';
@@ -128,6 +128,7 @@ program
   .option('-m, --minimal', 'Minimal output for quick start (deprecated, concise is now default)')
   .option('--compact', 'Compact output without table borders (previous default)')
   .option('--full', 'Full table with task list (default is compact 8-line table)')
+  .option('--clean-slate', 'Simplified label:value format with resumption brief (EPIC-018)')
   .option('--no-table', 'Disable table formatting for piping/scripts')
   .option('--auto-progress', 'Automatically advance to next sprint when current is complete')
   .option('--noai', 'Disable AI enhancement and use procedural templates')
@@ -295,13 +296,8 @@ ${chalk.gray('Examples:')}
     });
   });
 
-program
-  .command('context')
-  .description('Manage session context')
-  .option('-a, --add <files...>', 'Add files to context')
-  .option('-r, --remove <files...>', 'Remove files from context')
-  .option('-s, --show', 'Show current context')
-  .action(contextCommand);
+// Context command with quality scoring subcommand (EPIC-018)
+program.addCommand(createContextCommand());
 
 program
   .command('config')

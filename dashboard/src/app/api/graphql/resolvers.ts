@@ -1,8 +1,8 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-11-07
- * @tags: [graphql, resolvers, knowledge, task-024]
+ * @updated: 2026-02-05
+ * @tags: [graphql, resolvers, knowledge, task-024, epic-018, session-start]
  * @related: [schema.ts, route.ts, _cloud-graph-client.ts]
  * @priority: high
  * @complexity: high
@@ -389,6 +389,101 @@ export const resolvers = {
     },
 
     /**
+     * Session start context - all data needed for ginko start in one query
+     * EPIC-018 Sprint 1 TASK-08
+     *
+     * Replaces 4-5 sequential REST calls with a single GraphQL query
+     */
+    sessionStart: async (
+      _parent: any,
+      args: {
+        graphId: string;
+        userId: string;
+        sprintId?: string;
+        eventLimit?: number;
+        teamEventDays?: number;
+      },
+      context: Context
+    ) => {
+      const {
+        graphId,
+        userId,
+        sprintId,
+        eventLimit = 25,
+        teamEventDays = 7,
+      } = args;
+
+      const startTime = Date.now();
+
+      // Run all queries in parallel for performance
+      const [
+        activeSprintResult,
+        recentEventsResult,
+        charterResult,
+        teamActivityResult,
+      ] = await Promise.all([
+        // 1. Get active sprint with tasks
+        loadActiveSprint(graphId, sprintId, context.token),
+
+        // 2. Get recent user events
+        loadRecentEvents(graphId, userId, eventLimit),
+
+        // 3. Load charter summary
+        loadCharterSummary(graphId),
+
+        // 4. Load team activity
+        loadTeamActivitySummary(graphId, userId, teamEventDays),
+      ]);
+
+      // If we have an active sprint with a current task, enrich it with patterns/gotchas/constraints
+      let enrichedSprint = activeSprintResult;
+      if (activeSprintResult && activeSprintResult.currentTask) {
+        const taskId = activeSprintResult.currentTask.id;
+        const [patterns, gotchas, constraints] = await Promise.all([
+          loadTaskPatterns(taskId),
+          loadTaskGotchas(taskId),
+          loadTaskConstraints(taskId),
+        ]);
+
+        enrichedSprint = {
+          ...activeSprintResult,
+          currentTask: {
+            ...activeSprintResult.currentTask,
+            patterns,
+            gotchas,
+            constraints,
+          },
+        };
+      }
+
+      const loadTimeMs = Date.now() - startTime;
+
+      // Calculate token estimate
+      const taskCount = enrichedSprint?.tasks?.length || 0;
+      const tokenEstimate =
+        500 + // base overhead
+        (taskCount * 50) + // tasks
+        (recentEventsResult.length * 30) + // events
+        (charterResult ? 200 : 0) + // charter
+        (teamActivityResult.length * 40); // team activity
+
+      return {
+        activeSprint: enrichedSprint,
+        recentEvents: recentEventsResult,
+        charter: charterResult,
+        teamActivity: teamActivityResult,
+        epic: enrichedSprint?.epic || null,
+        metadata: {
+          loadTimeMs,
+          sprintFound: !!enrichedSprint,
+          taskCount,
+          eventCount: recentEventsResult.length,
+          tokenEstimate,
+        },
+      };
+    },
+
+    /**
      * Strategic context for AI partner readiness
      * Loads charter + team activity + relevant patterns
      */
@@ -578,6 +673,411 @@ export const strategicContextHelpers = {
   loadCharter,
   loadTeamActivity,
   loadPatterns,
+};
+
+// ============================================================================
+// Helper Functions for Session Start (EPIC-018 Sprint 1 TASK-08)
+// ============================================================================
+
+/**
+ * Extract epic_id from sprint ID using standard naming convention (ADR-052)
+ */
+function extractEpicId(sprintId: string): string {
+  // Standard pattern: e{NNN}_s{NN}
+  const standardMatch = sprintId.match(/^(e\d{3})_s\d{2}$/);
+  if (standardMatch) return standardMatch[1];
+
+  // Ad-hoc pattern: adhoc_{YYMMDD}_s{NN}
+  const adhocMatch = sprintId.match(/^(adhoc_\d{6})_s\d{2}$/);
+  if (adhocMatch) return adhocMatch[1];
+
+  return sprintId;
+}
+
+/**
+ * Load active sprint with tasks
+ * Mirrors logic from /api/v1/sprint/active
+ */
+async function loadActiveSprint(
+  graphId: string,
+  preferredSprintId: string | undefined,
+  token: string
+): Promise<any | null> {
+  const client = await CloudGraphClient.fromBearerToken(token, graphId);
+
+  let result: any[] = [];
+
+  // If user specified a preferred sprint, fetch that directly
+  if (preferredSprintId) {
+    result = await client.runScopedQuery<any>(`
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint {id: $preferredSprintId})
+      OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
+      OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+      OPTIONAL MATCH (s)-[:NEXT_TASK]->(next:Task)
+      RETURN s as sprint, collect(DISTINCT t) as tasks, next as nextTask, e as epic
+    `, { preferredSprintId });
+  }
+
+  // If no preferred sprint or not found, auto-detect
+  if (result.length === 0) {
+    result = await client.runScopedQuery<any>(`
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
+      OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
+      OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+      WITH s, e,
+           count(t) as totalTasks,
+           sum(CASE WHEN t.status = 'complete' THEN 1 ELSE 0 END) as completedTasks,
+           max(t.updatedAt) as lastTaskActivity
+
+      WITH s, e, totalTasks, completedTasks, lastTaskActivity,
+           CASE WHEN totalTasks > 0 THEN toInteger((completedTasks * 100) / totalTasks) ELSE 0 END as progress
+      WHERE (s.status IS NULL OR s.status <> 'complete')
+        AND (e IS NULL OR e.roadmap_lane IS NULL OR NOT e.roadmap_lane IN ['done', 'dropped'])
+        AND (totalTasks = 0 OR completedTasks < totalTasks)
+
+      WITH s, e, totalTasks, progress, lastTaskActivity
+      ORDER BY
+        CASE WHEN lastTaskActivity IS NOT NULL THEN 0 ELSE 1 END,
+        lastTaskActivity DESC
+      LIMIT 1
+
+      WITH s, e
+      OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+      OPTIONAL MATCH (s)-[:NEXT_TASK]->(next:Task)
+
+      RETURN s as sprint, collect(DISTINCT t) as tasks, next as nextTask, e as epic
+    `);
+  }
+
+  // Fallback: If no sprint found, get most recent
+  if (result.length === 0) {
+    result = await client.runScopedQuery<any>(`
+      MATCH (g:Graph {graphId: $graphId})-[:CONTAINS]->(s:Sprint)
+      OPTIONAL MATCH (s)-[:BELONGS_TO]->(e:Epic)
+      WITH s, e
+      ORDER BY s.createdAt DESC
+      LIMIT 1
+
+      OPTIONAL MATCH (s)-[:CONTAINS]->(t:Task)
+      OPTIONAL MATCH (s)-[:NEXT_TASK]->(next:Task)
+
+      RETURN s as sprint, collect(DISTINCT t) as tasks, next as nextTask, e as epic
+    `);
+  }
+
+  if (result.length === 0) return null;
+
+  const record = result[0];
+
+  // Extract properties from Neo4j node objects
+  const extractProps = <T>(node: any): T | null => {
+    if (!node) return null;
+    return (node.properties || node) as T;
+  };
+
+  const sprintData = extractProps<any>(record.sprint);
+  if (!sprintData) return null;
+
+  const rawTasks = record.tasks
+    .filter((t: any) => t !== null)
+    .map((t: any) => extractProps<any>(t)!);
+  const nextTaskData = extractProps<any>(record.nextTask);
+  const epicData = extractProps<any>(record.epic);
+
+  // Calculate completion counts
+  const completedTasks = rawTasks.filter((t: any) => t.status === 'complete').length;
+  const blockedTasks = rawTasks.filter((t: any) => t.status === 'blocked');
+
+  // Determine current/next task
+  let currentTask = null;
+  if (nextTaskData) {
+    currentTask = {
+      id: nextTaskData.id,
+      title: nextTaskData.title,
+      status: nextTaskData.status || 'not_started',
+      blocked_reason: nextTaskData.blocked_reason,
+      assignee: nextTaskData.owner,
+      patterns: [],
+      gotchas: [],
+      constraints: [],
+    };
+  } else {
+    // Find first non-complete task
+    const firstIncomplete = rawTasks.find((t: any) =>
+      t.status !== 'complete' && t.status !== 'blocked'
+    );
+    if (firstIncomplete) {
+      currentTask = {
+        id: firstIncomplete.id,
+        title: firstIncomplete.title,
+        status: firstIncomplete.status || 'not_started',
+        blocked_reason: firstIncomplete.blocked_reason,
+        assignee: firstIncomplete.owner,
+        patterns: [],
+        gotchas: [],
+        constraints: [],
+      };
+    }
+  }
+
+  // Build next task indicator
+  let nextTask = null;
+  if (currentTask) {
+    nextTask = {
+      id: currentTask.id,
+      title: currentTask.title,
+      continue: currentTask.status === 'in_progress',
+    };
+  }
+
+  // Build enriched tasks list
+  const tasks = rawTasks.map((t: any) => ({
+    id: t.id,
+    title: t.title,
+    status: t.status || 'not_started',
+    blocked_reason: t.blocked_reason,
+    assignee: t.owner,
+    patterns: [],
+    gotchas: [],
+    constraints: [],
+  }));
+
+  // Build blocked tasks list
+  const blocked_tasks = blockedTasks.map((t: any) => ({
+    id: t.id,
+    title: t.title,
+    reason: t.blocked_reason || 'No reason provided',
+  }));
+
+  return {
+    id: sprintData.id,
+    name: sprintData.name || sprintData.id,
+    epic_id: extractEpicId(sprintData.id),
+    status: sprintData.status || 'active',
+    progress: {
+      complete: completedTasks,
+      total: rawTasks.length,
+      percent: rawTasks.length > 0
+        ? Math.round((completedTasks / rawTasks.length) * 100)
+        : 0,
+    },
+    currentTask,
+    nextTask,
+    tasks,
+    blocked_tasks,
+    epic: epicData ? {
+      id: epicData.id,
+      title: epicData.title,
+      roadmap_lane: epicData.roadmap_lane,
+      roadmap_status: epicData.roadmap_status,
+    } : null,
+  };
+}
+
+/**
+ * Load recent events for user
+ */
+async function loadRecentEvents(
+  graphId: string,
+  userId: string,
+  limit: number
+): Promise<any[]> {
+  try {
+    const query = `
+      MATCH (e:Event)
+      WHERE e.project_id = $graphId AND e.user_id = $userId
+      RETURN e
+      ORDER BY e.timestamp DESC
+      LIMIT $limit
+    `;
+
+    const results = await runQuery<any>(query, {
+      graphId,
+      userId,
+      limit: neo4j.int(limit),
+    });
+
+    return results.map((r: any) => {
+      const event = r.e.properties || r.e;
+      return {
+        id: event.id || `event_${Date.now()}`,
+        category: event.category || 'general',
+        description: event.description || '',
+        timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
+        files: event.files || [],
+        impact: event.impact,
+        branch: event.branch,
+      };
+    });
+  } catch {
+    // Events may not exist, return empty array
+    return [];
+  }
+}
+
+/**
+ * Load charter summary (purpose and goals only)
+ */
+async function loadCharterSummary(graphId: string): Promise<any | null> {
+  try {
+    const query = `
+      MATCH (c:Charter {graphId: $graphId})
+      RETURN c.purpose as purpose, c.goals as goals
+      LIMIT 1
+    `;
+
+    const results = await runQuery<any>(query, { graphId });
+
+    if (results.length === 0) return null;
+
+    const record = results[0];
+    return {
+      purpose: record.purpose || '',
+      goals: record.goals || [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Load team activity summary (other users' recent work)
+ */
+async function loadTeamActivitySummary(
+  graphId: string,
+  userId: string,
+  days: number
+): Promise<any[]> {
+  try {
+    const query = `
+      MATCH (e:Event)
+      WHERE e.project_id = $graphId
+        AND e.user_id <> $userId
+        AND e.category IN ['decision', 'achievement', 'git', 'fix', 'feature']
+        AND e.timestamp >= datetime() - duration({days: $days})
+        AND (e.shared = true OR e.impact = 'high')
+      RETURN e
+      ORDER BY e.timestamp DESC
+      LIMIT 10
+    `;
+
+    const results = await runQuery<any>(query, {
+      graphId,
+      userId,
+      days: neo4j.int(days),
+    });
+
+    return results.map((r: any) => {
+      const event = r.e.properties || r.e;
+      return {
+        category: event.category || 'general',
+        description: event.description || '',
+        user: event.user_id || 'unknown',
+        timestamp: event.timestamp ? new Date(event.timestamp).toISOString() : new Date().toISOString(),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Load patterns for a task
+ */
+async function loadTaskPatterns(taskId: string): Promise<any[]> {
+  try {
+    const query = `
+      MATCH (t:Task {id: $taskId})-[r:APPLIES_PATTERN]->(p:Pattern)
+      RETURN p.id as id,
+             p.title as title,
+             p.confidence as confidence,
+             p.confidenceScore as confidenceScore,
+             p.category as category
+      ORDER BY p.confidenceScore DESC
+    `;
+
+    const results = await runQuery<any>(query, { taskId });
+
+    return results.map((r: any) => ({
+      id: r.id,
+      title: r.title || r.id,
+      confidence: r.confidence || 'medium',
+      confidenceScore: r.confidenceScore ?? 50,
+      category: r.category || 'pattern',
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Load gotchas for a task
+ */
+async function loadTaskGotchas(taskId: string): Promise<any[]> {
+  try {
+    const query = `
+      MATCH (t:Task {id: $taskId})-[r:AVOID_GOTCHA]->(g:Gotcha)
+      RETURN g.id as id,
+             g.title as title,
+             g.severity as severity,
+             g.confidenceScore as confidenceScore
+      ORDER BY
+        CASE g.severity
+          WHEN 'critical' THEN 0
+          WHEN 'high' THEN 1
+          WHEN 'medium' THEN 2
+          ELSE 3
+        END,
+        g.confidenceScore DESC
+    `;
+
+    const results = await runQuery<any>(query, { taskId });
+
+    return results.map((r: any) => ({
+      id: r.id,
+      title: r.title || r.id,
+      severity: r.severity || 'medium',
+      confidenceScore: r.confidenceScore ?? 50,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Load ADR constraints for a task
+ */
+async function loadTaskConstraints(taskId: string): Promise<any[]> {
+  try {
+    const query = `
+      MATCH (t:Task {id: $taskId})-[r:MUST_FOLLOW]->(a:ADR)
+      RETURN a.id as id,
+             a.title as title,
+             a.status as status
+    `;
+
+    const results = await runQuery<any>(query, { taskId });
+
+    return results.map((r: any) => ({
+      id: r.id,
+      title: r.title || r.id,
+      status: r.status || 'active',
+    }));
+  } catch {
+    return [];
+  }
+}
+
+// Export session start helpers for testing
+export const sessionStartHelpers = {
+  loadActiveSprint,
+  loadRecentEvents,
+  loadCharterSummary,
+  loadTeamActivitySummary,
+  loadTaskPatterns,
+  loadTaskGotchas,
+  loadTaskConstraints,
+  extractEpicId,
 };
 
 // Add KnowledgeNode field resolvers to main resolvers export

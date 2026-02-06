@@ -1,12 +1,12 @@
 /**
  * @fileType: utility
  * @status: current
- * @updated: 2025-11-04
- * @tags: [context-loading, events, adr-043, session-cursor, graph]
- * @related: [context-loader.ts, session-logger.ts, CloudGraphClient]
+ * @updated: 2026-02-05
+ * @tags: [context-loading, events, adr-043, session-cursor, graph, epic-018]
+ * @related: [context-loader.ts, session-logger.ts, CloudGraphClient, api-client.ts]
  * @priority: critical
  * @complexity: high
- * @dependencies: [fs-extra, path]
+ * @dependencies: [fs-extra, path, perf-logger]
  */
 
 /**
@@ -23,11 +23,49 @@
  * - Target: <30K tokens total (vs 88K with handoff approach)
  *
  * Based on ADR-043 Event Stream Session Model
+ *
+ * =============================================================================
+ * EPIC-018 Sprint 1 TASK-04: Performance Optimization
+ * =============================================================================
+ *
+ * Optimizations applied:
+ * 1. Timing instrumentation (enable with GINKO_PERF_LOG=true)
+ * 2. Parallel API calls for events + team events
+ * 3. Parallel loading of documents + sprint data
+ * 4. Cache-first pattern for sprint data (see state-cache.ts)
+ *
+ * Future optimization: GraphQL sessionStart query
+ * -----------------------------------------------
+ * A new GraphQL query `sessionStart` consolidates 4-5 REST calls into one:
+ *
+ * ```typescript
+ * import { GraphApiClient } from '../commands/graph/api-client.js';
+ *
+ * const client = new GraphApiClient();
+ * const context = await client.getSessionStart(graphId, userId, {
+ *   sprintId: preferredSprintId,  // optional
+ *   eventLimit: 25,
+ *   teamEventDays: 7,
+ * });
+ *
+ * // Returns: activeSprint, recentEvents, charter, teamActivity, epic, metadata
+ * // The activeSprint.currentTask is already enriched with patterns/gotchas/constraints
+ * ```
+ *
+ * This query replaces:
+ * - GET /api/v1/sprint/active
+ * - GET /api/v1/task/{id}/patterns
+ * - GET /api/v1/task/{id}/gotchas
+ * - GET /api/v1/task/{id}/constraints
+ * - (optional) charter and team activity queries
+ *
+ * Performance: ~2-3s vs ~5-8s (4-5 sequential calls)
  */
 
 import fs from 'fs-extra';
 import path from 'path';
 import os from 'os';
+import { PerfLogger } from '../utils/perf-logger.js';
 
 /**
  * Event category types
@@ -186,6 +224,9 @@ export async function loadRecentEvents(
     silent = false
   } = options;
 
+  // EPIC-018 Sprint 1 TASK-04: Performance timing instrumentation
+  const perf = PerfLogger.create('loadRecentEvents');
+
   // Helper for conditional logging (suppressed when silent=true)
   const log = (...args: any[]) => { if (!silent) console.log(...args); };
 
@@ -193,8 +234,10 @@ export async function loadRecentEvents(
   const cloudOnly = process.env.GINKO_CLOUD_ONLY === 'true';
 
   try {
+    perf.mark('importClient');
     const { GraphApiClient } = await import('../commands/graph/api-client.js');
     const client = new GraphApiClient();
+    perf.measure('importClient', 'GraphApiClient import');
 
     // Build query parameters (use special cursor value for chronological loading)
     const params = new URLSearchParams({
@@ -216,7 +259,9 @@ export async function loadRecentEvents(
     log(`📡 Using consolidated API endpoint (${mode} mode)`);
 
     // Single API call - server detects "chronological" cursor and uses ORDER BY timestamp DESC
+    perf.mark('initialLoad');
     const response = await (client as any).request('GET', `/api/v1/context/initial-load?${params.toString()}`);
+    perf.measure('initialLoad', 'Initial load API call');
 
     log(`⚡ Consolidated load: ${response.performance.queryTimeMs}ms (${response.event_count} events, ${response.performance.documentsLoaded} docs)`);
 
@@ -224,6 +269,7 @@ export async function loadRecentEvents(
     const graphId = process.env.GINKO_GRAPH_ID || '';
 
     // Fire both requests simultaneously
+    perf.mark('parallelLoad');
     const [strategicResult, charterResult] = await Promise.all([
       graphId
         ? loadStrategicContext(graphId, userId, projectId, silent).catch(() => null)
@@ -232,6 +278,7 @@ export async function loadRecentEvents(
         .then(m => m.loadCharter())
         .catch(() => null)
     ]);
+    perf.measure('parallelLoad', 'Strategic context + charter (parallel)');
 
     let strategicContext: StrategicContextData | undefined = strategicResult || undefined;
     const filesystemCharter = charterResult;
@@ -284,6 +331,9 @@ export async function loadRecentEvents(
       current_event_id: response.myEvents?.[0]?.id || 'latest',
       status: 'active',
     };
+
+    // Log performance summary if enabled
+    perf.summary();
 
     return {
       cursor,
@@ -417,43 +467,37 @@ export async function loadContextFromCursor(
   }
 
   // Fallback: Multi-call approach (original behavior)
-  // 1. Read my events backwards from cursor
-  const myEvents = await readEventsBackward(
-    cursor.current_event_id,
-    cursor.user_id,
-    cursor.project_id,
-    eventLimit,
-    { categories, branch: cursor.branch }
-  );
+  // EPIC-018 TASK-04: Optimized with parallel calls where possible
 
-  // 2. Load team events (optional)
-  let teamEvents: Event[] = [];
-  if (includeTeam) {
-    teamEvents = await loadTeamEvents(
-      cursor.project_id,
+  // Step 1-2: Load events in PARALLEL (my events + team events)
+  const [myEvents, teamEvents] = await Promise.all([
+    readEventsBackward(
+      cursor.current_event_id,
       cursor.user_id,
-      teamEventLimit,
-      teamDays
-    );
-  }
+      cursor.project_id,
+      eventLimit,
+      { categories, branch: cursor.branch }
+    ),
+    includeTeam
+      ? loadTeamEvents(cursor.project_id, cursor.user_id, teamEventLimit, teamDays)
+      : Promise.resolve([]),
+  ]);
 
-  // 3. Extract document references from events
+  // Step 3: Extract document references (synchronous)
   const allEvents = [...myEvents, ...teamEvents];
   const documentRefs = extractDocumentReferences(allEvents);
 
-  // 4. Load mentioned documents from graph
-  const documents = await loadDocuments(documentRefs);
+  // Step 4-6: Load documents and sprint in PARALLEL
+  // Note: relatedDocs depends on documents, so we do this in two stages
+  const [documents, sprint] = await Promise.all([
+    loadDocuments(documentRefs),
+    getActiveSprint(cursor.project_id),
+  ]);
 
-  // 5. Follow typed relationships (ADR-042)
-  const relatedDocs = await followTypedRelationships(
-    documents,
-    documentDepth
-  );
+  // Step 5: Follow relationships (depends on documents from step 4)
+  const relatedDocs = await followTypedRelationships(documents, documentDepth);
 
-  // 6. Get active sprint context
-  const sprint = await getActiveSprint(cursor.project_id);
-
-  // 7. Calculate token estimate
+  // Step 7: Calculate token estimate
   const tokenEstimate = estimateTokens({
     myEvents,
     teamEvents,

@@ -303,6 +303,49 @@ These "mental reflexes" activate naturally without explicit prompting to maintai
 **Flow preservation**: Single lightweight question, proceed if declined (note in session log)
 **Anti-pattern**: Untracked work breaks traceability for future collaborators
 
+### 6. "Log This For Next Session" Reflex 📝 (ADR-043)
+**Trigger**: After decisions, gotchas, task completions, or blockers
+**Action**: Run `ginko log "<description>" --category=<type>`
+
+| Moment | Category | Example |
+|--------|----------|---------|
+| Decision made | decision | `ginko log "Chose batch size 10 for payload limits" --category=decision` |
+| Gotcha found | insight | `ginko log "Vercel has 4.5MB body limit" --category=insight --impact=high` |
+| Task complete | achievement | `ginko log "Dashboard rename complete" --category=achievement` |
+| Blocker hit | insight | `ginko log "Auth token expired" --category=insight` |
+
+**Quality bar:** Would this help my successor avoid confusion?
+
+### 7. "Score My Context" Reflex 📊 (EPIC-018 Feedback Loop)
+**Trigger**: Within 60 seconds of session start (after `ginko start` completes)
+**Behavior**: Self-assess readiness to work across four dimensions
+**Action**: If score < 7 in any dimension, note what's missing
+
+| Dimension | Question | Score Guide |
+|-----------|----------|-------------|
+| Direction | "Do I know what to do next?" | 0-10: Task clarity, next steps |
+| Intent | "Do I understand WHY?" | 0-10: Purpose, motivation |
+| Location | "Do I know WHERE to start?" | 0-10: Entry points, files |
+| History | "Do I know WHAT was decided?" | 0-10: ADRs, past decisions |
+
+**Log your score:**
+```bash
+ginko context score "direction=8, intent=7, location=9, history=6"
+# or shorthand:
+ginko context score 8,7,9,6
+# with notes:
+ginko context score 8,7,9,6 --notes "Missing ADR refs for auth decision"
+```
+
+**Score interpretation:**
+- 9-10: Excellent - Crystal clear, ready to execute
+- 7-8: Good - Minor gaps acceptable
+- 5-6: Adequate - May need clarification
+- 3-4: Poor - Missing critical information
+- 0-2: Critical - Cannot proceed confidently
+
+**Philosophy:** This reflex creates a feedback loop for synthesis improvement. Low scores help identify what context the session handoff or start routine should include.
+
 ### Work Mode Sensitivity
 - **Hack & Ship**: Reflexes trigger less frequently (focus on speed)
 - **Think & Build**: Balanced reflex activity
@@ -591,6 +634,24 @@ grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
 
 **"What's my team working on?" / "Who's doing what?"**
 → `ginko team status` - shows all team members, their active sprints, progress, and last activity
+
+
+## ADR Architecture Status (EPIC-018)
+
+The following ADRs govern ginko's flow optimization and context architecture:
+
+| ADR | Status | Notes |
+|-----|--------|-------|
+| **ADR-033** | Partially superseded | Core insight valid (flow state matters), pressure measurement removed |
+| **ADR-034** | Active | Event-based triggers for context loading |
+| **ADR-036** | Active | Synthesis at session start, handoff retired |
+| **ADR-042** | Active | Typed relationships, AI-assisted quality assessment |
+| **ADR-043** | Target architecture | Partial implementation - session logging, insights capture |
+
+**How to use this table:**
+- Before implementing flow-related features, check which ADRs apply
+- "Partially superseded" means some concepts remain valid but implementation changed
+- "Target architecture" means the ADR describes future state, not current implementation
 
 
 ## Project-Specific Patterns
