@@ -3367,9 +3367,30 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         order: 1;
     }
 
-    /* Hide graph on mobile */
+    /* Hide graph on mobile - !important to prevent any override */
     .hero-visual {
-        display: none;
+        display: none !important;
+    }
+
+    /* Prevent any graph overflow on mobile */
+    .hero,
+    .hero-grid {
+        overflow: hidden;
+    }
+
+    .context-graph {
+        display: none !important;
+    }
+
+    /* Ensure hero text elements are visible on mobile */
+    .hero-badge,
+    .hero-line-1,
+    .hero-line-2,
+    .hero-line-3,
+    .hero-tagline {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 
     .hero-subtitle {
@@ -3655,15 +3676,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         margin-bottom: var(--space-8);
     }
 
+    /* Keep graph hidden on small mobile - reinforce the 768px rule */
     .context-graph {
-        max-width: 100%;
-        width: 100%;
-        margin: 0 auto;
+        display: none !important;
     }
 
     .hero-visual {
-        width: 100%;
-        justify-content: center;
+        display: none !important;
     }
 
     /* Stack CTA buttons on mobile */
