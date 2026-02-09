@@ -275,13 +275,16 @@ export async function POST(request: NextRequest) {
               .map(key => `${key}: $${key}`)
               .join(', ');
 
-            // Structural types (Sprint, Epic): use MATCH+SET (enrich-only).
-            // Task sync is the sole creator of structural nodes. Document upload
-            // should never create Sprint/Epic nodes from scratch (prevents duplicates).
-            const structuralTypes = ['Sprint', 'Epic'];
-            const isStructural = structuralTypes.includes(doc.type);
+            // Match-only types (Sprint): use MATCH+SET (enrich-only).
+            // Task sync is the sole creator of Sprint nodes. Document upload
+            // should never create Sprint nodes from scratch (prevents duplicates).
+            // Epic uses MERGE (like non-structural types) because new Epics may
+            // be pushed before any sprints exist — task sync only creates Epic
+            // nodes when sprints reference them (BUG-026 fix).
+            const matchOnlyTypes = ['Sprint'];
+            const isMatchOnly = matchOnlyTypes.includes(doc.type);
 
-            if (isStructural) {
+            if (isMatchOnly) {
               // Enrich existing node only — task sync creates the node
               const contentPropsList = Object.keys(properties)
                 .filter(key => properties[key] !== null && properties[key] !== undefined)
@@ -298,7 +301,8 @@ export async function POST(request: NextRequest) {
               );
 
               if (result.records.length === 0) {
-                console.warn(`[Documents API] Structural node ${doc.type}:${doc.id} not found. Task sync may not have run yet.`);
+                console.warn(`[Documents API] ${doc.type} node ${doc.id} not found. Task sync may not have run yet.`);
+                warnings.push(`${doc.type} "${doc.id}" was not found in the graph. Task sync may not have created it yet. The document content was not applied.`);
               }
             } else {
               // Original MERGE behavior for non-structural types (ADR, Pattern, etc.)
