@@ -8,7 +8,7 @@ roadmap_status: in_progress
 tags: [design, branding, website, exploration]
 ---
 
-# EPIC-020: Experimental Rebrand - Sunset Retro Aesthetic
+# EPIC-021: Experimental Rebrand - Sunset Retro Aesthetic
 
 ## Vision
 
