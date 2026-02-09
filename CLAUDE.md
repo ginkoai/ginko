@@ -125,14 +125,6 @@ We can create it with: ginko charter
 - **Dev Server**: `npm run dev`
 
 
-## Environment Variables
-
-| Variable | Purpose |
-|----------|---------|
-| `GINKO_FORCE_TTY=1` | Force TTY-like output (box-drawing tables, colors) in terminals that report `isTTY=false` but support rich output (e.g., Claude Code) |
-| `FORCE_COLOR=1` | Force chalk color output (set automatically when `GINKO_FORCE_TTY=1`) |
-
-
 ## AI-Optimized File Discovery (ADR-002)
 
 **MANDATORY: Use these commands for 70% faster context discovery:**

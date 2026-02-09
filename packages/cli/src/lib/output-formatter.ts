@@ -616,8 +616,8 @@ function formatOfflineHeader(context: AISessionContext): string {
  * @returns Warning message string or null if fresh/no warning needed
  *
  * Examples:
- * - Stale: "⚠️ Status may be outdated. Run `ginko sync` when online."
- * - Expired: "🚨 Status is outdated. Run `ginko sync` when online to refresh."
+ * - Stale: "⚠️ Status may be outdated. Run `ginko pull` when online."
+ * - Expired: "🚨 Status is outdated. Run `ginko pull` when online to refresh."
  */
 function formatStalenessWarning(staleness: 'fresh' | 'stale' | 'expired' | undefined): string | null {
   if (!staleness || staleness === 'fresh') {
@@ -625,11 +625,11 @@ function formatStalenessWarning(staleness: 'fresh' | 'stale' | 'expired' | undef
   }
 
   if (staleness === 'expired') {
-    return GINKO_BRAND.error('🚨 Status is outdated. Run `ginko sync` when online to refresh.');
+    return GINKO_BRAND.error('🚨 Status is outdated. Run `ginko pull` when online to refresh.');
   }
 
   // Default to stale warning
-  return GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko sync` when online.');
+  return GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko pull` when online.');
 }
 
 // ============================================================================
@@ -847,8 +847,8 @@ export function formatCleanSlateOutput(
   // Staleness warning for offline mode
   if (context.session.isOffline && context.session.cacheStaleness) {
     const stalenessMsg = context.session.cacheStaleness === 'expired'
-      ? GINKO_BRAND.error('🚨 Status outdated. Run `ginko sync` when online.')
-      : GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko sync` when online.');
+      ? GINKO_BRAND.error('🚨 Status outdated. Run `ginko pull` when online.')
+      : GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko pull` when online.');
     lines.push(stalenessMsg);
   }
 

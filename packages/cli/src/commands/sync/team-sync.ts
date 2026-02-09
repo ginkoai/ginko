@@ -176,7 +176,7 @@ export function displayStalenessWarning(status: TeamSyncStatus): void {
     console.log(chalk.dim('   Team context will be loaded for the first time.'));
   } else if (daysSinceSync === Infinity) {
     console.log(chalk.yellow('⚠️  You have never synced team context'));
-    console.log(chalk.dim('   Run `ginko sync` regularly to stay current with team knowledge.'));
+    console.log(chalk.dim('   Run `ginko pull` regularly to stay current with team knowledge.'));
   } else {
     console.log(chalk.yellow(`⚠️  Team context may be stale (${daysSinceSync} days since last sync)`));
     console.log(chalk.dim(`   Last synced: ${new Date(lastSyncAt).toLocaleDateString()}`));

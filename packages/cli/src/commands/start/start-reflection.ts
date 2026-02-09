@@ -1963,7 +1963,7 @@ Example output structure:
     // TASK-5: Check for unsynced knowledge nodes from dashboard
     const unsyncedCount = await this.checkUnsyncedNodes();
     if (unsyncedCount > 0) {
-      warnings.push(`${unsyncedCount} knowledge ${unsyncedCount === 1 ? 'node' : 'nodes'} edited in dashboard. Run \`ginko sync\` to pull changes.`);
+      warnings.push(`${unsyncedCount} knowledge ${unsyncedCount === 1 ? 'node' : 'nodes'} edited in dashboard. Run \`ginko pull\` to pull changes.`);
     }
 
     // EPIC-018 Sprint 1: Synthesize resumption brief from event context
@@ -2128,6 +2128,10 @@ Example output structure:
    *
    * Runs after session initialization to alert users when team context
    * may be outdated. Non-blocking on failure.
+   *
+   * Silent mode: Only shows warnings for critical staleness (7+ days).
+   * Warning-level staleness (1-6 days) is silent - AI agents auto-sync
+   * based on CLAUDE.md instructions.
    */
   private async checkTeamStaleness(): Promise<void> {
     try {
@@ -2146,8 +2150,9 @@ Example output structure:
       // Check staleness with default thresholds (1 day warning, 7 day critical)
       const result = await checkStaleness(graphId, token);
 
-      // Display warning if stale
-      if (result.isStale) {
+      // Only show warning for critical staleness (7+ days)
+      // Warning-level is silent - AI agents auto-sync when needed
+      if (result.isStale && result.severity === 'critical') {
         displayStalenessWarning(result);
       }
     } catch {

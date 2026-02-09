@@ -26,7 +26,7 @@ Execute ginko commands effectively for session management, task tracking, and kn
 
 ### Starting Work
 ```bash
-GINKO_FORCE_TTY=1 ginko start
+ginko start
 ```
 - Shows flow state, work mode, active sprint
 - Displays "Next up" task based on assignment and status
@@ -169,13 +169,6 @@ ginko sprint pause <id>        # Temporarily hold
 | Sprint | `e{NNN}_s{NN}` | `e016_s03` |
 | Task | `e{NNN}_s{NN}_t{NN}` | `e016_s03_t01` |
 | Ad-hoc | `adhoc_{YYMMDD}_s{NN}` | `adhoc_260123_s01` |
-
-## Environment Variables
-
-| Variable | Purpose |
-|----------|---------|
-| `GINKO_FORCE_TTY=1` | Force rich output (tables, colors) in Claude Code |
-| `FORCE_COLOR=1` | Force chalk colors (auto-set with GINKO_FORCE_TTY) |
 
 ## Troubleshooting
 

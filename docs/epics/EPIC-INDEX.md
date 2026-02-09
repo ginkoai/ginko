@@ -23,6 +23,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-016](EPIC-016-personal-workstreams.md) | Personal Workstreams & Assignment | Proposed | `EPIC-016-personal-workstreams.md` |
 | [EPIC-017](EPIC-017-git-integrated-push-pull-sync.md) | Git-Integrated Push/Pull Sync | Proposed | `EPIC-017-git-integrated-push-pull-sync.md` |
 | [EPIC-018](EPIC-018-flow-state-optimization.md) | Flow State Optimization | Proposed | `EPIC-018-flow-state-optimization.md` |
+| [EPIC-021](EPIC-021-graph-authoritative-task-content.md) | Graph-Authoritative Tasks | Proposed | `EPIC-021-graph-authoritative-task-content.md` |
 
 ## Maintenance Epics
 
@@ -38,7 +39,7 @@ Maintenance epics (ADR-059) are containers for ongoing operational work. They ar
 |--------|-------|-------|
 | Complete | 6 | 001, 002, 004, 005, 006, 008 |
 | Active | 4 | 003, 009, 010, 015 |
-| Proposed | 6 | 011, 012, 013, 016, 017, 018 |
+| Proposed | 7 | 011, 012, 013, 016, 017, 018, 021 |
 | Planned | 1 | 007 |
 
 ### EPIC-010: MVP Marketing Strategy
@@ -95,5 +96,5 @@ Maintenance epics (ADR-059) are containers for ongoing operational work. They ar
 
 ---
 
-*Last updated: 2026-02-05*
-*Added EPIC-018: Flow State Optimization (session resumption, task content quality, inquiry culture)*
+*Last updated: 2026-02-08*
+*Added EPIC-021: Graph-Authoritative Task Content (complete graph pivot, rich session start)*

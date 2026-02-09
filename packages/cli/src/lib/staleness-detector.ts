@@ -225,7 +225,7 @@ export function displayStalenessWarning(result: StalenessResult): void {
   }
 
   console.log('');
-  console.log(chalk.dim('   Run `ginko sync` to pull team updates.'));
+  console.log(chalk.dim('   Run `ginko pull` to pull team updates.'));
   console.log('');
 }
 
