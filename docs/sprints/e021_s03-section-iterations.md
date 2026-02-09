@@ -3,7 +3,7 @@ sprint_id: e021_s03
 epic_id: EPIC-021
 status: not_started
 created: 2026-02-09
-updated: 2026-02-09
+updated: 2026-02-09T18:45:00Z
 complexity: high
 ---
 
