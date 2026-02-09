@@ -19,3 +19,4 @@ export { MemberActivity, type MemberStatus, type MemberActivityProps } from './M
 export { TeamWorkboard, type TeamWorkboardProps } from './TeamWorkboard';
 export { ActivityItem, type ActivityItemData, type ActivityItemProps } from './ActivityItem';
 export { TeamActivityFeed, type TeamActivityFeedProps } from './TeamActivityFeed';
+export { DeleteProjectModal } from './DeleteProjectModal';

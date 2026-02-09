@@ -414,7 +414,118 @@ export async function blockCommand(
 }
 
 /**
- * Show task status
+ * Get full task details from graph (EPIC-018)
+ */
+async function getFullTaskDetails(
+  client: GraphApiClient,
+  graphId: string,
+  taskId: string
+): Promise<{
+  id: string;
+  title: string | null;
+  status: TaskStatus;
+  priority: string | null;
+  estimate: string | null;
+  assignee: string | null;
+  problem: string | null;
+  solution: string | null;
+  approach: string | null;
+  scope: string | null;
+  goal: string | null;
+  acceptance_criteria: string[];
+  confidence: number | null;
+  content_quality: string | null;
+  blocked_reason?: string;
+} | null> {
+  try {
+    const response = await client.request<{
+      node: {
+        properties: {
+          id: string;
+          title?: string;
+          status?: string;
+          priority?: string;
+          estimate?: string;
+          assignee?: string;
+          problem?: string;
+          solution?: string;
+          approach?: string;
+          scope?: string;
+          goal?: string;
+          acceptance_criteria?: string[];
+          confidence?: number;
+          content_quality?: string;
+          blocked_reason?: string;
+        };
+      };
+    }>('GET', `/api/v1/graph/nodes/${encodeURIComponent(taskId)}?graphId=${encodeURIComponent(graphId)}`);
+
+    const props = response.node?.properties;
+    if (!props) return null;
+
+    return {
+      id: props.id || taskId,
+      title: props.title || null,
+      status: (props.status as TaskStatus) || 'not_started',
+      priority: props.priority || null,
+      estimate: props.estimate || null,
+      assignee: props.assignee || null,
+      problem: props.problem || null,
+      solution: props.solution || null,
+      approach: props.approach || null,
+      scope: props.scope || null,
+      goal: props.goal || null,
+      acceptance_criteria: props.acceptance_criteria || [],
+      confidence: props.confidence ?? null,
+      content_quality: props.content_quality || null,
+      blocked_reason: props.blocked_reason,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Assess content quality (EPIC-018)
+ */
+function assessContentQuality(task: {
+  problem: string | null;
+  solution: string | null;
+  approach: string | null;
+  scope: string | null;
+  goal: string | null;
+  acceptance_criteria: string[];
+}): 'thin' | 'adequate' | 'rich' {
+  const hasContent = (s: string | null) => s && s.length >= 20;
+
+  // Thin: Missing problem statement or acceptance criteria
+  if (!hasContent(task.problem) && !hasContent(task.goal)) return 'thin';
+  if (task.acceptance_criteria.length === 0) return 'thin';
+
+  // Adequate: Has basics but missing approach or scope
+  if (!hasContent(task.approach)) return 'adequate';
+  if (!hasContent(task.scope) && !hasContent(task.solution)) return 'adequate';
+
+  return 'rich';
+}
+
+/**
+ * Format content quality badge
+ */
+function formatContentQuality(quality: string | null): string {
+  switch (quality) {
+    case 'rich':
+      return chalk.green('● rich');
+    case 'adequate':
+      return chalk.yellow('◐ adequate');
+    case 'thin':
+    default:
+      return chalk.red('○ thin');
+  }
+}
+
+/**
+ * Show task status and full 3x5 card content (EPIC-018)
  * Usage: ginko task show <taskId>
  */
 export async function showCommand(
@@ -426,12 +537,102 @@ export async function showCommand(
   const client = new GraphApiClient();
 
   try {
-    const status = await client.getTaskStatus(graphId, taskId);
+    // Try to get full task details first
+    const fullTask = await getFullTaskDetails(client, graphId, taskId);
 
-    console.log(chalk.bold(`Task: ${status.id}`));
-    console.log(`Status: ${formatStatus(status.status)}`);
-    if (status.blocked_reason) {
-      console.log(chalk.dim(`Blocked: ${status.blocked_reason}`));
+    if (fullTask) {
+      // Rich display with WHY-WHAT-HOW format (EPIC-018)
+      const quality = fullTask.content_quality || assessContentQuality(fullTask);
+
+      console.log('');
+      console.log(chalk.bold(`### ${fullTask.id}: ${fullTask.title || 'Untitled'}`));
+      if (fullTask.estimate) {
+        console.log(chalk.dim(`Estimate: ${fullTask.estimate}`));
+      }
+      console.log('');
+
+      // Status line
+      console.log(`${chalk.dim('Status:')} ${formatStatus(fullTask.status)}  ${chalk.dim('Priority:')} ${fullTask.priority || 'MEDIUM'}  ${chalk.dim('Quality:')} ${formatContentQuality(quality)}`);
+      if (fullTask.confidence !== null) {
+        const confColor = fullTask.confidence >= 80 ? chalk.green : fullTask.confidence >= 60 ? chalk.yellow : chalk.red;
+        console.log(`${chalk.dim('Confidence:')} ${confColor(`${fullTask.confidence}%`)}`);
+      }
+      if (fullTask.assignee) {
+        console.log(`${chalk.dim('Assignee:')} ${fullTask.assignee}`);
+      }
+      if (fullTask.blocked_reason) {
+        console.log(chalk.red(`Blocked: ${fullTask.blocked_reason}`));
+      }
+      console.log('');
+
+      // WHY-WHAT-HOW content
+      if (fullTask.problem) {
+        console.log(chalk.cyan('**Problem:**'));
+        console.log(`  ${fullTask.problem}`);
+        console.log('');
+      }
+
+      if (fullTask.solution) {
+        console.log(chalk.cyan('**Solution:**'));
+        console.log(`  ${fullTask.solution}`);
+        console.log('');
+      } else if (fullTask.goal) {
+        // Fallback to legacy goal field
+        console.log(chalk.cyan('**Goal:**'));
+        console.log(`  ${fullTask.goal}`);
+        console.log('');
+      }
+
+      if (fullTask.approach) {
+        console.log(chalk.cyan('**Approach:**'));
+        console.log(`  ${fullTask.approach}`);
+        console.log('');
+      }
+
+      if (fullTask.scope) {
+        console.log(chalk.cyan('**Scope:**'));
+        // Handle both inline and multi-line scope
+        const scopeLines = fullTask.scope.split('\n');
+        for (const line of scopeLines) {
+          console.log(`  ${line}`);
+        }
+        console.log('');
+      }
+
+      if (fullTask.acceptance_criteria.length > 0) {
+        console.log(chalk.cyan('**Acceptance Criteria:**'));
+        for (const criterion of fullTask.acceptance_criteria) {
+          console.log(`  - [ ] ${criterion}`);
+        }
+        console.log('');
+      }
+
+      // Quality warning for thin tasks
+      if (quality === 'thin') {
+        console.log(chalk.yellow('⚠️  This task has thin content. Consider enriching with:'));
+        if (!fullTask.problem && !fullTask.goal) {
+          console.log(chalk.dim('   - Problem statement (WHY this task exists)'));
+        }
+        if (!fullTask.solution && !fullTask.goal) {
+          console.log(chalk.dim('   - Solution description (WHAT we\'re achieving)'));
+        }
+        if (!fullTask.approach) {
+          console.log(chalk.dim('   - Approach (HOW to implement)'));
+        }
+        if (fullTask.acceptance_criteria.length === 0) {
+          console.log(chalk.dim('   - Acceptance criteria (definition of done)'));
+        }
+      }
+
+    } else {
+      // Fallback to basic status display
+      const status = await client.getTaskStatus(graphId, taskId);
+
+      console.log(chalk.bold(`Task: ${status.id}`));
+      console.log(`Status: ${formatStatus(status.status)}`);
+      if (status.blocked_reason) {
+        console.log(chalk.dim(`Blocked: ${status.blocked_reason}`));
+      }
     }
   } catch (error) {
     handleError('show', taskId, error);

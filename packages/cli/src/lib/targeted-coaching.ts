@@ -138,8 +138,8 @@ export const COACHING_TIPS: CoachingTip[] = [
     id: 'quality-team-sync',
     metric: 'collaborationQuality',
     context: ['start'],
-    message: 'Run `ginko sync` periodically to stay aligned with team updates',
-    action: 'ginko sync',
+    message: 'Run `ginko pull` periodically to stay aligned with team updates',
+    action: 'ginko pull',
     priority: 6,
   },
 

@@ -51,6 +51,7 @@ import {
   formatVerboseOutput,
   formatAIContextJSONL,
   formatTableOutput,
+  formatCleanSlateOutput,
   formatEpicComplete,
   formatSprintProgressionPrompt
 } from '../../lib/output-formatter.js';
@@ -91,6 +92,12 @@ import {
 } from '../../lib/insights/scheduler.js';
 import { checkStaleness, displayStalenessWarning } from '../../lib/staleness-detector.js';
 import { getAccessToken } from '../../utils/auth-storage.js';
+// EPIC-018 Sprint 1: Resumption brief synthesis
+import {
+  synthesizeResumptionBrief,
+  ResumptionBrief,
+  formatResumptionBriefForAI
+} from '../../lib/resumption-brief.js';
 
 /**
  * Start domain reflection for intelligent session initialization
@@ -930,10 +937,12 @@ export class StartReflectionCommand extends ReflectionCommand {
         console.log(chalk.dim(formatContextSummary(strategyContext)));
       } else {
         // Default mode: Compact table (use --full for task list)
+        // --clean-slate: New simplified format (EPIC-018 Sprint 1 t07)
         this.displayConciseOutput(aiContext, {
           compact: options.compact,
           table: options.table,
-          full: options.full
+          full: options.full,
+          cleanSlate: options.cleanSlate
         });
       }
 
@@ -1954,7 +1963,35 @@ Example output structure:
     // TASK-5: Check for unsynced knowledge nodes from dashboard
     const unsyncedCount = await this.checkUnsyncedNodes();
     if (unsyncedCount > 0) {
-      warnings.push(`${unsyncedCount} knowledge ${unsyncedCount === 1 ? 'node' : 'nodes'} edited in dashboard. Run \`ginko sync\` to pull changes.`);
+      warnings.push(`${unsyncedCount} knowledge ${unsyncedCount === 1 ? 'node' : 'nodes'} edited in dashboard. Run \`ginko pull\` to pull changes.`);
+    }
+
+    // EPIC-018 Sprint 1: Synthesize resumption brief from event context
+    let resumptionBrief: AISessionContext['resumptionBrief'] | undefined;
+    if (eventContext && eventContext.myEvents && eventContext.myEvents.length > 0) {
+      const brief = synthesizeResumptionBrief(eventContext, {
+        maxEvents: 50,
+        maxFiles: 10,
+        includeTeam: false
+      });
+      resumptionBrief = {
+        lastSession: {
+          summary: brief.lastSession.summary,
+          stoppingPoint: brief.lastSession.stoppingPoint,
+          openQuestions: brief.lastSession.openQuestions,
+          filesModified: brief.lastSession.filesModified,
+          duration: brief.lastSession.duration
+        },
+        decisions: brief.decisions.map(d => ({
+          description: d.description,
+          timestamp: d.timestamp.toISOString()
+        })),
+        insights: brief.insights.map(i => ({
+          description: i.description,
+          timestamp: i.timestamp.toISOString()
+        })),
+        eventCount: brief.eventCount
+      };
     }
 
     return {
@@ -1992,6 +2029,8 @@ Example output structure:
       patterns: eventContext?.strategicContext?.patterns,
       sprint,
       synthesis: synthObj,
+      // EPIC-018 Sprint 1: Include resumption brief for AI context
+      resumptionBrief,
       git: {
         branch: context.currentBranch || 'unknown',
         commitsAhead: context.uncommittedWork?.ahead || 0,
@@ -2015,19 +2054,22 @@ Example output structure:
    *
    * Now uses table view by default (EPIC-012 Sprint 1).
    * - Default: Table view with branding
+   * - --clean-slate: New simplified format (EPIC-018 Sprint 1 t07)
    * - --compact: Previous concise format without borders
    * - --no-table: Plain text format for piping
    */
   private displayConciseOutput(
     aiContext: AISessionContext,
-    options: { compact?: boolean; table?: boolean; full?: boolean } = {}
+    options: { compact?: boolean; table?: boolean; full?: boolean; cleanSlate?: boolean } = {}
   ): void {
     console.log('');
 
-    // Default: Full table with task list
-    // --compact: Previous concise format without borders
-    // --no-table (table === false): Plain text format for piping
-    if (options.compact || options.table === false) {
+    // --clean-slate: New simplified label:value format (EPIC-018 Sprint 1 t07)
+    if (options.cleanSlate) {
+      console.log(formatCleanSlateOutput(aiContext));
+    }
+    // --compact or --no-table: Previous concise format without borders
+    else if (options.compact || options.table === false) {
       console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
     } else {
       // Default: full table with task list
@@ -2086,6 +2128,10 @@ Example output structure:
    *
    * Runs after session initialization to alert users when team context
    * may be outdated. Non-blocking on failure.
+   *
+   * Silent mode: Only shows warnings for critical staleness (7+ days).
+   * Warning-level staleness (1-6 days) is silent - AI agents auto-sync
+   * based on CLAUDE.md instructions.
    */
   private async checkTeamStaleness(): Promise<void> {
     try {
@@ -2104,8 +2150,9 @@ Example output structure:
       // Check staleness with default thresholds (1 day warning, 7 day critical)
       const result = await checkStaleness(graphId, token);
 
-      // Display warning if stale
-      if (result.isStale) {
+      // Only show warning for critical staleness (7+ days)
+      // Warning-level is silent - AI agents auto-sync when needed
+      if (result.isStale && result.severity === 'critical') {
         displayStalenessWarning(result);
       }
     } catch {

@@ -828,6 +828,178 @@ export class GraphApiClient {
     );
     return response.sprints || [];
   }
+
+  // =============================================================================
+  // EPIC-018 Sprint 1 TASK-04: Session Start GraphQL Query
+  // Single consolidated query replacing 4-5 sequential REST calls
+  // =============================================================================
+
+  /**
+   * Get all session start context in a single GraphQL query (EPIC-018 Sprint 1)
+   *
+   * Replaces these sequential REST calls with one GraphQL query:
+   * 1. GET /api/v1/sprint/active
+   * 2. GET /api/v1/task/{id}/patterns
+   * 3. GET /api/v1/task/{id}/gotchas
+   * 4. GET /api/v1/task/{id}/constraints
+   * 5. (optional) charter and team activity
+   *
+   * Performance improvement: ~2-3s vs ~5-8s (4-5 sequential calls)
+   *
+   * @param graphId - Graph namespace identifier
+   * @param userId - User ID for event filtering
+   * @param options - Optional parameters (sprintId, eventLimit, teamEventDays)
+   * @returns Consolidated session start context
+   */
+  async getSessionStart(
+    graphId: string,
+    userId: string,
+    options?: {
+      sprintId?: string;
+      eventLimit?: number;
+      teamEventDays?: number;
+    }
+  ): Promise<SessionStartResponse> {
+    const { sprintId, eventLimit = 25, teamEventDays = 7 } = options || {};
+
+    const query = `
+      query SessionStart($graphId: String!, $userId: String!, $sprintId: String, $eventLimit: Int, $teamEventDays: Int) {
+        sessionStart(
+          graphId: $graphId
+          userId: $userId
+          sprintId: $sprintId
+          eventLimit: $eventLimit
+          teamEventDays: $teamEventDays
+        ) {
+          activeSprint {
+            id
+            name
+            epic_id
+            status
+            progress {
+              complete
+              total
+              percent
+            }
+            currentTask {
+              id
+              title
+              status
+              blocked_reason
+              assignee
+              patterns {
+                id
+                title
+                confidence
+                confidenceScore
+                category
+              }
+              gotchas {
+                id
+                title
+                severity
+                confidenceScore
+              }
+              constraints {
+                id
+                title
+                status
+              }
+            }
+            nextTask {
+              id
+              title
+              continue
+            }
+            tasks {
+              id
+              title
+              status
+              blocked_reason
+              assignee
+              patterns { id title confidence }
+              gotchas { id title severity }
+              constraints { id title }
+            }
+            blocked_tasks {
+              id
+              title
+              reason
+            }
+          }
+          recentEvents {
+            id
+            category
+            description
+            timestamp
+            files
+            impact
+            branch
+          }
+          charter {
+            purpose
+            goals
+          }
+          teamActivity {
+            category
+            description
+            user
+            timestamp
+          }
+          epic {
+            id
+            title
+            roadmap_lane
+            roadmap_status
+          }
+          metadata {
+            loadTimeMs
+            sprintFound
+            taskCount
+            eventCount
+            tokenEstimate
+          }
+        }
+      }
+    `;
+
+    const variables = {
+      graphId,
+      userId,
+      sprintId,
+      eventLimit,
+      teamEventDays,
+    };
+
+    const token = await this.requireAuth();
+
+    const response = await fetch(`${this.apiUrl}/api/graphql`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'X-Client-Version': 'ginko-cli@2.0.0',
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`GraphQL request failed: ${response.status} ${errorText}`);
+    }
+
+    const result = await response.json() as { data?: { sessionStart: SessionStartResponse }; errors?: any[] };
+
+    if (result.errors && result.errors.length > 0) {
+      throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+    }
+
+    if (!result.data?.sessionStart) {
+      throw new Error('No sessionStart data in response');
+    }
+
+    return result.data.sessionStart;
+  }
 }
 
 /**
@@ -1197,6 +1369,126 @@ export interface CleanupExecuteResponse {
   dryRun: boolean;
   affected: number;
   details: string;
+}
+
+// =============================================================================
+// EPIC-018 Sprint 1 TASK-04: Session Start GraphQL Types
+// Single consolidated query replacing 4-5 sequential REST calls
+// =============================================================================
+
+/**
+ * Task pattern from sessionStart query
+ */
+export interface SessionTaskPattern {
+  id: string;
+  title: string;
+  confidence: string;
+  confidenceScore?: number;
+  category?: string;
+}
+
+/**
+ * Task gotcha from sessionStart query
+ */
+export interface SessionTaskGotcha {
+  id: string;
+  title: string;
+  severity: string;
+  confidenceScore?: number;
+}
+
+/**
+ * Task constraint from sessionStart query
+ */
+export interface SessionTaskConstraint {
+  id: string;
+  title: string;
+  status?: string;
+}
+
+/**
+ * Enriched task with patterns, gotchas, constraints
+ */
+export interface SessionEnrichedTask {
+  id: string;
+  title: string;
+  status: string;
+  blocked_reason?: string;
+  assignee?: string;
+  patterns: SessionTaskPattern[];
+  gotchas: SessionTaskGotcha[];
+  constraints: SessionTaskConstraint[];
+}
+
+/**
+ * Active sprint from sessionStart query
+ */
+export interface SessionActiveSprint {
+  id: string;
+  name: string;
+  epic_id: string;
+  status: string;
+  progress: {
+    complete: number;
+    total: number;
+    percent: number;
+  };
+  currentTask?: SessionEnrichedTask;
+  nextTask?: {
+    id: string;
+    title: string;
+    continue: boolean;
+  };
+  tasks: SessionEnrichedTask[];
+  blocked_tasks: Array<{
+    id: string;
+    title: string;
+    reason: string;
+  }>;
+}
+
+/**
+ * Recent event from sessionStart query
+ */
+export interface SessionRecentEvent {
+  id: string;
+  category: string;
+  description: string;
+  timestamp: string;
+  files?: string[];
+  impact?: string;
+  branch?: string;
+}
+
+/**
+ * Session start response - all context needed for ginko start (EPIC-018)
+ */
+export interface SessionStartResponse {
+  activeSprint?: SessionActiveSprint;
+  recentEvents: SessionRecentEvent[];
+  charter?: {
+    purpose: string;
+    goals: string[];
+  };
+  teamActivity: Array<{
+    category: string;
+    description: string;
+    user: string;
+    timestamp: string;
+  }>;
+  epic?: {
+    id: string;
+    title?: string;
+    roadmap_lane?: string;
+    roadmap_status?: string;
+  };
+  metadata: {
+    loadTimeMs: number;
+    sprintFound: boolean;
+    taskCount: number;
+    eventCount: number;
+    tokenEstimate: number;
+  };
 }
 
 /**

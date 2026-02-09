@@ -1,9 +1,9 @@
 /**
  * @fileType: page
  * @status: current
- * @updated: 2026-01-17
- * @tags: [dashboard, settings, api-key, react, nextjs, adhoc_260117_s01]
- * @related: [dashboard/page.tsx, server.ts]
+ * @updated: 2026-02-04
+ * @tags: [dashboard, settings, api-key, react, nextjs, projects]
+ * @related: [dashboard/page.tsx, server.ts, DeleteProjectModal.tsx]
  * @priority: high
  * @complexity: medium
  * @dependencies: [next, supabase-ssr]
@@ -15,8 +15,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
-import { KeyIcon, UserIcon, BoltIcon, UsersIcon, CreditCardIcon } from '@heroicons/react/24/outline'
-import { TeamMemberList } from '@/components/team'
+import { KeyIcon, UserIcon, BoltIcon, FolderIcon, CreditCardIcon, TrashIcon, ChevronLeftIcon, ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { TeamMemberList, DeleteProjectModal } from '@/components/team'
 import { useUserGraph } from '@/contexts/UserGraphContext'
 
 /**
@@ -33,6 +33,7 @@ interface Team {
   name: string;
   role: string;
   graph_id?: string;
+  member_count?: number;
 }
 
 interface UserProfile {
@@ -47,11 +48,15 @@ interface UserProfile {
 
 export default function SettingsPage() {
   const router = useRouter()
-  const { graphId, projects } = useUserGraph()
+  const { graphId, projects, refresh } = useUserGraph()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [teams, setTeams] = useState<Team[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleteModal, setDeleteModal] = useState<{ projectName: string; graphId: string } | null>(null)
+  const [projectPage, setProjectPage] = useState(0)
+  const [projectFilter, setProjectFilter] = useState('')
+  const projectsPerPage = 10
   const supabase = createClient()
 
   useEffect(() => {
@@ -69,18 +74,28 @@ export default function SettingsPage() {
 
           setProfile(profile)
 
-          // Fetch user's teams for current project
+          // Fetch ALL user's teams with pagination (API caps at 100 per request)
           const { data: { session } } = await supabase.auth.getSession()
-          if (session?.access_token && graphId) {
+          if (session?.access_token) {
             try {
-              // Filter teams by current project's graphId
-              const teamsRes = await fetch(`/api/v1/teams?graphId=${encodeURIComponent(graphId)}`, {
-                headers: { Authorization: `Bearer ${session.access_token}` }
-              })
-              if (teamsRes.ok) {
+              const allTeams: Team[] = []
+              let offset = 0
+              const pageSize = 100
+              let hasMore = true
+
+              while (hasMore) {
+                const teamsRes = await fetch(`/api/v1/teams?limit=${pageSize}&offset=${offset}`, {
+                  headers: { Authorization: `Bearer ${session.access_token}` }
+                })
+                if (!teamsRes.ok) break
                 const teamsData = await teamsRes.json()
-                setTeams(teamsData.teams || [])
+                const batch = teamsData.teams || []
+                allTeams.push(...batch)
+                hasMore = batch.length === pageSize
+                offset += pageSize
               }
+
+              setTeams(allTeams)
             } catch (err) {
               console.error('Failed to fetch teams:', err)
             }
@@ -110,6 +125,22 @@ export default function SettingsPage() {
 
   if (!user) {
     return null
+  }
+
+  const handleProjectDeleted = () => {
+    setDeleteModal(null)
+    // Remove the deleted team from local state
+    if (deleteModal) {
+      setTeams(prev => {
+        const remaining = prev.filter(t => t.graph_id !== deleteModal.graphId)
+        // Reset page if current page would be empty
+        const maxPage = Math.max(0, Math.ceil(remaining.length / projectsPerPage) - 1)
+        if (projectPage > maxPage) setProjectPage(maxPage)
+        return remaining
+      })
+    }
+    // Refresh the global project context
+    refresh()
   }
 
   return (
@@ -201,7 +232,7 @@ export default function SettingsPage() {
               Billing & Subscription
             </h2>
             <p className="text-muted-foreground mt-1">
-              Manage your team&apos;s subscription, seats, and payment methods
+              Manage your subscription, seats, and payment methods
             </p>
           </div>
           <div className="p-6">
@@ -211,7 +242,7 @@ export default function SettingsPage() {
                   <CreditCardIcon className="h-8 w-8 text-primary" />
                 </div>
               </div>
-              <h3 className="font-medium text-foreground mb-2">Team Billing</h3>
+              <h3 className="font-medium text-foreground mb-2">Billing</h3>
               <p className="text-muted-foreground mb-6">
                 View seat usage, subscription status, and manage payments
               </p>
@@ -229,41 +260,115 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Team Members */}
-      {teams.length > 0 && (
-        <div id="team" className="scroll-mt-20">
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <UsersIcon className="h-5 w-5 text-primary" />
-              Team
-            </h2>
-            <p className="text-muted-foreground mt-1">
-              Manage your team members and invite collaborators
-            </p>
-          </div>
-          {teams.map((team) => {
-            const projectName = getProjectNameForTeam(team.graph_id, projects);
-            return (
-              <div key={team.id} className="mb-6">
-                {/* Show project name for clarity when multiple teams exist */}
-                {teams.length > 1 && (
-                  <div className="mb-2 text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{projectName || team.name}</span>
-                    {projectName && projectName !== team.name && (
-                      <span className="ml-2">({team.name})</span>
-                    )}
-                  </div>
-                )}
-                <TeamMemberList
-                  teamId={team.id}
-                  currentUserId={user?.id}
-                  showInviteButton={team.role === 'owner'}
+      {/* Projects Section */}
+      {teams.length > 0 && (() => {
+        const filterLower = projectFilter.toLowerCase();
+        const filteredTeams = filterLower
+          ? teams.filter(t => {
+              const name = getProjectNameForTeam(t.graph_id, projects) || t.name;
+              return name.toLowerCase().includes(filterLower);
+            })
+          : teams;
+        const totalPages = Math.ceil(filteredTeams.length / projectsPerPage);
+        const safePage = Math.min(projectPage, Math.max(0, totalPages - 1));
+        const pagedTeams = filteredTeams.slice(safePage * projectsPerPage, (safePage + 1) * projectsPerPage);
+        return (
+          <div id="projects" className="scroll-mt-20">
+            <div className="mb-4">
+              <div className="flex items-end justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                    <FolderIcon className="h-5 w-5 text-primary" />
+                    Projects
+                  </h2>
+                  <p className="text-muted-foreground mt-1">
+                    Manage your projects, team members, and invite collaborators
+                  </p>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {filteredTeams.length}{filterLower ? ` of ${teams.length}` : ''} project{filteredTeams.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {/* Search filter */}
+              <div className="relative mt-3">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Filter projects by name..."
+                  value={projectFilter}
+                  onChange={(e) => { setProjectFilter(e.target.value); setProjectPage(0); }}
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-md border border-border bg-secondary/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-colors"
                 />
               </div>
-            );
-          })}
-        </div>
-      )}
+            </div>
+            {pagedTeams.map((team) => {
+              const projectName = getProjectNameForTeam(team.graph_id, projects) || team.name;
+              const isOwner = team.role === 'owner';
+              return (
+                <div key={team.id} className="mb-4 bg-card rounded-lg border border-border shadow-sm">
+                  {/* Project Header */}
+                  <div className="p-4 border-b border-border flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <FolderIcon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">{projectName}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {isOwner ? 'Owner' : 'Member'}
+                          {team.member_count !== undefined && ` · ${team.member_count} member${team.member_count !== 1 ? 's' : ''}`}
+                        </p>
+                      </div>
+                    </div>
+                    {isOwner && team.graph_id && (
+                      <button
+                        onClick={() => setDeleteModal({ projectName, graphId: team.graph_id! })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                        title="Delete project"
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                  {/* Team Members */}
+                  <div className="p-4">
+                    <TeamMemberList
+                      teamId={team.id}
+                      currentUserId={user?.id}
+                      showInviteButton={isOwner}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between pt-2 pb-4">
+                <button
+                  onClick={() => setProjectPage(p => Math.max(0, p - 1))}
+                  disabled={safePage === 0}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                  Previous
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  Page {safePage + 1} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setProjectPage(p => Math.min(totalPages - 1, p + 1))}
+                  disabled={safePage >= totalPages - 1}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed text-muted-foreground hover:text-foreground hover:bg-secondary"
+                >
+                  Next
+                  <ChevronRightIcon className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Quick Actions */}
       <div className="bg-card rounded-lg border border-border shadow-sm">
@@ -289,6 +394,17 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Project Modal */}
+      {deleteModal && (
+        <DeleteProjectModal
+          isOpen={true}
+          onClose={() => setDeleteModal(null)}
+          onDeleted={handleProjectDeleted}
+          projectName={deleteModal.projectName}
+          graphId={deleteModal.graphId}
+        />
+      )}
     </div>
   )
 }

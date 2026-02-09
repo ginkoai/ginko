@@ -14,18 +14,20 @@
  *
  * Validates the document upload deduplication strategy:
  *
- * - Sprint/Epic types (structural): Use MATCH+SET to enrich existing nodes only.
- *   Task sync is the sole creator of structural nodes. Document upload should
- *   never create Sprint/Epic nodes from scratch.
+ * - Sprint (match-only): Use MATCH+SET to enrich existing nodes only.
+ *   Task sync is the sole creator of Sprint nodes. Document upload should
+ *   never create Sprint nodes from scratch.
  *
- * - Non-structural types (ADR, Pattern, ContextModule, Charter, etc.): Use MERGE
- *   to create-or-update as before.
+ * - Epic and non-structural types (ADR, Pattern, ContextModule, Charter, etc.):
+ *   Use MERGE to create-or-update. Epic uses MERGE because new Epics may be
+ *   pushed before any sprints exist (BUG-026 fix).
  *
  * Test Categories:
- * 1. Structural types (Sprint, Epic) - MATCH-only behavior
- * 2. Non-structural types (ADR, Pattern, etc.) - MERGE behavior preserved
+ * 1. Match-only types (Sprint) - MATCH-only behavior
+ * 2. Non-structural types (ADR, Pattern, Epic, etc.) - MERGE behavior preserved
  * 3. Cross-path integration - task sync creates, document upload enriches
  * 4. Property handling - correct props set on each path
+ * 5. Validation and error handling
  */
 
 import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals';
@@ -99,11 +101,11 @@ function getParamsForCall(callIndex: number): Record<string, unknown> {
   return txRunMock.mock.calls[callIndex][1] as Record<string, unknown>;
 }
 
-/** Structural document types that should use MATCH (not MERGE) */
-const STRUCTURAL_TYPES = ['Sprint', 'Epic'] as const;
+/** Match-only types that should use MATCH (not MERGE) — Sprint only (BUG-026) */
+const MATCH_ONLY_TYPES = ['Sprint'] as const;
 
-/** Non-structural types that should continue using MERGE */
-const NON_STRUCTURAL_TYPES = ['ADR', 'Pattern', 'ContextModule', 'Charter', 'Gotcha', 'Session', 'PRD'] as const;
+/** Types that use MERGE (create-or-update) — includes Epic after BUG-026 fix */
+const MERGE_TYPES = ['ADR', 'Pattern', 'ContextModule', 'Charter', 'Gotcha', 'Session', 'PRD', 'Epic'] as const;
 
 /**
  * Build a minimal document upload payload.
@@ -143,11 +145,11 @@ describe('POST /api/v1/graph/documents', () => {
   });
 
   // =====================================================================
-  // 1. Structural types (Sprint, Epic) -- MATCH-only behavior
+  // 1. Match-only types (Sprint) -- MATCH-only behavior
   // =====================================================================
-  describe('Structural types (Sprint, Epic)', () => {
+  describe('Match-only types (Sprint)', () => {
 
-    it.each(STRUCTURAL_TYPES)(
+    it.each(MATCH_ONLY_TYPES)(
       'should use MATCH (not MERGE) for %s documents',
       async (docType) => {
         const req = makeRequest({
@@ -166,7 +168,7 @@ describe('POST /api/v1/graph/documents', () => {
       }
     );
 
-    it.each(STRUCTURAL_TYPES)(
+    it.each(MATCH_ONLY_TYPES)(
       'should SET content properties on existing %s node',
       async (docType) => {
         const req = makeRequest({
@@ -196,7 +198,7 @@ describe('POST /api/v1/graph/documents', () => {
       }
     );
 
-    it.each(STRUCTURAL_TYPES)(
+    it.each(MATCH_ONLY_TYPES)(
       'should match %s node by {id, graph_id}',
       async (docType) => {
         const req = makeRequest({
@@ -212,7 +214,7 @@ describe('POST /api/v1/graph/documents', () => {
       }
     );
 
-    it.each(STRUCTURAL_TYPES)(
+    it.each(MATCH_ONLY_TYPES)(
       'should still MERGE the Graph CONTAINS relationship for %s',
       async (docType) => {
         const req = makeRequest({
@@ -228,32 +230,38 @@ describe('POST /api/v1/graph/documents', () => {
       }
     );
 
-    it('should log a warning when structural node does not exist', async () => {
-      // Simulate MATCH returning zero rows -- the transaction succeeds
-      // but the node is not enriched. A warning should be emitted.
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
-
+    it('should include warning in response when Sprint node does not exist', async () => {
       // When MATCH finds nothing, tx.run still resolves but with 0 records.
-      // The route should handle this gracefully (no throw).
+      // The route should add a warning to the response (not just console.warn).
       txRunMock.mockResolvedValueOnce({ records: [], summary: { counters: { nodesCreated: () => 0 } } } as never);
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
       const req = makeRequest({
         graphId: 'gin_test',
-        documents: [makeDocument({ id: 'e999', type: 'Epic' })],
+        documents: [makeDocument({ id: 'e001_s99', type: 'Sprint' })],
       });
 
       const res = await POST(req);
+      const body = await res.json();
+
       // Should NOT fail the batch -- still 201
       expect(res.status).toBe(201);
+
+      // Warning should appear in response body
+      expect(body.job.warnings).toBeDefined();
+      expect(body.job.warnings.some((w: string) => w.includes('e001_s99') && w.includes('not found'))).toBe(true);
 
       consoleWarnSpy.mockRestore();
     });
 
-    it('should not fail the batch when a structural node is missing', async () => {
+    it('should not fail the batch when a Sprint node is missing', async () => {
+      txRunMock.mockResolvedValueOnce({ records: [] } as never);
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
       const req = makeRequest({
         graphId: 'gin_test',
         documents: [
-          makeDocument({ id: 'e999', type: 'Epic' }),
+          makeDocument({ id: 'e001_s99', type: 'Sprint' }),
           makeDocument({ id: 'adr_001', type: 'ADR' }),
         ],
       });
@@ -264,9 +272,11 @@ describe('POST /api/v1/graph/documents', () => {
       // Both documents should be processed (batch not aborted)
       expect(res.status).toBe(201);
       expect(body.job.progress.uploaded).toBe(2);
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should not include ON CREATE SET for structural types', async () => {
+    it('should not include ON CREATE SET for Sprint types', async () => {
       const req = makeRequest({
         graphId: 'gin_test',
         documents: [makeDocument({ id: 'e001_s01', type: 'Sprint' })],
@@ -275,17 +285,17 @@ describe('POST /api/v1/graph/documents', () => {
       await POST(req);
       const cypher = getCypherForCall(0);
 
-      // Structural path must NOT have ON CREATE SET (no node creation)
+      // Match-only path must NOT have ON CREATE SET (no node creation)
       expect(cypher).not.toMatch(/ON\s+CREATE\s+SET/i);
     });
   });
 
   // =====================================================================
-  // 2. Non-structural types -- MERGE behavior preserved
+  // 2. MERGE types (ADR, Pattern, Epic, Charter, etc.) -- create-or-update
   // =====================================================================
-  describe('Non-structural types (ADR, Pattern, Charter, etc.)', () => {
+  describe('MERGE types (ADR, Pattern, Epic, Charter, etc.)', () => {
 
-    it.each(NON_STRUCTURAL_TYPES)(
+    it.each(MERGE_TYPES)(
       'should use MERGE for %s documents',
       async (docType) => {
         const req = makeRequest({
@@ -303,7 +313,7 @@ describe('POST /api/v1/graph/documents', () => {
       }
     );
 
-    it.each(NON_STRUCTURAL_TYPES)(
+    it.each(MERGE_TYPES)(
       'should include ON CREATE SET for %s documents',
       async (docType) => {
         const req = makeRequest({
@@ -318,7 +328,7 @@ describe('POST /api/v1/graph/documents', () => {
       }
     );
 
-    it.each(NON_STRUCTURAL_TYPES)(
+    it.each(MERGE_TYPES)(
       'should include ON MATCH SET for %s documents',
       async (docType) => {
         const req = makeRequest({
@@ -438,10 +448,11 @@ describe('POST /api/v1/graph/documents', () => {
       expect(cypher).toMatch(/SET\s+n\s*\+=/i);
     });
 
-    it('should enrich an existing Epic node preserving structural properties', async () => {
-      // Scenario: Epic node exists with structural props from task sync.
-      // Document upload adds content/summary/embedding.
-      // Structural props (status, created_at from sync) must not be overwritten.
+    it('should create or update an Epic node via MERGE (BUG-026 fix)', async () => {
+      // Scenario: Epic may or may not exist. MERGE handles both cases:
+      // - New Epic: creates node with all properties
+      // - Existing Epic: updates with ON MATCH SET
+      // This fixes BUG-026 where new Epics without sprints were silently lost.
 
       const req = makeRequest({
         graphId: 'gin_project',
@@ -461,20 +472,49 @@ describe('POST /api/v1/graph/documents', () => {
       const cypher = getCypherForCall(0);
       const params = getParamsForCall(0);
 
-      // MATCH only -- no MERGE on the node
-      expect(cypher).toMatch(/^\s*MATCH\s/i);
+      // MERGE — creates if not exists, updates if exists
+      expect(cypher).toMatch(/MERGE\s*\(\s*n\s*:Epic/i);
+      expect(cypher).toMatch(/ON\s+CREATE\s+SET/i);
+      expect(cypher).toMatch(/ON\s+MATCH\s+SET/i);
 
-      // n += {props} preserves existing properties while adding new ones
-      expect(cypher).toMatch(/SET\s+n\s*\+=/i);
-
-      // Content enrichment props
+      // Content props
       expect(params).toHaveProperty('content');
       expect(params).toHaveProperty('summary');
       expect(params).toHaveProperty('hash');
       expect(params).toHaveProperty('filePath');
     });
 
-    it('should handle a mixed batch of structural and non-structural documents', async () => {
+    it('should create a new Epic node even without prior task sync (BUG-026)', async () => {
+      // Core BUG-026 scenario: a brand-new Epic with no sprints yet.
+      // Previously this silently failed because MATCH found nothing.
+      // Now MERGE creates the node.
+
+      const req = makeRequest({
+        graphId: 'gin_test',
+        documents: [makeDocument({
+          id: 'e020',
+          type: 'Epic',
+          title: 'Graph-Authoritative Tasks',
+          content: '## EPIC-020\n\nMake the graph the source of truth for task status.',
+          filePath: 'docs/epics/EPIC-020.md',
+          hash: 'sha256:e020_new',
+        })],
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(201);
+
+      const cypher = getCypherForCall(0);
+
+      // Must use MERGE (not MATCH) so the node gets created
+      expect(cypher).toMatch(/MERGE\s*\(\s*n\s*:Epic/i);
+      expect(cypher).not.toMatch(/^\s*MATCH\s*\(\s*n\s*:Epic/i);
+
+      // Must include ON CREATE SET for initial property assignment
+      expect(cypher).toMatch(/ON\s+CREATE\s+SET/i);
+    });
+
+    it('should handle a mixed batch: Epic uses MERGE, Sprint uses MATCH', async () => {
       const req = makeRequest({
         graphId: 'gin_test',
         documents: [
@@ -491,16 +531,15 @@ describe('POST /api/v1/graph/documents', () => {
       // 4 documents means 4 tx.run calls
       expect(txRunMock).toHaveBeenCalledTimes(4);
 
-      // Epic (index 0) -> MATCH
+      // Epic (index 0) -> MERGE (BUG-026 fix)
       const epicCypher = getCypherForCall(0);
-      expect(epicCypher).toMatch(/^\s*MATCH\s/i);
-      expect(epicCypher).not.toMatch(/MERGE\s*\(\s*n\s*:/i);
+      expect(epicCypher).toMatch(/MERGE\s*\(\s*n\s*:Epic/i);
 
       // ADR (index 1) -> MERGE
       const adrCypher = getCypherForCall(1);
       expect(adrCypher).toMatch(/MERGE\s*\(\s*n\s*:/i);
 
-      // Sprint (index 2) -> MATCH
+      // Sprint (index 2) -> MATCH (still match-only)
       const sprintCypher = getCypherForCall(2);
       expect(sprintCypher).toMatch(/^\s*MATCH\s/i);
       expect(sprintCypher).not.toMatch(/MERGE\s*\(\s*n\s*:/i);

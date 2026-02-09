@@ -275,6 +275,91 @@ export function formatCacheAge(fetchedAt: string): string {
 }
 
 // =============================================================================
+// EPIC-018 Sprint 1 TASK-04: Cache-First Optimization
+// =============================================================================
+
+/**
+ * Load cached state only if it's fresh (< 5 minutes old)
+ * Returns null if cache is stale or doesn't exist
+ *
+ * This enables cache-first loading for faster startup:
+ * 1. Check cache - if fresh, return immediately (0ms network)
+ * 2. If stale/missing, fetch from API and update cache
+ *
+ * @param graphId - Graph ID to match against cached data
+ * @returns Fresh cache data or null if stale/missing
+ *
+ * @example
+ * ```typescript
+ * // Cache-first pattern in start-reflection.ts:
+ * const cached = await loadFreshCache(graphId);
+ * if (cached) {
+ *   return cached; // Skip API call, use cache
+ * }
+ * // Cache miss/stale - fetch from API
+ * const fresh = await fetchFromApi();
+ * await saveStateCache(fresh, graphId);
+ * ```
+ */
+export async function loadFreshCache(graphId: string): Promise<ActiveSprintData | null> {
+  const cache = await loadStateCache();
+
+  // No cache exists
+  if (!cache) {
+    return null;
+  }
+
+  // Cache is for a different graph
+  if (cache.graph_id !== graphId) {
+    return null;
+  }
+
+  // Check if cache is fresh
+  const staleness = checkCacheStaleness(cache);
+  if (!staleness.isFresh) {
+    return null;
+  }
+
+  return cache.active_sprint;
+}
+
+/**
+ * Try to load from cache first, falling back to API call
+ * Automatically updates cache on successful API fetch
+ *
+ * @param graphId - Graph namespace identifier
+ * @param fetchFn - Function to call if cache is stale/missing
+ * @returns Sprint data from cache or fresh API call
+ *
+ * @example
+ * ```typescript
+ * const data = await loadWithCacheFallback(graphId, async () => {
+ *   return await client.getActiveSprint(graphId);
+ * });
+ * ```
+ */
+export async function loadWithCacheFallback(
+  graphId: string,
+  fetchFn: () => Promise<ActiveSprintData>
+): Promise<{ data: ActiveSprintData; source: 'cache' | 'api' }> {
+  // Try cache first
+  const cached = await loadFreshCache(graphId);
+  if (cached) {
+    return { data: cached, source: 'cache' };
+  }
+
+  // Cache miss - fetch from API
+  const fresh = await fetchFn();
+
+  // Update cache in background (don't await)
+  saveStateCache(fresh, graphId).catch(() => {
+    // Ignore cache save errors - non-critical
+  });
+
+  return { data: fresh, source: 'api' };
+}
+
+// =============================================================================
 // Helper Functions
 // =============================================================================
 

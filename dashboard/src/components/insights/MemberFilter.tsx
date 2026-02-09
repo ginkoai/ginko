@@ -37,13 +37,15 @@ interface MemberFilterProps {
   currentUserEmail: string
   selectedMemberId: string | null
   onMemberChange: (memberId: string | null, memberEmail: string | null) => void
+  graphId?: string | null
 }
 
 export function MemberFilter({
   currentUserId,
   currentUserEmail,
   selectedMemberId,
-  onMemberChange
+  onMemberChange,
+  graphId
 }: MemberFilterProps) {
   const [teams, setTeams] = useState<Team[]>([])
   const [members, setMembers] = useState<TeamMember[]>([])
@@ -56,8 +58,11 @@ export function MemberFilter({
     async function fetchTeamsAndMembers() {
       setLoading(true)
       try {
-        // Fetch user's teams
-        const teamsRes = await fetch('/api/v1/teams')
+        // Fetch user's teams (filter by project if graphId provided)
+        const teamsUrl = graphId
+          ? `/api/v1/teams?graphId=${encodeURIComponent(graphId)}`
+          : '/api/v1/teams'
+        const teamsRes = await fetch(teamsUrl)
         if (!teamsRes.ok) {
           setLoading(false)
           return
@@ -100,7 +105,7 @@ export function MemberFilter({
     }
 
     fetchTeamsAndMembers()
-  }, [currentUserId])
+  }, [currentUserId, graphId])
 
   // Only show filter if user has teammates to filter by
   // Note: API enforces owner-only access for viewing other members' insights

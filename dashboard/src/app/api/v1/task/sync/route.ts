@@ -35,7 +35,18 @@ import { verifyConnection, getSession } from '../../graph/_neo4j';
 
 // Types matching task-parser.ts
 type TaskStatus = 'not_started' | 'in_progress' | 'blocked' | 'complete' | 'paused';
+type TaskContentQuality = 'thin' | 'adequate' | 'rich';
 
+/**
+ * ParsedTask interface (EPIC-018)
+ *
+ * WHY-WHAT-HOW structure:
+ * - problem: WHY this task exists (motivation)
+ * - solution: WHAT we're achieving (outcome)
+ * - approach: HOW we'll implement it (strategy)
+ * - scope: boundaries (in/out of scope)
+ * - acceptance_criteria: done when (definition of done)
+ */
 interface ParsedTask {
   id: string;
   sprint_id: string;
@@ -46,11 +57,23 @@ interface ParsedTask {
   priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   assignee: string | null;
   initial_status: TaskStatus;
+
+  // WHY-WHAT-HOW structure (EPIC-018)
+  problem: string | null;   // WHY: motivation/pain point
+  solution: string | null;  // WHAT: desired outcome
+  approach: string | null;  // HOW: implementation strategy
+  scope: string | null;     // Boundaries: in/out of scope
+
+  // Legacy field (backward compatibility)
   goal: string | null;
-  approach: string | null;  // e014_s02_t04: Implementation notes
+
   acceptance_criteria: string[];
   files: string[];
   related_adrs: string[];
+
+  // Quality metadata (EPIC-018)
+  confidence: number | null;          // 0-100: AI confidence in task clarity
+  content_quality: TaskContentQuality; // thin/adequate/rich
 }
 
 interface SyncRequest {
@@ -153,7 +176,7 @@ export async function POST(request: NextRequest) {
             continue;
           }
 
-          // MERGE task node - preserves status on UPDATE
+          // MERGE task node - preserves status on UPDATE (EPIC-018: WHY-WHAT-HOW fields)
           const result = await tx.run(
             `
             MERGE (t:Task {id: $taskId, graph_id: $graphId})
@@ -162,12 +185,17 @@ export async function POST(request: NextRequest) {
               t.priority = $priority,
               t.estimate = $estimate,
               t.assignee = $assignee,
-              t.goal = $goal,
+              t.problem = $problem,
+              t.solution = $solution,
               t.approach = $approach,
+              t.scope = $scope,
+              t.goal = $goal,
               t.status = $initialStatus,
               t.acceptance_criteria = $acceptanceCriteria,
               t.files = $files,
               t.related_adrs = $relatedAdrs,
+              t.confidence = $confidence,
+              t.content_quality = $contentQuality,
               t.sprint_id = $sprintId,
               t.epic_id = $epicId,
               t.created_at = datetime(),
@@ -177,11 +205,16 @@ export async function POST(request: NextRequest) {
               t.title = $title,
               t.priority = $priority,
               t.estimate = $estimate,
-              t.goal = $goal,
+              t.problem = $problem,
+              t.solution = $solution,
               t.approach = $approach,
+              t.scope = $scope,
+              t.goal = $goal,
               t.acceptance_criteria = $acceptanceCriteria,
               t.files = $files,
               t.related_adrs = $relatedAdrs,
+              t.confidence = $confidence,
+              t.content_quality = $contentQuality,
               t.sprint_id = $sprintId,
               t.epic_id = $epicId,
               t.updated_at = datetime(),
@@ -197,12 +230,17 @@ export async function POST(request: NextRequest) {
               priority: task.priority,
               estimate: task.estimate,
               assignee: task.assignee,
-              goal: task.goal,
+              problem: task.problem || null,
+              solution: task.solution || null,
               approach: task.approach || null,
+              scope: task.scope || null,
+              goal: task.goal || null,
               initialStatus: task.initial_status,
               acceptanceCriteria: task.acceptance_criteria,
               files: task.files,
               relatedAdrs: task.related_adrs,
+              confidence: task.confidence || null,
+              contentQuality: task.content_quality || 'thin',
               sprintId: task.sprint_id,
               epicId: task.epic_id,
             }
@@ -368,8 +406,14 @@ export async function GET(request: NextRequest) {
                t.epic_id as epic_id,
                t.estimate as estimate,
                t.assignee as assignee,
-               t.goal as goal,
+               t.problem as problem,
+               t.solution as solution,
                t.approach as approach,
+               t.scope as scope,
+               t.goal as goal,
+               t.acceptance_criteria as acceptance_criteria,
+               t.confidence as confidence,
+               t.content_quality as content_quality,
                t.synced_at as synced_at
         ORDER BY t.sprint_id, t.id
       `;
@@ -387,8 +431,16 @@ export async function GET(request: NextRequest) {
         epic_id: record.get('epic_id'),
         estimate: record.get('estimate'),
         assignee: record.get('assignee'),
-        goal: record.get('goal'),
+        // WHY-WHAT-HOW (EPIC-018)
+        problem: record.get('problem') || null,
+        solution: record.get('solution') || null,
         approach: record.get('approach') || null,
+        scope: record.get('scope') || null,
+        goal: record.get('goal') || null,
+        acceptance_criteria: record.get('acceptance_criteria') || [],
+        // Quality metadata
+        confidence: record.get('confidence')?.toNumber?.() ?? record.get('confidence') ?? null,
+        content_quality: record.get('content_quality') || 'thin',
         synced_at: record.get('synced_at')?.toString() || null,
       }));
 

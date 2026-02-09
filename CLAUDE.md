@@ -125,14 +125,6 @@ We can create it with: ginko charter
 - **Dev Server**: `npm run dev`
 
 
-## Environment Variables
-
-| Variable | Purpose |
-|----------|---------|
-| `GINKO_FORCE_TTY=1` | Force TTY-like output (box-drawing tables, colors) in terminals that report `isTTY=false` but support rich output (e.g., Claude Code) |
-| `FORCE_COLOR=1` | Force chalk color output (set automatically when `GINKO_FORCE_TTY=1`) |
-
-
 ## AI-Optimized File Discovery (ADR-002)
 
 **MANDATORY: Use these commands for 70% faster context discovery:**
@@ -303,12 +295,252 @@ These "mental reflexes" activate naturally without explicit prompting to maintai
 **Flow preservation**: Single lightweight question, proceed if declined (note in session log)
 **Anti-pattern**: Untracked work breaks traceability for future collaborators
 
+### 6. "Log This For Next Session" Reflex 📝 (ADR-043)
+**Trigger**: After decisions, gotchas, task completions, or blockers
+**Action**: Run `ginko log "<description>" --category=<type>`
+
+| Moment | Category | Example |
+|--------|----------|---------|
+| Decision made | decision | `ginko log "Chose batch size 10 for payload limits" --category=decision` |
+| Gotcha found | insight | `ginko log "Vercel has 4.5MB body limit" --category=insight --impact=high` |
+| Task complete | achievement | `ginko log "Dashboard rename complete" --category=achievement` |
+| Blocker hit | insight | `ginko log "Auth token expired" --category=insight` |
+
+**Quality bar:** Would this help my successor avoid confusion?
+
+### 7. "Score My Context" Reflex 📊 (EPIC-018 Feedback Loop)
+**Trigger**: Within 60 seconds of session start (after `ginko start` completes)
+**Behavior**: Self-assess readiness to work across four dimensions
+**Action**: If score < 7 in any dimension, note what's missing
+
+| Dimension | Question | Score Guide |
+|-----------|----------|-------------|
+| Direction | "Do I know what to do next?" | 0-10: Task clarity, next steps |
+| Intent | "Do I understand WHY?" | 0-10: Purpose, motivation |
+| Location | "Do I know WHERE to start?" | 0-10: Entry points, files |
+| History | "Do I know WHAT was decided?" | 0-10: ADRs, past decisions |
+
+**Log your score:**
+```bash
+ginko context score "direction=8, intent=7, location=9, history=6"
+# or shorthand:
+ginko context score 8,7,9,6
+# with notes:
+ginko context score 8,7,9,6 --notes "Missing ADR refs for auth decision"
+```
+
+**Score interpretation:**
+- 9-10: Excellent - Crystal clear, ready to execute
+- 7-8: Good - Minor gaps acceptable
+- 5-6: Adequate - May need clarification
+- 3-4: Poor - Missing critical information
+- 0-2: Critical - Cannot proceed confidently
+
+**Philosophy:** This reflex creates a feedback loop for synthesis improvement. Low scores help identify what context the session handoff or start routine should include.
+
 ### Work Mode Sensitivity
 - **Hack & Ship**: Reflexes trigger less frequently (focus on speed)
 - **Think & Build**: Balanced reflex activity
 - **Full Planning**: Frequent reflex triggers for maximum rigor
 
 These reflexes maintain continuous context awareness while preserving natural workflow.
+
+
+
+## 🎯 Confidence Indicators (EPIC-018 Sprint 3)
+
+When responding to non-trivial decisions or recommendations, include confidence levels to surface uncertainty as a strength.
+
+### Confidence Levels
+
+| Level | Score | Behavior |
+|-------|-------|----------|
+| **High** | 80%+ | Proceed without indicator (default) |
+| **Medium** | 50-80% | State confidence explicitly |
+| **Low** | <50% | Ask before proceeding |
+
+### When to Use Indicators
+
+Use confidence indicators for:
+- Architecture/design decisions
+- Implementation approach recommendations
+- Scope interpretations
+- Assumptions about user intent
+
+Skip indicators for:
+- Factual responses (documentation, syntax)
+- Trivial changes (typos, formatting)
+- Explicit user instructions
+
+### Format Examples
+
+**Medium confidence (state explicitly):**
+```
+**Approach** (confidence: 70%)
+I'll implement this using the existing retry pattern.
+
+**Uncertainties:**
+- Not sure if the timeout should match the API gateway limit
+- The error codes may need different handling
+
+Proceeding with this approach unless you'd like to clarify.
+```
+
+**Low confidence (ask first):**
+```
+**Approach** (confidence: 45%)
+I'm uncertain about the best approach here.
+
+**Options I see:**
+1. Use WebSocket for real-time updates
+2. Use polling with exponential backoff
+3. Use Server-Sent Events
+
+**Before proceeding, can you clarify:**
+- What's the expected update frequency?
+- Are there infrastructure constraints I should know about?
+```
+
+### Philosophy: Inquiry as Strength
+
+**Inquiry timing matters as much as inquiry permission.**
+
+| Phase | Expectation | Why |
+|-------|-------------|-----|
+| Epic creation | Best-effort descriptions | Acceptable ambiguity - rough scope is enough |
+| Sprint start | Investigation phase | Natural moment for clarification |
+| Mid-task | Express uncertainty | Acceptable but prefer earlier |
+| Task complete | Validate assumptions | Confirm you solved the right problem |
+
+**Low confidence is a STRENGTH, not a weakness.** A 60% confidence score with honest questions is better than 90% with hidden assumptions. Surfacing uncertainty early prevents wasted work.
+
+### Examples of Good Inquiry
+
+**At sprint start:**
+> "Before we begin, I have some questions about the authentication task:
+> 1. Should we use JWT or session-based auth?
+> 2. What's our token expiration policy?
+> These choices affect the implementation significantly."
+
+**Mid-task (when stuck):**
+> "I'm uncertain about the error handling approach here (confidence: 55%).
+> The options I see are retry with backoff vs. fail-fast.
+> Can you clarify the expected behavior for network failures?"
+
+**Avoiding false confidence:**
+> Instead of: "I'll implement this using Redis caching."
+> Prefer: "I'll implement this using Redis caching (confidence: 70%). I'm assuming Redis is available in the deployment environment - can you confirm?"
+
+### Anti-patterns to Avoid
+
+- **Pretending certainty:** Making assumptions without stating them
+- **Asking too late:** Discovering ambiguity after implementation
+- **Over-qualifying:** Adding confidence indicators to trivial decisions
+- **Asking permission to ask:** Just ask the question directly
+
+
+
+## 📝 Rich Task Creation Protocol (EPIC-018)
+
+When creating tasks (via `ginko sprint create` or manually), use the **WHY-WHAT-HOW** structure:
+
+### Task Format
+
+```markdown
+### e018_s02_t01: Define task content schema (2h)
+
+**Status:** [ ] Not Started
+**Priority:** HIGH
+**Confidence:** 85%
+
+**Problem:** Task titles alone require clarification cycles. Human and AI
+partners guess at intent, leading to wrong work or wasted time.
+
+**Solution:** Use a structured rich-content schema for Tasks that minimizes
+guesswork and research time.
+
+**Approach:** Extend ParsedTask interface in task-parser.ts, add extraction
+functions following existing patterns (extractGoal, extractApproach).
+
+**Scope:**
+  - Includes: TypeScript interface, parser extraction, graph sync
+  - Excludes: UI changes, backward compatibility for old tasks
+
+**Acceptance Criteria:**
+  - [ ] ParsedTask interface includes problem, scope fields
+  - [ ] Parser extracts new fields from markdown
+  - [ ] Fields sync to Neo4j task nodes
+```
+
+### Field Guide
+
+| Field | Purpose | Quality Bar |
+|-------|---------|-------------|
+| **Problem** | WHY: motivation/pain point | 1-2 sentences explaining the need |
+| **Solution** | WHAT: desired outcome | 1-2 sentences describing what success looks like |
+| **Approach** | HOW: implementation strategy | 2-3 sentences on technical approach |
+| **Scope** | Boundaries: in/out | Both what's included AND what's excluded |
+| **Acceptance Criteria** | Definition of done | Specific, testable items |
+| **Confidence** | AI certainty (0-100%) | See scoring below |
+
+### Confidence Scoring
+
+When creating tasks, assess your confidence honestly:
+
+| Score | Meaning | Action |
+|-------|---------|--------|
+| 90-100% | Crystal clear requirements | Proceed confidently |
+| 70-89% | Good clarity, minor assumptions | Note assumptions in approach |
+| 50-69% | Moderate ambiguity | Flag for clarification |
+| Below 50% | Significant uncertainty | Trigger inquiry flow |
+
+**Philosophy:** Low confidence is a STRENGTH, not a weakness. A score of 60 with honest questions is better than 90 with hidden assumptions.
+
+### Composite Score Guard
+
+When average task confidence across a sprint drops below 75%, trigger an honest inquiry:
+
+```
+⚠️ Composite confidence: 62% (threshold: 75%)
+
+Some tasks need clarification before we proceed.
+This is a good thing! Better to clarify now than build the wrong thing.
+
+How would you like to proceed?
+[1] Provide clarification (recommended)
+[2] Proceed anyway - let AI use best judgment
+[3] Cancel and start over with more detail
+```
+
+### Content Quality Assessment
+
+Tasks are assessed as:
+
+| Quality | Criteria | Display |
+|---------|----------|---------|
+| **Rich** ● | Has problem, solution, approach, scope, criteria | Green |
+| **Adequate** ◐ | Has basics but missing approach or scope | Yellow |
+| **Thin** ○ | Missing problem or acceptance criteria | Red - needs enrichment |
+
+Use `ginko task show <id>` to see full task content and quality assessment.
+
+### Sprint-Start Investigation
+
+At sprint start, thin tasks should trigger enrichment:
+
+```
+Sprint has 3 tasks that need enrichment:
+  - e018_s01_t02: Add files-touched tracking (thin)
+  - e018_s01_t04: Optimize context load performance (thin)
+
+INVESTIGATION PHASE
+This is the time to clarify ambiguities and make choices.
+Questions now = thoughtfulness, not weakness.
+
+Would you like to:
+[1] Enrich tasks now (recommended)
+[2] Proceed with thin tasks (will need clarification later)
+```
 
 
 
@@ -394,6 +626,24 @@ grep -c "\[ \]" docs/sprints/CURRENT-SPRINT.md  # pending
 
 **"What's my team working on?" / "Who's doing what?"**
 → `ginko team status` - shows all team members, their active sprints, progress, and last activity
+
+
+## ADR Architecture Status (EPIC-018)
+
+The following ADRs govern ginko's flow optimization and context architecture:
+
+| ADR | Status | Notes |
+|-----|--------|-------|
+| **ADR-033** | Partially superseded | Core insight valid (flow state matters), pressure measurement removed |
+| **ADR-034** | Active | Event-based triggers for context loading |
+| **ADR-036** | Active | Synthesis at session start, handoff retired |
+| **ADR-042** | Active | Typed relationships, AI-assisted quality assessment |
+| **ADR-043** | Target architecture | Partial implementation - session logging, insights capture |
+
+**How to use this table:**
+- Before implementing flow-related features, check which ADRs apply
+- "Partially superseded" means some concepts remain valid but implementation changed
+- "Target architecture" means the ADR describes future state, not current implementation
 
 
 ## Project-Specific Patterns

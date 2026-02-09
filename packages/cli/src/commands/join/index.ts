@@ -162,7 +162,7 @@ async function acceptInvitation(code: string): Promise<void> {
       clearInterval(updateInterval);
       syncSpinner.warn('Could not auto-sync team context');
       console.log(chalk.dim(`  ${syncError.message || 'Unknown error'}`));
-      console.log(chalk.dim('  You can sync manually with: ginko sync'));
+      console.log(chalk.dim('  You can sync manually with: ginko pull'));
     }
 
     console.log('');
@@ -272,7 +272,7 @@ ${chalk.gray('Workflow:')}
   1. Receive invitation code from a team owner
   2. Run: ${chalk.green('ginko join')} <code>
   3. Confirm to accept invitation
-  4. Run: ${chalk.green('ginko sync')} to pull team context
+  4. Run: ${chalk.green('ginko pull')} to pull team context
 
 ${chalk.gray('Example:')}
   ${chalk.green('ginko join')} a1b2c3d4e5f6

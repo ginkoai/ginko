@@ -49,7 +49,7 @@ ginko task complete e014_s02_t07 --cascade
 |---------|---------|
 | `ginko start` | Begin session, load context |
 | `ginko handoff` | Save progress for next session |
-| `ginko sync` | Pull team updates from dashboard |
+| `ginko pull` | Pull team updates from dashboard |
 | `ginko status` | Quick project status check |
 
 ## Entity Naming Convention
@@ -87,7 +87,7 @@ ginko graph status
 
 - Run `ginko start` at session beginning
 - Run `ginko handoff` before ending session
-- Run `ginko sync` if context is stale
+- Run `ginko pull` if context is stale
 
 ---
 *See CLAUDE.md for Claude-specific optimizations*

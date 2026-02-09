@@ -189,6 +189,19 @@ export interface AISessionContext {
     nextAction?: string;
     suggestedCommand?: string;
   };
+  /** Resumption brief for session context (EPIC-018 Sprint 1) */
+  resumptionBrief?: {
+    lastSession: {
+      summary: string;
+      stoppingPoint: string;
+      openQuestions: string[];
+      filesModified: string[];
+      duration: string;
+    };
+    decisions: Array<{ description: string; timestamp: string }>;
+    insights: Array<{ description: string; timestamp: string }>;
+    eventCount: number;
+  };
   /** Git status */
   git: {
     branch: string;
@@ -603,8 +616,8 @@ function formatOfflineHeader(context: AISessionContext): string {
  * @returns Warning message string or null if fresh/no warning needed
  *
  * Examples:
- * - Stale: "⚠️ Status may be outdated. Run `ginko sync` when online."
- * - Expired: "🚨 Status is outdated. Run `ginko sync` when online to refresh."
+ * - Stale: "⚠️ Status may be outdated. Run `ginko pull` when online."
+ * - Expired: "🚨 Status is outdated. Run `ginko pull` when online to refresh."
  */
 function formatStalenessWarning(staleness: 'fresh' | 'stale' | 'expired' | undefined): string | null {
   if (!staleness || staleness === 'fresh') {
@@ -612,11 +625,234 @@ function formatStalenessWarning(staleness: 'fresh' | 'stale' | 'expired' | undef
   }
 
   if (staleness === 'expired') {
-    return GINKO_BRAND.error('🚨 Status is outdated. Run `ginko sync` when online to refresh.');
+    return GINKO_BRAND.error('🚨 Status is outdated. Run `ginko pull` when online to refresh.');
   }
 
   // Default to stale warning
-  return GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko sync` when online.');
+  return GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko pull` when online.');
+}
+
+// ============================================================================
+// Clean Slate Output (EPIC-018 Sprint 1 t07)
+// ============================================================================
+
+/**
+ * Clean slate output configuration
+ */
+export interface CleanSlateOutputConfig {
+  /** Terminal width (default: 75) */
+  width?: number;
+  /** Show full file paths vs short names (default: false) */
+  showFullPaths?: boolean;
+}
+
+/**
+ * Format session output in clean slate format (EPIC-018 Sprint 1 t07)
+ *
+ * Transforms from box-drawing tables to a simpler label:value format
+ * that's easier to scan. Target: <15 lines.
+ *
+ * Layout:
+ * ginko | Hot (10/10) | Think & Build | feature/dashboard-settings
+ *
+ * RESUME: Dashboard settings - Teams to Projects rename
+ *   Stopped at: Checking if "team" appears in API responses
+ *   Open: Should member management terminology change?
+ *   Files: src/dashboard/settings.tsx, src/components/TeamPanel.tsx
+ *
+ * Sprint: adhoc_260204_s01 | 0% | 6 tasks
+ *   Next: t01 - Dashboard settings: rename Teams to Projects (continue)
+ *
+ * Branch: 6 uncommitted | Tests: passing
+ */
+export function formatCleanSlateOutput(
+  context: AISessionContext,
+  config: CleanSlateOutputConfig = {}
+): string {
+  const { width = 75 } = config;
+  const lines: string[] = [];
+
+  // Line 1: Header with flow state and branch
+  const flowState = getFlowStateLabel(context.session.flowScore);
+  const headerParts = [
+    GINKO_BRAND.header,
+    GINKO_BRAND.highlight(`${flowState} (${context.session.flowScore}/10)`),
+    context.session.workMode,
+    GINKO_BRAND.dim(context.git.branch)
+  ];
+
+  // Add offline indicator if applicable
+  if (context.session.isOffline) {
+    const offlineColor = context.session.cacheStaleness === 'expired'
+      ? GINKO_BRAND.error
+      : GINKO_BRAND.warning;
+    headerParts.splice(1, 0, offlineColor('OFFLINE'));
+  }
+
+  lines.push(headerParts.join(GINKO_BRAND.dim(' | ')));
+  lines.push('');
+
+  // RESUME section - uses resumption brief if available
+  if (context.resumptionBrief) {
+    const brief = context.resumptionBrief;
+
+    // Main resume line with summary
+    lines.push(
+      GINKO_BRAND.success('RESUME: ') +
+      truncate(brief.lastSession.summary, width - 10)
+    );
+
+    // Stopping point - only show if different from summary
+    if (brief.lastSession.stoppingPoint &&
+        brief.lastSession.stoppingPoint !== brief.lastSession.summary &&
+        !brief.lastSession.summary.includes(brief.lastSession.stoppingPoint)) {
+      lines.push(
+        GINKO_BRAND.dim('  Stopped at: ') +
+        truncate(brief.lastSession.stoppingPoint, width - 15)
+      );
+    }
+
+    // Open questions (show first one)
+    if (brief.lastSession.openQuestions.length > 0) {
+      const questionLabel = brief.lastSession.openQuestions.length > 1
+        ? `Open (${brief.lastSession.openQuestions.length}):`
+        : 'Open:';
+      lines.push(
+        GINKO_BRAND.warning('  ' + questionLabel + ' ') +
+        truncate(brief.lastSession.openQuestions[0], width - 15)
+      );
+    }
+
+    // Files modified (compact list)
+    if (brief.lastSession.filesModified.length > 0) {
+      const fileNames = brief.lastSession.filesModified
+        .slice(0, 3)
+        .map(f => f.split('/').pop() || f)
+        .join(', ');
+      const moreCount = brief.lastSession.filesModified.length - 3;
+      const filesDisplay = moreCount > 0
+        ? `${fileNames} +${moreCount} more`
+        : fileNames;
+      lines.push(GINKO_BRAND.dim('  Files: ') + filesDisplay);
+    }
+
+    lines.push('');
+  } else if (context.synthesis?.resumePoint) {
+    // Fallback to synthesis resume point
+    lines.push(
+      GINKO_BRAND.success('RESUME: ') +
+      truncate(context.synthesis.resumePoint, width - 10)
+    );
+    lines.push('');
+  }
+
+  // Sprint section
+  if (context.sprint) {
+    const progress = typeof context.sprint.progress === 'number' ? context.sprint.progress : 0;
+    const taskCount = context.sprint.tasks?.length || 0;
+    const sprintName = context.sprint.name || context.sprint.id || 'Active Sprint';
+
+    // Sprint header line: Sprint: name | progress% | N tasks
+    lines.push(
+      GINKO_BRAND.dim('Sprint: ') +
+      GINKO_BRAND.highlight(truncate(sprintName, 30)) +
+      GINKO_BRAND.dim(' | ') +
+      (progress >= 100 ? GINKO_BRAND.success(`${progress}%`) : `${progress}%`) +
+      GINKO_BRAND.dim(` | ${taskCount} tasks`)
+    );
+
+    // Next task line
+    if (context.sprint.currentTask) {
+      const task = context.sprint.currentTask;
+      const statusLabel = task.status === 'in_progress' ? 'continue' : 'start';
+      const shortId = task.id.split('_').pop() || task.id;
+      lines.push(
+        GINKO_BRAND.dim('  Next: ') +
+        GINKO_BRAND.warning(shortId) +
+        GINKO_BRAND.dim(' - ') +
+        truncate(task.title, width - 25) +
+        GINKO_BRAND.dim(` (${statusLabel})`)
+      );
+
+      // Cognitive scaffolding (compact: only show if present)
+      const scaffolding: string[] = [];
+
+      if (task.constraints && task.constraints.length > 0) {
+        const adrList = task.constraints.slice(0, 2).map(c => c.adr.id).join(', ');
+        scaffolding.push(chalk.magenta('Follow: ') + adrList);
+      }
+
+      if (task.patterns && task.patterns.length > 0) {
+        const patternList = task.patterns.slice(0, 2).map(p => {
+          const icon = p.confidence === 'high' ? '★' : p.confidence === 'medium' ? '◐' : '○';
+          return `${p.title} ${icon}`;
+        }).join(', ');
+        scaffolding.push(chalk.blue('Apply: ') + patternList);
+      }
+
+      if (task.gotchas && task.gotchas.length > 0) {
+        const gotcha = task.gotchas[0];
+        const icon = gotcha.severity === 'critical' ? '🚨' : gotcha.severity === 'high' ? '⚠️' : '💡';
+        scaffolding.push(chalk.red('Avoid: ') + `${icon} ${gotcha.title}`);
+      }
+
+      // Display scaffolding inline if present
+      if (scaffolding.length > 0) {
+        scaffolding.forEach(s => {
+          lines.push(GINKO_BRAND.dim('  ') + s);
+        });
+      }
+    }
+
+    lines.push('');
+  } else {
+    lines.push(GINKO_BRAND.dim('No active sprint'));
+    lines.push('');
+  }
+
+  // Branch + Status line (compact)
+  const totalChanges =
+    context.git.uncommittedChanges.modified.length +
+    context.git.uncommittedChanges.created.length +
+    context.git.uncommittedChanges.untracked.length;
+
+  const branchStatus = totalChanges > 0
+    ? `${totalChanges} uncommitted`
+    : 'clean';
+
+  const statusParts = [
+    GINKO_BRAND.dim('Branch: ') + branchStatus
+  ];
+
+  // Add any critical warnings inline (filter out redundant uncommitted warning)
+  if (context.synthesis?.blockedItems && context.synthesis.blockedItems.length > 0) {
+    statusParts.push(
+      GINKO_BRAND.error('Blocked: ') +
+      truncate(context.synthesis.blockedItems[0], 40)
+    );
+  } else {
+    // Filter warnings that don't duplicate the uncommitted count
+    const nonRedundantWarnings = context.git.warnings.filter(w =>
+      !w.includes('uncommitted')
+    );
+    if (nonRedundantWarnings.length > 0) {
+      statusParts.push(
+        GINKO_BRAND.warning(truncate(nonRedundantWarnings[0], 40))
+      );
+    }
+  }
+
+  lines.push(statusParts.join(GINKO_BRAND.dim(' | ')));
+
+  // Staleness warning for offline mode
+  if (context.session.isOffline && context.session.cacheStaleness) {
+    const stalenessMsg = context.session.cacheStaleness === 'expired'
+      ? GINKO_BRAND.error('🚨 Status outdated. Run `ginko pull` when online.')
+      : GINKO_BRAND.warning('⚠️ Status may be outdated. Run `ginko pull` when online.');
+    lines.push(stalenessMsg);
+  }
+
+  return lines.join('\n');
 }
 
 // ============================================================================

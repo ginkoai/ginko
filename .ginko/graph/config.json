@@ -902,7 +902,7 @@
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-11-155Z.md": "sha256:84ee7258b835cbe0dec0dd4f0a4bee9192ced691b096ca83f806026ef1ee2fa2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-47-47-459Z.md": "sha256:f4acd1560044d88d062017f215cdadffb7cbe6769f52c85b759b5a85f8ee90b2",
     ".ginko/sessions/chris-at-watchhill-ai/archive/session-log-2026-01-26T17-51-05-126Z.md": "sha256:a7e81ebe41d99155adb0524c726f48f9b365f817b546da839ab66f31d316ba19",
-    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:80f5c98433a78023013b314357e1e92768d247c3f0ae89807e138f275c58b885",
+    ".ginko/sessions/chris-at-watchhill-ai/current-session-log.md": "sha256:a0731c608289494dd4c2fca232042898f5815b4fdd8a4182373e2676eb76acf2",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-19-epic015-sprint2.md": "sha256:ffe4de352b4879b640bebbf745782454e78f32638cfcf416579615bc519b4b9e",
     ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-01-20-data-cleanup.md": "sha256:fb3dcabc1838aabe639c99920fdff2bc21baed270d46706bc136a0c082d126d6",
     ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-01-20-epic015-s02-verification.md": "sha256:999c480085af7d6730d5403145b0d70e6807b6c00535b8fd1511ac4c893405e2",
@@ -1060,7 +1060,7 @@
     "docs/archive/tests/NPX-INSTALLER-TESTING-RESULTS.md": "sha256:7af138df678e80654d5b3b8093a76608cf8bd0630b0ca7f9e677d14af5aec3f8",
     "docs/backlog/BACKLOG-MVP.md": "sha256:62c601b41163defea772fcc315547f1a20bf472e76c1fe80b1463c4c1dc534f0",
     "docs/backlog/phase-1-implementation-backlog.md": "sha256:4772f3931d2491bd96577745f16e57abf48634f28feaae8122377340a51acbc7",
-    "docs/bugs/UAT-2026-01-27-bugs.md": "sha256:069f93cc87333ec395b8832fdefa2a83e1c3d975e60c3d7ef3136057ef592ae6",
+    "docs/bugs/UAT-2026-01-27-bugs.md": "sha256:6011220af02b52284efd73df53bb3b22f13c8564010c71bf40ae0da029783f70",
     "docs/changes/TASK-P3-single-next-action.md": "sha256:afaf90d05258cd536c7f6d4fc5ee9f5f16aa24b96be0eb26f01af112e5895baa",
     "docs/context-pressure-management.md": "sha256:f8daa91beecbe26a2751d1d88b7d955c04f96ecdcecb777291a9698591279783",
     "docs/decisions/TASK-018-graph-db-prototype-results.md": "sha256:e9ecd0b79871197c0a805ef3e34d2e3a766b82999c7a36dc9a49a9e10b9b84da",
@@ -1073,7 +1073,7 @@
     "docs/design/SITE-ARCHITECTURE-EPIC003.md": "sha256:cc41e4d1f5e28006a5bdaa6e759be517ad23f311c0f0197e3a25131f395e8171",
     "docs/design/TASK-002-COMPLETION-SUMMARY.md": "sha256:024c37e97221126321721c2026f1517e31ca30da3154ae5021b6e7019df39a85",
     "docs/epics/EPIC-017-git-integrated-push-pull-sync.md": "sha256:e5a4dd06dcd5d3162dc07874fd05e1802bfa4f775f80ae3601d62c7ebe1a95a1",
-    "docs/epics/EPIC-INDEX.md": "sha256:ef02e8894fe6e31d6dbfd62659a97cfb754e317e4b21627050f690a06434a865",
+    "docs/epics/EPIC-INDEX.md": "sha256:1518be1278b07e45fe4145acbe42543b5191aa4e4f5426c6aff8c50c9de36f71",
     "docs/examples/charter-conversations/full-planning-example.md": "sha256:6d04906abbfb92baac3bcdfb096791f279371184b89d190be251204ce88f363b",
     "docs/examples/charter-conversations/hack-ship-example.md": "sha256:59013f92f3ead41660247ad07eb9dae36645369630ab96b64dfef1258c4dcd8b",
     "docs/examples/charter-conversations/think-build-example.md": "sha256:a011a61c41e83695a68cfa9753601a0c211713dae0828c45c0a5ffde427bdd80",
@@ -1245,7 +1245,18 @@
     "docs/gotchas/GOTCHA-css-bracket-junction-overlap.md": "sha256:61b2e9d495267c8e7028f41db4060b105aab6b9605b4a05f523793eb5eb81454",
     "docs/sprints/SPRINT-adhoc_260203-unify-graph-nodes.md": "sha256:c0c40ceb64f2db339fa13019966f0074cdfa6913228bcccd9980a3004257be5b",
     ".ginko/sessions/chris-at-watchhill-ai/HANDOFF-2026-02-04-epic-id-team-fix.md": "sha256:c9a0b79b198f84bf878248d652899d6f47190a6f4efee4624beacc6992daa80b",
-    "docs/epics/EPIC-e099-test-entity-id-fix.md": "sha256:2af389cffce43bcdd731477b2e88a69bbfba25ea4f0426f318881b4d7cbc1940"
+    "docs/epics/EPIC-e099-test-entity-id-fix.md": "sha256:2af389cffce43bcdd731477b2e88a69bbfba25ea4f0426f318881b4d7cbc1940",
+    "docs/epics/EPIC-018-flow-state-optimization.md": "sha256:eeee3def11bae8a7d8675be0348b2ed16c625af0ccac32a275dd64f4068398b6",
+    "docs/sprints/SPRINT-2026-02-adhoc_260205_s02-dashboard-bug-verification.md": "sha256:d4f5d8b96e84764e9ffccbfeb5f6c256b42aa492b25939b97a799583c07de599",
+    ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-02-05-epic018.md": "sha256:d8d5c83d845fc0d04e93bb6122a61eb73c615789672a580209e508aeeaba9be0",
+    "docs/bugs/BUG-026-027-graph-sync-issues.md": "sha256:aab5b66fe25b131f3d7004225260d831f42a772a9b96cd3d6c4dab5577ad3a8d",
+    "docs/sprints/SPRINT-2026-02-e018-s03-sprint-start-investigation.md": "sha256:baa15361c13dd3789021e8ba56ed74c7273a341028a0bd97fe9506a820969a1b",
+    ".ginko/sessions/chris-at-watchhill-ai/handoff-2026-02-05-epic018-s03.md": "sha256:fa9e04f0c0a29470e744cc301f60b00f998a40ec125f75e5997e0c8541189582",
+    "docs/epics/EPIC-020-graph-authoritative-task-content.md": "sha256:6da6f83ca61b8607201d188eef7b4e123940906ff893cece8515de12a03848e7",
+    "docs/epics/EPIC-021-graph-authoritative-task-content.md": "sha256:a6e74289d45d2494c2f6b84512a34263464aa935a31230d2be9c89b61c613a92",
+    ".ginko/context/modules/discovery-root-cause-for-epic021-push-failure-multiuser-id-c.md": "sha256:d829ddfc9871e45b4508d49d56e023e77f84d1b1b84ce249e26743648ab22890",
+    "docs/sprints/SPRINT-2026-02-epic020-sprint1-graph-content-enrichment.md": "sha256:904e1e40643445954001ee9c7d97eb36626540efe0996c98a67ae89d641167b9",
+    "docs/sprints/SPRINT-2026-02-epic020-sprint2-session-start-enhancement.md": "sha256:14784035c7d72c7d5b847e73d02504119cf9cd96bb6fa9348dfd28fcbab0f7b7"
   },
-  "lastSync": "2026-02-04T19:00:21.676Z"
+  "lastSync": "2026-02-09T16:23:29.061Z"
 }

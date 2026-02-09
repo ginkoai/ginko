@@ -67,16 +67,20 @@ export function sprintCommand(): Command {
   sprint.addCommand(createSprintStatusCommands());
   addSprintStatusShortcuts(sprint);
 
-  // EPIC-016 Sprint 4: Conversational sprint creation (t03)
+  // EPIC-016 Sprint 4 + EPIC-018: Sprint creation (AI-mediated by default)
   sprint
     .command('create')
-    .description('Create a new feature sprint (conversational)')
+    .description('Create a new feature sprint')
+    .option('--no-ai', 'Use interactive mode instead of AI-mediated (direct CLI prompts)')
     .option('--adhoc', 'Link to Ad-Hoc epic (default: true)')
     .option('--epic <epicId>', 'Link to specific epic')
-    .option('-d, --description <text>', 'Feature description (required in non-interactive mode)')
-    .option('-y, --yes', 'Skip confirmation prompts')
+    .option('-d, --description <text>', 'Feature description (for --no-ai mode)')
+    .option('-y, --yes', 'Skip confirmation prompts (for --no-ai mode)')
     .action(async (options) => {
-      await createSprintAction(options);
+      await createSprintAction({
+        ...options,
+        noAi: !options.ai, // Commander handles --no-ai as options.ai = false
+      });
     });
 
   // EPIC-016 Sprint 4: Quick-fix fast path (t04)
