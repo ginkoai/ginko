@@ -2,7 +2,7 @@
 epic_id: EPIC-019
 status: active
 created: 2026-02-08
-updated: 2026-02-08
+updated: 2026-02-09
 roadmap_lane: now
 roadmap_status: in_progress
 tags: [marketing, launch, gtm, content, product-hunt]
@@ -147,6 +147,9 @@ Weekly check-in: What worked? What didn't? What do we try next?
 ---
 
 ## Changelog
+
+### v1.0.1 - 2026-02-09
+- Restored epic after ID collision (Chris's EPIC-019 moved to EPIC-020)
 
 ### v1.0.0 - 2026-02-08
 - Initial epic creation
