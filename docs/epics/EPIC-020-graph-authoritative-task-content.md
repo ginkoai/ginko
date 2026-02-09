@@ -1,5 +1,5 @@
 ---
-epic_id: EPIC-021
+epic_id: EPIC-020
 status: proposed
 created: 2026-02-08
 updated: 2026-02-09
@@ -8,7 +8,7 @@ roadmap_status: not_started
 tags: [graph-authoritative, task-content, context-quality, session-start, 3x5-card]
 ---
 
-# EPIC-021: Graph-Authoritative Tasks
+# EPIC-020: Graph-Authoritative Tasks
 
 **Status:** Proposed
 **Priority:** High
@@ -156,11 +156,11 @@ ginko context score 9,8,9,7
 
 | ID | Task | Problem | Solution | Approach |
 |----|------|---------|----------|----------|
-| e021_s01_t01 | Extend Task node schema | Task nodes only have id/name/status | Add 3x5 card fields to schema | Update Neo4j schema, API types, validation |
-| e021_s01_t02 | Push full content on creation | Content stays in files, not pushed to graph | Push problem/solution/approach/files/AC on task creation | Modify sprint create, task create flows |
-| e021_s01_t03 | Enrich ActiveSprintData response | API returns thin task data | Include full task content in sprint query | Update graph API query, response types |
-| e021_s01_t04 | Update ginko push for content | Push only syncs status | Sync full task content to graph | Extend push command, add content diffing |
-| e021_s01_t05 | Update ginko pull for content | Pull doesn't retrieve task content | Pull full task content from graph | Extend pull command, merge with local files |
+| e020_s01_t01 | Extend Task node schema | Task nodes only have id/name/status | Add 3x5 card fields to schema | Update Neo4j schema, API types, validation |
+| e020_s01_t02 | Push full content on creation | Content stays in files, not pushed to graph | Push problem/solution/approach/files/AC on task creation | Modify sprint create, task create flows |
+| e020_s01_t03 | Enrich ActiveSprintData response | API returns thin task data | Include full task content in sprint query | Update graph API query, response types |
+| e020_s01_t04 | Update ginko push for content | Push only syncs status | Sync full task content to graph | Extend push command, add content diffing |
+| e020_s01_t05 | Update ginko pull for content | Pull doesn't retrieve task content | Pull full task content from graph | Extend pull command, merge with local files |
 
 ### Sprint 2: Session Start Enhancement (1 week)
 
@@ -168,13 +168,13 @@ ginko context score 9,8,9,7
 
 | ID | Task | Problem | Solution | Approach |
 |----|------|---------|----------|----------|
-| e021_s02_t01 | Merge --clean-slate to default | Separate flag adds friction | Clean-slate becomes default behavior | Remove flag, update start-reflection.ts |
-| e021_s02_t02 | Display WHY in start output | Only task title shown | Show problem statement in RESUME block | Extract problem from ActiveSprintData, format |
-| e021_s02_t03 | Show STOPPED AT with context | Stopping point truncated | Full stopping point with file context | Enhance resumption brief synthesis |
-| e021_s02_t04 | Show entry point FILES | No visibility into where to start | Display task files prominently | Pull files from ActiveSprintData, format |
-| e021_s02_t05 | Surface recent DECISIONS | Decisions exist but hidden | Show key decisions from last session | Extract from events, display in start |
-| e021_s02_t06 | Auto context scoring | Scoring doesn't auto-run | Run scoring reflex after synthesis | Add scoring call, log results to events |
-| e021_s02_t07 | Low score enrichment suggestions | Low scores not actionable | Suggest enrichment for dimensions <7 | Check scores, generate suggestions |
+| e020_s02_t01 | Merge --clean-slate to default | Separate flag adds friction | Clean-slate becomes default behavior | Remove flag, update start-reflection.ts |
+| e020_s02_t02 | Display WHY in start output | Only task title shown | Show problem statement in RESUME block | Extract problem from ActiveSprintData, format |
+| e020_s02_t03 | Show STOPPED AT with context | Stopping point truncated | Full stopping point with file context | Enhance resumption brief synthesis |
+| e020_s02_t04 | Show entry point FILES | No visibility into where to start | Display task files prominently | Pull files from ActiveSprintData, format |
+| e020_s02_t05 | Surface recent DECISIONS | Decisions exist but hidden | Show key decisions from last session | Extract from events, display in start |
+| e020_s02_t06 | Auto context scoring | Scoring doesn't auto-run | Run scoring reflex after synthesis | Add scoring call, log results to events |
+| e020_s02_t07 | Low score enrichment suggestions | Low scores not actionable | Suggest enrichment for dimensions <7 | Check scores, generate suggestions |
 
 ---
 
@@ -185,7 +185,7 @@ ginko context score 9,8,9,7
 ```cypher
 // Extended Task node
 CREATE (t:Task {
-  id: "e021_s01_t01",
+  id: "e020_s01_t01",
   name: "Extend Task node schema",
   status: "not_started",
 
