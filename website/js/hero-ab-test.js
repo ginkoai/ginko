@@ -38,8 +38,8 @@
     D: {
       id: 'D',
       name: 'quantified-pain',
-      title: 'You\'ve spent 10 minutes re-explaining. Again.',
-      subtitle: 'Ginko eliminates context rot. Your AI stays sharp across sessions.',
+      title: 'You\'ve spent<br>10 minutes<br>re-explaining.<br>Again.',
+      subtitle: 'Ginko eliminates context rot.<br>Your AI stays sharp across sessions.',
       primaryCta: { text: 'Fix it now', href: 'https://app.ginkoai.com/auth/signup' },
       secondaryCta: { text: 'View Docs', href: 'https://docs.ginko.ai' }
     },
@@ -120,16 +120,16 @@
    * Apply variant to the page
    */
   function applyVariant(variant) {
-    // Update title
+    // Update title (use innerHTML to support <br> tags)
     const titleEl = document.querySelector('[data-hero-title]');
     if (titleEl) {
-      titleEl.textContent = variant.title;
+      titleEl.innerHTML = variant.title;
     }
 
-    // Update subtitle
+    // Update subtitle (use innerHTML to support <br> tags)
     const subtitleEl = document.querySelector('[data-hero-subtitle]');
     if (subtitleEl) {
-      subtitleEl.textContent = variant.subtitle;
+      subtitleEl.innerHTML = variant.subtitle;
     }
 
     // Update primary CTA - only update text span to preserve arrow box

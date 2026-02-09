@@ -241,10 +241,11 @@ const initCopyButtons = () => {
       return;
     }
 
-    // Clear any existing timeout
-    if (toastTimeout) {
-      clearTimeout(toastTimeout);
-    }
+    // Clear any existing animation
+    toast.classList.remove('show');
+
+    // Force reflow to restart animation
+    void toast.offsetWidth;
 
     // Position toast above the element
     if (element) {
@@ -252,20 +253,12 @@ const initCopyButtons = () => {
       var centerX = Math.round(rect.left + (rect.width / 2));
       var topPos = Math.round(rect.top - 44);
 
-      toast.style.setProperty('left', centerX + 'px', 'important');
-      toast.style.setProperty('top', topPos + 'px', 'important');
-      toast.style.setProperty('transform', 'translateX(-50%)', 'important');
-      toast.style.setProperty('opacity', '1', 'important');
+      toast.style.left = centerX + 'px';
+      toast.style.top = topPos + 'px';
     }
 
-    // Show toast
+    // Trigger slide-up animation
     toast.classList.add('show');
-
-    // Hide after 2 seconds
-    toastTimeout = setTimeout(function() {
-      toast.classList.remove('show');
-      toast.style.setProperty('opacity', '0', 'important');
-    }, 2000);
   };
 
   // Fallback copy method for Safari/non-HTTPS contexts
