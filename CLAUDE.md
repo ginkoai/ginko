@@ -173,6 +173,18 @@ find . -name "*.ts" | xargs grep -l "@complexity: high"
 ### Core Methodology
 **INVENTORY → CONTEXT → THINK → PLAN → PRE-MORTEM → VALIDATE → ACT → TEST**
 
+### Root Cause Analysis Protocol
+
+When debugging persistent or recurring issues, follow this structured approach **before attempting any fix**:
+
+1. **Hypothesize**: Produce testable hypotheses for the root cause. For each, describe what evidence would confirm it AND what would disprove it.
+2. **Rank**: Order hypotheses by likelihood.
+3. **Check interactions**: Note if any hypotheses depend on or amplify each other.
+4. **Separate cleanup from prevention**: Distinguish between fixing the current state and preventing recurrence. Both are required for a durable fix.
+5. **Validate first**: Don't fix until you've confirmed a hypothesis with evidence.
+
+**Why this matters**: Without structured analysis, the default behavior is to fix the most visible symptom. This misses compounding causes and leads to fixes that the system's own behavior undoes (e.g., a migration that deletes data the application immediately recreates).
+
 ### 🚨 Task Completion Protocol (CRITICAL)
 
 **After completing ANY sprint task, you MUST update the graph:**

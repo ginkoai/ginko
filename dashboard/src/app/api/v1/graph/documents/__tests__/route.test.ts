@@ -646,6 +646,73 @@ describe('POST /api/v1/graph/documents', () => {
       expect(params).toHaveProperty('contentHash');
     });
 
+    it('should normalize full-slug ADR IDs to short-form (ADR-NNN)', async () => {
+      const req = makeRequest({
+        graphId: 'gin_test',
+        documents: [makeDocument({
+          id: 'ADR-039-graph-based-context-discovery',
+          type: 'ADR',
+          title: 'Graph-Based Context Discovery',
+        })],
+      });
+
+      await POST(req);
+      const params = getParamsForCall(0);
+
+      // ID should be normalized to short-form
+      expect(params.id).toBe('ADR-039');
+    });
+
+    it('should normalize double-slug ADR IDs (ADR-NNN-adr-NNN) to short-form', async () => {
+      const req = makeRequest({
+        graphId: 'gin_test',
+        documents: [makeDocument({
+          id: 'ADR-052-adr-052',
+          type: 'ADR',
+          title: 'Entity Naming Convention',
+        })],
+      });
+
+      await POST(req);
+      const params = getParamsForCall(0);
+
+      // ID should be normalized to short-form
+      expect(params.id).toBe('ADR-052');
+    });
+
+    it('should not modify already-canonical ADR IDs', async () => {
+      const req = makeRequest({
+        graphId: 'gin_test',
+        documents: [makeDocument({
+          id: 'ADR-039',
+          type: 'ADR',
+          title: 'Graph-Based Context Discovery',
+        })],
+      });
+
+      await POST(req);
+      const params = getParamsForCall(0);
+
+      expect(params.id).toBe('ADR-039');
+    });
+
+    it('should not normalize IDs for non-ADR types', async () => {
+      const req = makeRequest({
+        graphId: 'gin_test',
+        documents: [makeDocument({
+          id: 'e001',
+          type: 'Epic',
+          title: 'Some Epic',
+        })],
+      });
+
+      await POST(req);
+      const params = getParamsForCall(0);
+
+      // Non-ADR types should keep their original ID
+      expect(params.id).toBe('e001');
+    });
+
     it('should not include null or undefined metadata values', async () => {
       const req = makeRequest({
         graphId: 'gin_test',

@@ -269,6 +269,17 @@ export async function POST(request: NextRequest) {
               properties.embedding = embedding;
             }
 
+            // Normalize ADR IDs to short-form (ADR-NNN) to prevent duplicates.
+            // Historical pushes used full-slug IDs (ADR-039-graph-based-context-discovery)
+            // and duplicate filenames (ADR-039-adr-039). Normalizing server-side ensures
+            // MERGE always matches the canonical node regardless of client format.
+            if (doc.type === 'ADR') {
+              const adrMatch = properties.id.match(/^(ADR-\d+)/i);
+              if (adrMatch) {
+                properties.id = adrMatch[1].toUpperCase();
+              }
+            }
+
             // Build property lists for Cypher SET clauses
             const propsList = Object.keys(properties)
               .filter(key => properties[key] !== null && properties[key] !== undefined)
