@@ -237,6 +237,13 @@ Found a vulnerability? Please report it responsibly. See [SECURITY.md](SECURITY.
 
 **Why AGPL?** We believe development tools should be open and transparent. AGPL ensures that improvements to Ginko remain available to the community, while allowing unrestricted use in any project (open source or proprietary).
 
+## Links
+
+- **Website:** [ginkoai.com](https://ginkoai.com)
+- **Documentation:** [Getting Started Guide](docs/guides/GETTING-STARTED.md)
+- **Issues:** [GitHub Issues](https://github.com/ginkoai/ginko/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/ginkoai/ginko/discussions)
+
 ---
 
 <p align="center">
