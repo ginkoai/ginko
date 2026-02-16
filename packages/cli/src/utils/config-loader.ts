@@ -238,11 +238,11 @@ async function createLocalConfig(projectRoot: string): Promise<LocalConfig> {
  * @example
  * // Using path key
  * const sprintPath = await resolveProjectPath('currentSprint');
- * // → /Users/cnorton/Development/ginko/docs/sprints/CURRENT-SPRINT.md
+ * // → /home/user/my-project/docs/sprints/CURRENT-SPRINT.md
  *
  * // Using relative path directly
  * const customPath = await resolveProjectPath('docs/custom/file.md');
- * // → /Users/cnorton/Development/ginko/docs/custom/file.md
+ * // → /home/user/my-project/docs/custom/file.md
  */
 export async function resolveProjectPath(relativePath: string): Promise<string> {
   const [localConfig, projectConfig] = await Promise.all([

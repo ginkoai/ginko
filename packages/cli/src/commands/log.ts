@@ -42,7 +42,8 @@ import { SessionInsight, InsightType } from '../types/session.js';
 import { initializeWriteDispatcher, appendLogEntry } from '../utils/dispatcher-logger.js';
 import { logEvent as logEventToStream, EventEntry, BlockerSeverity } from '../lib/event-logger.js';
 import * as path from 'path';
-import { requireAuth, isAuthenticated } from '../utils/auth-storage.js';
+import { isAuthenticated } from '../utils/auth-storage.js';
+import { withOptionalCloud } from '../utils/cloud-guard.js';
 import { GraphApiClient } from './graph/api-client.js';
 
 interface LogOptions {
@@ -67,8 +68,8 @@ interface LogOptions {
  */
 export async function logCommand(description: string, options: LogOptions): Promise<void> {
   try {
-    // Require authentication
-    await requireAuth('log');
+    // Check cloud availability (non-blocking — log works locally)
+    await withOptionalCloud('log');
 
     // Get session directory
     const ginkoDir = await getGinkoDir();

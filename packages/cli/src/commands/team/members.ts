@@ -19,6 +19,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import Table from 'cli-table3';
 import { TeamsClient } from '../../lib/api/teams-client.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface AddMemberOptions {
   role?: 'owner' | 'member';
@@ -66,6 +67,7 @@ export async function addTeamMemberCommand(
   githubUsername: string,
   options: AddMemberOptions
 ): Promise<void> {
+  await requireCloud('team members');
   const spinner = ora(`Adding ${githubUsername} to team...`).start();
 
   try {
@@ -117,6 +119,7 @@ export async function removeTeamMemberCommand(
   teamIdOrName: string,
   githubUsernameOrUserId: string
 ): Promise<void> {
+  await requireCloud('team members');
   const spinner = ora(`Removing ${githubUsernameOrUserId} from team...`).start();
 
   try {
@@ -181,6 +184,7 @@ export async function removeTeamMemberCommand(
  * List team members
  */
 export async function listTeamMembersCommand(teamIdOrName: string): Promise<void> {
+  await requireCloud('team members');
   const spinner = ora('Loading team members...').start();
 
   try {

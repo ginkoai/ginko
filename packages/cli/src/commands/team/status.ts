@@ -25,6 +25,7 @@ import chalk from 'chalk';
 import { GraphApiClient } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
 import { formatProgressBar } from '../../lib/output-formatter.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface MemberStatus {
   email: string;
@@ -111,6 +112,7 @@ function formatSprintName(sprint: { id: string; title: string; epic: { title: st
  * Team status command handler
  */
 export async function teamStatusCommand(): Promise<void> {
+  await requireCloud('team status');
   try {
     // Get graphId from config
     const graphId = await getGraphId();

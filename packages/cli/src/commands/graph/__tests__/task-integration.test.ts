@@ -69,7 +69,7 @@ describe('Task Integration: Sprint Parsing', () => {
 
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** chris@watchhill.ai
+**Assignee:** dev@example.com
 **Goal:** Create parser to extract task definitions from sprint markdown files
 
 **Acceptance Criteria:**
@@ -89,7 +89,7 @@ References: ADR-060, ADR-052
 
 **Status:** [@] In Progress
 **Priority:** HIGH
-**Assignee:** chris@watchhill.ai
+**Assignee:** dev@example.com
 **Goal:** Create/update Task nodes in Neo4j from parsed task data
 
 **Files to Modify:**
@@ -186,7 +186,7 @@ References: ADR-060, ADR-052
     const t1 = result.tasks.find(t => t.id === 'e015_s00a_t01');
     const t3 = result.tasks.find(t => t.id === 'e015_s00a_t03');
 
-    expect(t1?.assignee).toBe('chris@watchhill.ai');
+    expect(t1?.assignee).toBe('dev@example.com');
     expect(t3?.assignee).toBeNull(); // No assignee specified
   });
 

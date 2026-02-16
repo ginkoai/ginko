@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "context-mcp": {
-      "command": "node",
-      "args": ["dist/index.js"],
-      "cwd": "/Users/cnorton/Development/ginko"
-    }
-  }
-}

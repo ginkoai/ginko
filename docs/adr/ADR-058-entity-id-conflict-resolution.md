@@ -18,7 +18,7 @@ When two team members independently create an entity with the same ID (e.g., bot
 2. **Second user syncs** - Neo4j `MERGE` silently **overwrites** the first user's content
 3. **No warning, no conflict detection** - First user's work is lost
 
-This happened in practice: Reese synced EPIC-010 with 4 sprints, then xtophr had a local EPIC-010 that would silently overwrite Reese's work.
+This happened in practice: Bob synced EPIC-010 with 4 sprints, then Alice had a local EPIC-010 that would silently overwrite Bob's work.
 
 ### Why This Happens
 
@@ -85,7 +85,7 @@ When conflict detected during `ginko sync`:
 
 ```
 ⚠️  ID Conflict: EPIC-010 already exists
-   Created by: reese@company.com on 2026-01-06
+   Created by: dev@example.com on 2026-01-06
    Title: "Analytics Dashboard"
 
 Your version: "Performance Optimization"
@@ -156,7 +156,7 @@ async function findNextAvailableId(
 ## Alternatives Considered
 
 ### User-Prefixed IDs
-`xtophr_e010` vs `reese_e010`
+`alice_e010` vs `bob_e010`
 
 **Rejected:** Creates fragmented namespace, complicates references, orphaned IDs when users leave.
 

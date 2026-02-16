@@ -12,11 +12,14 @@
 import chalk from 'chalk';
 import { GraphApiClient } from './api-client.js';
 import { loadGraphConfig, isGraphInitialized } from './config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 /**
  * Show graph status and statistics
  */
 export async function statusCommand(): Promise<void> {
+  await requireCloud('graph status');
+
   try {
     // Check if graph is initialized
     if (!await isGraphInitialized()) {

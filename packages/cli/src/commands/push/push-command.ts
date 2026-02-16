@@ -37,6 +37,7 @@ import { detectChanges, type ChangeDetectionResult } from '../../lib/git-change-
 import { classifyFile, filterByType, type EntityType, type ClassifiedFile } from '../../lib/entity-classifier.js';
 import { parseSprintTasks, type ParsedTask, type SprintParseResult } from '../../lib/task-parser.js';
 import { getProjectRoot } from '../../utils/helpers.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 export interface PushOptions {
   dryRun?: boolean;
@@ -325,6 +326,11 @@ export async function pushCommand(options: PushOptions): Promise<PushResult> {
   };
 
   const quiet = !!options.quiet;
+
+  // Cloud guard (skip for quiet mode as auto-push has its own check)
+  if (!quiet) {
+    await requireCloud('push');
+  }
 
   // Check graph initialization
   if (!await isGraphInitialized()) {

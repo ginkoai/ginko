@@ -21,6 +21,9 @@ test/
 # Archive
 src/_archive/
 
+# OSS overlay
+.oss/
+
 # Documentation (keep README.md)
 docs/
 DEVELOPMENT.md

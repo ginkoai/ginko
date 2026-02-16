@@ -19,6 +19,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import { ProjectsClient } from '../../lib/api/projects-client.js';
 import { TeamsClient } from '../../lib/api/teams-client.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 /**
  * Add a team to a project
@@ -27,6 +28,7 @@ export async function addTeamToProjectCommand(
   teamIdOrName: string,
   projectIdOrName: string
 ): Promise<void> {
+  await requireCloud('team projects');
   const spinner = ora('Adding team to project...').start();
 
   try {
@@ -84,6 +86,7 @@ export async function removeTeamFromProjectCommand(
   teamIdOrName: string,
   projectIdOrName: string
 ): Promise<void> {
+  await requireCloud('team projects');
   const spinner = ora('Removing team from project...').start();
 
   try {

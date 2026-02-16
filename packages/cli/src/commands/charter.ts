@@ -27,7 +27,7 @@ import {
 } from '../lib/charter/charter-versioning.js';
 import type { Charter, CharterContent, CharterConfidence, WorkMode } from '../types/charter.js';
 import { getUserEmail, getProjectRoot } from '../utils/helpers.js';
-import { requireAuth } from '../utils/auth-storage.js';
+import { withOptionalCloud } from '../utils/cloud-guard.js';
 
 // ============================================================================
 // Types
@@ -70,7 +70,7 @@ export async function charterCommand(options: CharterOptions = {}): Promise<void
     // Handle --edit flag
     if (options.edit) {
       // Require authentication for editing
-      await requireAuth('charter');
+      await withOptionalCloud('charter');
       await editCharter(storage);
       return;
     }
@@ -89,7 +89,7 @@ export async function charterCommand(options: CharterOptions = {}): Promise<void
     }
 
     // --no-ai: Interactive mode (requires authentication)
-    await requireAuth('charter');
+    await withOptionalCloud('charter');
     await createCharter(storage, options);
 
   } catch (error: any) {

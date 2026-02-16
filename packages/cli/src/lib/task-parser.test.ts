@@ -60,7 +60,7 @@ describe('parseTaskBlock', () => {
 
 **Status:** [x] Complete
 **Priority:** HIGH
-**Assignee:** chris@watchhill.ai
+**Assignee:** dev@example.com
 **Goal:** Create parser to extract task definitions from sprint markdown files
 
 **Acceptance Criteria:**
@@ -83,7 +83,7 @@ Related: ADR-060, ADR-052
     expect(result!.title).toBe('Task Parser for Sprint Markdown');
     expect(result!.estimate).toBe('4h');
     expect(result!.priority).toBe('HIGH');
-    expect(result!.assignee).toBe('chris@watchhill.ai');
+    expect(result!.assignee).toBe('dev@example.com');
     expect(result!.initial_status).toBe('complete');
     expect(result!.goal).toBe('Create parser to extract task definitions from sprint markdown files');
     expect(result!.acceptance_criteria).toHaveLength(3);

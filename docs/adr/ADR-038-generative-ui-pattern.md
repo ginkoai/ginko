@@ -113,7 +113,7 @@ Human: "1.2.0 - the new ship features offset the removal"
     }
   },
   "executed_by": "claude",
-  "authorized_by": "chris@watchhill.ai"
+  "authorized_by": "user@example.com"
 }
 ```
 

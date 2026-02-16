@@ -18,6 +18,7 @@ import { setUserCurrentSprint } from '../../lib/user-sprint.js';
 import { findSprintFileById } from '../../lib/sprint-loader.js';
 import { parseSprintFile, assessTaskContentQuality, type ParsedTask } from '../../lib/task-parser.js';
 import { getProjectRoot } from '../../utils/helpers.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 // =============================================================================
 // Helpers
@@ -204,6 +205,7 @@ async function startSprintCommand(
   sprintId: string,
   options: SprintStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('sprint start');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -280,6 +282,7 @@ async function completeSprintCommand(
   sprintId: string,
   options: SprintStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('sprint complete');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -315,6 +318,7 @@ async function pauseSprintCommand(
   sprintId: string,
   options: SprintStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('sprint pause');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 
@@ -342,6 +346,7 @@ async function showSprintCommand(
   sprintId: string,
   options: SprintStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('sprint show');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
 

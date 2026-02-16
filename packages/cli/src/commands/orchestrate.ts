@@ -45,6 +45,7 @@ import { AgentClient } from './agent/agent-client.js';
 import { GraphApiClient } from './graph/api-client.js';
 import { requireGinkoRoot } from '../utils/ginko-root.js';
 import { loadGraphConfig } from './graph/config.js';
+import { requireCloud } from '../utils/cloud-guard.js';
 import { loadSprintChecklist, SprintChecklist } from '../lib/sprint-loader.js';
 import {
   Task as DepTask,
@@ -150,6 +151,7 @@ const DEFAULT_MAX_RUNTIME_MINUTES = 60;
  * Run orchestrator agent
  */
 export async function orchestrateCommand(options: OrchestrateOptions = {}): Promise<void> {
+  await requireCloud('orchestrate');
   let state: OrchestratorState | null = null;
   let spinner: Ora | null = null;
   let isShuttingDown = false;

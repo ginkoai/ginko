@@ -13,6 +13,7 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import { GraphApiClient, QueryResult } from './api-client.js';
 import { loadGraphConfig, isGraphInitialized } from './config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface QueryOptions {
   limit?: number;
@@ -26,6 +27,7 @@ interface QueryOptions {
  * Perform semantic search on knowledge graph
  */
 export async function queryCommand(searchText: string, options: QueryOptions): Promise<void> {
+  await requireCloud('graph query');
   try {
     // Validate query
     if (!searchText || searchText.length < 3) {

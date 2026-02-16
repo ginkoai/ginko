@@ -150,4 +150,4 @@ packages/cli/
 - [Claude's Skills Framework Becomes Industry Standard - Unite.AI](https://www.unite.ai/claudes-skills-framework-quietly-becomes-an-industry-standard/)
 - [OpenAI Codex CLI Skills PR](https://github.com/openai/codex/pull/7412)
 - ADR-002: AI-Optimized File Discovery
-- Plan: `/Users/cnorton/.claude/plans/zippy-dancing-thunder.md`
+- Plan: `~/.claude/plans/your-plan-file.md`

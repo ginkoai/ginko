@@ -260,4 +260,4 @@ Architecture enables flexible monetization strategies:
 
 ## Authors
 - Claude Code Session  
-- Chris Norton (chris@ginko.ai)
+- Chris Norton (chris@ginkoai.com)

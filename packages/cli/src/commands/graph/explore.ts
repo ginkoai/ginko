@@ -12,6 +12,7 @@
 import chalk from 'chalk';
 import { GraphApiClient } from './api-client.js';
 import { loadGraphConfig, isGraphInitialized } from './config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface ExploreOptions {
   depth?: number;
@@ -21,6 +22,8 @@ interface ExploreOptions {
  * Explore document and its connections
  */
 export async function exploreCommand(documentId: string, options: ExploreOptions): Promise<void> {
+  await requireCloud('graph explore');
+
   try {
     // Check if graph is initialized
     if (!await isGraphInitialized()) {

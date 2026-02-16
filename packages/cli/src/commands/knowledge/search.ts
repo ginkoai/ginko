@@ -19,6 +19,7 @@ import chalk from 'chalk';
 import axios from 'axios';
 import { getConfig, getApiToken, getGraphId } from '../graph/config.js';
 import Table from 'cli-table3';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface SearchOptions {
   limit: number;
@@ -45,6 +46,7 @@ interface SearchResult {
  * Search knowledge nodes using semantic similarity
  */
 export async function searchCommand(query: string, options: SearchOptions): Promise<void> {
+  await requireCloud('knowledge search');
   try {
     console.log(chalk.dim(`🔍 Searching for: "${query}"\n`));
 

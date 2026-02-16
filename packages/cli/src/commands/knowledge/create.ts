@@ -20,6 +20,7 @@ import axios from 'axios';
 import prompts from 'prompts';
 import fs from 'fs/promises';
 import { getConfig, getApiToken } from '../graph/config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface CreateOptions {
   type: string;
@@ -36,6 +37,7 @@ const VALID_TYPES = ['ADR', 'PRD', 'ContextModule', 'Session', 'CodeFile'];
  * Create a new knowledge node
  */
 export async function createCommand(options: CreateOptions): Promise<void> {
+  await requireCloud('knowledge create');
   try {
     console.log(chalk.dim('📝 Creating new knowledge node\n'));
 

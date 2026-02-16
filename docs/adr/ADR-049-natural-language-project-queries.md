@@ -170,5 +170,5 @@ When users ask factual questions about the project, query available data sources
 
 ## References
 
-- [EPIC-003 Plan](/Users/cnorton/.claude/plans/zesty-painting-kite.md)
+- [EPIC-003 Plan](~/.claude/plans/your-plan-file.md)
 - [ai-instructions-template.ts](packages/cli/src/templates/ai-instructions-template.ts)

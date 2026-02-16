@@ -91,7 +91,7 @@ export async function shipCommand(message?: string, options: ShipOptions = {}) {
       execSync('git add -A');
       
       const commitMessage = message || 'Ship: Update changes';
-      const commitCmd = `git commit -m "${commitMessage}\n\n🚢 Shipped with Ginko CLI\n\nCo-Authored-By: Chris Norton <chris@watchhill.ai>"`;
+      const commitCmd = `git commit -m "${commitMessage}\n\n🚢 Shipped with Ginko CLI\n\nCo-Authored-By: Ginko AI <cli@ginkoai.com>"`;
 
       try {
         execSync(commitCmd, { stdio: 'pipe' });

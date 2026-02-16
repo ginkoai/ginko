@@ -15,6 +15,7 @@ import path from 'path';
 import { api } from '../utils/api-client.js';
 import { getGraphId } from './graph/config.js';
 import { getGinkoDir } from '../utils/helpers.js';
+import { requireCloud } from '../utils/cloud-guard.js';
 
 // =============================================================================
 // Types
@@ -151,6 +152,7 @@ export async function assignCommand(
   emailArg?: string,
   options: AssignOptions = {}
 ): Promise<void> {
+  await requireCloud('assign');
   const { sprint, all, updateMarkdown = true, verbose } = options;
 
   // Determine if we're in bulk mode (--sprint --all) or single task mode

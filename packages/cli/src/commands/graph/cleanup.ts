@@ -13,6 +13,7 @@ import chalk from 'chalk';
 import readline from 'readline';
 import { GraphApiClient, CleanupAnalysisResponse } from './api-client.js';
 import { loadGraphConfig, isGraphInitialized } from './config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface CleanupOptions {
   dryRun?: boolean;
@@ -265,6 +266,8 @@ async function runCleanup(
  * Main cleanup command handler
  */
 export async function cleanupCommand(options: CleanupOptions): Promise<void> {
+  await requireCloud('graph cleanup');
+
   try {
     // Check if graph is initialized
     if (!(await isGraphInitialized())) {

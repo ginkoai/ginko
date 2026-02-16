@@ -96,7 +96,7 @@ async function resolveProjectPath(relativePath: string): Promise<string> {
 
 // Usage
 const sprintPath = await resolveProjectPath(project.paths.currentSprint);
-// → /Users/cnorton/Development/ginko/docs/sprints/CURRENT-SPRINT.md
+// → /path/to/your/project/docs/sprints/CURRENT-SPRINT.md
 ```
 
 ## Architecture
@@ -110,7 +110,7 @@ Project Root
 │   ├── local.json (git-ignored)       ← User-specific paths
 │   ├── context/modules/               ← Team knowledge
 │   └── sessions/                      ← User-namespaced
-│       ├── xtophr-at-gmail-com/       ← User 1 (tracked)
+│       ├── dev-at-example-com/        ← User 1 (tracked)
 │       │   ├── current-session-log.md
 │       │   └── archive/
 │       └── alice-at-company-com/      ← User 2 (tracked)
@@ -169,9 +169,9 @@ Project Root
 
 ```json
 {
-  "projectRoot": "/Users/cnorton/Development/ginko",
-  "userEmail": "xtophr@gmail.com",
-  "userSlug": "xtophr-at-gmail-com",
+  "projectRoot": "/path/to/your/project",
+  "userEmail": "dev@example.com",
+  "userSlug": "dev-at-example-com",
   "workMode": "think-build",
   "lastSession": "2025-10-22T08-00-00-000Z"
 }
@@ -194,7 +194,7 @@ Impact: high
 **PRD**: PRD-009
 **ADR**: ADR-033, ADR-037
 **Status**: Complete
-**Assignee**: xtophr@gmail.com
+**Assignee**: dev@example.com
 
 Description: Session log was being reset before fresh AI could synthesize...
 ```

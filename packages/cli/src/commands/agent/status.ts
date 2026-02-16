@@ -26,6 +26,7 @@ import path from 'path';
 import { requireGinkoRoot } from '../../utils/ginko-root.js';
 import { AgentClient } from './agent-client.js';
 import { getAccessToken, isAuthenticated } from '../../utils/auth-storage.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface AgentConfig {
   agentId: string;
@@ -66,6 +67,7 @@ interface StatusOptions {
  * Enhanced agent status command (Sprint 2 TASK-6)
  */
 export async function statusAgentCommand(options: StatusOptions = {}): Promise<void> {
+  await requireCloud('agent status');
   const spinner = ora('Loading agent status...').start();
 
   try {

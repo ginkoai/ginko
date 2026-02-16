@@ -18,6 +18,7 @@
 import chalk from 'chalk';
 import axios from 'axios';
 import { getConfig, getApiToken } from '../graph/config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 interface GraphOptions {
   depth: number;
@@ -49,6 +50,7 @@ interface NodeGraph {
  * Visualize node and its relationship graph
  */
 export async function graphCommand(nodeId: string, options: GraphOptions): Promise<void> {
+  await requireCloud('knowledge graph');
   try {
     console.log(chalk.dim(`📊 Fetching graph for node: ${nodeId}\n`));
 

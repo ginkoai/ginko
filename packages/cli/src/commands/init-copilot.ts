@@ -145,7 +145,7 @@ Run \`ginko uninstall-copilot\` to remove all Copilot configurations
 - Updated .vscode/settings.json with Copilot settings  
 - Configured for optimal AI pair programming experience
 
-Co-Authored-By: Chris Norton <chris@watchhill.ai>"`, { stdio: 'pipe' });
+Co-Authored-By: Ginko AI <cli@ginkoai.com>"`, { stdio: 'pipe' });
           
           console.log(chalk.green('\n✓ Changes committed successfully'));
         } catch (e) {

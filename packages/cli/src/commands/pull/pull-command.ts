@@ -27,6 +27,7 @@ import chalk from 'chalk';
 import { syncCommand } from '../sync/sync-command.js';
 import { recordPull, readSyncState } from '../../lib/sync-state.js';
 import type { TeamSyncOptions, NodeType } from '../sync/types.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 export interface PullOptions {
   dryRun?: boolean;
@@ -61,6 +62,8 @@ function mapEntityType(entityType?: string): NodeType | undefined {
  * Main pull command implementation
  */
 export async function pullCommand(options: PullOptions): Promise<void> {
+  await requireCloud('pull');
+
   const quiet = !!options.quiet;
 
   if (!quiet) {

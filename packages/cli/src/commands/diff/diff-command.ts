@@ -26,6 +26,7 @@ import path from 'path';
 import { GraphApiClient } from '../graph/api-client.js';
 import { loadGraphConfig, isGraphInitialized } from '../graph/config.js';
 import { getProjectRoot } from '../../utils/helpers.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 export interface DiffOptions {
   /** Entity path in format "type/id" (e.g., "epic/EPIC-001") */
@@ -112,6 +113,8 @@ function computeDiff(localLines: string[], graphLines: string[]): string[] {
  * Main diff command implementation
  */
 export async function diffCommand(options: DiffOptions): Promise<void> {
+  await requireCloud('diff');
+
   // Parse entity path
   const parts = options.entityPath.split('/');
   if (parts.length < 2) {

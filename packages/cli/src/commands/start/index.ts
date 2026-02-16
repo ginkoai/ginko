@@ -10,15 +10,15 @@
  */
 
 import { StartReflectionCommand } from './start-reflection.js';
-import { requireAuth } from '../../utils/auth-storage.js';
+import { withOptionalCloud } from '../../utils/cloud-guard.js';
 
 /**
  * Start command router
  * Routes between AI-enhanced reflection and legacy implementations
  */
 export async function startCommand(options: any = {}) {
-  // Require authentication
-  await requireAuth('start');
+  // Check cloud availability (non-blocking — start works locally)
+  const cloud = await withOptionalCloud('start');
 
   // EPIC-004: Handle --no-realtime-cursor option
   // Commander sets realtimeCursor to false when --no-realtime-cursor is passed

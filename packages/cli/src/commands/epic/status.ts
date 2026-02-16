@@ -13,6 +13,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import { GraphApiClient, EpicStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
+import { requireCloud } from '../../utils/cloud-guard.js';
 
 // =============================================================================
 // Helpers
@@ -98,6 +99,7 @@ async function startEpicCommand(
   epicId: string,
   options: EpicStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('epic start');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
   const normalizedId = normalizeEpicId(epicId);
@@ -126,6 +128,7 @@ async function completeEpicCommand(
   epicId: string,
   options: EpicStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('epic complete');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
   const normalizedId = normalizeEpicId(epicId);
@@ -154,6 +157,7 @@ async function pauseEpicCommand(
   epicId: string,
   options: EpicStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('epic pause');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
   const normalizedId = normalizeEpicId(epicId);
@@ -182,6 +186,7 @@ async function showEpicCommand(
   epicId: string,
   options: EpicStatusOptions = {}
 ): Promise<void> {
+  await requireCloud('epic show');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();
   const normalizedId = normalizeEpicId(epicId);

@@ -21,7 +21,7 @@ import {
   DIMENSION_INFO,
   ContextQualityScore
 } from '../../lib/context-quality.js';
-import { requireAuth } from '../../utils/auth-storage.js';
+import { isAuthenticated } from '../../utils/auth-storage.js';
 
 interface ScoreOptions {
   direction?: string;
@@ -47,11 +47,9 @@ interface ScoreOptions {
  */
 export async function scoreCommand(scoreInput: string | undefined, options: ScoreOptions): Promise<void> {
   try {
-    // Require authentication for logging to graph (--no-log sets log: false)
-    const shouldLog = options.log !== false;
-    if (shouldLog) {
-      await requireAuth('context score');
-    }
+    // Check authentication for optional graph logging (--no-log sets log: false)
+    const authenticated = await isAuthenticated();
+    const shouldLog = options.log !== false && authenticated;
 
     let score: ContextQualityScore;
 

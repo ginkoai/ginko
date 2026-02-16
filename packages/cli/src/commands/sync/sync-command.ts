@@ -228,7 +228,7 @@ ${files.map((f) => `- ${f}`).join('\n')}
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-Co-Authored-By: Chris Norton <chris@watchhill.ai>`;
+Co-Authored-By: Ginko AI <cli@ginkoai.com>`;
 
     await git.commit(message);
     return true;

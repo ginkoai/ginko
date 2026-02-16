@@ -160,7 +160,7 @@ describe('Team Status Response Validation', () => {
       const response = {
         members: [
           {
-            email: 'chris@watchhill.ai',
+            email: 'dev@example.com',
             name: 'Chris',
             activeSprint: {
               id: 'e016_s03',

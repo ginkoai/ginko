@@ -103,9 +103,8 @@ async function getEventContext(): Promise<EventContext> {
     // Not in a git repo or git not available
   }
 
-  // Organization ID: extract from project path or use default
-  // Example: /Users/cnorton/Development/ginko -> "watchhill-ai"
-  const orgId = 'watchhill-ai'; // Can be enhanced to read from config
+  // Organization ID: read from config or use default
+  const orgId = 'local';
 
   // EPIC-004 Sprint 2 TASK-7: Get agent ID if registered
   const agentId = await getAgentId();
