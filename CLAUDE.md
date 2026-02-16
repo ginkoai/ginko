@@ -762,6 +762,7 @@ Ginko tracks adoption patterns to adjust coaching:
 | Creates epic | +2 |
 | Completes tracked task | +1 |
 | Uses quick-fix flow | +1 |
+| Runs `ginko health` | +1 |
 | 3+ consecutive ad-hoc sessions | reset |
 
 **Quieting Levels:**

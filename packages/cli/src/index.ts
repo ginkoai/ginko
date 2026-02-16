@@ -60,6 +60,7 @@ import { loginCommand } from './commands/login.js';
 import { logoutCommand } from './commands/logout.js';
 import { whoamiCommand } from './commands/whoami.js';
 import { handoffCommand } from './commands/handoff.js';
+import { healthCommand } from './commands/health.js';
 import { charterCommand, charterExamples } from './commands/charter.js';
 import { epicStatusCommand, epicExamples } from './commands/epic/index.js';
 import { verifyCommand } from './commands/verify.js';
@@ -136,6 +137,7 @@ program
   .option('--strategic', 'Use strategic context loading instead of event-based (fallback mode)')
   .option('--team', 'Include team events in context loading')
   .option('--no-realtime-cursor', 'Disable real-time cursor updates to cloud (EPIC-004)')
+  .option('--non-interactive', 'Skip interactive prompts (for AI partner sessions)')
   .action((sessionId, options) => startCommand({ sessionId, ...options }));
 
 program
@@ -143,6 +145,13 @@ program
   .description('Show current session status')
   .option('--all', 'Show all session cursors')
   .action(statusCommand);
+
+program
+  .command('health')
+  .description('Process adherence health check — review tracking, completion, sync, and session health')
+  .option('--fix', 'Guided remediation for identified gaps (coming soon)')
+  .option('--verbose', 'Show fix suggestions for all warnings')
+  .action((options) => healthCommand(options));
 
 program
   .command('insights')

@@ -45,6 +45,7 @@ export type AdoptionSignal =
   | 'used_quick_fix'       // Used quick-fix flow +1
   | 'chose_adhoc'          // Chose ad-hoc from menu +0
   | 'completed_task'       // Completed a tracked task +1
+  | 'ran_health_check'     // Used ginko health (EPIC-022) +1
   | 'adhoc_streak';        // 3+ consecutive ad-hoc: reset
 
 export type QuietingLevel = 'full' | 'light' | 'minimal';
@@ -74,6 +75,7 @@ const SIGNAL_POINTS: Record<AdoptionSignal, number> = {
   'used_quick_fix': 1,
   'chose_adhoc': 0,
   'completed_task': 1,
+  'ran_health_check': 1,
   'adhoc_streak': -999,  // Special: resets score
 };
 

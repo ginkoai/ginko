@@ -25,6 +25,7 @@ This document maintains the official registry of all Epics to ensure unique numb
 | [EPIC-018](EPIC-018-flow-state-optimization.md) | Flow State Optimization | Proposed | `EPIC-018-flow-state-optimization.md` |
 | [EPIC-020](EPIC-020-graph-authoritative-task-content.md) | Graph-Authoritative Tasks | Proposed | `EPIC-020-graph-authoritative-task-content.md` |
 | [EPIC-021](EPIC-021-open-source-release.md) | Prepare Ginko for Open-Source Release | Active | `EPIC-021-open-source-release.md` |
+| [EPIC-022](EPIC-022-health-check-adherence.md) | Health Check & Process Adherence | Active | `EPIC-022-health-check-adherence.md` |
 
 ## Maintenance Epics
 
@@ -39,7 +40,7 @@ Maintenance epics (ADR-059) are containers for ongoing operational work. They ar
 | Status | Count | Epics |
 |--------|-------|-------|
 | Complete | 6 | 001, 002, 004, 005, 006, 008 |
-| Active | 5 | 003, 009, 010, 015, 021 |
+| Active | 6 | 003, 009, 010, 015, 021, 022 |
 | Proposed | 7 | 011, 012, 013, 016, 017, 018, 020 |
 | Planned | 1 | 007 |
 

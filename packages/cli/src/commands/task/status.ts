@@ -225,6 +225,17 @@ export async function completeCommand(
 
     // ADR-077: Auto-push after status change
     await autoPush();
+
+    // EPIC-022: Health nudge at task completion
+    try {
+      const { runHealthChecks } = await import('../../lib/health-checker.js');
+      const health = await runHealthChecks();
+      if (health.adherence < 80) {
+        console.log(chalk.dim(`\n  Session adherence: ${health.adherence}% — run \`ginko health\` to review`));
+      }
+    } catch {
+      // Health check failure never blocks task completion
+    }
   } catch (error) {
     handleError('complete', taskId, error);
   }

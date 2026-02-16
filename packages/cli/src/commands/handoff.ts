@@ -106,6 +106,40 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       // Non-critical: push failure doesn't block handoff
     }
 
+    // 2c. EPIC-022: Health adherence summary before completing handoff
+    try {
+      spinner.stop();
+      const { runHealthChecks } = await import('../lib/health-checker.js');
+      const health = await runHealthChecks();
+
+      if (health.adherence < 60) {
+        // Expanded summary for poor adherence
+        console.log('');
+        console.log(chalk.yellow(`  Session adherence: ${health.adherence}% (${health.warnCount} warn, ${health.failCount} fail)`));
+        // Show top 3 gaps
+        const gaps: string[] = [];
+        for (const cat of health.categories) {
+          for (const item of cat.items) {
+            if ((item.status === 'fail' || item.status === 'warn') && gaps.length < 3) {
+              const icon = item.status === 'fail' ? chalk.red('✗') : chalk.yellow('⚠');
+              gaps.push(`    ${icon} ${item.label}: ${item.detail}`);
+            }
+          }
+        }
+        gaps.forEach(g => console.log(g));
+        console.log(chalk.dim('    Run `ginko health --fix` to remediate'));
+        console.log('');
+      } else if (health.adherence < 80) {
+        console.log(chalk.dim(`\n  Session adherence: ${health.adherence}% — run \`ginko health\` to review\n`));
+      } else {
+        console.log(chalk.green(`\n  Session adherence: ${health.adherence}% ✓\n`));
+      }
+
+      spinner.start();
+    } catch {
+      // Health check failure never blocks handoff
+    }
+
     // 3. Pause cursor and update position
     spinner.text = 'Updating cursor position...';
     const cursor = await pauseCurrentCursor({ finalEventId });
