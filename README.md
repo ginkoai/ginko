@@ -5,7 +5,7 @@
 <h1 align="center">Ginko</h1>
 
 <p align="center">
-  <strong>AI-native project management for developers who work with AI partners.</strong>
+  <strong>Human+AI Collaboration Engineering</strong>
 </p>
 
 <p align="center">
