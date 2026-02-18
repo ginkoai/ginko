@@ -92,11 +92,9 @@ export class ContextSearch {
       
       // Load additional metadata from module files if needed
       await this.enrichIndexWithModuleContent();
-    } catch (error: any) {
-      // Index doesn't exist yet — this is normal for new projects
-      if (error?.code !== 'ENOENT') {
-        console.warn('Context index error:', error);
-      }
+    } catch (error) {
+      // Index doesn't exist yet
+      console.warn('Context index error:', error);
     }
   }
   

@@ -237,26 +237,6 @@ Create ad-hoc tasks for:
 - Tasks: 2 digits (max 99 per sprint)
 
 **Soft limits:** Warn if sprint > 20 tasks or epic > 10 sprints.
-
-## Work Planning Commands
-
-When the user wants to plan work, **always use ginko CLI commands** to create local files:
-
-| Action | Command | Creates |
-|--------|---------|---------|
-| Create epic | \`ginko epic\` | \`docs/epics/EPIC-NNN-name.md\` + sprint files |
-| Create sprint | \`ginko sprint create\` | \`docs/sprints/SPRINT-*.md\` |
-| Quick fix | \`ginko sprint quick-fix "description"\` | Ad-hoc sprint with single task |
-| View charter | \`ginko charter --view\` | — |
-| Create charter | \`ginko charter\` | \`docs/PROJECT-CHARTER.md\` |
-
-**IMPORTANT:** Do NOT use internal task management (like TodoWrite) as a substitute for ginko commands. Ginko creates persistent local markdown files that survive across sessions and sync to the knowledge graph. Internal tools create ephemeral state that disappears when the session ends.
-
-**Epic creation flow:**
-1. Run \`ginko epic\` — this outputs a template for AI-mediated conversation
-2. Guide the user through goal, scope, and sprint breakdown
-3. The CLI creates \`docs/epics/EPIC-NNN-name.md\` and sprint files in \`docs/sprints/\`
-4. Run \`ginko push epic\` to sync to graph (if cloud is configured)
 `;
 
   private static readonly CONTEXT_REFLEXES = `
