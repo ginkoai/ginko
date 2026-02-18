@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/glob": "^8.1.0",
+    "@types/glob": "^9.0.0",
     "@types/jest": "^30.0.0",
     "@types/prompts": "^2.4.9",
     "@types/yaml-front-matter": "^4.1.3",
