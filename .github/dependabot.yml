@@ -1,0 +1,27 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/packages/cli"
+    schedule:
+      interval: "monthly"
+    groups:
+      production-minor-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "xtophr"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
