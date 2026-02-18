@@ -18,7 +18,7 @@ updates:
           - "patch"
     open-pull-requests-limit: 10
     reviewers:
-      - "xtophr"
+      - "ginko-chris"
 
   - package-ecosystem: "github-actions"
     directory: "/"
