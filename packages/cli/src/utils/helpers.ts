@@ -23,8 +23,15 @@ export async function getProjectRoot(): Promise<string> {
 }
 
 export async function getUserEmail(): Promise<string> {
-  // Ginko config is authoritative — it stores the identity set during init/login (BUG-021)
-  // This ensures init and start use the same user directory
+  try {
+    // Try git config first
+    const email = execSync('git config user.email', { encoding: 'utf8' }).trim();
+    if (email) return email;
+  } catch (e) {
+    // Git not configured
+  }
+  
+  // Try config file
   try {
     const ginkoDir = await getGinkoDir();
     const config = await fs.readJSON(path.join(ginkoDir, 'config.json'));
@@ -32,15 +39,7 @@ export async function getUserEmail(): Promise<string> {
   } catch (e) {
     // Config not found or invalid
   }
-
-  // Fall back to git config
-  try {
-    const email = execSync('git config user.email', { encoding: 'utf8' }).trim();
-    if (email) return email;
-  } catch (e) {
-    // Git not configured
-  }
-
+  
   return 'user@example.com';
 }
 

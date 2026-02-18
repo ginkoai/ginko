@@ -1,11 +1,11 @@
 <p align="center">
-  <!--img src="https://ginkoai.com/logo.svg" alt="Ginko" width="120" /-->
+  <img src="https://ginkoai.com/logo.svg" alt="Ginko" width="120" />
 </p>
 
 <h1 align="center">Ginko</h1>
 
 <p align="center">
-  <strong>Human+AI Collaboration Engineering</strong>
+  <strong>AI-native project management for developers who work with AI partners.</strong>
 </p>
 
 <p align="center">

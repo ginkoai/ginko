@@ -290,31 +290,6 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       console.warn(chalk.yellow('Skills error:', error instanceof Error ? error.message : String(error)));
     }
 
-    // Install Claude Code commands (slash commands like /handoff, /start, /vibecheck)
-    spinner.start('Installing AI commands...');
-    try {
-      const commandsDir = path.join(projectRoot, '.claude', 'commands');
-      await fs.ensureDir(commandsDir);
-
-      const templateCommandsDir = path.join(__dirname, '..', 'templates', 'commands');
-      const commandFiles = ['start.md', 'handoff.md', 'vibecheck.md', 'ship.md', 'quick.md'];
-
-      for (const file of commandFiles) {
-        const destPath = path.join(commandsDir, file);
-        if (!await fs.pathExists(destPath)) {
-          await fs.copy(
-            path.join(templateCommandsDir, file),
-            destPath
-          );
-        }
-      }
-
-      spinner.succeed('AI commands installed');
-    } catch (error) {
-      spinner.warn('AI commands installation failed');
-      console.warn(chalk.yellow('Commands error:', error instanceof Error ? error.message : String(error)));
-    }
-
     // Context rules
     spinner.start('Setting up context management...');
 
@@ -410,42 +385,9 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     // Final setup
     spinner.text = 'Completing setup...';
 
-    // Create initial session marker and bootstrap session files
-    const userSessionDir = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug);
-    const sessionMarker = pathManager.joinPaths(userSessionDir, '.session-start');
+    // Create initial session marker
+    const sessionMarker = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug, '.session-start');
     await fs.writeFile(sessionMarker, new Date().toISOString());
-
-    // Bootstrap empty session log so AI partners see active session infrastructure
-    const sessionLogPath = pathManager.joinPaths(userSessionDir, 'current-session-log.md');
-    if (!await fs.pathExists(sessionLogPath)) {
-      const sessionId = `session-${new Date().toISOString().replace(/[:.]/g, '-')}`;
-      const branch = (() => { try { return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim(); } catch { return 'main'; } })();
-      await fs.writeFile(sessionLogPath, `---
-session_id: ${sessionId}
-started: ${new Date().toISOString()}
-user: ${userEmail}
-branch: ${branch}
----
-
-# Session Log: ${sessionId}
-
-## Timeline
-
-## Key Decisions
-
-## Insights
-
-## Git Operations
-
-## Gotchas
-`);
-    }
-
-    // Bootstrap empty events file
-    const eventsPath = pathManager.joinPaths(userSessionDir, 'current-events.jsonl');
-    if (!await fs.pathExists(eventsPath)) {
-      await fs.writeFile(eventsPath, '');
-    }
 
     spinner.succeed('Ginko initialized successfully!');
 
@@ -556,29 +498,6 @@ async function upgradeProject(projectRoot: string, spinner: ReturnType<typeof or
     updated.push('.claude/skills/pull.md');
   } catch (error) {
     spinner.warn('AI skills update failed');
-    console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
-  }
-
-  // 3. Install/overwrite commands (slash commands)
-  spinner.start('Updating AI commands...');
-  try {
-    const commandsDir = path.join(projectRoot, '.claude', 'commands');
-    await fs.ensureDir(commandsDir);
-
-    const templateCommandsDir = path.join(__dirname, '..', 'templates', 'commands');
-    const commandFiles = ['start.md', 'handoff.md', 'vibecheck.md', 'ship.md', 'quick.md'];
-
-    for (const file of commandFiles) {
-      await fs.copy(
-        path.join(templateCommandsDir, file),
-        path.join(commandsDir, file)
-      );
-      updated.push(`.claude/commands/${file}`);
-    }
-
-    spinner.succeed('AI commands updated');
-  } catch (error) {
-    spinner.warn('AI commands update failed');
     console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
   }
 
