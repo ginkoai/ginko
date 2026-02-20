@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Composer - iykyg</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            color: #fff;
+            padding: 40px;
+        }
+
+        .workspace {
+            background: #0B0B0B;
+            border-radius: 12px;
+            padding: 60px 80px 180px 80px; /* extra bottom padding for g descender */
+            margin-bottom: 30px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .logo-container {
+            position: relative;
+            display: inline-flex;
+            align-items: baseline;
+            overflow: visible;
+        }
+
+        .letter {
+            font-family: 'JetBrains Mono', monospace;
+            font-style: italic;
+            font-weight: 700;
+            font-size: 200px;
+            line-height: 1.4; /* room for descender */
+            padding-bottom: 0.3em; /* extra space for g descender */
+            background: linear-gradient(
+                to bottom,
+                #FC9500 0%,
+                #FC9500 20%,
+                #FE4500 20%,
+                #FE4500 45%,
+                #E00256 45%,
+                #E00256 70%,
+                #A70086 70%,
+                #A70086 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .letter-y {
+            color: #d4d0c8;
+            -webkit-text-fill-color: #d4d0c8;
+            background: none;
+        }
+
+        .letter-g {
+            position: relative;
+        }
+
+        .leaf {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            /* Adjust these to position the leaf */
+            top: -20px;
+            left: -25px;
+            transform: rotate(-5deg);
+            /* Rainbow gradient with mask */
+            background: linear-gradient(
+                to bottom,
+                #FDC400 0%,
+                #FC9500 25%,
+                #FE4500 50%,
+                #E00256 75%,
+                #A70086 100%
+            );
+            -webkit-mask: url('../../assets/iykyg-leaf.svg') center/contain no-repeat;
+            mask: url('../../assets/iykyg-leaf.svg') center/contain no-repeat;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 800px;
+        }
+
+        .control-group {
+            background: #2a2a2a;
+            padding: 15px 20px;
+            border-radius: 8px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .control-group input[type="range"] {
+            width: 120px;
+        }
+
+        .control-group input[type="number"] {
+            width: 60px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .export-btn {
+            background: linear-gradient(to bottom, #FDC400, #A70086);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .export-btn:hover {
+            opacity: 0.9;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        /* For white background export */
+        .workspace.white-bg {
+            background: #FCFBF1;
+        }
+
+        .workspace.transparent-bg {
+            background: transparent;
+            background-image:
+                linear-gradient(45deg, #333 25%, transparent 25%),
+                linear-gradient(-45deg, #333 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #333 75%),
+                linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace" id="workspace">
+        <div class="logo-container">
+            <span class="letter letter-y">y</span>
+            <span class="letter letter-g">
+                <!-- Ginkgo Leaf with gradient mask -->
+                <div class="leaf" id="leaf"></div>
+                g
+            </span>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Leaf X</label>
+            <input type="range" id="leafX" min="-100" max="50" value="-25">
+            <input type="number" id="leafXVal" value="-25">
+        </div>
+        <div class="control-group">
+            <label>Leaf Y</label>
+            <input type="range" id="leafY" min="-100" max="50" value="-20">
+            <input type="number" id="leafYVal" value="-20">
+        </div>
+        <div class="control-group">
+            <label>Leaf Size</label>
+            <input type="range" id="leafSize" min="40" max="150" value="90">
+            <input type="number" id="leafSizeVal" value="90">
+        </div>
+        <div class="control-group">
+            <label>Leaf Rotation</label>
+            <input type="range" id="leafRotate" min="-45" max="45" value="-5">
+            <input type="number" id="leafRotateVal" value="-5">
+        </div>
+        <div class="control-group">
+            <label>Background</label>
+            <select id="bgSelect">
+                <option value="black">Black</option>
+                <option value="white">Cream</option>
+                <option value="transparent">Transparent</option>
+            </select>
+        </div>
+        <button class="export-btn" onclick="exportImage()">Screenshot to Export</button>
+    </div>
+
+    <p class="instructions">
+        Adjust the leaf position, then take a screenshot (Cmd+Shift+4) of the logo area.<br>
+        Or right-click the workspace and "Inspect" to export the SVG.
+    </p>
+
+    <script>
+        const leaf = document.getElementById('leaf');
+        const workspace = document.getElementById('workspace');
+
+        // Leaf X
+        document.getElementById('leafX').addEventListener('input', (e) => {
+            document.getElementById('leafXVal').value = e.target.value;
+            updateLeaf();
+        });
+        document.getElementById('leafXVal').addEventListener('input', (e) => {
+            document.getElementById('leafX').value = e.target.value;
+            updateLeaf();
+        });
+
+        // Leaf Y
+        document.getElementById('leafY').addEventListener('input', (e) => {
+            document.getElementById('leafYVal').value = e.target.value;
+            updateLeaf();
+        });
+        document.getElementById('leafYVal').addEventListener('input', (e) => {
+            document.getElementById('leafY').value = e.target.value;
+            updateLeaf();
+        });
+
+        // Leaf Size
+        document.getElementById('leafSize').addEventListener('input', (e) => {
+            document.getElementById('leafSizeVal').value = e.target.value;
+            updateLeaf();
+        });
+        document.getElementById('leafSizeVal').addEventListener('input', (e) => {
+            document.getElementById('leafSize').value = e.target.value;
+            updateLeaf();
+        });
+
+        // Leaf Rotation
+        document.getElementById('leafRotate').addEventListener('input', (e) => {
+            document.getElementById('leafRotateVal').value = e.target.value;
+            updateLeaf();
+        });
+        document.getElementById('leafRotateVal').addEventListener('input', (e) => {
+            document.getElementById('leafRotate').value = e.target.value;
+            updateLeaf();
+        });
+
+        // Background
+        document.getElementById('bgSelect').addEventListener('change', (e) => {
+            workspace.classList.remove('white-bg', 'transparent-bg');
+            if (e.target.value === 'white') {
+                workspace.classList.add('white-bg');
+            } else if (e.target.value === 'transparent') {
+                workspace.classList.add('transparent-bg');
+            }
+        });
+
+        function updateLeaf() {
+            const x = document.getElementById('leafX').value;
+            const y = document.getElementById('leafY').value;
+            const size = document.getElementById('leafSize').value;
+            const rotate = document.getElementById('leafRotate').value;
+
+            leaf.style.left = x + 'px';
+            leaf.style.top = y + 'px';
+            leaf.style.width = size + 'px';
+            leaf.style.transform = `rotate(${rotate}deg)`;
+        }
+
+        async function exportImage() {
+            // Use html2canvas for proper export
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+            script.onload = async () => {
+                const logoContainer = document.querySelector('.logo-container');
+
+                // Temporarily remove workspace background for transparent export
+                const bg = document.getElementById('bgSelect').value;
+                if (bg === 'transparent') {
+                    workspace.style.background = 'transparent';
+                }
+
+                const canvas = await html2canvas(logoContainer, {
+                    backgroundColor: bg === 'transparent' ? null : (bg === 'white' ? '#FCFBF1' : '#0B0B0B'),
+                    scale: 2, // Higher resolution
+                });
+
+                // Restore background
+                workspace.style.background = '';
+
+                // Download
+                const link = document.createElement('a');
+                link.download = 'yg-logo.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+</body>
+</html>
