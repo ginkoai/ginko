@@ -1,8 +1,8 @@
 /* ============================================================================
    GINKO MARKETING SITE - CSS
-   Design: Brass Hands aesthetic with industrial precision
-   Typography: JetBrains Mono + Inter
-   Colors: Neutral base with ginko green accent
+   Design: Sunset Retro aesthetic with rainbow gradients
+   Typography: Anton (headlines) + JetBrains Mono (body)
+   Colors: Cream base with burnt orange accent
    Themes: Light (default) + Dark mode
    ============================================================================ */
 
@@ -23,7 +23,8 @@
    ============================================================================ */
 
 :root {
-    /* Typography - JetBrains Mono only */
+    /* Typography - Anton for headlines, JetBrains Mono for body */
+    --font-display: 'Anton', 'Impact', sans-serif;
     --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     --font-sans: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 
@@ -44,22 +45,30 @@
     --font-weight-bold: 700;
     --font-weight-extrabold: 800;
 
-    /* Colors - Light Mode */
-    --color-bg: #BAC6A9;
-    --color-surface: #BAC6A9;
+    /* Colors - Light Mode (Sunset Rebrand) */
+    --color-bg: #FAF7F0;
+    --color-surface: #FAF7F0;
+    --color-surface-alt: #F4EEDD;
 
-    --color-surface-hover: #F5F5F5;
-    --color-text: #0A0A0A;
-    --color-text-secondary: #1c2222;
-    --color-text-tertiary: #121616;
-    --color-border: ##282f33;
-    --color-border-strong: ##091014;
+    --color-surface-hover: #F4EEDD;
+    --color-text: #0d0d0d;
+    --color-text-secondary: #333333;
+    --color-text-tertiary: #666666;
+    --color-border: #e0ddd6;
+    --color-border-strong: #0d0d0d;
 
-    /* Ginko Green Accent - Electric Lime */
-    --color-accent: #D0F549;
-    --color-accent-hover: #D0F549;
-    --color-accent-light: rgba(174, 255, 0, 0.15);
-    --color-accent-dark: #D0F549;
+    /* Sunset Rainbow Accent Colors */
+    --color-accent: #DC3B05;
+    --color-accent-hover: #c43504;
+    --color-accent-light: rgba(220, 59, 5, 0.15);
+    --color-accent-dark: #b32f04;
+
+    /* Rainbow Palette */
+    --color-yellow: #FAC003;
+    --color-orange: #FC9500;
+    --color-red: #EE4B0A;
+    --color-cherry: #D40F49;
+    --color-magenta: #9D087F;
 
     /* Semantic Colors */
     --color-success: #22C55E;
@@ -68,11 +77,11 @@
     --color-info: #3B82F6;
 
     /* Terminal/Code Colors */
-    --color-terminal-bg: #171717;
-    --color-terminal-text: #BAC6A9;
-    --color-terminal-prompt: #D0F549;
-    --color-terminal-comment: #121616;
-    --color-terminal-header: #1c2222;
+    --color-terminal-bg: #0d0d0d;
+    --color-terminal-text: #FAF7F0;
+    --color-terminal-prompt: #DC3B05;
+    --color-terminal-comment: #666666;
+    --color-terminal-header: #1a1a1a;
 
     /* Spacing (4px base system) */
     --space-1: 0.25rem;   /* 4px */
@@ -110,13 +119,13 @@
     --bracket-thickness: 3px;
 
     /* Button Colors */
-    --color-btn-primary-bg: #D0F549;
-    --color-btn-primary-text: #000000;
-    --color-btn-secondary-bg: #ffffff;
-    --color-btn-secondary-text: #000000;
-    --color-btn-cream-bg: #f6ffd6;
-    --color-btn-arrow-dark: #000000;
-    --color-btn-arrow-surface: #050A0F;
+    --color-btn-primary-bg: #DC3B05;
+    --color-btn-primary-text: #ffffff;
+    --color-btn-secondary-bg: #0d0d0d;
+    --color-btn-secondary-text: #FAF7F0;
+    --color-btn-cream-bg: #FAF7F0;
+    --color-btn-arrow-dark: #ffffff;
+    --color-btn-arrow-surface: #FAF7F0;
 }
 
 /* ============================================================================
@@ -124,34 +133,35 @@
    ============================================================================ */
 
 [data-theme="dark"] {
-    --color-bg: #151e28;
-    --color-surface: #151e28;
-    --color-surface-hover: #f6ffd6;
-    --color-text: #f6ffd6;
-    --color-text-secondary: #f6ffd6;
-    --color-text-tertiary: #CED6C2;
-    --color-border: #282f33;
-    --color-border-strong: #091014;
+    --color-bg: #0d0d0d;
+    --color-surface: #0d0d0d;
+    --color-surface-alt: #1a1a1a;
+    --color-surface-hover: #2a2a2a;
+    --color-text: #FAF7F0;
+    --color-text-secondary: #e0ddd6;
+    --color-text-tertiary: #999999;
+    --color-border: #333333;
+    --color-border-strong: #FAF7F0;
 
-    --color-accent: #D0F549;
-    --color-accent-hover: #addc00;
-    --color-accent-light: rgba(193, 245, 0, 0.15);
-    --color-accent-dark: #99c200;
+    --color-accent: #DC3B05;
+    --color-accent-hover: #ff4a0f;
+    --color-accent-light: rgba(220, 59, 5, 0.2);
+    --color-accent-dark: #b32f04;
 
-    --color-terminal-bg: #070a0d;
-    --color-terminal-header: ##0E141B;
-    --color-terminal-prompt: #D0F549;
+    --color-terminal-bg: #0a0a0a;
+    --color-terminal-header: #1a1a1a;
+    --color-terminal-prompt: #DC3B05;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
 
     /* Button Colors - Dark Mode */
-    --color-btn-primary-bg: #D0F549;
+    --color-btn-primary-bg: #DC3B05;
     --color-btn-primary-text: #000000;
-    --color-btn-secondary-bg: #f6ffd6;
+    --color-btn-secondary-bg: #FAF7F0;
     --color-btn-secondary-text: #050A0F;
-    --color-btn-cream-bg: #f6ffd6;
+    --color-btn-cream-bg: #FAF7F0;
     --color-btn-arrow-dark: #050A0F;
     --color-btn-arrow-surface: #050A0F;
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
@@ -181,10 +191,12 @@ body {
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-mono);
-    font-weight: var(--font-weight-bold);
-    line-height: 1.2;
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.1;
     color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 h1 { font-size: var(--font-size-6xl); }
@@ -196,10 +208,7 @@ h6 { font-size: var(--font-size-base); }
 
 p {
     margin-bottom: var(--space-4);
-    /* old
     color: var(--color-text-secondary);
-    */
-    color: #bac6a9;
 }
 
 a {
@@ -714,7 +723,7 @@ html:not([data-theme="dark"]) .theme-icon-dark {
 }
 
 .terminal-command {
-    color: #f6ffd6;
+    color: #FAF7F0;
 }
 
 .terminal-output {
@@ -1306,7 +1315,7 @@ pre {
 }
 
 .terminal-inline .terminal-command {
-    color: #f6ffd6;
+    color: #FAF7F0;
 }
 
 .terminal-inline-cta {
@@ -1356,7 +1365,7 @@ pre {
     justify-content: center;
     background: transparent;
     border: none;
-    color: #f6ffd6;
+    color: #FAF7F0;
     cursor: pointer;
     padding: var(--space-2);
     margin-left: var(--space-4);
@@ -1589,7 +1598,7 @@ pre {
 
 /* Secondary CTA - Cream with dark text */
 .btn-cta-secondary {
-    background-color: #f6ffd6;
+    background-color: #FAF7F0;
     color: #050A0F;
     border: none;
 }
@@ -1603,11 +1612,11 @@ pre {
 }
 
 .btn-cta-secondary .arrow-icon {
-    stroke: #f6ffd6;
+    stroke: #FAF7F0;
 }
 
 .btn-cta-secondary:hover {
-    background-color: #f6ffd6;
+    background-color: #FAF7F0;
 }
 
 .btn-cta-secondary:hover .btn-cta-text {
@@ -1848,7 +1857,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 /* Primary Hero Button - Lime green with black arrow box */
 .hero-cta .btn-hero-primary {
-    background-color: #D0F549 !important;
+    background-color: #DC3B05 !important;
     color: #000000 !important;
     border: none;
 }
@@ -1862,7 +1871,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .hero-cta .btn-hero-primary .arrow-icon {
-    stroke: #D0F549 !important;
+    stroke: #DC3B05 !important;
 }
 
 .hero-cta .btn-hero-primary:hover {
@@ -1872,7 +1881,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 /* Secondary Hero Button - White with green arrow box */
 .hero-cta .btn-hero-secondary {
-    background-color: #f6ffd6 !important;
+    background-color: #FAF7F0 !important;
     color: #050A0F !important;
     border: none;
 }
@@ -1886,11 +1895,11 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .hero-cta .btn-hero-secondary .arrow-icon {
-    stroke: #f6ffd6 !important;
+    stroke: #FAF7F0 !important;
 }
 
 .hero-cta .btn-hero-secondary:hover {
-    background-color: #f6ffd6 !important;
+    background-color: #FAF7F0 !important;
 }
 
 .hero-cta .btn-hero-secondary:hover .btn-hero-text {
@@ -1912,7 +1921,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     padding: 6px 6px 6px 16px;
     border-radius: 8px;
     height: 44px;
-    background-color: #D0F549;
+    background-color: #DC3B05;
     color: #000000;
     transition: all 0.3s ease-out;
     cursor: pointer;
@@ -1949,7 +1958,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     width: 16px;
     height: 16px;
     position: absolute;
-    stroke: #D0F549;
+    stroke: #DC3B05;
     transition: all 0.3s ease-out;
 }
 
@@ -2350,7 +2359,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: #D0F549;
+    color: #DC3B05;
     margin-bottom: var(--space-4);
     line-height: 1;
 }
@@ -2358,7 +2367,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .feature-icon svg {
     width: 2.5rem;
     height: 2.5rem;
-    stroke: #D0F549;
+    stroke: #DC3B05;
 }
 
 .feature-name {
@@ -2437,7 +2446,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .testimonial-quote-icon svg {
     width: 100%;
     height: 100%;
-    fill: #D0F549;
+    fill: #DC3B05;
 }
 
 .testimonial-text {
