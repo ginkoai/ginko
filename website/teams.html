@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Team context that scales</title>
+    <meta name="description" content="Team visibility, knowledge retention, and AI-assisted development that scales. Reduce onboarding time, eliminate knowledge silos.">
+    <meta name="theme-color" content="#FAF7F0">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="ginko-logo.svg" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" as="style">
+
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Google Analytics - deferred to not block rendering -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-6733RPZ8RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6733RPZ8RN');
+    </script>
+</head>
+<body class="page-teams">
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="ginko-logo.svg" alt="ginko" class="logo-image" width="120" height="40" loading="eager">
+            </a>
+            <div class="nav-menu">
+                <a href="developers.html" class="nav-link">Developers</a>
+                <a href="teams.html" class="nav-link nav-link-active">Teams</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="blog/index.html" class="nav-link">Blog</a>
+                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+                <a href="get-started.html" class="nav-link nav-link-cta">Get Started</a>
+            </div>
+            <div class="nav-actions">
+                <a href="get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
+                    <span class="btn-hero-text">GET STARTED</span>
+                    <span class="btn-hero-arrow btn-hero-arrow-dark">
+                        <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                        <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </span>
+                </a>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main id="main">
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Team context that scales.
+                </h1>
+                <p class="hero-subtitle" style="text-align: center; margin-left: auto; margin-right: auto;">
+                    Knowledge that stays with the team. Onboard faster, ship better, preserve institutional memory.
+                </p>
+                <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+                <div class="hero-cta" style="align-items: center; margin-bottom: 3rem;">
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="hero" data-hero-cta-primary>
+                        <span class="btn-hero-text">START PRO TRIAL</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="mailto:chris@watchhill.ai" class="btn-hero btn-hero-secondary" data-track-cta data-cta-location="hero" data-hero-cta-secondary>
+                        <span class="btn-hero-text">CONTACT SALES</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-accent">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Team Problem Section -->
+    <section class="teams-problem-section">
+        <div id="teams-problem-container" class="container">
+            <h2 class="section-title">The team context problem</h2>
+            <div class="transformation-grid">
+                <div class="transformation-card">
+                    <div class="transformation-label">KNOWLEDGE_SILOS</div>
+                    <p class="problem-description">
+                        Context trapped in individual AI sessions. When developers switch tools or take breaks, team knowledge vanishes.
+                    </p>
+                </div>
+
+                <div class="transformation-card">
+                    <div class="transformation-label">ONBOARDING_FRICTION</div>
+                    <p class="problem-description">
+                        New team members start from scratch. Hours spent explaining patterns, gotchas, and decisions already made.
+                    </p>
+                </div>
+
+                <div class="transformation-card">
+                    <div class="transformation-label">VISIBILITY_GAP</div>
+                    <p class="problem-description">
+                        Managers don't know what's happening. Daily standup becomes "what were you working on?" instead of "what's next?"
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- How Teams Use Ginko -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">How teams use ginko</h2>
+
+            <div class="solution-demo">
+                <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="terminal-title">terminal</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span> ginko start
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">✓</span> Session restored from 2025-12-02 14:20
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">→</span> Loaded 4 active sprint tasks
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">→</span> Team insights: @sarah fixed auth timeout issue
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">→</span> Team pattern applied: api-retry-strategy
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">!</span> Gotcha alert: avoid nested transactions (per @alex)
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            <span class="status-highlight">Ready</span> | <span class="status-flow">Hot (9/10)</span> | Team aware
+                        </div>
+                        <div class="terminal-line response">
+                            Resume: Building payment service API endpoints
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            Team activity: 3 members active, 12 events today
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            What would you like to work on?
+                        </div>
+                        <div class="terminal-line">
+                            <span class="prompt">$</span> <span class="typing-cursor">|</span>
+                        </div>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="solution-explanation">
+                    <p>
+                        <strong>ginko Pro</strong> synchronizes team events in real-time. When Sarah fixes a bug,
+                        the whole team learns. When Alex discovers a gotcha, it surfaces for everyone.
+                    </p>
+                    <p>
+                        Every developer starts their session with full team context: active sprint tasks,
+                        shared patterns, recent insights, and collective gotchas. No more repeated mistakes.
+                        No more "did anyone figure out X?"
+                    </p>
+                    <p>
+                        Async-friendly workflow means your team stays aligned without constant meetings.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Features Grid -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Team features</h2>
+            <div class="features-grid">
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">TEAM_EVENT_SYNC</div>
+                    <p class="feature-description">
+                        See what your team discovered today <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SHARED_PATTERNS</div>
+                    <p class="feature-description">
+                        Avoid repeated mistakes with collective learning <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SPRINT_INTEGRATION</div>
+                    <p class="feature-description">
+                        Automatic task awareness for every developer
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">HANDOFF_DOCS</div>
+                    <p class="feature-description">
+                        Structured knowledge transfer between sessions
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">CLOUD_BACKUP</div>
+                    <p class="feature-description">
+                        Never lose team context with automatic backups <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-enterprise">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">ADMIN_DASHBOARD</div>
+                    <p class="feature-description">
+                        Team oversight and analytics <span class="enterprise-badge">Enterprise</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ROI/Value Section -->
+    <section class="value">
+        <div class="container">
+            <h2 class="section-title">The team ROI</h2>
+            <div class="value-stats">
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">70%</div>
+                    <div class="stat-label">Faster context rebuilding</div>
+                    <p class="stat-description">
+                        From 10+ minutes re-explaining to instant context loading
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">3 days</div>
+                    <div class="stat-label">Reduced onboarding time</div>
+                    <p class="stat-description">
+                        New developers start with full team knowledge from day one
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Knowledge retention</div>
+                    <p class="stat-description">
+                        Institutional memory persists even when team members leave
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="stat-value">Zero</div>
+                    <div class="stat-label">Status meetings</div>
+                    <p class="stat-description">
+                        Async visibility eliminates "what were you working on?" meetings
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- How It Works for Teams -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How it works</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Install on each machine</h3>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                    <p class="step-description">
+                        Every developer installs the CLI. Works with Claude, Cursor, or any AI assistant.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="step-card step-card-featured">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Connect team events</h3>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="ginko login && ginko team connect">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko login && ginko team connect</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                    <p class="step-description">
+                        Authenticate and link your team. Events sync automatically. <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="step-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">See shared insights</h3>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="ginko start">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko start</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                    <p class="step-description">
+                        Every session loads with team context. Patterns, gotchas, sprint tasks — all there.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Testimonial -->
+    <section class="testimonial">
+        <div class="container">
+            <div class="testimonial-content">
+                <span class="testimonial-quote-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
+                    </svg>
+                </span>
+                <div class="testimonial-text">
+                    <blockquote class="testimonial-quote">
+                        Our new developer was productive on day one. The team context was already there — no need to explain everything twice.
+                    </blockquote>
+                    <cite class="testimonial-cite">ENGINEERING MANAGER, SERIES A STARTUP</cite>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-header">
+                        <h3 class="plan-name">Free</h3>
+                        <div class="plan-price">
+                            <span class="price">$0</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="feature-check">✓</span> 1 user, 1 project</li>
+                        <li><span class="feature-check">✓</span> Local context only</li>
+                        <li><span class="feature-check">✓</span> Git integration</li>
+                        <li><span class="feature-check">✓</span> Community support</li>
+                    </ul>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary btn-hero-full" data-track-cta data-cta-location="pricing-free">
+                        <span class="btn-hero-text">GET STARTED</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="pricing-card pricing-card-featured">
+                    <div class="plan-header">
+                        <h3 class="plan-name">Pro</h3>
+                        <div class="plan-price">
+                            <span class="price">$9</span>
+                            <span class="period">/user/mo</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="feature-check">✓</span> Unlimited users</li>
+                        <li><span class="feature-check">✓</span> Team context sync</li>
+                        <li><span class="feature-check">✓</span> Cloud backup</li>
+                        <li><span class="feature-check">✓</span> Team analytics</li>
+                        <li><span class="feature-check">✓</span> Email support</li>
+                    </ul>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary btn-hero-full" data-track-cta data-cta-location="pricing-pro">
+                        <span class="btn-hero-text">START PRO TRIAL</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="pricing-card">
+                    <div class="plan-header">
+                        <h3 class="plan-name">Enterprise</h3>
+                        <div class="plan-price">
+                            <span class="price">$29</span>
+                            <span class="period">/user/mo</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="feature-check">✓</span> SSO/SAML integration</li>
+                        <li><span class="feature-check">✓</span> Audit logging</li>
+                        <li><span class="feature-check">✓</span> On-premise deployment</li>
+                        <li><span class="feature-check">✓</span> Priority support & SLA</li>
+                    </ul>
+                    <a href="mailto:chris@watchhill.ai" class="btn-hero btn-hero-primary btn-hero-full" data-track-cta data-cta-location="pricing-enterprise">
+                        <span class="btn-hero-text">CONTACT SALES</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2 class="cta-title">Ready to scale your team's context?</h2>
+                <p class="cta-subtitle">Start with a 14-day free trial. No credit card required.</p>
+                <div class="cta-buttons">
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="final-cta">
+                        <span class="btn-hero-text">START PRO TRIAL</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="mailto:chris@watchhill.ai" class="btn-hero btn-hero-secondary btn-hero-cream" data-track-cta data-cta-location="final-cta">
+                        <span class="btn-hero-text">CONTACT SALES</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-surface">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    </main>
+
+    <div class="section-divider--inverted section-divider"></div>
+
+    <!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <a href="/" class="footer-logo">
+                    <img src="/ginko-logo.svg" alt="ginko" class="logo-image" height="48">
+                </a>
+                <p class="footer-tagline">Context that flows with you</p>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/developers.html">For Developers</a></li>
+                    <li><a href="/index.html#pricing">Pricing</a></li>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                    <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/teams.html">For Teams</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                    <li><a href="/privacy.html">Privacy</a></li>
+                    <li><a href="/terms.html">Terms</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                    <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                    <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy;2026 ginko. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-iykyg">
+        <img src="/iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
+    </div>
+</footer>
+
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="script.js"></script>
+</body>
+</html>

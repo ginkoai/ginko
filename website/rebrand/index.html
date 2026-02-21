@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ginko Rebrand - Pattern Library</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles/variables.css">
+  <link rel="stylesheet" href="styles/typography.css">
+  <link rel="stylesheet" href="styles/components.css">
+
+  <style>
+    /* Pattern Library Specific Styles */
+    .pattern-section {
+      padding: var(--space-12) 0;
+      border-bottom: 1px solid var(--border-muted);
+    }
+
+    .pattern-section:last-child {
+      border-bottom: none;
+    }
+
+    .pattern-title {
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: var(--font-semibold);
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-8);
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .color-swatch {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--space-2);
+      font-size: var(--text-xs);
+      border: 1px solid var(--border-muted);
+    }
+
+    .type-sample {
+      margin-bottom: var(--space-6);
+    }
+
+    .component-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      align-items: flex-start;
+      margin-bottom: var(--space-6);
+    }
+
+    .demo-box {
+      padding: var(--space-8);
+      background: var(--bg-muted);
+      border-radius: var(--radius-md);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header style="padding: var(--space-6); border-bottom: 1px solid var(--border-muted);">
+    <div class="container flex justify-between items-center">
+      <h1 class="h4" style="font-family: var(--font-heading); font-style: italic;">
+        <span class="text-gradient">ginko</span> Rebrand
+      </h1>
+      <div class="flex gap-4">
+        <button class="btn btn-ghost" onclick="toggleTheme()">Toggle Dark Mode</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Color Palette -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Color Palette — Sunset Gradient</h2>
+
+      <div class="color-grid">
+        <div class="color-swatch" style="background: var(--color-cream); color: var(--color-black);">
+          <span>Cream</span>
+          <span>#FCFBF1</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-yellow); color: var(--color-black);">
+          <span>Yellow</span>
+          <span>#FDC400</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-orange); color: var(--color-black);">
+          <span>Orange</span>
+          <span>#FC9500</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-red); color: var(--color-cream);">
+          <span>Red</span>
+          <span>#FE4500</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-violet); color: var(--color-cream);">
+          <span>Violet</span>
+          <span>#E00256</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-purple); color: var(--color-cream);">
+          <span>Purple</span>
+          <span>#A70086</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-purple-black); color: var(--color-cream);">
+          <span>Purple Black</span>
+          <span>#271D26</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-black); color: var(--color-cream);">
+          <span>Black</span>
+          <span>#0B0B0B</span>
+        </div>
+        <div class="color-swatch" style="background: var(--color-gray); color: var(--color-cream);">
+          <span>Gray</span>
+          <span>#615F61</span>
+        </div>
+      </div>
+
+      <h3 class="pattern-title mt-8">Sunset Stripe</h3>
+      <div class="sunset-stripe-thick" style="margin-bottom: var(--space-4);"></div>
+      <div class="sunset-stripe"></div>
+    </section>
+
+    <!-- Typography -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Typography</h2>
+
+      <div class="type-sample">
+        <p class="label mb-4">Display — Instrument Serif</p>
+        <h1 class="display-1">Context that compounds.</h1>
+      </div>
+
+      <div class="type-sample">
+        <p class="label mb-4">Headings — Instrument Serif</p>
+        <h1>H1: Meet your AI with a memory</h1>
+        <h2>H2: Back in flow in 30 seconds</h2>
+        <h3>H3: Git-native context management</h3>
+        <h4>H4: Simple, transparent pricing</h4>
+        <h5>H5: How ginko works</h5>
+        <h6>H6: Sound familiar?</h6>
+      </div>
+
+      <div class="type-sample">
+        <p class="label mb-4">Body — JetBrains Mono</p>
+        <p class="body-lg">Large body text for introductions and key points. Ginko transforms human intent into structured, reusable knowledge.</p>
+        <p class="body mt-4">Regular body text for paragraphs. It solves the "context rot" problem—when AI assistants forget everything between sessions—by capturing decisions, patterns, and session context.</p>
+        <p class="body-sm mt-4">Small body text for captions and secondary information. All data stored locally in .ginko/ directory.</p>
+      </div>
+
+      <div class="type-sample">
+        <p class="label mb-4">Special Treatments</p>
+        <p class="h2 text-gradient">Gradient Text Effect</p>
+        <p class="h2 text-striped mt-4">Striped Text (Logo Style)</p>
+        <p class="h3 mt-4"><span class="text-highlight">Highlighted text</span> for emphasis</p>
+      </div>
+    </section>
+
+    <!-- Buttons -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Buttons</h2>
+
+      <div class="component-row">
+        <button class="btn btn-primary">GET STARTED</button>
+        <button class="btn btn-secondary">VIEW DOCS</button>
+        <button class="btn btn-ghost">Learn More</button>
+      </div>
+
+      <div class="component-row">
+        <a href="#" class="btn btn-primary btn-with-arrow">
+          <span>GET STARTED</span>
+          <span class="btn-arrow">
+            <svg viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </span>
+        </a>
+        <a href="#" class="btn btn-secondary btn-with-arrow">
+          <span>VIEW DOCS</span>
+          <span class="btn-arrow">
+            <svg viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Terminal / Code Block -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Terminal / Code Block</h2>
+
+      <div class="terminal">
+        <span class="corner-tl"></span>
+        <span class="corner-tr"></span>
+        <span class="corner-bl"></span>
+        <span class="corner-br"></span>
+        <div class="terminal-line">
+          <span class="terminal-prompt">$</span>
+          <span class="terminal-command">npm install -g @ginkoai/cli</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Badges -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Badges & Tags</h2>
+
+      <div class="component-row">
+        <span class="badge">Default Badge</span>
+        <span class="badge badge-accent">NOW IN PUBLIC BETA</span>
+      </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Cards</h2>
+
+      <div class="component-row">
+        <div class="card" style="max-width: 320px;">
+          <h4 class="h5 mb-4">Free Plan</h4>
+          <p class="body-sm">Core CLI, local context, basic features.</p>
+          <p class="h3 mt-4">$0/mo</p>
+        </div>
+        <div class="card card-accent" style="max-width: 320px;">
+          <span class="badge" style="background: var(--color-black); color: var(--color-cream); margin-bottom: var(--space-4);">MOST POPULAR</span>
+          <h4 class="h5 mb-4">Pro Plan</h4>
+          <p class="body-sm">Dashboard, graph visualization, coaching.</p>
+          <p class="h3 mt-4">$9/mo</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dot Grid Background -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Dot Grid Background</h2>
+
+      <div class="demo-box bg-dots" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+        <p class="h4">Content with dot grid background</p>
+      </div>
+    </section>
+
+    <!-- Dividers -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Dividers</h2>
+
+      <p class="caption mb-4">Standard Divider</p>
+      <div class="divider"></div>
+
+      <p class="caption mb-4 mt-8">Sunset Stripe Divider</p>
+      <div class="divider-sunset"></div>
+
+      <p class="caption mb-4 mt-8">Halftone Transition</p>
+      <div class="divider-halftone"></div>
+    </section>
+
+    <!-- Section Patterns -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Section Backgrounds</h2>
+
+      <div class="section-cream" style="padding: var(--space-8); margin-bottom: var(--space-4);">
+        <p class="h5">Cream Section</p>
+        <p class="body-sm mt-2">Primary background for content-heavy areas.</p>
+      </div>
+
+      <div class="section-accent" style="padding: var(--space-8); margin-bottom: var(--space-4);">
+        <p class="h5">Accent Section (Page Color)</p>
+        <p class="body-sm mt-2">Uses the current page's accent color.</p>
+      </div>
+
+      <div class="section-dark" style="padding: var(--space-8);">
+        <p class="h5">Dark Section</p>
+        <p class="body-sm text-secondary mt-2">For contrast and emphasis.</p>
+      </div>
+    </section>
+
+    <!-- Footer Preview -->
+    <section class="pattern-section">
+      <h2 class="pattern-title">Footer Elements</h2>
+
+      <div class="footer" style="margin: 0 calc(-1 * var(--space-6)); padding: var(--space-8);">
+        <div class="container">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8);">
+            <!-- Tree Nav -->
+            <div class="footer-nav-tree">
+              <p class="nav-category">Resources /</p>
+              <a href="#" class="nav-item">Blog</a>
+              <a href="#" class="nav-item">Documentation</a>
+              <a href="#" class="nav-item">Changelog</a>
+            </div>
+
+            <!-- CTA Card -->
+            <div class="footer-cta-card">
+              <h4 class="h5 mb-4">Ready to stop re-explaining?</h4>
+              <p class="body-sm mb-4">Back in flow in 30 seconds.</p>
+              <a href="#" class="btn btn-primary btn-with-arrow">
+                <span>GET STARTED</span>
+                <span class="btn-arrow">
+                  <svg viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <!-- iykyg Logo -->
+          <div class="iykyg-logo">
+            <span class="iyky">iyky</span><span class="g">g</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      html.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+    }
+  </script>
+</body>
+</html>

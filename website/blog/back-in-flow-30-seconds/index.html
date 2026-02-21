@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6733RPZ8RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6733RPZ8RN');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back in Flow in 30 Seconds: The ginko start Experience - ginko blog</title>
+    <meta name="description" content="Starting a new coding session shouldn't mean starting from scratch. Learn how ginko gets you back into flow state in under 30 seconds.">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Back in Flow in 30 Seconds: The ginko start Experience">
+    <meta property="og:description" content="Starting a new coding session shouldn't mean starting from scratch. Learn how ginko gets you back into flow state in under 30 seconds.">
+    <meta property="og:url" content="https://ginkoai.com/blog/back-in-flow-30-seconds/">
+    <meta property="article:published_time" content="2025-12-17T00:00:00.000Z">
+    <meta property="article:author" content="Chris Norton">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="../../styles.css">
+
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#FAF7F0">
+
+    <!-- Blog-specific styles -->
+    <style>
+        /* Active nav link */
+        .nav-link-active {
+            color: var(--color-accent) !important;
+        }
+
+        /* Blog Post Typography */
+        .blog-post-content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 var(--space-6) var(--space-8);
+        }
+
+        .blog-post-content h1,
+        .blog-post-content h2,
+        .blog-post-content h3,
+        .blog-post-content h4 {
+            font-family: var(--font-mono);
+            margin-top: var(--space-10);
+            margin-bottom: var(--space-4);
+            line-height: 1.3;
+        }
+
+        .blog-post-content h1:first-child {
+            margin-top: 0;
+        }
+
+        .blog-post-content h1 { font-size: var(--font-size-4xl); }
+        .blog-post-content h2 { font-size: var(--font-size-3xl); }
+        .blog-post-content h3 { font-size: var(--font-size-2xl); }
+        .blog-post-content h4 { font-size: var(--font-size-xl); }
+
+        .blog-post-content p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-normal);
+            line-height: 1.8;
+            margin-bottom: var(--space-6);
+            color: var(--color-text);
+        }
+
+        .blog-post-content ul,
+        .blog-post-content ol {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-normal);
+            line-height: 1.8;
+            margin-bottom: var(--space-6);
+            padding-left: var(--space-8);
+            color: var(--color-text);
+        }
+
+        .blog-post-content li {
+            font-family: var(--font-mono);
+            font-weight: var(--font-weight-normal);
+            margin-bottom: var(--space-3);
+        }
+
+        .blog-post-content blockquote {
+            font-family: var(--font-mono);
+            border-left: 4px solid var(--color-accent);
+            padding-left: var(--space-6);
+            margin: var(--space-8) 0;
+            font-style: italic;
+            color: var(--color-text-secondary);
+        }
+
+        .blog-post-content code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            background-color: var(--color-terminal-bg);
+            color: var(--color-accent);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+        }
+
+        .blog-post-content pre {
+            margin: var(--space-8) 0;
+            overflow-x: auto;
+        }
+
+        .blog-post-content pre code {
+            background-color: transparent;
+            color: var(--color-terminal-text);
+            padding: 0;
+        }
+
+        .blog-post-content img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-lg);
+            margin: var(--space-8) 0;
+            border: 1px solid var(--color-border);
+        }
+
+        .blog-post-content a {
+            color: var(--color-accent);
+            text-decoration: underline;
+            transition: color var(--transition-fast);
+        }
+
+        .blog-post-content a:hover {
+            color: var(--color-accent-hover);
+        }
+
+        /* Post Navigation */
+        .post-navigation {
+            position: relative;
+            max-width: 720px;
+            margin: var(--space-16) auto;
+            padding: 0 var(--space-6);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+        }
+
+        .nav-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-6);
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .nav-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-card.nav-prev {
+            text-align: left;
+        }
+
+        .nav-card.nav-next {
+            text-align: right;
+        }
+
+        .nav-card.nav-empty {
+            visibility: hidden;
+        }
+
+        .nav-label {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--space-2);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .nav-arrow {
+            display: inline;
+        }
+
+        .nav-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+        }
+
+        /* Back to Blog - positioned top left of article column */
+        .back-to-blog-top {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: calc(80px + var(--space-6)) var(--space-6) var(--space-4);
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        /* Green headline */
+        .blog-post-content h1:first-child {
+            color: var(--color-accent);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        .back-link span:first-child {
+            display: inline;
+        }
+
+        .back-link:hover {
+            color: var(--color-accent);
+        }
+
+        /* Blog CTA + Navigation Table */
+        .blog-cta-table {
+            --card-bracket-size: 16px;
+            --card-bracket-thickness: 2px;
+            --card-bracket-color: var(--color-accent);
+            --card-border-color: rgba(255, 255, 255, 0.1);
+            --junction-size: 20px;
+
+            position: relative;
+            max-width: 720px;
+            margin: var(--space-12) auto var(--space-16);
+            padding: 0 var(--space-6);
+        }
+
+        .blog-cta-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            border: 1px solid var(--card-border-color);
+            position: relative;
+        }
+
+        /* Corner brackets for the table */
+        .blog-cta-table::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: -1px;
+            left: var(--space-6);
+            right: var(--space-6);
+            height: var(--card-bracket-size);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .blog-cta-table::after {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -1px;
+            left: var(--space-6);
+            right: var(--space-6);
+            height: var(--card-bracket-size);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Junction connectors */
+        .blog-cta-table .junction {
+            position: absolute;
+            width: var(--junction-size);
+            height: var(--junction-size);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* T-junction pointing right (left edge) */
+        .blog-cta-table .junction-t-right::before,
+        .blog-cta-table .junction-t-right::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .blog-cta-table .junction-t-right::before {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .blog-cta-table .junction-t-right::after {
+            height: var(--card-bracket-thickness);
+            width: 50%;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* T-junction pointing left (right edge) */
+        .blog-cta-table .junction-t-left::before,
+        .blog-cta-table .junction-t-left::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .blog-cta-table .junction-t-left::before {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .blog-cta-table .junction-t-left::after {
+            height: var(--card-bracket-thickness);
+            width: 50%;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .blog-cta-table .junction-left {
+            left: var(--space-6);
+            transform: translate(-50%, -50%);
+        }
+
+        .blog-cta-table .junction-right {
+            right: var(--space-6);
+            transform: translate(50%, -50%);
+        }
+
+        /* CTA content cell (now below nav) */
+        .blog-cta-content {
+            position: relative;
+            background: linear-gradient(135deg, var(--color-surface) 0%, #0a0a0a 100%);
+            padding: var(--space-10);
+            text-align: center;
+        }
+
+        .blog-cta-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            margin-bottom: var(--space-4);
+        }
+
+        .blog-cta-subtitle {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-style: italic;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-6);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .blog-cta-terminal {
+            margin-bottom: var(--space-6);
+        }
+
+        .blog-cta-buttons {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Navigation row - 2 columns */
+        .blog-nav-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            --junction-size: 20px;
+            --card-bracket-thickness: 2px;
+            --card-bracket-color: var(--color-accent);
+            --card-border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .blog-nav-cell {
+            position: relative;
+            background-color: var(--color-surface);
+            padding: var(--space-6);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition-fast);
+        }
+
+        .blog-nav-cell:first-child {
+            border-right: 1px solid var(--card-border-color);
+        }
+
+        .blog-nav-cell:hover {
+            background-color: rgba(174, 255, 0, 0.03);
+        }
+
+        .blog-nav-cell.nav-prev {
+            text-align: left;
+        }
+
+        .blog-nav-cell.nav-next {
+            text-align: right;
+        }
+
+        .blog-nav-cell.nav-empty {
+            pointer-events: none;
+        }
+
+
+        /* Edge junctions via pseudo-elements on nav row (at bottom edge, pointing down) */
+        .blog-nav-row::before,
+        .blog-nav-row::after {
+            content: '';
+            position: absolute;
+            width: var(--junction-size);
+            height: var(--junction-size);
+            bottom: 0;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Left edge T-junction (pointing right, at bottom) */
+        .blog-nav-row::before {
+            left: 0;
+            transform: translate(-50%, 50%);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 50% / 50% var(--card-bracket-thickness) no-repeat;
+        }
+
+        /* Right edge T-junction (pointing left, at bottom) */
+        .blog-nav-row::after {
+            right: 0;
+            transform: translate(50%, 50%);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 50% var(--card-bracket-thickness) no-repeat;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .blog-post-content {
+                padding: var(--space-6) var(--space-4);
+            }
+
+            .blog-post-content p,
+            .blog-post-content ul,
+            .blog-post-content ol {
+                font-size: var(--font-size-base);
+            }
+
+            .blog-post-content h1 {
+                font-size: var(--font-size-3xl);
+            }
+
+            .back-to-blog-top {
+                padding-top: calc(70px + var(--space-4));
+            }
+
+            .blog-cta-table {
+                padding: 0 var(--space-4);
+            }
+
+            .blog-cta-table::before,
+            .blog-cta-table::after {
+                left: var(--space-4);
+                right: var(--space-4);
+            }
+
+            .blog-cta-table .junction-left {
+                left: var(--space-4);
+            }
+
+            .blog-cta-table .junction-right {
+                right: var(--space-4);
+            }
+
+            .blog-cta-content {
+                padding: var(--space-6);
+            }
+
+            .blog-cta-title {
+                font-size: var(--font-size-xl);
+            }
+
+            .blog-cta-buttons {
+                flex-direction: column;
+            }
+
+            .blog-cta-buttons .btn-hero {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .blog-nav-row {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-nav-cell:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--card-border-color);
+            }
+
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <img src="../../ginko-logo.svg" alt="ginko" class="logo-image" width="120" height="40" loading="eager">
+            </a>
+            <div class="nav-menu">
+                <a href="../../developers.html" class="nav-link">Developers</a>
+                <a href="../../teams.html" class="nav-link">Teams</a>
+                <a href="../../how-it-works.html" class="nav-link">How It Works</a>
+                <a href="/blog/" class="nav-link nav-link-active">Blog</a>
+                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+            </div>
+            <div class="nav-actions">
+                <a href="../../get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
+                    <span class="btn-hero-text">GET STARTED</span>
+                    <span class="btn-hero-arrow btn-hero-arrow-dark">
+                        <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                        <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </span>
+                </a>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Back to Blog (top right) -->
+    <div class="back-to-blog-top">
+        <a href="/blog/" class="back-link">
+            <span>&lt;</span>
+            <span>BACK TO BLOG</span>
+        </a>
+    </div>
+
+    <!-- Blog Content -->
+    <article class="blog-post-content" id="main" data-post-slug="back-in-flow-30-seconds" data-post-title="Back in Flow in 30 Seconds: The ginko start Experience">
+        <h1>Back in Flow in 30 Seconds: The ginko start Experience</h1>
+<p>You know that feeling when you sit down to code and everything just <em>clicks</em>? Your mental model of the codebase is sharp, you remember exactly where you left off, and the next steps are crystal clear. That&#39;s flow state—and it&#39;s when developers do their best work.</p>
+<p>The problem? Getting into flow is hard. Getting <em>back</em> into flow after an interruption is even harder.</p>
+<p>Research suggests it takes 15-25 minutes to reach deep focus after a context switch. If you&#39;re switching between AI chat sessions, that time compounds. Every new session means rebuilding your mental model, re-explaining your codebase, and hoping your AI assistant catches up before you lose momentum.</p>
+<p>What if you could skip all that?</p>
+<h2>The 30-Second Session Start</h2>
+<p>Here&#39;s what happens when you run <code>ginko start</code>:</p>
+<pre><code>$ ginko start
+
+Ready | Hot (10/10) | Think &amp; Build mode
+Last session: Completed auth refactor, fixed token refresh bug
+Next up: TASK-4 - Add rate limiting to API endpoints (continue)
+
+Sprint: API Hardening 65%
+  Follow: ADR-002, ADR-015
+  Apply: retry-pattern ★, circuit-breaker ◐
+  Avoid: 💡 timeout-gotcha
+Branch: feature/rate-limiting (3 uncommitted files)
+</code></pre>
+<p>In under 30 seconds, you have:</p>
+<ul>
+<li><strong>Where you left off</strong>: Last session&#39;s accomplishments</li>
+<li><strong>What&#39;s next</strong>: The specific task to continue</li>
+<li><strong>Cognitive scaffolding</strong>: Patterns to apply, gotchas to avoid</li>
+<li><strong>Git context</strong>: Branch status and uncommitted work</li>
+</ul>
+<p>No re-explaining. No &quot;let me remind you about the architecture.&quot; Just instant context and a clear path forward.</p>
+<h2>How It Works</h2>
+<p>Ginko maintains a lightweight event stream that captures the meaningful moments of your development sessions:</p>
+<p><strong>Decisions you made</strong>: &quot;Chose JWT over sessions for stateless auth&quot;</p>
+<p><strong>Patterns you discovered</strong>: &quot;Retry with exponential backoff works well for flaky API&quot;</p>
+<p><strong>Gotchas you hit</strong>: &quot;Timer callbacks need .unref() or Node process hangs&quot;</p>
+<p><strong>Work completed</strong>: &quot;Finished auth middleware, all tests passing&quot;</p>
+<p>When you start a new session, ginko loads the relevant context—not everything, just what matters for your current work. It&#39;s like having a colleague who took perfect notes while you were away.</p>
+<h2>The Anatomy of a Session Start</h2>
+<p>Let&#39;s break down what you see:</p>
+<h3>Flow State Indicator</h3>
+<pre><code>Ready | Hot (10/10) | Think &amp; Build mode
+</code></pre>
+<p>The flow score reflects your session continuity. &quot;Hot&quot; means you&#39;re picking up where you left off with full context. &quot;Cold&quot; means it&#39;s been a while or you&#39;re starting something new.</p>
+<p>Work modes adapt the AI&#39;s behavior:</p>
+<ul>
+<li><strong>Hack &amp; Ship</strong>: Fast iteration, less ceremony</li>
+<li><strong>Think &amp; Build</strong>: Balanced approach (default)</li>
+<li><strong>Full Planning</strong>: Maximum rigor for complex work</li>
+</ul>
+<h3>Session Context</h3>
+<pre><code>Last session: Completed auth refactor, fixed token refresh bug
+Next up: TASK-4 - Add rate limiting to API endpoints (continue)
+</code></pre>
+<p>&quot;Last session&quot; tells you what you accomplished—useful for morning standups or just jogging your memory.</p>
+<p>&quot;Next up&quot; shows your current task from the sprint, with a hint about whether you&#39;re starting fresh or continuing work.</p>
+<h3>Cognitive Scaffolding</h3>
+<pre><code>Sprint: API Hardening 65%
+  Follow: ADR-002, ADR-015
+  Apply: retry-pattern ★, circuit-breaker ◐
+  Avoid: 💡 timeout-gotcha
+</code></pre>
+<p>This is where ginko shines for teams. Your sprint progress is visible at a glance. But more importantly:</p>
+<ul>
+<li><strong>Follow</strong>: Architecture decisions that apply to this task</li>
+<li><strong>Apply</strong>: Patterns from your codebase that work well here</li>
+<li><strong>Avoid</strong>: Gotchas your team has documented (so you don&#39;t repeat mistakes)</li>
+</ul>
+<p>The icons indicate confidence levels (★ high, ◐ medium, ○ low) and severity (🚨 critical, ⚠️ high, 💡 medium).</p>
+<h3>Git Context</h3>
+<pre><code>Branch: feature/rate-limiting (3 uncommitted files)
+</code></pre>
+<p>Simple but essential—you immediately know what branch you&#39;re on and whether you have work to commit.</p>
+<h2>Why This Matters</h2>
+<p>The traditional AI coding workflow looks like this:</p>
+<ol>
+<li>Open new chat session</li>
+<li>Paste context about your project</li>
+<li>Explain what you&#39;re working on</li>
+<li>Remind AI about previous decisions</li>
+<li>Finally start coding</li>
+<li>Repeat tomorrow</li>
+</ol>
+<p>With ginko, it&#39;s:</p>
+<ol>
+<li>Run <code>ginko start</code></li>
+<li>Start coding</li>
+</ol>
+<p>That&#39;s not a small difference. Over a week, those 15-20 minutes of context-loading per session add up to hours of lost productivity. Over a month? You&#39;re losing a full day of deep work just getting your AI assistant up to speed.</p>
+<h2>Beyond Individual Sessions</h2>
+<p>The real power emerges with teams. When your colleague runs <code>ginko start</code>, they see:</p>
+<ul>
+<li>Decisions you made while they were offline</li>
+<li>Patterns you discovered and documented</li>
+<li>Gotchas you hit (so they don&#39;t have to)</li>
+<li>The sprint context everyone shares</li>
+</ul>
+<p>It&#39;s like having a persistent team memory that surfaces exactly when needed.</p>
+<h2>Getting Started</h2>
+<pre><code class="language-bash"># Install ginko
+npm install -g @ginkoai/cli
+
+# Initialize in your project
+ginko init
+
+# Start your session
+ginko start
+</code></pre>
+<p>The first <code>ginko start</code> will be a cold start—you&#39;re building context from scratch. But from the second session onward, you&#39;ll feel the difference. Context persists. Flow returns faster. Your AI assistant actually remembers.</p>
+<hr>
+<p><em>Context rot is real, but it doesn&#39;t have to be permanent. If you&#39;re tired of re-explaining your codebase every session, <a href="https://ginkoai.com">try ginko</a> and get back to flow in 30 seconds.</em></p>
+
+    </article>
+
+    <!-- End-of-Post CTA + Navigation Table -->
+    <section class="blog-cta-table" aria-label="Call to action and post navigation">
+        <div class="blog-cta-grid">
+            <!-- Navigation Row (at top) -->
+            <nav class="blog-nav-row" aria-label="Post navigation">
+                
+                <a href="/blog/ai-development-without-chaos/" class="blog-nav-cell nav-prev" rel="prev">
+                    <span class="nav-label"><span class="nav-arrow">&lt;</span> PREVIOUS</span>
+                    <span class="nav-title">AI-Assisted Development Without the Chaos</span>
+                </a>
+                
+                <a href="/blog/why-ai-assistants-forget/" class="blog-nav-cell nav-next" rel="next">
+                    <span class="nav-label">NEXT <span class="nav-arrow">&gt;</span></span>
+                    <span class="nav-title">Why AI Assistants Forget Everything (And How to Fix It)</span>
+                </a>
+            </nav>
+
+            <!-- CTA Content Row -->
+            <div class="blog-cta-content">
+                <h3 class="blog-cta-title">STOP THE AMNESIA</h3>
+                <p class="blog-cta-subtitle"><span class="text-scramble" data-words='["iykyk", "you know the pain", "context is everything", "memory matters", "never forget again"]'>iykyk</span></p>
+                <div class="terminal-inline terminal-copyable blog-cta-terminal" data-copy="npm install -g @ginkoai/cli">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="blog-post">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                </div>
+                <div class="blog-cta-buttons">
+                    <a href="../../get-started.html" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="blog-post">
+                        <span class="btn-hero-text">GET STARTED</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="https://docs.ginko.ai" class="btn-hero btn-hero-outline" data-track-docs data-link-location="blog-post">
+                        <span class="btn-hero-text">READ THE DOCS</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-accent">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <a href="/" class="footer-logo">
+                    <img src="/ginko-logo.svg" alt="ginko" class="logo-image" height="48">
+                </a>
+                <p class="footer-tagline">Context that flows with you</p>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/developers.html">For Developers</a></li>
+                    <li><a href="/index.html#pricing">Pricing</a></li>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                    <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/teams.html">For Teams</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                    <li><a href="/privacy.html">Privacy</a></li>
+                    <li><a href="/terms.html">Terms</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                    <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                    <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy;2026 ginko. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-iykyg">
+        <img src="/iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
+    </div>
+</footer>
+
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="../../script.js"></script>
+    <script src="../../js/analytics.js"></script>
+</body>
+</html>

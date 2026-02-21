@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - For Developers</title>
+    <meta name="description" content="Stay in flow. Ship faster. AI collaboration without context loss. Back in flow in 30 seconds.">
+    <meta name="theme-color" content="#FAF7F0">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="ginko-logo.svg" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" as="style">
+
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Google Analytics - deferred to not block rendering -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-6733RPZ8RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6733RPZ8RN');
+    </script>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="ginko-logo.svg" alt="ginko" class="logo-image" width="120" height="40" loading="eager">
+            </a>
+            <div class="nav-menu">
+                <a href="developers.html" class="nav-link nav-link-active">Developers</a>
+                <a href="teams.html" class="nav-link">Teams</a>
+                <a href="how-it-works.html" class="nav-link">How It Works</a>
+                <a href="blog/index.html" class="nav-link">Blog</a>
+                <a href="https://docs.ginko.ai" class="nav-link">Docs</a>
+                <a href="get-started.html" class="nav-link nav-link-cta">Get Started</a>
+            </div>
+            <div class="nav-actions">
+                <a href="get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
+                    <span class="btn-hero-text">GET STARTED</span>
+                    <span class="btn-hero-arrow btn-hero-arrow-dark">
+                        <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                        <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </span>
+                </a>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section - Z-Pattern Layout -->
+    <main id="main">
+    <section class="hero" style="padding-top: 80px;">
+        <div class="container">
+            <div class="hero-grid">
+                <!-- Left Column: Text Content -->
+                <div class="hero-text">
+                    <span class="hero-badge">NOW IN PUBLIC BETA</span>
+                    <h1 class="hero-title" data-hero-title>
+                        Stop re-explaining your codebase to AI.
+                    </h1>
+                    <p class="hero-subtitle" data-hero-subtitle>
+                        Ginko keeps context in the collaboration graph. Resume in 30 seconds with your project, decisions, and patterns intact.
+                    </p>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="hero">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                    <div class="hero-cta">
+                        <a href="get-started.html" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="hero" data-hero-cta-primary>
+                            <span class="btn-hero-text">INSTALL CLI</span>
+                            <span class="btn-hero-arrow btn-hero-arrow-dark">
+                                <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                                </svg>
+                                <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                                </svg>
+                            </span>
+                        </a>
+                        <a href="https://docs.ginko.ai" class="btn-hero btn-hero-secondary" data-track-docs data-link-location="hero" data-hero-cta-secondary>
+                            <span class="btn-hero-text">VIEW DOCS</span>
+                            <span class="btn-hero-arrow btn-hero-arrow-accent">
+                                <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                                </svg>
+                                <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                                </svg>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Right Column: Context Graph Visual -->
+                <div class="hero-visual">
+                    <div class="context-graph">
+                        <svg viewBox="0 0 400 400" class="graph-svg">
+                            <!-- Connection lines -->
+                            <g class="graph-connections">
+                                <line x1="200" y1="200" x2="120" y2="100" class="graph-line graph-line-1"/>
+                                <line x1="200" y1="200" x2="300" y2="120" class="graph-line graph-line-2"/>
+                                <line x1="200" y1="200" x2="320" y2="220" class="graph-line graph-line-3"/>
+                                <line x1="200" y1="200" x2="280" y2="320" class="graph-line graph-line-4"/>
+                                <line x1="200" y1="200" x2="100" y2="280" class="graph-line graph-line-5"/>
+                                <line x1="200" y1="200" x2="80" y2="180" class="graph-line graph-line-6"/>
+                                <!-- Cross connections -->
+                                <line x1="120" y1="100" x2="300" y2="120" class="graph-line graph-line-cross-1"/>
+                                <line x1="300" y1="120" x2="320" y2="220" class="graph-line graph-line-cross-2"/>
+                                <line x1="280" y1="320" x2="100" y2="280" class="graph-line graph-line-cross-3"/>
+                                <line x1="80" y1="180" x2="120" y2="100" class="graph-line graph-line-cross-4"/>
+                            </g>
+                            <!-- Outer nodes -->
+                            <g class="graph-nodes">
+                                <g class="graph-node graph-node-1">
+                                    <circle cx="120" cy="100" r="28" class="node-bg"/>
+                                    <circle cx="120" cy="100" r="28" class="node-ring"/>
+                                    <text x="120" y="105" class="node-label">ADRs</text>
+                                </g>
+                                <g class="graph-node graph-node-2">
+                                    <circle cx="300" cy="120" r="38" class="node-bg"/>
+                                    <circle cx="300" cy="120" r="38" class="node-ring"/>
+                                    <text x="300" y="125" class="node-label">patterns</text>
+                                </g>
+                                <g class="graph-node graph-node-3">
+                                    <circle cx="320" cy="220" r="26" class="node-bg"/>
+                                    <circle cx="320" cy="220" r="26" class="node-ring"/>
+                                    <text x="320" y="225" class="node-label">tasks</text>
+                                </g>
+                                <g class="graph-node graph-node-4">
+                                    <circle cx="280" cy="320" r="38" class="node-bg"/>
+                                    <circle cx="280" cy="320" r="38" class="node-ring"/>
+                                    <text x="280" y="325" class="node-label">sessions</text>
+                                </g>
+                                <g class="graph-node graph-node-5">
+                                    <circle cx="100" cy="280" r="24" class="node-bg"/>
+                                    <circle cx="100" cy="280" r="24" class="node-ring"/>
+                                    <text x="100" y="285" class="node-label">files</text>
+                                </g>
+                                <g class="graph-node graph-node-6">
+                                    <circle cx="80" cy="180" r="36" class="node-bg"/>
+                                    <circle cx="80" cy="180" r="36" class="node-ring"/>
+                                    <text x="80" y="185" class="node-label">gotchas</text>
+                                </g>
+                            </g>
+                            <!-- Center node (ginko) -->
+                            <g class="graph-node graph-node-center">
+                                <circle cx="200" cy="200" r="50" class="node-bg node-bg-center"/>
+                                <circle cx="200" cy="200" r="50" class="node-ring node-ring-center"/>
+                                <circle cx="200" cy="200" r="56" class="node-glow"/>
+                                <text x="200" y="195" class="node-label node-label-center">context</text>
+                                <text x="200" y="215" class="node-sublabel">graph</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Proof Logo Row -->
+            <div class="logo-marquee">
+                <div class="logo-marquee-fade logo-marquee-fade-left"></div>
+                <div class="logo-marquee-fade logo-marquee-fade-right"></div>
+                <div class="logo-marquee-track">
+                    <!-- First set -->
+                    <span class="logo-marquee-item" title="Anthropic">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Cursor">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="GitHub">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Vercel">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="m12 1.608 12 20.784H0Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Neo4j">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9.629 13.227c-.593 0-1.139.2-1.58.533l-2.892-1.976a2.61 2.61 0 0 0 .101-.711 2.633 2.633 0 0 0-2.629-2.629A2.632 2.632 0 0 0 0 11.073a2.632 2.632 0 0 0 2.629 2.629c.593 0 1.139-.2 1.579-.533L7.1 15.145c-.063.226-.1.465-.1.711 0 .247.037.484.1.711l-2.892 1.976a2.608 2.608 0 0 0-1.579-.533A2.632 2.632 0 0 0 0 20.639a2.632 2.632 0 0 0 2.629 2.629 2.632 2.632 0 0 0 2.629-2.629c0-.247-.037-.485-.101-.711l2.892-1.976c.441.333.987.533 1.58.533a2.633 2.633 0 0 0 2.629-2.629c0-1.45-1.18-2.629-2.629-2.629ZM16.112.732c-4.72 0-7.888 2.748-7.888 8.082v3.802a3.525 3.525 0 0 1 3.071.008v-3.81c0-3.459 1.907-5.237 4.817-5.237s4.817 1.778 4.817 5.237v8.309H24V8.814C24 3.448 20.832.732 16.112.732Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="TypeScript">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Next.js">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Supabase">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
+                    </span>
+                    <!-- Duplicate set for seamless loop -->
+                    <span class="logo-marquee-item" title="Anthropic">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Cursor">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="GitHub">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Vercel">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="m12 1.608 12 20.784H0Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Neo4j">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9.629 13.227c-.593 0-1.139.2-1.58.533l-2.892-1.976a2.61 2.61 0 0 0 .101-.711 2.633 2.633 0 0 0-2.629-2.629A2.632 2.632 0 0 0 0 11.073a2.632 2.632 0 0 0 2.629 2.629c.593 0 1.139-.2 1.579-.533L7.1 15.145c-.063.226-.1.465-.1.711 0 .247.037.484.1.711l-2.892 1.976a2.608 2.608 0 0 0-1.579-.533A2.632 2.632 0 0 0 0 20.639a2.632 2.632 0 0 0 2.629 2.629 2.632 2.632 0 0 0 2.629-2.629c0-.247-.037-.485-.101-.711l2.892-1.976c.441.333.987.533 1.58.533a2.633 2.633 0 0 0 2.629-2.629c0-1.45-1.18-2.629-2.629-2.629ZM16.112.732c-4.72 0-7.888 2.748-7.888 8.082v3.802a3.525 3.525 0 0 1 3.071.008v-3.81c0-3.459 1.907-5.237 4.817-5.237s4.817 1.778 4.817 5.237v8.309H24V8.814C24 3.448 20.832.732 16.112.732Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="TypeScript">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Next.js">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Supabase">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
+                    </span>
+                    <!-- Third set -->
+                    <span class="logo-marquee-item" title="Anthropic">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Cursor">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="GitHub">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Vercel">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="m12 1.608 12 20.784H0Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Neo4j">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9.629 13.227c-.593 0-1.139.2-1.58.533l-2.892-1.976a2.61 2.61 0 0 0 .101-.711 2.633 2.633 0 0 0-2.629-2.629A2.632 2.632 0 0 0 0 11.073a2.632 2.632 0 0 0 2.629 2.629c.593 0 1.139-.2 1.579-.533L7.1 15.145c-.063.226-.1.465-.1.711 0 .247.037.484.1.711l-2.892 1.976a2.608 2.608 0 0 0-1.579-.533A2.632 2.632 0 0 0 0 20.639a2.632 2.632 0 0 0 2.629 2.629 2.632 2.632 0 0 0 2.629-2.629c0-.247-.037-.485-.101-.711l2.892-1.976c.441.333.987.533 1.58.533a2.633 2.633 0 0 0 2.629-2.629c0-1.45-1.18-2.629-2.629-2.629ZM16.112.732c-4.72 0-7.888 2.748-7.888 8.082v3.802a3.525 3.525 0 0 1 3.071.008v-3.81c0-3.459 1.907-5.237 4.817-5.237s4.817 1.778 4.817 5.237v8.309H24V8.814C24 3.448 20.832.732 16.112.732Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="TypeScript">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Next.js">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Supabase">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
+                    </span>
+                    <!-- Fourth set -->
+                    <span class="logo-marquee-item" title="Anthropic">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Cursor">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="GitHub">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Vercel">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="m12 1.608 12 20.784H0Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Neo4j">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M9.629 13.227c-.593 0-1.139.2-1.58.533l-2.892-1.976a2.61 2.61 0 0 0 .101-.711 2.633 2.633 0 0 0-2.629-2.629A2.632 2.632 0 0 0 0 11.073a2.632 2.632 0 0 0 2.629 2.629c.593 0 1.139-.2 1.579-.533L7.1 15.145c-.063.226-.1.465-.1.711 0 .247.037.484.1.711l-2.892 1.976a2.608 2.608 0 0 0-1.579-.533A2.632 2.632 0 0 0 0 20.639a2.632 2.632 0 0 0 2.629 2.629 2.632 2.632 0 0 0 2.629-2.629c0-.247-.037-.485-.101-.711l2.892-1.976c.441.333.987.533 1.58.533a2.633 2.633 0 0 0 2.629-2.629c0-1.45-1.18-2.629-2.629-2.629ZM16.112.732c-4.72 0-7.888 2.748-7.888 8.082v3.802a3.525 3.525 0 0 1 3.071.008v-3.81c0-3.459 1.907-5.237 4.817-5.237s4.817 1.778 4.817 5.237v8.309H24V8.814C24 3.448 20.832.732 16.112.732Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="TypeScript">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M1.125 0C.502 0 0 .502 0 1.125v21.75C0 23.498.502 24 1.125 24h21.75c.623 0 1.125-.502 1.125-1.125V1.125C24 .502 23.498 0 22.875 0zm17.363 9.75c.612 0 1.154.037 1.627.111a6.38 6.38 0 0 1 1.306.34v2.458a3.95 3.95 0 0 0-.643-.361 5.093 5.093 0 0 0-.717-.26 5.453 5.453 0 0 0-1.426-.2c-.3 0-.573.028-.819.086a2.1 2.1 0 0 0-.623.242c-.17.104-.3.229-.393.374a.888.888 0 0 0-.14.49c0 .196.053.373.156.529.104.156.252.304.443.444s.423.276.696.41c.273.135.582.274.926.416.47.197.892.407 1.266.628.374.222.695.473.963.753.268.279.472.598.614.957.142.359.214.776.214 1.253 0 .657-.125 1.21-.373 1.656a3.033 3.033 0 0 1-1.012 1.085 4.38 4.38 0 0 1-1.487.596c-.566.12-1.163.18-1.79.18a9.916 9.916 0 0 1-1.84-.164 5.544 5.544 0 0 1-1.512-.493v-2.63a5.033 5.033 0 0 0 3.237 1.2c.333 0 .624-.03.872-.09.249-.06.456-.144.623-.25.166-.108.29-.234.373-.38a1.023 1.023 0 0 0-.074-1.089 2.12 2.12 0 0 0-.537-.5 5.597 5.597 0 0 0-.807-.444 27.72 27.72 0 0 0-1.007-.436c-.918-.383-1.602-.852-2.053-1.405-.45-.553-.676-1.222-.676-2.005 0-.614.123-1.141.369-1.582.246-.441.58-.804 1.004-1.089a4.494 4.494 0 0 1 1.47-.629 7.536 7.536 0 0 1 1.77-.201zm-15.113.188h9.563v2.166H9.506v9.646H6.789v-9.646H3.375z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Next.js">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M18.665 21.978C16.758 23.255 14.465 24 12 24 5.377 24 0 18.623 0 12S5.377 0 12 0s12 5.377 12 12c0 3.583-1.574 6.801-4.067 9.001L9.219 7.2H7.2v9.596h1.615V9.251l9.85 12.727Zm-3.332-8.533 1.6 2.061V7.2h-1.6v6.245Z"/></svg>
+                    </span>
+                    <span class="logo-marquee-item" title="Supabase">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9 1.036c-.015-.986-1.26-1.41-1.874-.637L.764 12.05C-.33 13.427.65 15.455 2.409 15.455h9.579l.113 7.51c.014.985 1.259 1.408 1.873.636l9.262-11.653c1.093-1.375.113-3.403-1.645-3.403h-9.642z"/></svg>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Problem Section -->
+    <section class="problem">
+        <div class="container">
+            <h2 class="section-title">The developer productivity killer</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">CONTEXT_ROT</div>
+                    <p class="problem-description">
+                        AI loses effectiveness over long conversations. By message 50, it forgets critical decisions and starts contradicting earlier work.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">HANDOFF_HELL</div>
+                    <p class="problem-description">
+                        Starting fresh sessions = 10+ minutes re-explaining your project, architecture, and current goals. Flow destroyed.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">FLOW_DISRUPTION</div>
+                    <p class="problem-description">
+                        Constant re-explaining kills productivity. You spend more time managing AI than shipping code.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="solution">
+        <div class="container">
+            <h2 class="section-title">How ginko works</h2>
+
+            <div class="solution-demo">
+                <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="terminal-title">terminal</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span> ginko start
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">✓</span> Session restored from 2025-12-02 16:34
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">→</span> Loaded 147 events from last session
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">→</span> Sprint: 5/12 tasks complete (42%)
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">→</span> Found 3 relevant patterns: auth-flow, error-handling, api-design
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="status-icon">⚠</span> 1 gotcha applies: JWT refresh token edge case
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            <span class="status-highlight">Ready</span> | <span class="status-flow">Hot (8/10)</span> | Think & Build mode
+                        </div>
+                        <div class="terminal-line response">
+                            Resume: Implementing JWT refresh flow with Redis
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            19 uncommitted files, 2 commits ahead of origin
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            What would you like to work on?
+                        </div>
+                        <div class="terminal-line terminal-input-line" tabindex="0">
+                            <span class="prompt">$</span> <span class="typing-cursor"></span>
+                        </div>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="solution-explanation">
+                    <h3>Git-native context management</h3>
+                    <p>
+                        <strong>ginko</strong> captures your development state automatically and stores it alongside your code.
+                        Session logs, sprint progress, patterns, and gotchas are versioned with git.
+                    </p>
+                    <p>
+                        When you start a new session, your AI assistant has immediate context about:
+                    </p>
+                    <ul>
+                        <li>What you were working on</li>
+                        <li>Decisions you've made</li>
+                        <li>Patterns that work in your codebase</li>
+                        <li>Gotchas to avoid</li>
+                        <li>Current sprint progress</li>
+                    </ul>
+                    <p class="solution-emphasis">
+                        No re-explaining. No context rot. Just flow.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Built for developer velocity</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">EVENT_BASED_LOADING</div>
+                    <p class="feature-description">
+                        Sub-second startup. Event-based context loading means no waiting for context to load.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">GIT_NATIVE</div>
+                    <p class="feature-description">
+                        Works offline. Context is versioned alongside your code. No cloud dependencies for core functionality.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">DEFENSIVE_LOGGING</div>
+                    <p class="feature-description">
+                        Automatic insight capture at optimal moments. Logs what matters without disrupting flow.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SPRINT_INTEGRATION</div>
+                    <p class="feature-description">
+                        AI knows your current sprint, active tasks, and progress. Context includes your goals.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SESSION_HANDOFFS</div>
+                    <p class="feature-description">
+                        Seamless transitions between sessions. Resume exactly where you left off.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">AI_INSTRUCTIONS</div>
+                    <p class="feature-description">
+                        Project-specific guidance for AI. Teach it your patterns, preferences, and conventions.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">TEAM_CONTEXT</div>
+                    <p class="feature-description">
+                        Share patterns, gotchas, and learnings across your team <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">NATURAL_QUERIES</div>
+                    <p class="feature-description">
+                        Ask questions about your project in natural language. Get instant answers <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-pro">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">CLOUD_BACKUP</div>
+                    <p class="feature-description">
+                        Automatic cloud sync. Access your context from anywhere <span class="pro-badge">Pro</span>
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Workflow Section -->
+    <section class="workflow">
+        <div class="container">
+            <h2 class="section-title">A typical day with ginko</h2>
+            <p class="section-subtitle">Zero friction.<br class="mobile-break"> Zero re-explaining.<br class="mobile-break"> Just pure productivity.</p>
+
+            <div class="day-grid">
+                <div class="day-card">
+                    <span class="day-time">9:00 AM</span>
+                    <h3 class="day-title">Morning Start</h3>
+                    <p class="day-description">Session restored in &lt; 2 seconds. Full context loaded. AI knows exactly where you left off yesterday.</p>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="ginko start">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko start</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="day-card">
+                    <span class="day-time">12:30 PM</span>
+                    <h3 class="day-title">Lunch Break Handoff</h3>
+                    <p class="day-description">Capture current state before break. AI summarizes work and prepares clean resume point.</p>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="ginko handoff">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko handoff</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="day-card">
+                    <span class="day-time">5:30 PM</span>
+                    <h3 class="day-title">Evening Resume</h3>
+                    <p class="day-description">Back in flow instantly. AI picks up from your lunch handoff with full context about next steps.</p>
+                    <div class="terminal-inline terminal-copyable terminal-bracketed" data-copy="ginko start">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">ginko start</span>
+                        <button class="copy-btn" aria-label="Copy to clipboard">
+                            <span class="copy-icon">⧉</span>
+                            <span class="copy-success">✓</span>
+                        </button>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Testimonial Section -->
+    <section class="testimonial">
+        <div class="container">
+            <div class="testimonial-content">
+                <span class="testimonial-quote-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311 1.804.167 3.226 1.648 3.226 3.489a3.5 3.5 0 01-3.5 3.5c-1.073 0-2.099-.49-2.748-1.179z"/>
+                    </svg>
+                </span>
+                <div class="testimonial-text">
+                    <blockquote class="testimonial-quote">
+                        The rapport is right there from the start. The flow is preserved, and my frustrations are gone. It's like having a colleague who actually remembers our conversations.
+                    </blockquote>
+                    <cite class="testimonial-cite">SENIOR DEVELOPER, BETA USER</cite>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <h2 class="section-title">Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-header">
+                        <h3 class="plan-name">Free</h3>
+                        <div class="plan-price">
+                            <span class="price">$0</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="feature-check">✓</span> 1 user, 1 project</li>
+                        <li><span class="feature-check">✓</span> Local context only</li>
+                        <li><span class="feature-check">✓</span> Git integration</li>
+                        <li><span class="feature-check">✓</span> Community support</li>
+                    </ul>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary btn-hero-full" data-track-cta data-cta-location="pricing-free">
+                        <span class="btn-hero-text">GET STARTED</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="pricing-card pricing-card-featured">
+                    <div class="plan-header">
+                        <h3 class="plan-name">Pro</h3>
+                        <div class="plan-price">
+                            <span class="price">$9</span>
+                            <span class="period">/user/mo</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="feature-check">✓</span> Unlimited users</li>
+                        <li><span class="feature-check">✓</span> Team context sync</li>
+                        <li><span class="feature-check">✓</span> Cloud backup</li>
+                        <li><span class="feature-check">✓</span> Team analytics</li>
+                        <li><span class="feature-check">✓</span> Email support</li>
+                    </ul>
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary btn-hero-full" data-track-cta data-cta-location="pricing-pro">
+                        <span class="btn-hero-text">START PRO TRIAL</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+
+                <div class="pricing-card">
+                    <div class="plan-header">
+                        <h3 class="plan-name">Enterprise</h3>
+                        <div class="plan-price">
+                            <span class="price">$29</span>
+                            <span class="period">/user/mo</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li><span class="feature-check">✓</span> SSO/SAML integration</li>
+                        <li><span class="feature-check">✓</span> Audit logging</li>
+                        <li><span class="feature-check">✓</span> On-premise deployment</li>
+                        <li><span class="feature-check">✓</span> Priority support & SLA</li>
+                    </ul>
+                    <a href="mailto:chris@watchhill.ai" class="btn-hero btn-hero-primary btn-hero-full" data-track-cta data-cta-location="pricing-enterprise">
+                        <span class="btn-hero-text">CONTACT SALES</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2 class="cta-title">Ready to stay<br class="mobile-break"> in flow?</h2>
+                <p class="cta-subtitle">Install in 30 seconds. Start shipping faster today.</p>
+                <div class="terminal-inline terminal-inline-cta terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+                <div class="cta-buttons">
+                    <a href="https://app.ginkoai.com/auth/signup" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="final-cta">
+                        <span class="btn-hero-text">GET STARTED</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="https://docs.ginko.ai" class="btn-hero btn-hero-secondary btn-hero-cream" data-track-docs data-link-location="final-cta">
+                        <span class="btn-hero-text">READ THE DOCS</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-surface">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    </main>
+
+    <div class="section-divider--inverted section-divider"></div>
+
+    <!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <a href="/" class="footer-logo">
+                    <img src="/ginko-logo.svg" alt="ginko" class="logo-image" height="48">
+                </a>
+                <p class="footer-tagline">Context that flows with you</p>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/developers.html">For Developers</a></li>
+                    <li><a href="/index.html#pricing">Pricing</a></li>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                    <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/teams.html">For Teams</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                    <li><a href="/privacy.html">Privacy</a></li>
+                    <li><a href="/terms.html">Terms</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                    <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                    <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy;2026 ginko. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-iykyg">
+        <img src="/iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
+    </div>
+</footer>
+
+
+    <!-- Easter egg modal -->
+    <div id="cursor-modal" class="cursor-modal" aria-hidden="true">
+        <div class="cursor-modal-content">
+            <button class="cursor-modal-close" aria-label="Close">&times;</button>
+            <p class="cursor-modal-text">Paste into your environment to try ginko now!</p>
+            <div class="terminal-inline terminal-copyable cursor-modal-cta" data-copy="npm install -g @ginkoai/cli">
+                <span class="terminal-prompt">$</span>
+                <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                <button class="copy-btn" aria-label="Copy to clipboard">
+                    <span class="copy-icon">⧉</span>
+                    <span class="copy-success">✓</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="script.js"></script>
+    <script src="js/hero-ab-test.js"></script>
+</body>
+</html>

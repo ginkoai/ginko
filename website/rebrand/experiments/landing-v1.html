@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ginko - If You Know, You Ginko</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF7F0;
+      --eggshell: #F4EEDD;
+      --yellow: #FFD13F;
+      --orange: #DC3B05;
+      --red: #FF7343;
+      --pink: #FF0084;
+      --purple: #B03192;
+      --black: #0d0d0d;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--cream);
+      color: var(--black);
+      overflow-x: hidden;
+    }
+
+    /* ==================== HEADER ==================== */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      background: var(--cream);
+    }
+
+    .hamburger {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      padding: 10px;
+    }
+
+    .hamburger span {
+      width: 28px;
+      height: 2px;
+      background: var(--black);
+    }
+
+    .header-logo img {
+      height: 36px;
+    }
+
+    .cta-button {
+      display: flex;
+      align-items: stretch;
+      background: var(--red);
+      border-radius: 6px;
+      overflow: hidden;
+      text-decoration: none;
+      transition: transform 0.2s ease;
+    }
+
+    .cta-button:hover {
+      transform: scale(1.02);
+    }
+
+    .cta-button span {
+      padding: 12px 20px;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+
+    .cta-button .arrow {
+      background: rgba(0,0,0,0.15);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+    }
+
+    .cta-button .arrow svg {
+      width: 14px;
+      height: 14px;
+      fill: white;
+    }
+
+    /* ==================== HERO ==================== */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 40px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Large IYKYG background texture */
+    .hero-bg-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(200px, 25vw, 400px);
+      color: var(--eggshell);
+      white-space: nowrap;
+      user-select: none;
+      z-index: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+    }
+
+    .hero-tagline {
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(48px, 8vw, 96px);
+      line-height: 0.95;
+      margin-bottom: 40px;
+      color: var(--black);
+    }
+
+    .hero-tagline .highlight {
+      background: linear-gradient(90deg, var(--yellow), var(--orange), var(--red), var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-copy {
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 600px;
+      color: #444;
+      margin-bottom: 40px;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      align-items: stretch;
+      background: var(--black);
+      border-radius: 6px;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .hero-cta span {
+      padding: 16px 28px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+    }
+
+    .hero-cta .arrow {
+      background: rgba(255,255,255,0.1);
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+    }
+
+    .hero-cta .arrow svg {
+      width: 16px;
+      height: 16px;
+      fill: white;
+    }
+
+    /* ==================== LOGO ROW ==================== */
+    .logo-row {
+      padding: 40px 0;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .logo-row-inner {
+      display: flex;
+      gap: 80px;
+      animation: scroll 20s linear infinite;
+    }
+
+    @keyframes scroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .logo-row span {
+      font-family: 'Anton', sans-serif;
+      font-size: 24px;
+      color: #ccc;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==================== SOUND FAMILIAR ==================== */
+    .sound-familiar {
+      padding: 120px 40px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      margin-bottom: 60px;
+      color: var(--black);
+    }
+
+    .quotes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+    }
+
+    .quote-card {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      position: relative;
+    }
+
+    .quote-mark {
+      font-family: Georgia, serif;
+      font-size: 72px;
+      color: var(--red);
+      line-height: 0.5;
+      margin-bottom: 20px;
+    }
+
+    .quote-text {
+      font-style: italic;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      color: #333;
+    }
+
+    .quote-attribution {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* ==================== HOW IT WORKS ==================== */
+    .how-it-works {
+      padding: 120px 40px;
+      background: var(--eggshell);
+    }
+
+    .how-it-works-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+    }
+
+    .step-card {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 48px 40px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+
+    .step-number {
+      font-family: 'Anton', sans-serif;
+      font-size: 64px;
+      color: var(--red);
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+
+    .step-title {
+      font-family: 'Anton', sans-serif;
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .step-copy {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #666;
+    }
+
+    /* ==================== FEATURES ==================== */
+    .features {
+      padding: 0;
+    }
+
+    .feature-block {
+      padding: 120px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .feature-block:nth-child(even) {
+      direction: rtl;
+    }
+
+    .feature-block:nth-child(even) > * {
+      direction: ltr;
+    }
+
+    .feature-content {
+      max-width: 500px;
+    }
+
+    .feature-tag {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    .feature-block:nth-child(1) .feature-tag { background: var(--yellow); color: var(--black); }
+    .feature-block:nth-child(2) .feature-tag { background: var(--orange); color: white; }
+    .feature-block:nth-child(3) .feature-tag { background: var(--red); color: white; }
+    .feature-block:nth-child(4) .feature-tag { background: var(--pink); color: white; }
+    .feature-block:nth-child(5) .feature-tag { background: var(--purple); color: white; }
+
+    .feature-title {
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(32px, 4vw, 48px);
+      margin-bottom: 24px;
+      line-height: 1.1;
+    }
+
+    .feature-copy {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #555;
+    }
+
+    .feature-visual {
+      background: var(--eggshell);
+      border-radius: 16px;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #999;
+    }
+
+    /* ==================== FINAL TESTIMONIAL ==================== */
+    .final-testimonial {
+      background: var(--black);
+      padding: 100px 40px;
+      position: relative;
+      border: 2px solid var(--yellow);
+      margin: 80px 40px;
+      border-radius: 12px;
+    }
+
+    .final-testimonial::before,
+    .final-testimonial::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--yellow);
+    }
+
+    .final-testimonial::before {
+      top: -2px;
+      left: -2px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .final-testimonial::after {
+      bottom: -2px;
+      right: -2px;
+      border-left: none;
+      border-top: none;
+    }
+
+    .testimonial-quote-mark {
+      font-family: Georgia, serif;
+      font-size: 96px;
+      color: var(--yellow);
+      line-height: 0.5;
+      margin-bottom: 24px;
+    }
+
+    .testimonial-text {
+      font-size: clamp(20px, 3vw, 32px);
+      color: var(--yellow);
+      max-width: 800px;
+      line-height: 1.5;
+      margin-bottom: 32px;
+    }
+
+    .testimonial-text em {
+      font-style: italic;
+    }
+
+    .testimonial-attribution {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    /* ==================== FINAL CTA ==================== */
+    .final-cta {
+      background: var(--red);
+      padding: 100px 40px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .final-cta-heading {
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(36px, 5vw, 56px);
+      color: white;
+      margin-bottom: 32px;
+    }
+
+    .final-cta .cta-button {
+      background: var(--black);
+      display: inline-flex;
+    }
+
+    /* ==================== FOOTER ==================== */
+    footer {
+      background: var(--black);
+      color: var(--cream);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer-upper {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 60px 40px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .footer-brand img {
+      height: 48px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 50px;
+    }
+
+    .footer-links a {
+      color: var(--cream);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--yellow);
+    }
+
+    .footer-legal-bar {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(250, 247, 240, 0.1);
+      font-size: 12px;
+      color: rgba(250, 247, 240, 0.5);
+    }
+
+    .footer-legal-links {
+      display: flex;
+      gap: 40px;
+    }
+
+    .footer-legal-links a {
+      color: rgba(250, 247, 240, 0.5);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 11px;
+    }
+
+    .footer-legal-links a:hover {
+      color: var(--cream);
+    }
+
+    .footer-iykyg-huge {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+      margin-bottom: -30px;
+    }
+
+    .footer-iykyg-huge img {
+      width: 100%;
+      max-width: 1400px;
+      height: auto;
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 1024px) {
+      .quotes-grid,
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-block {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-block:nth-child(even) {
+        direction: ltr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 16px 20px;
+      }
+
+      .hero {
+        padding: 100px 20px 60px;
+      }
+
+      .hero-bg-text {
+        font-size: 120px;
+      }
+
+      .sound-familiar,
+      .how-it-works,
+      .feature-block {
+        padding: 80px 20px;
+      }
+
+      .footer-upper {
+        flex-direction: column;
+        gap: 40px;
+      }
+
+      .footer-legal-bar {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="header-logo">
+      <img src="../assets/ginko-logo-rainbow-striped.svg" alt="ginko">
+    </div>
+    <a href="#" class="cta-button">
+      <span>GET STARTED</span>
+      <div class="arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg-text">IYKYG</div>
+    <div class="hero-content">
+      <h1 class="hero-tagline">
+        If You Know,<br>
+        You <span class="highlight">Ginko</span>
+      </h1>
+      <p class="hero-copy">
+        ginko supercharges your development by turning your AI model into a first-class partner.
+        All of your project code, workplans, knowledge docs, and session logs stay in git where
+        human and AI partners have instant access. No more re-explaining every session.
+        Just back to flow state in 30 seconds.
+      </p>
+      <a href="#" class="hero-cta">
+        <span>START FREE</span>
+        <div class="arrow">
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- LOGO ROW -->
+  <div class="logo-row">
+    <div class="logo-row-inner">
+      <span>Anthropic</span>
+      <span>OpenAI</span>
+      <span>Google</span>
+      <span>Meta</span>
+      <span>Cursor</span>
+      <span>VS Code</span>
+      <span>JetBrains</span>
+      <span>GitHub</span>
+      <span>Anthropic</span>
+      <span>OpenAI</span>
+      <span>Google</span>
+      <span>Meta</span>
+      <span>Cursor</span>
+      <span>VS Code</span>
+      <span>JetBrains</span>
+      <span>GitHub</span>
+    </div>
+  </div>
+
+  <!-- SOUND FAMILIAR -->
+  <section class="sound-familiar">
+    <div class="section-label">Zero Pain</div>
+    <h2 class="section-heading">Sound familiar?</h2>
+    <div class="quotes-grid">
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <p class="quote-text">I spent 20 minutes explaining what we did yesterday...</p>
+        <div class="quote-attribution">— Every developer, every morning</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <p class="quote-text">My AI forgot everything again. It's like Groundhog Day...</p>
+        <div class="quote-attribution">— Senior engineer, frustrated</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <p class="quote-text">Every session is like starting from scratch...</p>
+        <div class="quote-attribution">— Team lead, about to give up</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="how-it-works-inner">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-heading">Three steps to AI that remembers</h2>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-number">01</div>
+          <h3 class="step-title">Start your session</h3>
+          <p class="step-copy">Run ginko start and your AI loads full project context instantly.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">02</div>
+          <h3 class="step-title">Work naturally</h3>
+          <p class="step-copy">Decisions, patterns, and learnings are captured as you code.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-number">03</div>
+          <h3 class="step-title">Hand off</h3>
+          <p class="step-copy">Run ginko handoff. Tomorrow, pick up exactly where you left off.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES (first 5) -->
+  <section class="features">
+    <div class="feature-block">
+      <div class="feature-content">
+        <div class="feature-tag">ginko start</div>
+        <h3 class="feature-title">Ready Player YOU</h3>
+        <p class="feature-copy">
+          ginko start loads your session context with tasks, goals, knowledge, and everything
+          important you did in your last session. No more re-explaining the basics to your AI
+          partner, just straight back to flow in 30 seconds or less.
+        </p>
+      </div>
+      <div class="feature-visual">[Visual: Terminal animation]</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-content">
+        <div class="feature-tag">ginko charter</div>
+        <h3 class="feature-title">Your Blueprint For Success</h3>
+        <p class="feature-copy">
+          ginko charter gives your AI partner the big picture: project goals, audiences,
+          pain-points, architecture, scope, acceptance criteria and more, all using natural conversation.
+        </p>
+      </div>
+      <div class="feature-visual">[Visual: Charter diagram]</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-content">
+        <div class="feature-tag">ginko epic</div>
+        <h3 class="feature-title">WHY-WHAT-HOW</h3>
+        <p class="feature-copy">
+          ginko epic creates your work breakdown structure from your charter, knowledge docs,
+          and conversation with you. Epics are broken down into sprints and tasks to keep your work on track.
+        </p>
+      </div>
+      <div class="feature-visual">[Visual: Epic breakdown]</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-content">
+        <div class="feature-tag">ginko vibecheck</div>
+        <h3 class="feature-title">Take A Beat</h3>
+        <p class="feature-copy">
+          ginko vibecheck is a built-in behavior that gives you and your AI partner a blame-free
+          moment to challenge approach and pivot back to flow. Simply call "vibecheck" whenever
+          things seem off, then have an open conversation.
+        </p>
+      </div>
+      <div class="feature-visual">[Visual: Vibecheck flow]</div>
+    </div>
+
+    <div class="feature-block">
+      <div class="feature-content">
+        <div class="feature-tag">ginko insights</div>
+        <h3 class="feature-title">Level Up</h3>
+        <p class="feature-copy">
+          ginko insights analyzes your session logs, commits, and other data to pinpoint exactly
+          where you are effective and where you have opportunities to improve. Team leaders can
+          use ginko insights to level-up their whole team with measurable results.
+        </p>
+      </div>
+      <div class="feature-visual">[Visual: Insights dashboard]</div>
+    </div>
+  </section>
+
+  <!-- FINAL TESTIMONIAL -->
+  <section class="final-testimonial">
+    <div class="testimonial-quote-mark">"</div>
+    <p class="testimonial-text">
+      The rapport is right there from the start. The flow is preserved, and <em>my frustrations are gone.</em>
+    </p>
+    <div class="testimonial-attribution">Beta User Feedback</div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <h2 class="final-cta-heading">Ready to stop repeating yourself?</h2>
+    <a href="#" class="cta-button">
+      <span>GET STARTED FREE</span>
+      <div class="arrow">
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+      </div>
+    </a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-upper">
+      <div class="footer-brand">
+        <img src="../assets/ginko-logo-rainbow-striped.svg" alt="ginko">
+      </div>
+      <div class="footer-links">
+        <a href="#">GitHub</a>
+        <a href="#">Docs</a>
+        <a href="#">Blog</a>
+        <a href="#">Discord</a>
+      </div>
+    </div>
+    <div class="footer-legal-bar">
+      <span>©2026 ginko. All rights reserved.</span>
+      <div class="footer-legal-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-iykyg-huge">
+      <img src="../assets/iykyg-footer-rainbow-striped.svg" alt="iykyg - if you know, you ginko">
+    </div>
+  </footer>
+
+</body>
+</html>

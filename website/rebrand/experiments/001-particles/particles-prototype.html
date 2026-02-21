@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Particle Logo Prototype - ginko</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0B0B0B;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+        }
+
+        #canvas {
+            cursor: none;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #615F61;
+            font-size: 12px;
+            z-index: 100;
+        }
+
+        .controls button {
+            background: #271D26;
+            border: 1px solid #615F61;
+            color: #FCFBF1;
+            padding: 8px 16px;
+            margin-right: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+        }
+
+        .controls button:hover {
+            background: #615F61;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <button onclick="morphToLetter('I')">I</button>
+        <button onclick="morphToLetter('Y')">Y</button>
+        <button onclick="morphToLetter('K')">K</button>
+        <button onclick="morphToLetter('g')">g</button>
+        <button onclick="morphToLetter('LOGO')">Logo</button>
+        <button onclick="playSequence()">Play IYKY→g</button>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            particleCount: 3500,
+            particleRadius: 1.8,
+
+            // Physics
+            returnForce: 0.03,      // How strongly particles return to target
+            damping: 0.92,          // Velocity decay (0-1)
+
+            // Cursor interaction
+            cursorRadius: 100,      // Repulsion radius
+            cursorForce: 8,         // Repulsion strength
+
+            // Colors (ginko sunset palette)
+            colors: {
+                yellow: '#FDC400',
+                orange: '#FC9500',
+                red: '#FE4500',
+                violet: '#E00256',
+                purple: '#A70086',
+            },
+
+            // Animation
+            morphDuration: 800,     // ms for letter transitions
+        };
+
+        // ============================================
+        // CANVAS SETUP
+        // ============================================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let mouseX = -1000, mouseY = -1000;
+        let particles = [];
+        let currentLetter = 'g';
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // ============================================
+        // MOUSE TRACKING
+        // ============================================
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            mouseX = -1000;
+            mouseY = -1000;
+        });
+
+        // ============================================
+        // PARTICLE CLASS
+        // ============================================
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.targetX = x;
+                this.targetY = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.color = '#FCFBF1';  // Start with cream
+                this.targetColor = '#FCFBF1';
+                this.radius = CONFIG.particleRadius;
+                this.active = true;
+            }
+
+            update() {
+                // Calculate distance to cursor
+                const dx = mouseX - this.x;
+                const dy = mouseY - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Cursor repulsion
+                if (dist < CONFIG.cursorRadius && dist > 0) {
+                    const force = (CONFIG.cursorRadius - dist) / CONFIG.cursorRadius;
+                    const angle = Math.atan2(dy, dx);
+                    this.vx -= Math.cos(angle) * force * CONFIG.cursorForce;
+                    this.vy -= Math.sin(angle) * force * CONFIG.cursorForce;
+                }
+
+                // Return to target position (spring force)
+                const toTargetX = this.targetX - this.x;
+                const toTargetY = this.targetY - this.y;
+                this.vx += toTargetX * CONFIG.returnForce;
+                this.vy += toTargetY * CONFIG.returnForce;
+
+                // Apply damping
+                this.vx *= CONFIG.damping;
+                this.vy *= CONFIG.damping;
+
+                // Update position
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                if (this.color === 'transparent' || !this.active) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+
+            setTarget(x, y, color) {
+                this.targetX = x;
+                this.targetY = y;
+                if (color) this.color = color;
+            }
+        }
+
+        // ============================================
+        // LETTER TO POINTS CONVERSION (Edge-weighted)
+        // ============================================
+        function getLetterPoints(letter, count) {
+            // Create offscreen canvas to render letter
+            const offCanvas = document.createElement('canvas');
+            const offCtx = offCanvas.getContext('2d');
+
+            const fontSize = Math.min(width, height) * 0.6;
+            offCanvas.width = width;
+            offCanvas.height = height;
+
+            // Draw letter
+            offCtx.fillStyle = '#FFFFFF';
+            offCtx.font = `bold ${fontSize}px "JetBrains Mono", monospace`;
+            offCtx.textAlign = 'center';
+            offCtx.textBaseline = 'middle';
+            offCtx.fillText(letter, width / 2, height / 2);
+
+            // Sample pixels
+            const imageData = offCtx.getImageData(0, 0, width, height);
+            const pixels = imageData.data;
+
+            // Helper to check if pixel is filled
+            const isFilled = (x, y) => {
+                if (x < 0 || x >= width || y < 0 || y >= height) return false;
+                const i = (y * width + x) * 4;
+                return pixels[i + 3] > 128;
+            };
+
+            // Helper to check if pixel is on edge (has empty neighbor)
+            const isEdge = (x, y) => {
+                if (!isFilled(x, y)) return false;
+                // Check 8 neighbors
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        if (!isFilled(x + dx, y + dy)) return true;
+                    }
+                }
+                return false;
+            };
+
+            // Separate edge pixels from fill pixels
+            const edgePixels = [];
+            const fillPixels = [];
+            const step = 2;  // Finer sampling for better definition
+
+            for (let y = 0; y < height; y += step) {
+                for (let x = 0; x < width; x += step) {
+                    if (isFilled(x, y)) {
+                        if (isEdge(x, y)) {
+                            edgePixels.push({ x, y });
+                        } else {
+                            fillPixels.push({ x, y });
+                        }
+                    }
+                }
+            }
+
+            // Distribute particles: 70% edges, 30% fill
+            const edgeCount = Math.floor(count * 0.7);
+            const fillCount = count - edgeCount;
+
+            const points = [];
+
+            // Sample from edges
+            for (let i = 0; i < edgeCount; i++) {
+                if (edgePixels.length > 0) {
+                    const idx = Math.floor(Math.random() * edgePixels.length);
+                    const pixel = edgePixels[idx];
+                    const normalizedY = pixel.y / height;
+                    points.push({
+                        x: pixel.x + (Math.random() - 0.5) * 1.5,
+                        y: pixel.y + (Math.random() - 0.5) * 1.5,
+                        color: getGradientColor(normalizedY)
+                    });
+                }
+            }
+
+            // Sample from fill
+            for (let i = 0; i < fillCount; i++) {
+                if (fillPixels.length > 0) {
+                    const idx = Math.floor(Math.random() * fillPixels.length);
+                    const pixel = fillPixels[idx];
+                    const normalizedY = pixel.y / height;
+                    points.push({
+                        x: pixel.x + (Math.random() - 0.5) * 2,
+                        y: pixel.y + (Math.random() - 0.5) * 2,
+                        color: getGradientColor(normalizedY)
+                    });
+                }
+            }
+
+            return points;
+        }
+
+        // ============================================
+        // LOAD LOGO IMAGE FOR FINAL MORPH
+        // ============================================
+        let logoImage = null;
+        let logoImageData = null;
+
+        function loadLogoImage() {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    logoImage = img;
+                    resolve(img);
+                };
+                img.onerror = () => {
+                    console.warn('Could not load logo image, using text fallback');
+                    resolve(null);
+                };
+                img.src = '../../assets/yg-leaf-logo.png';
+            });
+        }
+
+        function getLogoPoints(count) {
+            if (!logoImage) return null;
+
+            const offCanvas = document.createElement('canvas');
+            const offCtx = offCanvas.getContext('2d');
+
+            // Scale logo so g matches letter height
+            const maxSize = Math.min(width, height) * 1.79;
+            const scale = maxSize / Math.max(logoImage.width, logoImage.height);
+            const scaledWidth = logoImage.width * scale;
+            const scaledHeight = logoImage.height * scale;
+
+            offCanvas.width = width;
+            offCanvas.height = height;
+
+            // Center horizontally (shift left for filtered-out "y"), and vertically align g baseline
+            const offsetX = (width - scaledWidth) / 2 - scaledWidth * 0.12;
+            // Shift up slightly so leaf extends above, g stays centered
+            const offsetY = (height - scaledHeight) / 2 + scaledHeight * 0.12;
+            offCtx.drawImage(logoImage, offsetX, offsetY, scaledWidth, scaledHeight);
+
+            const imageData = offCtx.getImageData(0, 0, width, height);
+            const pixels = imageData.data;
+
+            // Helper to check if pixel is visible (saturated colors only)
+            const isVisible = (x, y) => {
+                if (x < 0 || x >= width || y < 0 || y >= height) return false;
+                const i = (y * width + x) * 4;
+                const r = pixels[i];
+                const g = pixels[i + 1];
+                const b = pixels[i + 2];
+                const a = pixels[i + 3];
+
+                // Skip if transparent
+                if (a < 50) return false;
+
+                // Calculate saturation (0-1)
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const saturation = max === 0 ? 0 : (max - min) / max;
+
+                // Skip if desaturated (grays, whites, blacks from BG removal artifacts)
+                if (saturation < 0.4) return false;
+
+                // Also skip if too bright AND low saturation (catches light fringe)
+                const brightness = (r + g + b) / 3;
+                if (brightness > 160 && saturation < 0.55) return false;
+
+                return true;
+            };
+
+            // Helper to get pixel color
+            const getColor = (x, y) => {
+                const i = (y * width + x) * 4;
+                return `rgb(${pixels[i]}, ${pixels[i + 1]}, ${pixels[i + 2]})`;
+            };
+
+            // Helper to check if pixel is on edge
+            const isEdge = (x, y) => {
+                if (!isVisible(x, y)) return false;
+                for (let dy = -1; dy <= 1; dy++) {
+                    for (let dx = -1; dx <= 1; dx++) {
+                        if (dx === 0 && dy === 0) continue;
+                        if (!isVisible(x + dx, y + dy)) return true;
+                    }
+                }
+                return false;
+            };
+
+            // Collect edge and fill pixels
+            const edgePixels = [];
+            const fillPixels = [];
+            const step = 2;
+
+            for (let y = 0; y < height; y += step) {
+                for (let x = 0; x < width; x += step) {
+                    if (isVisible(x, y)) {
+                        const pixel = { x, y, color: getColor(x, y) };
+                        if (isEdge(x, y)) {
+                            edgePixels.push(pixel);
+                        } else {
+                            fillPixels.push(pixel);
+                        }
+                    }
+                }
+            }
+
+            // Distribute: 70% edges, 30% fill
+            const edgeCount = Math.floor(count * 0.7);
+            const fillCount = count - edgeCount;
+            const points = [];
+
+            for (let i = 0; i < edgeCount; i++) {
+                if (edgePixels.length > 0) {
+                    const idx = Math.floor(Math.random() * edgePixels.length);
+                    const pixel = edgePixels[idx];
+                    points.push({
+                        x: pixel.x + (Math.random() - 0.5) * 1.5,
+                        y: pixel.y + (Math.random() - 0.5) * 1.5,
+                        color: pixel.color
+                    });
+                }
+            }
+
+            for (let i = 0; i < fillCount; i++) {
+                if (fillPixels.length > 0) {
+                    const idx = Math.floor(Math.random() * fillPixels.length);
+                    const pixel = fillPixels[idx];
+                    points.push({
+                        x: pixel.x + (Math.random() - 0.5) * 2,
+                        y: pixel.y + (Math.random() - 0.5) * 2,
+                        color: pixel.color
+                    });
+                }
+            }
+
+            return points;
+        }
+
+        // ============================================
+        // SUNSET GRADIENT COLOR
+        // ============================================
+        function getGradientColor(t) {
+            // t is 0-1 (top to bottom)
+            const colors = [
+                { pos: 0.0, r: 253, g: 196, b: 0 },    // Yellow
+                { pos: 0.25, r: 252, g: 149, b: 0 },   // Orange
+                { pos: 0.5, r: 254, g: 69, b: 0 },     // Red
+                { pos: 0.75, r: 224, g: 2, b: 86 },    // Violet
+                { pos: 1.0, r: 167, g: 0, b: 134 },    // Purple
+            ];
+
+            // Find the two colors to interpolate between
+            let c1 = colors[0], c2 = colors[1];
+            for (let i = 0; i < colors.length - 1; i++) {
+                if (t >= colors[i].pos && t <= colors[i + 1].pos) {
+                    c1 = colors[i];
+                    c2 = colors[i + 1];
+                    break;
+                }
+            }
+
+            // Interpolate
+            const range = c2.pos - c1.pos;
+            const localT = range > 0 ? (t - c1.pos) / range : 0;
+
+            const r = Math.round(c1.r + (c2.r - c1.r) * localT);
+            const g = Math.round(c1.g + (c2.g - c1.g) * localT);
+            const b = Math.round(c1.b + (c2.b - c1.b) * localT);
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // ============================================
+        // MORPH TO LETTER OR LOGO
+        // ============================================
+        function morphToLetter(letter) {
+            currentLetter = letter;
+
+            // Use actual logo image for 'LOGO' target
+            let points;
+            if (letter === 'LOGO') {
+                points = getLogoPoints(CONFIG.particleCount);
+                if (!points) {
+                    console.warn('Logo not loaded, falling back to g');
+                    points = getLetterPoints('g', CONFIG.particleCount);
+                }
+            } else {
+                points = getLetterPoints(letter, CONFIG.particleCount);
+            }
+
+            // Assign new targets to particles
+            particles.forEach((particle, i) => {
+                if (points[i]) {
+                    particle.setTarget(points[i].x, points[i].y, points[i].color);
+                    particle.active = true;
+                } else {
+                    // Extra particles fade out and drift off-screen
+                    particle.setTarget(
+                        Math.random() * width,
+                        -100 - Math.random() * 200,
+                        'transparent'
+                    );
+                    particle.active = false;
+                }
+            });
+        }
+
+        // ============================================
+        // PLAY SEQUENCE: I → Y → K → Y → LOGO
+        // ============================================
+        async function playSequence() {
+            const letters = ['I', 'Y', 'K', 'Y', 'LOGO'];
+            const holdTime = 600;  // ms to hold each letter
+
+            for (const letter of letters) {
+                morphToLetter(letter);
+                await sleep(CONFIG.morphDuration + holdTime);
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ============================================
+        // INITIALIZE PARTICLES
+        // ============================================
+        async function init() {
+            // Load logo image first
+            await loadLogoImage();
+            console.log('Logo loaded:', logoImage ? 'yes' : 'no');
+
+            particles = [];
+
+            // Create particles at random positions
+            for (let i = 0; i < CONFIG.particleCount; i++) {
+                const particle = new Particle(
+                    Math.random() * width,
+                    Math.random() * height
+                );
+                particles.push(particle);
+            }
+
+            // Initial morph to logo (or 'g' if logo failed to load)
+            setTimeout(() => morphToLetter(logoImage ? 'LOGO' : 'g'), 100);
+        }
+
+        // ============================================
+        // ANIMATION LOOP
+        // ============================================
+        function animate() {
+            // Clear with slight fade for trail effect (optional)
+            ctx.fillStyle = 'rgba(11, 11, 11, 0.3)';
+            ctx.fillRect(0, 0, width, height);
+
+            // Update and draw particles
+            particles.forEach(particle => {
+                particle.update();
+                particle.draw();
+            });
+
+            // Draw custom cursor
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#FCFBF1';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, CONFIG.cursorRadius, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(252, 251, 241, 0.1)';
+            ctx.stroke();
+
+            requestAnimationFrame(animate);
+        }
+
+        // ============================================
+        // START
+        // ============================================
+        init();
+        animate();
+    </script>
+</body>
+</html>
