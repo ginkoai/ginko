@@ -679,6 +679,8 @@ The following ADRs govern ginko's flow optimization and context architecture:
 - **Primary Developer**: Developer (reese@ginkoai.com)
 - **AI Pair Programming**: Enabled via Ginko
 
+## Reminders for Reese
+- **Push to GitHub at least once a day** - Avoid diverging too far from origin/main
 
 ## Session Management
 - `ginko start` - Begin new session with context loading
