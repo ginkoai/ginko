@@ -4,13 +4,12 @@
  */
 
 // ============================================================================
-// THEME - Dark mode only
+// THEME - Respect HTML data-theme attribute
 // ============================================================================
 
 const initTheme = () => {
-  const html = document.documentElement;
-  // Always use dark mode
-  html.setAttribute('data-theme', 'dark');
+  // Theme is set via data-theme attribute in HTML
+  // No override needed - respects the page's declared theme
 };
 
 // ============================================================================
