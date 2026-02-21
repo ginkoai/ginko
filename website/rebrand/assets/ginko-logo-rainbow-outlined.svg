@@ -9,14 +9,14 @@
       <feMergeNode in="SourceGraphic"/>
     </feMerge>
   </filter>
-  <linearGradient id="sunsetGradient" x1="0" y1="0" x2="0" y2="102" gradientUnits="userSpaceOnUse">
-    <stop offset="0%" stop-color="#FFD13F"/>
-    <stop offset="20%" stop-color="#FFD13F"/>
-    <stop offset="35%" stop-color="#FFA001"/>
-    <stop offset="50%" stop-color="#FF7343"/>
-    <stop offset="65%" stop-color="#FF7343"/>
-    <stop offset="80%" stop-color="#FF0084"/>
-    <stop offset="100%" stop-color="#B03192"/>
+  <linearGradient id="sunsetGradient" x1="0" y1="-8" x2="0" y2="102" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#FAC003"/>
+    <stop offset="20%" stop-color="#FAC003"/>
+    <stop offset="35%" stop-color="#FC9500"/>
+    <stop offset="50%" stop-color="#EE4B0A"/>
+    <stop offset="65%" stop-color="#EE4B0A"/>
+    <stop offset="80%" stop-color="#D40F49"/>
+    <stop offset="100%" stop-color="#9D087F"/>
   </linearGradient>
 </defs>
 <g filter="url(#outline)">

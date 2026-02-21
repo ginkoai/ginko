@@ -1,16 +1,16 @@
 <svg width="316" height="127" viewBox="0 0 316 127" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
-  <linearGradient id="sunsetGradient" x1="0" y1="0" x2="0" y2="127" gradientUnits="userSpaceOnUse">
-    <stop offset="0%" stop-color="#FFD13F"/>
-    <stop offset="20%" stop-color="#FFD13F"/>
-    <stop offset="20%" stop-color="#FFA001"/>
-    <stop offset="40%" stop-color="#FFA001"/>
-    <stop offset="40%" stop-color="#FF7343"/>
-    <stop offset="60%" stop-color="#FF7343"/>
-    <stop offset="60%" stop-color="#FF0084"/>
-    <stop offset="80%" stop-color="#FF0084"/>
-    <stop offset="80%" stop-color="#B03192"/>
-    <stop offset="100%" stop-color="#B03192"/>
+  <linearGradient id="sunsetGradient" x1="0" y1="30" x2="0" y2="127" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#FAC003"/>
+    <stop offset="20%" stop-color="#FAC003"/>
+    <stop offset="20%" stop-color="#FC9500"/>
+    <stop offset="40%" stop-color="#FC9500"/>
+    <stop offset="40%" stop-color="#EE4B0A"/>
+    <stop offset="60%" stop-color="#EE4B0A"/>
+    <stop offset="60%" stop-color="#D40F49"/>
+    <stop offset="80%" stop-color="#D40F49"/>
+    <stop offset="80%" stop-color="#9D087F"/>
+    <stop offset="100%" stop-color="#9D087F"/>
   </linearGradient>
 </defs>
 <path d="M166.892 107.014C162.172 107.091 158.524 104.891 155.949 100.415L146.024 83.862L143.557 83.902L139.515 105.877L126 106.097L140.994 25.219L154.51 25L146.125 70.31L148.699 70.268L169.899 47.788L178.419 57.137L158.999 76.876L159.032 78.909L167.854 93.674L169.141 93.653L174.971 89.266L181.675 99.096L176.91 103.012C175.145 104.473 173.427 105.496 171.756 106.089C170.085 106.681 168.462 106.989 166.891 107.015L166.892 107.014Z" fill="url(#sunsetGradient)"/>
