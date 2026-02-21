@@ -15,7 +15,7 @@
 | Cream | `#FAF7F0` | Primary background |
 | Eggshell | `#F4EEDD` | Secondary background |
 | Yellow | `#FFD13F` | Accent / Landing page |
-| Orange | `#FFA001` | Developers page |
+| Orange | `#DC3B05` | Developers page |
 | Red | `#FF7343` | Team page |
 | Pink | `#FF0084` | How It Works |
 | Purple | `#B03192` | Blog / Gradient bottom |
@@ -37,7 +37,7 @@
 | Color | Hex |
 |-------|-----|
 | Yellow | `#FFD13F` |
-| Orange | `#FFA001` |
+| Orange | `#DC3B05` |
 | Red | `#FF7343` |
 | Pink | `#FF0084` |
 | Purple | `#B03192` |
@@ -309,12 +309,12 @@
 | Feature | Color |
 |---------|-------|
 | ginko start | Yellow `#FFD13F` |
-| ginko charter | Orange `#FFA001` |
+| ginko charter | Orange `#DC3B05` |
 | ginko epic | Red `#FF7343` |
 | ginko vibecheck | Pink `#FF0084` |
 | ginko insights | Purple `#B03192` |
 | ginko handoff | Yellow `#FFD13F` |
-| ginko collaboration graph | Orange `#FFA001` |
+| ginko collaboration graph | Orange `#DC3B05` |
 
 ---
 
@@ -495,7 +495,7 @@ Or even simpler: just legal links in bottom bar.
 ### iykyg Logo Treatment
 - Large "iykyg" text with ginkgo leaf on final "g"
 - **Recolor:** Apply sunset gradient/rainbow stripe to match brand
-- Colors: `#B03192` → `#FF0084` → `#FF7343` → `#FFA001` → `#FFD13F`
+- Colors: `#B03192` → `#FF0084` → `#FF7343` → `#DC3B05` → `#FFD13F`
 
 ### Bottom Bar
 - **Left:** ©2026 ginko. All rights reserved.
@@ -597,7 +597,7 @@ Scrolling text banners for section dividers or social proof.
 - Works on BOTH cream and black backgrounds
 
 **Recolor with ginko sunset palette:**
-`#B03192` → `#FF0084` → `#FF7343` → `#FFA001` → `#FFD13F`
+`#B03192` → `#FF0084` → `#FF7343` → `#DC3B05` → `#FFD13F`
 
 **Possible applications:**
 - Section transitions/dividers
