@@ -123,11 +123,41 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;
-      text-align: center;
+      align-items: flex-start;
+      text-align: left;
       padding: 120px 40px 80px;
       position: relative;
       overflow: hidden;
+    }
+
+    /* Full-width background image */
+    .hero-bg-image {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .hero-bg-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center right;
+    }
+
+    /* Warm gradient overlay - solid on left for text readability, fades to show image on right */
+    .hero-bg-image::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to right,
+        rgba(250, 247, 240, 0.97) 0%,
+        rgba(250, 247, 240, 0.92) 20%,
+        rgba(250, 247, 240, 0.75) 40%,
+        rgba(250, 247, 240, 0.4) 60%,
+        rgba(250, 247, 240, 0.1) 80%,
+        rgba(250, 247, 240, 0) 100%
+      );
     }
 
     .hero-bg-text {
@@ -142,17 +172,19 @@
       user-select: none;
       z-index: 0;
       letter-spacing: -0.02em;
+      display: none; /* Hidden when using background image */
     }
 
     .hero-content {
       position: relative;
       z-index: 1;
-      max-width: 900px;
+      max-width: 600px;
+      margin-left: 5vw;
     }
 
     .hero-tagline {
       font-family: 'Anton', sans-serif;
-      font-size: clamp(48px, 10vw, 120px);
+      font-size: clamp(48px, 8vw, 100px);
       line-height: 0.95;
       margin-bottom: 32px;
       color: var(--black);
@@ -886,7 +918,11 @@
   </header>
 
   <!-- HERO -->
-  <section class="hero pattern-dots pattern-fade">
+  <section class="hero">
+    <!-- Background Image: DUMBO Brooklyn -->
+    <div class="hero-bg-image">
+      <img src="../../images/hero_iykyg_nyc_dumbo.png" alt="" aria-hidden="true" loading="eager">
+    </div>
     <div class="hero-bg-text">IYKYG</div>
     <div class="hero-content">
       <h1 class="hero-tagline">

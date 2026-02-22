@@ -255,9 +255,10 @@ section {
     left: 0;
     right: 0;
     z-index: 1000;
-    background-color: rgba(244, 238, 221, 0.85);
+    background-color: rgba(244, 238, 221, 0.95);
     backdrop-filter: blur(12px);
     transition: background-color var(--transition-base);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] .navbar {
@@ -894,6 +895,65 @@ pre {
     background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
 }
 
+/* Hero with background image (DUMBO) */
+.hero--with-image {
+    position: relative;
+    min-height: 80vh;
+    max-height: 90vh;
+    background: none;
+    isolation: isolate; /* Create new stacking context */
+}
+
+.hero--with-image .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1; /* Behind content but within hero stacking context */
+}
+
+.hero--with-image .hero-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center right;
+}
+
+/* Warm sunset gradient overlay - solid on left for text, fades to show image on right */
+.hero--with-image .hero-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+        to right,
+        rgba(244, 238, 221, 0.95) 0%,
+        rgba(244, 238, 221, 0.85) 25%,
+        rgba(244, 238, 221, 0.6) 50%,
+        rgba(244, 238, 221, 0.2) 75%,
+        rgba(244, 238, 221, 0) 100%
+    );
+    pointer-events: none; /* Don't block clicks */
+}
+
+.hero--with-image .container {
+    position: relative;
+    z-index: 1;
+}
+
+.hero--with-image .hero-grid {
+    grid-template-columns: 1fr 1fr;
+}
+
+.hero--with-image .hero-visual {
+    /* Hide the SVG graph when using background image */
+    display: none;
+}
+
+/* Give navbar more presence over hero image */
+body:has(.hero--with-image) .navbar {
+    background-color: #F4EEDD;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 /* Z-Pattern Hero Grid Layout - reduced padding for pages with graph */
 .hero:has(.hero-grid) {
     padding-top: 100px !important;
@@ -1120,7 +1180,7 @@ pre {
 }
 
 .hero-title {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-6xl);
     font-weight: var(--font-weight-extrabold);
     line-height: 1.1;
@@ -1157,7 +1217,7 @@ pre {
 
 /* Hero line 2 - large (You need living context...) */
 .hero-line-2 {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: 76px;
     font-weight: var(--font-weight-normal);
     line-height: 1.1;
@@ -2044,9 +2104,9 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .section-title {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
+    font-weight: var(--font-weight-normal);
     text-align: center;
     margin-bottom: var(--space-6);
     color: var(--color-text);
@@ -2223,7 +2283,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .problem *::before, .problem *::after { border: none !important; }
 .problem-description { font-size: var(--font-size-base); color: var(--color-text-secondary); line-height: 1.6; margin: 0; }
 .problem-icon { font-size: var(--font-size-6xl); margin-bottom: var(--space-4); }
-.problem-card h3 { font-family: var(--font-mono); font-size: var(--font-size-2xl); margin-bottom: var(--space-3); color: var(--color-text); }
+.problem-card h3 { font-family: var(--font-display); font-size: var(--font-size-2xl); margin-bottom: var(--space-3); color: var(--color-text); }
 .problem-card p { color: var(--color-text-secondary); }
 
 /* ============================================================================
@@ -2303,7 +2363,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .step-content h3 {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-2xl);
     margin-bottom: var(--space-4);
 }
@@ -2343,7 +2403,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .features-title {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
@@ -2434,7 +2494,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .feature-card { position: relative; padding: var(--space-8); text-align: center; background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%); border: none; border-radius: 0; }
 .feature-label { font-family: var(--font-mono); font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-accent); letter-spacing: 0.1em; margin-bottom: var(--space-4); }
 .feature-description { font-size: var(--font-size-base); color: var(--color-text-secondary); line-height: 1.6; margin: 0; }
-.feature-card h3 { font-family: var(--font-mono); font-size: var(--font-size-2xl); margin-bottom: var(--space-3); text-transform: uppercase; }
+.feature-card h3 { font-family: var(--font-display); font-size: var(--font-size-2xl); margin-bottom: var(--space-3); text-transform: uppercase; }
 
 /* ============================================================================
    TESTIMONIAL SECTION
@@ -2516,7 +2576,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .faq-title {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-4xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text);
@@ -2696,7 +2756,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .cta-title {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-4xl);
     margin-bottom: 0;
     color: #F4EEDD;
@@ -2936,7 +2996,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .plan-name {
-    font-family: var(--font-mono);
+    font-family: var(--font-display);
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: #F4EEDD;
@@ -5115,7 +5175,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     position: relative;
     overflow: hidden;
     margin-top: 1rem;
-    padding: 1rem 0;
+    margin-bottom: 0;
+    padding: 1.5rem 0;
     /* Transparent to let hero gradient show through */
     background: transparent;
     /* Full bleed - extend to screen edges */
