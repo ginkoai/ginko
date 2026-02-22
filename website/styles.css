@@ -28,16 +28,23 @@
     --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     --font-sans: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 
+    /* Typography Scale (based on best practices guide)
+       H1: 80px → 64px → 44px (desktop → tablet → mobile)
+       H2: 56px → 56px → 32px
+       H3: 32px → 32px → 28px
+       H4: 20px → 20px → 18px
+       Body-lg: 18px, Body: 16px, Body-sm: 14px */
     --font-size-xs: 0.75rem;      /* 12px */
     --font-size-sm: 0.875rem;     /* 14px */
     --font-size-base: 1rem;       /* 16px */
-    --font-size-lg: 1.125rem;     /* 18px */
-    --font-size-xl: 1.25rem;      /* 20px */
+    --font-size-lg: 1.125rem;     /* 18px - body-lg */
+    --font-size-xl: 1.25rem;      /* 20px - H4 */
     --font-size-2xl: 1.5rem;      /* 24px */
-    --font-size-3xl: 2rem;        /* 32px */
+    --font-size-3xl: 2rem;        /* 32px - H3 */
     --font-size-4xl: 2.5rem;      /* 40px */
-    --font-size-5xl: 3rem;        /* 48px */
-    --font-size-6xl: 3.5rem;      /* 56px */
+    --font-size-5xl: 3.5rem;      /* 56px - H2 */
+    --font-size-6xl: 4rem;        /* 64px - H1 tablet */
+    --font-size-7xl: 5rem;        /* 80px - H1 desktop */
 
     --font-weight-normal: 400;
     --font-weight-medium: 500;
@@ -46,11 +53,11 @@
     --font-weight-extrabold: 800;
 
     /* Colors - Light Mode (Sunset Rebrand) */
-    --color-bg: #F4EEDD;
-    --color-surface: #F4EEDD;
-    --color-surface-alt: #EBE4D1;
+    --color-bg: #f3f1e2;
+    --color-surface: #f9f8f1;
+    --color-surface-alt: #f3f1e2;
 
-    --color-surface-hover: #F4EEDD;
+    --color-surface-hover: #f9f8f1;
     --color-text: #0d0d0d;
     --color-text-secondary: #333333;
     --color-text-tertiary: #666666;
@@ -58,10 +65,10 @@
     --color-border-strong: #0d0d0d;
 
     /* Sunset Rainbow Accent Colors */
-    --color-accent: #DC3B05;
-    --color-accent-hover: #c43504;
-    --color-accent-light: rgba(220, 59, 5, 0.15);
-    --color-accent-dark: #b32f04;
+    --color-accent: #FE4500;
+    --color-accent-hover: #E53D00;
+    --color-accent-light: rgba(254, 69, 0, 0.15);
+    --color-accent-dark: #CC3700;
 
     /* Rainbow Palette */
     --color-yellow: #FAC003;
@@ -79,7 +86,7 @@
     /* Terminal/Code Colors */
     --color-terminal-bg: #0d0d0d;
     --color-terminal-text: #FAF7F0;
-    --color-terminal-prompt: #DC3B05;
+    --color-terminal-prompt: #FE4500;
     --color-terminal-comment: #666666;
     --color-terminal-header: #1a1a1a;
 
@@ -119,7 +126,7 @@
     --bracket-thickness: 4px;
 
     /* Button Colors */
-    --color-btn-primary-bg: #DC3B05;
+    --color-btn-primary-bg: #FE4500;
     --color-btn-primary-text: #ffffff;
     --color-btn-secondary-bg: #0d0d0d;
     --color-btn-secondary-text: #FAF7F0;
@@ -143,21 +150,21 @@
     --color-border: #333333;
     --color-border-strong: #FAF7F0;
 
-    --color-accent: #DC3B05;
-    --color-accent-hover: #ff4a0f;
-    --color-accent-light: rgba(220, 59, 5, 0.2);
-    --color-accent-dark: #b32f04;
+    --color-accent: #FE4500;
+    --color-accent-hover: #FF5A1A;
+    --color-accent-light: rgba(254, 69, 0, 0.2);
+    --color-accent-dark: #CC3700;
 
     --color-terminal-bg: #0a0a0a;
     --color-terminal-header: #1a1a1a;
-    --color-terminal-prompt: #DC3B05;
+    --color-terminal-prompt: #FE4500;
 
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
 
     /* Button Colors - Dark Mode */
-    --color-btn-primary-bg: #DC3B05;
+    --color-btn-primary-bg: #FE4500;
     --color-btn-primary-text: #000000;
     --color-btn-secondary-bg: #FAF7F0;
     --color-btn-secondary-text: #050A0F;
@@ -255,10 +262,11 @@ section {
     left: 0;
     right: 0;
     z-index: 1000;
-    background-color: rgba(244, 238, 221, 0.95);
-    backdrop-filter: blur(12px);
+    background-color: rgba(243, 241, 226, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     transition: background-color var(--transition-base);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="dark"] .navbar {
@@ -915,6 +923,7 @@ pre {
     height: 100%;
     object-fit: cover;
     object-position: center right;
+    /* TODO: Remove Gemini watermark from image file */
 }
 
 /* Warm sunset gradient overlay - solid on left for text, fades to show image on right */
@@ -925,11 +934,11 @@ pre {
     z-index: 1;
     background: linear-gradient(
         to right,
-        rgba(244, 238, 221, 0.95) 0%,
-        rgba(244, 238, 221, 0.85) 25%,
-        rgba(244, 238, 221, 0.6) 50%,
-        rgba(244, 238, 221, 0.2) 75%,
-        rgba(244, 238, 221, 0) 100%
+        rgba(243, 241, 226, 0.95) 0%,
+        rgba(243, 241, 226, 0.85) 25%,
+        rgba(243, 241, 226, 0.6) 50%,
+        rgba(243, 241, 226, 0.2) 75%,
+        rgba(243, 241, 226, 0) 100%
     );
     pointer-events: none; /* Don't block clicks */
 }
@@ -945,13 +954,22 @@ pre {
 
 .hero--with-image .hero-visual {
     /* Hide the SVG graph when using background image */
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
-/* Give navbar more presence over hero image */
+.hero--with-image .context-graph {
+    display: none !important;
+}
+
+/* Give navbar glass effect over hero image */
 body:has(.hero--with-image) .navbar {
-    background-color: #F4EEDD;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background-color: rgba(243, 241, 226, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 /* Z-Pattern Hero Grid Layout - reduced padding for pages with graph */
@@ -1239,6 +1257,48 @@ body:has(.hero--with-image) .navbar {
     color: var(--color-text-secondary);
     margin-bottom: 32px;
     letter-spacing: 0.02em;
+}
+
+/* New hero structure - condensed copy */
+.hero-headline {
+    font-family: var(--font-display);
+    font-size: var(--font-size-7xl); /* 80px */
+    font-weight: var(--font-weight-normal);
+    line-height: 1.1;
+    margin: 0 0 var(--space-6) 0;
+    color: var(--color-text);
+    text-transform: uppercase;
+    letter-spacing: 0.01em; /* +1% for ALL CAPS */
+}
+
+.hero-headline strong {
+    color: var(--color-accent);
+}
+
+.hero-subhead {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg); /* 18px */
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-4) 0;
+    line-height: 1.6;
+}
+
+.hero-supporting {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-base); /* 16px */
+    color: var(--color-text-tertiary);
+    margin: 0 0 var(--space-8) 0;
+}
+
+/* Full copy demo - to show Chris this is too much text */
+.hero-copy-full {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-4) 0;
+    line-height: 1.6;
+    max-width: 540px;
 }
 
 /* iykyg tagline with tooltip */
@@ -1928,7 +1988,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 /* Primary Hero Button - Orange with cream text and arrow box */
 .hero-cta .btn-hero-primary {
-    background-color: #DC3B05 !important;
+    background-color: #FE4500 !important;
     color: #F4EEDD !important;
     border: none;
 }
@@ -1942,11 +2002,11 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .hero-cta .btn-hero-primary .arrow-icon {
-    stroke: #DC3B05 !important;
+    stroke: #FE4500 !important;
 }
 
 .hero-cta .btn-hero-primary:hover {
-    background-color: #c43504 !important;
+    background-color: #E53D00 !important;
     color: #F4EEDD !important;
 }
 
@@ -1992,7 +2052,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     padding: 6px 6px 6px 16px;
     border-radius: 8px;
     height: 44px;
-    background-color: #DC3B05;
+    background-color: #FE4500;
     color: #000000;
     transition: all 0.3s ease-out;
     cursor: pointer;
@@ -2029,7 +2089,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     width: 16px;
     height: 16px;
     position: absolute;
-    stroke: #DC3B05;
+    stroke: #FE4500;
     transition: all 0.3s ease-out;
 }
 
@@ -2096,21 +2156,84 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 /* ============================================================================
-   TRANSFORMATION SECTION (Pain Point → Solution)
+   PAIN POINTS SECTION (Simplified)
+   ============================================================================ */
+
+.pain-points {
+    background-color: var(--color-bg);
+    padding: var(--space-16) 0;
+}
+
+.pain-points-header {
+    text-align: center;
+    margin-bottom: var(--space-12);
+}
+
+.pain-points-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8);
+}
+
+.pain-card {
+    padding: var(--space-8);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    text-align: left;
+}
+
+.pain-label {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    letter-spacing: 0.1em;
+    margin-bottom: var(--space-4);
+}
+
+.pain-statement {
+    font-family: var(--font-display);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.2;
+    color: var(--color-text);
+    margin: 0 0 var(--space-4) 0;
+    text-transform: uppercase;
+}
+
+.pain-closer {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+    .pain-points-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+    }
+}
+
+/* ============================================================================
+   TRANSFORMATION SECTION (Legacy - Pain Point → Solution)
    ============================================================================ */
 
 .transformation {
-    background-color: var(--color-surface);
+    background-color: var(--color-bg);
 }
 
 .section-title {
     font-family: var(--font-display);
-    font-size: var(--font-size-4xl);
+    font-size: var(--font-size-5xl); /* 56px - H2 */
     font-weight: var(--font-weight-normal);
     text-align: center;
     margin-bottom: var(--space-6);
     color: var(--color-text);
     text-transform: uppercase;
+    letter-spacing: 0.01em; /* +1% for ALL CAPS */
 }
 
 .section-subtitle {
@@ -2218,11 +2341,11 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 /* Legacy problem classes (for backward compat) */
-.problem { background-color: var(--color-surface); }
+.problem { background-color: var(--color-bg); }
 
 /* Teams problem section - clean rebuild */
 .teams-problem-section {
-    background-color: var(--color-surface);
+    background-color: var(--color-bg);
 }
 
 /* No-brackets utility class - maximum specificity */
@@ -2373,11 +2496,105 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 /* ============================================================================
-   FEATURES SECTION - Unified Grid Layout
+   FEATURES LIST SECTION - Full-width rows with line separators
+   ============================================================================ */
+
+.features-list {
+    background-color: var(--color-bg);
+    padding: var(--space-16) 0 0 0;
+}
+
+/* Remove container max-width for full-width rows */
+.features-list > .container {
+    max-width: none;
+    padding: 0;
+}
+
+.features-list-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-5xl);
+    font-weight: var(--font-weight-normal);
+    text-transform: uppercase;
+    margin: 0 0 var(--space-12) 0;
+    padding: 0 48px;
+    color: var(--color-text);
+}
+
+.feature-row {
+    padding: var(--space-8) 48px;
+    border-top: 1px solid var(--color-text);
+}
+
+.feature-row:last-child {
+    border-bottom: none;
+}
+
+.feature-row-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-3xl); /* 32px - H3 */
+    font-weight: var(--font-weight-normal);
+    text-transform: uppercase;
+    letter-spacing: 0.01em; /* +1% for ALL CAPS */
+    margin: 0 0 var(--space-2) 0;
+    color: var(--color-text);
+}
+
+.feature-row-tagline {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 var(--space-4) 0;
+}
+
+.feature-row-copy {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    margin: 0;
+    max-width: 800px;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .features-list-title {
+        padding: 0 24px;
+    }
+
+    .feature-row {
+        padding: var(--space-6) 24px;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .features-list-title {
+        font-size: var(--font-size-3xl); /* 32px - H2 mobile */
+        padding: 0 16px;
+    }
+
+    .feature-row {
+        padding: var(--space-6) 16px;
+    }
+
+    .feature-row-title {
+        font-size: 28px; /* H3 mobile */
+    }
+
+    .feature-row-copy {
+        font-size: var(--font-size-sm);
+    }
+}
+
+/* ============================================================================
+   FEATURES SECTION - Unified Grid Layout (Legacy)
    ============================================================================ */
 
 .features {
-    background-color: var(--color-surface);
+    background-color: var(--color-bg);
 }
 
 .features-header,
@@ -2438,7 +2655,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-size: 2.5rem;
     width: 2.5rem;
     height: 2.5rem;
-    color: #DC3B05;
+    color: #FE4500;
     margin-bottom: var(--space-4);
     line-height: 1;
 }
@@ -2446,7 +2663,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .feature-icon svg {
     width: 2.5rem;
     height: 2.5rem;
-    stroke: #DC3B05;
+    stroke: #FE4500;
 }
 
 .feature-name {
@@ -2525,7 +2742,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .testimonial-quote-icon svg {
     width: 100%;
     height: 100%;
-    fill: #DC3B05;
+    fill: #FE4500;
 }
 
 .testimonial-text {
@@ -3200,7 +3417,15 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     color: #F4EEDD;
     font-size: var(--font-size-sm);
     font-family: var(--font-mono);
-    margin-bottom: 0;
+    margin-bottom: var(--space-1);
+}
+
+.footer-tagline-reveal {
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-mono);
+    margin: 0;
+    opacity: 0.6;
 }
 
 .footer-bottom {
@@ -3301,6 +3526,16 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 @media (max-width: 1024px) {
+    /* Tablet Typography Scale */
+    .hero-headline {
+        font-size: var(--font-size-6xl); /* 64px */
+    }
+
+    .section-title,
+    .features-list-title {
+        font-size: var(--font-size-5xl); /* 56px - stays same */
+    }
+
     .container {
         padding: 0 var(--space-4);
     }
@@ -3476,10 +3711,30 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     .hero-line-1,
     .hero-line-2,
     .hero-line-3,
+    .hero-headline,
+    .hero-subhead,
+    .hero-supporting,
     .hero-tagline {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
+    }
+
+    /* Mobile Typography Scale */
+    .hero-headline {
+        font-size: 44px; /* H1 mobile */
+    }
+
+    .section-title {
+        font-size: var(--font-size-3xl); /* 32px - H2 mobile */
+    }
+
+    .hero-subhead {
+        font-size: var(--font-size-base); /* 16px */
+    }
+
+    .hero-supporting {
+        font-size: var(--font-size-xs);
     }
 
     .hero-subtitle {
