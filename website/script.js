@@ -230,7 +230,7 @@ const initTerminalAnimation = () => {
 // ============================================================================
 
 const initCopyButtons = () => {
-  const copyables = document.querySelectorAll('.terminal-copyable');
+  const copyables = document.querySelectorAll('.terminal-copyable, .npm-compact-btn');
   const toast = document.getElementById('toast');
   let toastTimeout;
 

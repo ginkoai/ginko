@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Features Section Mockup v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Sunset Palette */
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08;
+            --color-gray: #615F61;
+            --color-gray-light: #9A989A;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-heading);
+            line-height: 1.6;
+        }
+
+        .mockup-header {
+            padding: 2rem;
+            border-bottom: 2px solid var(--color-black);
+        }
+
+        .mockup-header h1 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-heading);
+        }
+
+        .mockup-header p {
+            color: var(--color-gray);
+            font-size: 0.85rem;
+        }
+
+        /* ============================================
+           OPTION A: HORIZONTAL SCROLL WITH RAINBOW LINE
+           ============================================ */
+        .features-section-a {
+            position: relative;
+            padding: 4rem 0;
+            overflow: hidden;
+            /* Diagonal stripe background */
+            background:
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(0, 0, 0, 0.02) 10px,
+                    rgba(0, 0, 0, 0.02) 11px
+                ),
+                var(--color-cream);
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            color: var(--color-heading);
+        }
+
+        /* Rainbow connector line - flows through section */
+        .rainbow-connector {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 60px;
+            transform: translateY(-50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .rainbow-connector svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .features-scroll-container {
+            position: relative;
+            z-index: 2;
+            overflow-x: auto;
+            padding: 2rem;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .features-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .features-track {
+            display: flex;
+            gap: 2rem;
+            padding: 1rem 0;
+            width: max-content;
+        }
+
+        .feature-card {
+            position: relative;
+            width: 320px;
+            min-height: 400px;
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem 2rem;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        /* Oversized background number */
+        .feature-bg-number {
+            position: absolute;
+            top: -20px;
+            right: -10px;
+            font-family: var(--font-heading);
+            font-size: 180px;
+            line-height: 1;
+            color: rgba(0, 0, 0, 0.04);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .feature-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Custom icon */
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .feature-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Icon with offset shadow effect */
+        .feature-icon::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 100%;
+            height: 100%;
+            background: var(--color-purple-black);
+            opacity: 0.15;
+            z-index: -1;
+            border-radius: inherit;
+        }
+
+        .feature-number {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Each number gets its sunset color */
+        .feature-card:nth-child(1) .feature-number { color: var(--color-yellow); }
+        .feature-card:nth-child(2) .feature-number { color: var(--color-orange); }
+        .feature-card:nth-child(3) .feature-number { color: var(--color-red); }
+        .feature-card:nth-child(4) .feature-number { color: var(--color-violet); }
+        .feature-card:nth-child(5) .feature-number { color: var(--color-purple); }
+        .feature-card:nth-child(6) .feature-number { color: var(--color-purple-black); }
+        .feature-card:nth-child(7) .feature-number { color: var(--color-black); }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            color: var(--color-heading);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-tagline {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            font-size: 0.875rem;
+            color: var(--color-gray);
+            line-height: 1.7;
+        }
+
+        /* Navigation dots */
+        .features-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        .features-nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            opacity: 0.4;
+        }
+
+        .features-nav-dot:hover,
+        .features-nav-dot.active {
+            transform: scale(1.3);
+            opacity: 1;
+        }
+
+        .features-nav-dot:nth-child(1) { background: var(--color-yellow); }
+        .features-nav-dot:nth-child(2) { background: var(--color-orange); }
+        .features-nav-dot:nth-child(3) { background: var(--color-red); }
+        .features-nav-dot:nth-child(4) { background: var(--color-violet); }
+        .features-nav-dot:nth-child(5) { background: var(--color-purple); }
+        .features-nav-dot:nth-child(6) { background: var(--color-purple-black); }
+        .features-nav-dot:nth-child(7) { background: var(--color-black); }
+
+        /* ============================================
+           OPTION B: VERTICAL STACK WITH RAINBOW FLOW
+           ============================================ */
+        .features-section-b {
+            position: relative;
+            padding: 4rem 2rem;
+            background: var(--color-cream);
+            /* Dot pattern background */
+            background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .features-vertical {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Vertical rainbow line */
+        .rainbow-line-vertical {
+            position: absolute;
+            left: 40px;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: linear-gradient(
+                to bottom,
+                var(--color-yellow) 0%,
+                var(--color-orange) 16%,
+                var(--color-red) 33%,
+                var(--color-violet) 50%,
+                var(--color-purple) 66%,
+                var(--color-purple-black) 83%,
+                var(--color-black) 100%
+            );
+            border-radius: 4px;
+        }
+
+        .feature-row {
+            display: flex;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .feature-marker {
+            width: 80px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 1rem;
+        }
+
+        .feature-marker-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 2;
+        }
+
+        .feature-row:nth-child(1) .feature-marker-dot { background: var(--color-yellow); }
+        .feature-row:nth-child(2) .feature-marker-dot { background: var(--color-orange); }
+        .feature-row:nth-child(3) .feature-marker-dot { background: var(--color-red); }
+        .feature-row:nth-child(4) .feature-marker-dot { background: var(--color-violet); }
+        .feature-row:nth-child(5) .feature-marker-dot { background: var(--color-purple); }
+        .feature-row:nth-child(6) .feature-marker-dot { background: var(--color-purple-black); }
+        .feature-row:nth-child(7) .feature-marker-dot { background: var(--color-black); }
+
+        .feature-card-b {
+            flex: 1;
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card-b .feature-bg-number {
+            font-size: 140px;
+            top: -10px;
+            right: 0;
+        }
+
+        /* ============================================
+           OPTION C: CONNECTED CARDS WITH ARROWS
+           (Like the "THE BEFORE → THE SHIFT" example)
+           ============================================ */
+        .features-section-c {
+            padding: 4rem 0;
+            background: var(--color-cream);
+            overflow: hidden;
+        }
+
+        .features-connected {
+            position: relative;
+        }
+
+        /* The connecting bar with gradient */
+        .connector-bar {
+            position: absolute;
+            top: 120px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-orange) 16.66%,
+                var(--color-red) 33.33%,
+                var(--color-violet) 50%,
+                var(--color-purple) 66.66%,
+                var(--color-purple-black) 83.33%,
+                var(--color-black) 100%
+            );
+            z-index: 1;
+        }
+
+        .features-grid-c {
+            display: flex;
+            position: relative;
+            z-index: 2;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .features-grid-c::-webkit-scrollbar {
+            display: none;
+        }
+
+        .feature-card-c {
+            flex: 0 0 280px;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .feature-card-c .feature-title-c {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: white;
+            background: var(--color-black);
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0;
+            position: relative;
+            /* Make the title sit ON the connector bar */
+            margin-top: 80px;
+        }
+
+        /* Arrow between cards */
+        .feature-card-c::after {
+            content: '→';
+            position: absolute;
+            right: -15px;
+            top: 130px;
+            font-size: 2rem;
+            color: white;
+            z-index: 3;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .feature-card-c:last-child::after {
+            display: none;
+        }
+
+        .feature-desc-c {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: var(--color-gray);
+            text-align: left;
+        }
+
+        /* ============================================
+           ICONS (Vintage geometric style)
+           ============================================ */
+        .icon-start {
+            fill: var(--color-yellow);
+        }
+        .icon-charter {
+            fill: var(--color-orange);
+        }
+        .icon-epic {
+            fill: var(--color-red);
+        }
+        .icon-vibecheck {
+            fill: var(--color-violet);
+        }
+        .icon-insights {
+            fill: var(--color-purple);
+        }
+        .icon-handoff {
+            fill: var(--color-purple-black);
+        }
+        .icon-collab {
+            fill: var(--color-black);
+        }
+
+        /* Section dividers */
+        .section-divider {
+            padding: 3rem 2rem;
+            border-top: 2px solid var(--color-black);
+            border-bottom: 2px solid var(--color-black);
+            background: white;
+        }
+
+        .section-divider h2 {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--color-heading);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-divider p {
+            color: var(--color-gray);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="mockup-header">
+        <h1>Features Section - Design Options</h1>
+        <p>Combining: Rainbow connector, oversized numbers, custom icons, background patterns</p>
+    </header>
+
+    <!-- ============================================
+         OPTION A: HORIZONTAL SCROLL WITH RAINBOW LINE
+         ============================================ -->
+    <div class="section-divider">
+        <h2>Option A: Horizontal Scroll + Rainbow Connector</h2>
+        <p>Cards scroll horizontally, rainbow line flows behind connecting all features. Diagonal stripe background.</p>
+    </div>
+
+    <section class="features-section-a">
+        <h2 class="section-title">HOW GINKO WORKS</h2>
+
+        <div class="features-scroll-container">
+            <div class="features-track">
+                <!-- Card 1: ginko start -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">01</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-start">
+                                <polygon points="20,12 52,32 20,52" stroke="#100D08" stroke-width="3" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">01</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. Back to flow in 30 seconds.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 2: ginko charter -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">02</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-charter">
+                                <circle cx="32" cy="32" r="20" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <line x1="32" y1="12" x2="32" y2="22" stroke="#100D08" stroke-width="3"/>
+                                <circle cx="32" cy="32" r="4" fill="#100D08"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">02</div>
+                        <h3 class="feature-title">ginko charter</h3>
+                        <p class="feature-tagline">Your Blueprint For Success</p>
+                        <p class="feature-description">
+                            Give your AI the big picture: project goals, audiences, pain-points, architecture, scope, and acceptance criteria through natural conversation.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3: ginko epic -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">03</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-epic">
+                                <polygon points="32,8 56,52 8,52" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <line x1="20" y1="38" x2="44" y2="38" stroke="#100D08" stroke-width="2"/>
+                                <line x1="26" y1="28" x2="38" y2="28" stroke="#100D08" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">03</div>
+                        <h3 class="feature-title">ginko epic</h3>
+                        <p class="feature-tagline">WHY-WHAT-HOW</p>
+                        <p class="feature-description">
+                            Creates your work breakdown structure from your charter and conversation. Epics become sprints and tasks to keep work on track.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 4: ginko vibecheck -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">04</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-vibecheck">
+                                <path d="M8,32 Q20,12 32,32 Q44,52 56,32" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <circle cx="32" cy="32" r="6" fill="#100D08"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">04</div>
+                        <h3 class="feature-title">ginko vibecheck</h3>
+                        <p class="feature-tagline">Take A Beat</p>
+                        <p class="feature-description">
+                            A blame-free moment to challenge approach and pivot back to flow. Just call "vibecheck" whenever things feel off.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 5: ginko insights -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">05</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-insights">
+                                <circle cx="32" cy="24" r="12" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <line x1="32" y1="36" x2="32" y2="56" stroke="#100D08" stroke-width="3"/>
+                                <line x1="24" y1="48" x2="40" y2="48" stroke="#100D08" stroke-width="3"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">05</div>
+                        <h3 class="feature-title">ginko insights</h3>
+                        <p class="feature-tagline">Level Up</p>
+                        <p class="feature-description">
+                            Analyzes your session logs, commits, and data to pinpoint where you're effective and where you can improve.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 6: ginko handoff -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">06</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-handoff">
+                                <path d="M12,40 L28,40 L32,32 L36,40 L52,40" stroke="#100D08" stroke-width="3" fill="none" stroke-linecap="round"/>
+                                <circle cx="12" cy="40" r="4" fill="#100D08"/>
+                                <circle cx="52" cy="40" r="4" fill="#100D08"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">06</div>
+                        <h3 class="feature-title">ginko handoff</h3>
+                        <p class="feature-tagline">We'll Take It From Here</p>
+                        <p class="feature-description">
+                            Handles all end-of-session housekeeping in one command. Git commits, temp-file cleanup, doc updates—all done.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 7: ginko collaboration graph -->
+                <div class="feature-card">
+                    <span class="feature-bg-number">07</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 64 64" class="icon-collab">
+                                <circle cx="32" cy="16" r="8" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <circle cx="16" cy="48" r="8" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <circle cx="48" cy="48" r="8" stroke="#100D08" stroke-width="3" fill="none"/>
+                                <line x1="32" y1="24" x2="20" y2="42" stroke="#100D08" stroke-width="2"/>
+                                <line x1="32" y1="24" x2="44" y2="42" stroke="#100D08" stroke-width="2"/>
+                                <line x1="24" y1="48" x2="40" y2="48" stroke="#100D08" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number">07</div>
+                        <h3 class="feature-title">ginko collab graph</h3>
+                        <p class="feature-tagline">Get Real, In Real Time</p>
+                        <p class="feature-description">
+                            AI development moves fast. The collaboration graph keeps your whole team in sync with real-time task updates and insights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation dots -->
+        <div class="features-nav">
+            <button class="features-nav-dot active"></button>
+            <button class="features-nav-dot"></button>
+            <button class="features-nav-dot"></button>
+            <button class="features-nav-dot"></button>
+            <button class="features-nav-dot"></button>
+            <button class="features-nav-dot"></button>
+            <button class="features-nav-dot"></button>
+        </div>
+    </section>
+
+    <!-- ============================================
+         OPTION B: VERTICAL TIMELINE WITH RAINBOW LINE
+         ============================================ -->
+    <div class="section-divider">
+        <h2>Option B: Vertical Timeline + Rainbow Line</h2>
+        <p>Features stack vertically with a rainbow gradient line connecting them. Dot pattern background.</p>
+    </div>
+
+    <section class="features-section-b">
+        <h2 class="section-title">HOW GINKO WORKS</h2>
+
+        <div class="features-vertical">
+            <div class="rainbow-line-vertical"></div>
+
+            <!-- Feature 1 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">01</span>
+                    <div class="feature-content">
+                        <div class="feature-number">01</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. Back to flow in 30 seconds.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">02</span>
+                    <div class="feature-content">
+                        <div class="feature-number">02</div>
+                        <h3 class="feature-title">ginko charter</h3>
+                        <p class="feature-tagline">Your Blueprint For Success</p>
+                        <p class="feature-description">
+                            Give your AI the big picture: project goals, audiences, pain-points, architecture, scope, and acceptance criteria through natural conversation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">03</span>
+                    <div class="feature-content">
+                        <div class="feature-number">03</div>
+                        <h3 class="feature-title">ginko epic</h3>
+                        <p class="feature-tagline">WHY-WHAT-HOW</p>
+                        <p class="feature-description">
+                            Creates your work breakdown structure from your charter and conversation. Epics become sprints and tasks to keep work on track.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">04</span>
+                    <div class="feature-content">
+                        <div class="feature-number">04</div>
+                        <h3 class="feature-title">ginko vibecheck</h3>
+                        <p class="feature-tagline">Take A Beat</p>
+                        <p class="feature-description">
+                            A blame-free moment to challenge approach and pivot back to flow. Just call "vibecheck" whenever things feel off.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">05</span>
+                    <div class="feature-content">
+                        <div class="feature-number">05</div>
+                        <h3 class="feature-title">ginko insights</h3>
+                        <p class="feature-tagline">Level Up</p>
+                        <p class="feature-description">
+                            Analyzes your session logs, commits, and data to pinpoint where you're effective and where you can improve.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">06</span>
+                    <div class="feature-content">
+                        <div class="feature-number">06</div>
+                        <h3 class="feature-title">ginko handoff</h3>
+                        <p class="feature-tagline">We'll Take It From Here</p>
+                        <p class="feature-description">
+                            Handles all end-of-session housekeeping in one command. Git commits, temp-file cleanup, doc updates—all done.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feature 7 -->
+            <div class="feature-row">
+                <div class="feature-marker">
+                    <div class="feature-marker-dot"></div>
+                </div>
+                <div class="feature-card-b">
+                    <span class="feature-bg-number">07</span>
+                    <div class="feature-content">
+                        <div class="feature-number">07</div>
+                        <h3 class="feature-title">ginko collab graph</h3>
+                        <p class="feature-tagline">Get Real, In Real Time</p>
+                        <p class="feature-description">
+                            AI development moves fast. The collaboration graph keeps your whole team in sync with real-time task updates and insights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         OPTION C: CONNECTED BAR (Like "THE BEFORE → THE SHIFT")
+         ============================================ -->
+    <div class="section-divider">
+        <h2>Option C: Connected Rainbow Bar + Arrows</h2>
+        <p>Features connected by a horizontal rainbow bar running through all titles, with arrows between. Inspired by your #10 reference.</p>
+    </div>
+
+    <section class="features-section-c">
+        <h2 class="section-title">HOW GINKO WORKS</h2>
+
+        <div class="features-connected">
+            <div class="connector-bar"></div>
+
+            <div class="features-grid-c">
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">START</h3>
+                    <div class="feature-desc-c">
+                        <strong>Ready Player YOU</strong><br>
+                        Load your session context instantly. Back to flow in 30 seconds.
+                    </div>
+                </div>
+
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">CHARTER</h3>
+                    <div class="feature-desc-c">
+                        <strong>Your Blueprint</strong><br>
+                        Define project goals, scope, and criteria through conversation.
+                    </div>
+                </div>
+
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">EPIC</h3>
+                    <div class="feature-desc-c">
+                        <strong>WHY-WHAT-HOW</strong><br>
+                        Break down work into sprints and tasks automatically.
+                    </div>
+                </div>
+
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">VIBECHECK</h3>
+                    <div class="feature-desc-c">
+                        <strong>Take A Beat</strong><br>
+                        Blame-free recalibration when things feel off.
+                    </div>
+                </div>
+
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">INSIGHTS</h3>
+                    <div class="feature-desc-c">
+                        <strong>Level Up</strong><br>
+                        Analyze your patterns. Find where you can improve.
+                    </div>
+                </div>
+
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">HANDOFF</h3>
+                    <div class="feature-desc-c">
+                        <strong>We'll Take It</strong><br>
+                        End-of-session cleanup in one command.
+                    </div>
+                </div>
+
+                <div class="feature-card-c">
+                    <h3 class="feature-title-c">COLLAB</h3>
+                    <div class="feature-desc-c">
+                        <strong>Real Time Sync</strong><br>
+                        Keep your team aligned as work progresses.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider">
+        <h2>Design Elements Used</h2>
+        <p>
+            <strong>Background patterns:</strong> Diagonal stripes (Option A), Dot grid (Option B)<br>
+            <strong>Oversized numbers:</strong> Ghosted 01-07 behind each card<br>
+            <strong>Rainbow connector:</strong> Vertical line (B), Horizontal bar (C)<br>
+            <strong>Custom icons:</strong> Geometric vintage style with offset shadows<br>
+            <strong>Colors:</strong> Sunset gradient dots + number colors matching position<br>
+        </p>
+    </div>
+
+</body>
+</html>

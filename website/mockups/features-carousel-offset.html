@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Features Carousel (Offset Layout)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08;
+            --color-gray: #615F61;
+            --color-gray-light: #9A989A;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-heading);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           OFFSET STACKED CAROUSEL
+           ============================================ */
+        .features-section {
+            position: relative;
+            padding: 6rem 0;
+            overflow: hidden;
+            min-height: 600px;
+            /* Subtle diagonal stripe background */
+            background:
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(0, 0, 0, 0.015) 10px,
+                    rgba(0, 0, 0, 0.015) 11px
+                ),
+                var(--color-cream);
+        }
+
+        .section-header {
+            max-width: 1200px;
+            margin: 0 auto 3rem;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--color-heading);
+        }
+
+        .section-subtitle {
+            font-size: 1rem;
+            color: var(--color-gray);
+            margin-top: 0.5rem;
+        }
+
+        /* Main carousel container */
+        .carousel-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* The offset layout wrapper */
+        .carousel-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            min-height: 420px;
+        }
+
+        /* Left side: Card */
+        .carousel-card-area {
+            position: relative;
+        }
+
+        .feature-card {
+            position: relative;
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 3rem;
+            max-width: 480px;
+        }
+
+        /* Icon with colored background */
+        .feature-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .feature-icon-bg {
+            position: absolute;
+            inset: 0;
+            opacity: 0.15;
+            border-radius: 4px;
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-number-small {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.6;
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 2.25rem;
+            color: var(--color-heading);
+            margin-bottom: 0.25rem;
+            line-height: 1.1;
+        }
+
+        .feature-tagline {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 1.25rem;
+        }
+
+        .feature-description {
+            font-size: 0.95rem;
+            color: var(--color-gray);
+            line-height: 1.7;
+        }
+
+        /* Right side: Oversized number */
+        .carousel-number-area {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            overflow: visible;
+        }
+
+        .oversized-number {
+            font-family: var(--font-heading);
+            font-size: 320px;
+            line-height: 0.8;
+            opacity: 0.08;
+            position: relative;
+            left: -40px;
+            user-select: none;
+        }
+
+        /* Rainbow swoosh decoration */
+        .rainbow-swoosh {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            width: 60%;
+            height: 200px;
+            transform: translateY(-50%);
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .rainbow-swoosh svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Navigation */
+        .carousel-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-arrow {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--color-black);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background: var(--color-black);
+            color: var(--color-cream);
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 0.5rem;
+            margin-left: 1rem;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            opacity: 0.35;
+        }
+
+        .nav-dot:hover,
+        .nav-dot.active {
+            transform: scale(1.4);
+            opacity: 1;
+        }
+
+        .nav-dot:nth-child(1) { background: var(--color-yellow); }
+        .nav-dot:nth-child(2) { background: var(--color-orange); }
+        .nav-dot:nth-child(3) { background: var(--color-red); }
+        .nav-dot:nth-child(4) { background: var(--color-violet); }
+        .nav-dot:nth-child(5) { background: var(--color-purple); }
+        .nav-dot:nth-child(6) { background: var(--color-purple-black); }
+        .nav-dot:nth-child(7) { background: var(--color-black); }
+
+        .nav-counter {
+            font-size: 0.85rem;
+            color: var(--color-gray);
+            margin-left: auto;
+        }
+
+        .nav-counter span {
+            color: var(--color-heading);
+            font-weight: 600;
+        }
+
+        /* ============================================
+           ALTERNATE: ICON FLOATS OUTSIDE
+           ============================================ */
+        .features-section-alt {
+            position: relative;
+            padding: 6rem 0;
+            overflow: hidden;
+            min-height: 600px;
+            background: var(--color-cream);
+            border-top: 2px solid var(--color-black);
+        }
+
+        .carousel-layout-alt {
+            display: grid;
+            grid-template-columns: 120px 1fr 1fr;
+            gap: 0;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            min-height: 420px;
+        }
+
+        /* Floating icon column */
+        .floating-icon-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .floating-icon {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--color-black);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .floating-icon::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            right: -6px;
+            bottom: -6px;
+            background: var(--color-yellow);
+            z-index: -1;
+        }
+
+        .floating-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .floating-number {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--color-gray-light);
+        }
+
+        /* Card without icon */
+        .feature-card-alt {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem 3rem;
+            max-width: 500px;
+            margin-left: 2rem;
+        }
+
+        .feature-card-alt .feature-title {
+            font-size: 2rem;
+        }
+
+        /* Rainbow stripe running behind */
+        .rainbow-stripe-bg {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 8px;
+            transform: translateY(-50%);
+            background: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-yellow) 14.28%,
+                var(--color-orange) 14.28%,
+                var(--color-orange) 28.56%,
+                var(--color-red) 28.56%,
+                var(--color-red) 42.84%,
+                var(--color-violet) 42.84%,
+                var(--color-violet) 57.12%,
+                var(--color-purple) 57.12%,
+                var(--color-purple) 71.4%,
+                var(--color-purple-black) 71.4%,
+                var(--color-purple-black) 85.68%,
+                var(--color-black) 85.68%,
+                var(--color-black) 100%
+            );
+            z-index: 0;
+        }
+
+        /* ============================================
+           OPTION 3: WIDE CARD WITH NUMBER OVERLAY
+           ============================================ */
+        .features-section-wide {
+            position: relative;
+            padding: 6rem 2rem;
+            overflow: hidden;
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px),
+                var(--color-cream);
+            background-size: 24px 24px;
+            border-top: 2px solid var(--color-black);
+        }
+
+        .wide-card-container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .wide-card {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wide-card-inner {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .wide-card-icon {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--color-black);
+            position: relative;
+        }
+
+        .wide-card-icon svg {
+            width: 56px;
+            height: 56px;
+        }
+
+        .wide-card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .wide-card .feature-title {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .wide-card .feature-description {
+            font-size: 1rem;
+            max-width: 500px;
+        }
+
+        /* Giant number in corner */
+        .wide-card-number {
+            position: absolute;
+            bottom: -40px;
+            right: -20px;
+            font-family: var(--font-heading);
+            font-size: 280px;
+            line-height: 0.7;
+            opacity: 0.06;
+            z-index: 1;
+        }
+
+        /* Wide nav below card */
+        .wide-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .wide-nav-progress {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 14.28%;
+            background: linear-gradient(
+                to right,
+                var(--color-yellow),
+                var(--color-orange)
+            );
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--color-gray);
+        }
+
+        .progress-text span {
+            color: var(--color-heading);
+            font-weight: 600;
+        }
+
+        /* Labels */
+        .option-label {
+            background: var(--color-black);
+            color: var(--color-cream);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 0.5rem 1rem;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         OPTION 1: OFFSET LAYOUT (Card left, Number right)
+         ============================================ -->
+    <section class="features-section">
+        <div class="section-header">
+            <span class="option-label">Option 1: Offset Layout</span>
+            <h2 class="section-title">HOW GINKO WORKS</h2>
+            <p class="section-subtitle">Card left, oversized number bleeds right</p>
+        </div>
+
+        <div class="carousel-container">
+            <div class="carousel-layout">
+                <!-- Left: Card -->
+                <div class="carousel-card-area">
+                    <div class="feature-card">
+                        <div class="feature-icon-wrapper">
+                            <div class="feature-icon-bg" style="background: var(--color-yellow);"></div>
+                            <svg class="feature-icon" viewBox="0 0 48 48">
+                                <polygon points="16,8 40,24 16,40" fill="var(--color-yellow)" stroke="var(--color-heading)" stroke-width="2.5" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="feature-number-small">01 / 07</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics—just straight back to flow in 30 seconds or less.
+                        </p>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="carousel-nav">
+                        <div class="nav-arrows">
+                            <button class="nav-arrow">‹</button>
+                            <button class="nav-arrow">›</button>
+                        </div>
+                        <div class="nav-dots">
+                            <button class="nav-dot active"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                        </div>
+                        <div class="nav-counter">
+                            <span>01</span> / 07
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Oversized Number -->
+                <div class="carousel-number-area">
+                    <div class="oversized-number">01</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         OPTION 2: FLOATING ICON + RAINBOW STRIPE
+         ============================================ -->
+    <section class="features-section-alt">
+        <div class="section-header">
+            <span class="option-label">Option 2: Floating Icon + Rainbow Stripe</span>
+            <h2 class="section-title">HOW GINKO WORKS</h2>
+            <p class="section-subtitle">Icon breaks out of card, rainbow stripe runs behind</p>
+        </div>
+
+        <div class="rainbow-stripe-bg"></div>
+
+        <div class="carousel-layout-alt">
+            <!-- Floating icon -->
+            <div class="floating-icon-area">
+                <div class="floating-icon">
+                    <svg viewBox="0 0 48 48">
+                        <polygon points="16,8 40,24 16,40" fill="none" stroke="var(--color-heading)" stroke-width="2.5" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="floating-number">01</div>
+            </div>
+
+            <!-- Card -->
+            <div class="carousel-card-area">
+                <div class="feature-card-alt">
+                    <h3 class="feature-title">ginko start</h3>
+                    <p class="feature-tagline">Ready Player YOU</p>
+                    <p class="feature-description">
+                        Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining—just straight back to flow in 30 seconds or less.
+                    </p>
+
+                    <div class="carousel-nav">
+                        <div class="nav-arrows">
+                            <button class="nav-arrow">‹</button>
+                            <button class="nav-arrow">›</button>
+                        </div>
+                        <div class="nav-dots">
+                            <button class="nav-dot active"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                            <button class="nav-dot"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oversized Number -->
+            <div class="carousel-number-area">
+                <div class="oversized-number" style="font-size: 240px; left: 0;">01</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================
+         OPTION 3: WIDE CARD WITH CORNER NUMBER
+         ============================================ -->
+    <section class="features-section-wide">
+        <div class="section-header" style="max-width: 900px;">
+            <span class="option-label">Option 3: Wide Card + Corner Number</span>
+            <h2 class="section-title">HOW GINKO WORKS</h2>
+            <p class="section-subtitle">Centered but with oversized number in corner, progress bar nav</p>
+        </div>
+
+        <div class="wide-card-container">
+            <div class="wide-card">
+                <div class="wide-card-number">01</div>
+                <div class="wide-card-inner">
+                    <div class="wide-card-icon">
+                        <svg viewBox="0 0 48 48">
+                            <polygon points="16,8 40,24 16,40" fill="var(--color-yellow)" stroke="var(--color-heading)" stroke-width="2" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="wide-card-content">
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics to your AI partner—just straight back to flow in 30 seconds or less.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wide-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow">‹</button>
+                    <button class="nav-arrow">›</button>
+                </div>
+
+                <div class="wide-nav-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>01</span> of 07
+                    </div>
+                </div>
+
+                <div class="nav-dots">
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

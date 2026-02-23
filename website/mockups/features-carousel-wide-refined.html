@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Features Carousel (Wide Card Refined)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08;
+            --color-gray: #615F61;
+            --color-gray-light: #9A989A;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --max-width: 900px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-heading);
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           FULL-BLEED SECTION WITH CONTAINED CARD
+           ============================================ */
+        .features-section {
+            position: relative;
+            padding: 5rem 0;
+            /* Full-bleed dot pattern background */
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px),
+                var(--color-cream);
+            background-size: 20px 20px;
+        }
+
+        /* Rainbow accent bar at top of section */
+        .section-rainbow-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-yellow) 14.28%,
+                var(--color-orange) 14.28%,
+                var(--color-orange) 28.56%,
+                var(--color-red) 28.56%,
+                var(--color-red) 42.84%,
+                var(--color-violet) 42.84%,
+                var(--color-violet) 57.12%,
+                var(--color-purple) 57.12%,
+                var(--color-purple) 71.4%,
+                var(--color-purple-black) 71.4%,
+                var(--color-purple-black) 85.68%,
+                var(--color-black) 85.68%,
+                var(--color-black) 100%
+            );
+        }
+
+        /* Contained content area */
+        .features-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--color-heading);
+            margin-bottom: 0.25rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+        }
+
+        /* The card */
+        .feature-card {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 3rem 3.5rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 320px;
+        }
+
+        /* Oversized number in corner */
+        .feature-bg-number {
+            position: absolute;
+            bottom: -50px;
+            right: -10px;
+            font-family: var(--font-heading);
+            font-size: 300px;
+            line-height: 0.7;
+            opacity: 0.045;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Card content layout */
+        .feature-content {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 2.5rem;
+            align-items: start;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Icon box */
+        .feature-icon-box {
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: white;
+        }
+
+        /* Colored shadow offset */
+        .feature-icon-box::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            right: -6px;
+            bottom: -6px;
+            z-index: -1;
+            transition: background 0.3s;
+        }
+
+        .feature-icon-box svg {
+            width: 52px;
+            height: 52px;
+        }
+
+        .feature-text {
+            padding-top: 0.5rem;
+        }
+
+        .feature-number-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-gray);
+            margin-bottom: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(0,0,0,0.04);
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-heading);
+            line-height: 1.1;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-tagline {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            font-size: 0.95rem;
+            color: var(--color-gray);
+            line-height: 1.75;
+            max-width: 520px;
+        }
+
+        /* Navigation bar below card */
+        .feature-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+        }
+
+        /* Arrow buttons */
+        .nav-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-arrow {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--color-black);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background: var(--color-black);
+            color: white;
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Progress indicator */
+        .nav-progress {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .progress-bar {
+            width: 180px;
+            height: 4px;
+            background: rgba(0,0,0,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.4s ease, background 0.4s ease;
+        }
+
+        .progress-counter {
+            font-size: 0.85rem;
+            color: var(--color-gray);
+            min-width: 50px;
+        }
+
+        .progress-counter .current {
+            font-weight: 600;
+            color: var(--color-heading);
+        }
+
+        /* Dot navigation */
+        .nav-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            opacity: 0.3;
+        }
+
+        .nav-dot:hover {
+            opacity: 0.6;
+        }
+
+        .nav-dot.active {
+            transform: scale(1.35);
+            opacity: 1;
+        }
+
+        .nav-dot:nth-child(1) { background: var(--color-yellow); }
+        .nav-dot:nth-child(2) { background: var(--color-orange); }
+        .nav-dot:nth-child(3) { background: var(--color-red); }
+        .nav-dot:nth-child(4) { background: var(--color-violet); }
+        .nav-dot:nth-child(5) { background: var(--color-purple); }
+        .nav-dot:nth-child(6) { background: var(--color-purple-black); }
+        .nav-dot:nth-child(7) { background: var(--color-black); }
+
+        /* ============================================
+           FEATURE-SPECIFIC COLORS
+           ============================================ */
+
+        /* Feature 1: Start - Yellow */
+        [data-feature="1"] .feature-icon-box::before { background: var(--color-yellow); }
+        [data-feature="1"] .feature-icon-box svg { fill: var(--color-yellow); stroke: var(--color-heading); }
+        [data-feature="1"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-yellow)); width: 14.28%; }
+
+        /* Feature 2: Charter - Orange */
+        [data-feature="2"] .feature-icon-box::before { background: var(--color-orange); }
+        [data-feature="2"] .feature-icon-box svg { fill: var(--color-orange); stroke: var(--color-heading); }
+        [data-feature="2"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-orange)); width: 28.56%; }
+
+        /* Feature 3: Epic - Red */
+        [data-feature="3"] .feature-icon-box::before { background: var(--color-red); }
+        [data-feature="3"] .feature-icon-box svg { fill: var(--color-red); stroke: var(--color-heading); }
+        [data-feature="3"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-red)); width: 42.84%; }
+
+        /* Feature 4: Vibecheck - Violet */
+        [data-feature="4"] .feature-icon-box::before { background: var(--color-violet); }
+        [data-feature="4"] .feature-icon-box svg { fill: var(--color-violet); stroke: var(--color-heading); }
+        [data-feature="4"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-violet)); width: 57.12%; }
+
+        /* Feature 5: Insights - Purple */
+        [data-feature="5"] .feature-icon-box::before { background: var(--color-purple); }
+        [data-feature="5"] .feature-icon-box svg { fill: var(--color-purple); stroke: var(--color-heading); }
+        [data-feature="5"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-purple)); width: 71.4%; }
+
+        /* Feature 6: Handoff - Purple-Black */
+        [data-feature="6"] .feature-icon-box::before { background: var(--color-purple-black); }
+        [data-feature="6"] .feature-icon-box svg { fill: var(--color-purple-black); stroke: var(--color-heading); }
+        [data-feature="6"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-purple-black)); width: 85.68%; }
+
+        /* Feature 7: Collab - Black */
+        [data-feature="7"] .feature-icon-box::before { background: var(--color-black); }
+        [data-feature="7"] .feature-icon-box svg { fill: var(--color-black); stroke: var(--color-heading); }
+        [data-feature="7"] .progress-fill { background: linear-gradient(to right, var(--color-yellow), var(--color-black)); width: 100%; }
+
+        /* ============================================
+           DEMO: Show all states
+           ============================================ */
+        .demo-label {
+            background: var(--color-black);
+            color: var(--color-cream);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 0.75rem 1.5rem;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .demo-spacer {
+            height: 3rem;
+            background: var(--color-cream);
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .feature-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .feature-icon-box {
+                width: 80px;
+                height: 80px;
+            }
+
+            .feature-icon-box svg {
+                width: 40px;
+                height: 40px;
+            }
+
+            .feature-title {
+                font-size: 2rem;
+            }
+
+            .feature-bg-number {
+                font-size: 180px;
+                bottom: -30px;
+            }
+
+            .feature-nav {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .nav-progress {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .progress-bar {
+                width: 100%;
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         FEATURE 1: ginko start
+         ============================================ -->
+    <section class="features-section" data-feature="1">
+        <div class="section-rainbow-bar"></div>
+
+        <div class="features-container">
+            <div class="section-header">
+                <span class="demo-label">Feature 1 of 7: Start</span>
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-bg-number">01</span>
+                <div class="feature-content">
+                    <div class="feature-icon-box">
+                        <svg viewBox="0 0 48 48" stroke-width="2.5" stroke-linejoin="round">
+                            <polygon points="16,8 40,24 16,40"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-number-badge">Feature 01</span>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics to your AI partner—just straight back to flow in 30 seconds or less.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow" disabled>‹</button>
+                    <button class="nav-arrow">›</button>
+                </div>
+
+                <div class="nav-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-counter">
+                        <span class="current">01</span> / 07
+                    </div>
+                </div>
+
+                <div class="nav-dots">
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="demo-spacer"></div>
+
+    <!-- ============================================
+         FEATURE 4: ginko vibecheck (showing mid-progress)
+         ============================================ -->
+    <section class="features-section" data-feature="4">
+        <div class="section-rainbow-bar"></div>
+
+        <div class="features-container">
+            <div class="section-header">
+                <span class="demo-label">Feature 4 of 7: Vibecheck</span>
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-bg-number">04</span>
+                <div class="feature-content">
+                    <div class="feature-icon-box">
+                        <svg viewBox="0 0 48 48" fill="none" stroke-width="2.5" stroke-linecap="round">
+                            <path d="M6,24 Q14,8 24,24 Q34,40 42,24"/>
+                            <circle cx="24" cy="24" r="4" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-number-badge">Feature 04</span>
+                        <h3 class="feature-title">ginko vibecheck</h3>
+                        <p class="feature-tagline">Take A Beat</p>
+                        <p class="feature-description">
+                            A built-in behavior that gives you and your AI partner a blame-free moment to challenge approach and pivot back to flow. Simply call "vibecheck" whenever things seem off.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow">‹</button>
+                    <button class="nav-arrow">›</button>
+                </div>
+
+                <div class="nav-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-counter">
+                        <span class="current">04</span> / 07
+                    </div>
+                </div>
+
+                <div class="nav-dots">
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="demo-spacer"></div>
+
+    <!-- ============================================
+         FEATURE 7: ginko collab graph (showing end state)
+         ============================================ -->
+    <section class="features-section" data-feature="7">
+        <div class="section-rainbow-bar"></div>
+
+        <div class="features-container">
+            <div class="section-header">
+                <span class="demo-label">Feature 7 of 7: Collab Graph</span>
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-bg-number">07</span>
+                <div class="feature-content">
+                    <div class="feature-icon-box">
+                        <svg viewBox="0 0 48 48" fill="none" stroke-width="2.5">
+                            <circle cx="24" cy="12" r="6"/>
+                            <circle cx="12" cy="36" r="6"/>
+                            <circle cx="36" cy="36" r="6"/>
+                            <line x1="24" y1="18" x2="15" y2="31"/>
+                            <line x1="24" y1="18" x2="33" y2="31"/>
+                            <line x1="18" y1="36" x2="30" y2="36"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-number-badge">Feature 07</span>
+                        <h3 class="feature-title">ginko collab graph</h3>
+                        <p class="feature-tagline">Get Real, In Real Time</p>
+                        <p class="feature-description">
+                            AI-driven development takes days, not weeks. Fast-moving teams need real-time updates on task completion, issues, and insights. The collaboration graph keeps everyone in sync.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow">‹</button>
+                    <button class="nav-arrow" disabled>›</button>
+                </div>
+
+                <div class="nav-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="progress-counter">
+                        <span class="current">07</span> / 07
+                    </div>
+                </div>
+
+                <div class="nav-dots">
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot active"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

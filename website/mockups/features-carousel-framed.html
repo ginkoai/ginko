@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Features Carousel (Rainbow Framing)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08;
+            --color-gray: #615F61;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-heading);
+            line-height: 1.6;
+        }
+
+        .demo-label {
+            display: block;
+            background: var(--color-black);
+            color: var(--color-cream);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+
+        /* ============================================
+           OPTION A: Rainbow U-Frame around card
+           ============================================ */
+        .features-section-a {
+            padding: 4rem 2rem 5rem;
+            background: var(--color-cream);
+        }
+
+        .frame-container-a {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-heading);
+        }
+
+        /* The rainbow U-frame wraps around the card */
+        .rainbow-frame-a {
+            position: relative;
+            padding: 30px;
+            background: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-orange) 20%,
+                var(--color-red) 40%,
+                var(--color-violet) 60%,
+                var(--color-purple) 80%,
+                var(--color-purple-black) 100%
+            );
+            border-radius: 8px;
+        }
+
+        .rainbow-frame-a::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            background: var(--color-cream);
+            border-radius: 4px;
+        }
+
+        .feature-card-a {
+            position: relative;
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem;
+        }
+
+        /* ============================================
+           OPTION B: Rainbow swoops IN toward card
+           ============================================ */
+        .features-section-b {
+            padding: 4rem 2rem 5rem;
+            background: var(--color-cream);
+            overflow: hidden;
+        }
+
+        .frame-container-b {
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Card with rainbow arms reaching toward it */
+        .card-wrapper-b {
+            position: relative;
+            padding: 60px 80px;
+        }
+
+        /* Left swoosh - comes from edge, curves TO the card */
+        .swoosh-left-b {
+            position: absolute;
+            top: 0;
+            left: -100px;
+            width: 250px;
+            height: 100%;
+        }
+
+        .swoosh-right-b {
+            position: absolute;
+            top: 0;
+            right: -100px;
+            width: 250px;
+            height: 100%;
+            transform: scaleX(-1);
+        }
+
+        .feature-card-b {
+            position: relative;
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem;
+            z-index: 2;
+        }
+
+        /* ============================================
+           OPTION C: Rainbow lines connect through cards
+           (horizontal flow, card interrupts the line)
+           ============================================ */
+        .features-section-c {
+            padding: 4rem 0 5rem;
+            background: var(--color-cream);
+            position: relative;
+        }
+
+        /* Rainbow bar runs full width behind */
+        .rainbow-bar-c {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 80px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rainbow-bar-c .stripe {
+            flex: 1;
+        }
+
+        .frame-container-c {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .feature-card-c {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        /* ============================================
+           OPTION D: Rainbow border on card itself
+           ============================================ */
+        .features-section-d {
+            padding: 4rem 2rem 5rem;
+            background:
+                radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px),
+                var(--color-cream);
+            background-size: 20px 20px;
+        }
+
+        .frame-container-d {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .rainbow-border-card {
+            position: relative;
+            padding: 6px;
+            background: linear-gradient(
+                135deg,
+                var(--color-yellow) 0%,
+                var(--color-orange) 20%,
+                var(--color-red) 40%,
+                var(--color-violet) 60%,
+                var(--color-purple) 80%,
+                var(--color-purple-black) 100%
+            );
+        }
+
+        .feature-card-d {
+            background: white;
+            padding: 2.5rem;
+            position: relative;
+        }
+
+        /* ============================================
+           OPTION E: Rainbow corners / brackets
+           ============================================ */
+        .features-section-e {
+            padding: 4rem 2rem 5rem;
+            background: var(--color-cream);
+        }
+
+        .frame-container-e {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .corner-frame {
+            position: relative;
+            padding: 30px;
+        }
+
+        /* Corner brackets made of rainbow stripes */
+        .corner {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+        }
+
+        .corner-tl { top: 0; left: 0; }
+        .corner-tr { top: 0; right: 0; transform: rotate(90deg); }
+        .corner-bl { bottom: 0; left: 0; transform: rotate(-90deg); }
+        .corner-br { bottom: 0; right: 0; transform: rotate(180deg); }
+
+        .corner span {
+            position: absolute;
+            display: block;
+        }
+
+        .corner span:nth-child(1) { background: var(--color-yellow); }
+        .corner span:nth-child(2) { background: var(--color-orange); }
+        .corner span:nth-child(3) { background: var(--color-red); }
+        .corner span:nth-child(4) { background: var(--color-violet); }
+        .corner span:nth-child(5) { background: var(--color-purple); }
+
+        /* L-shape for each stripe */
+        .corner span:nth-child(1) { top: 0; left: 0; width: 80px; height: 8px; }
+        .corner span:nth-child(1)::after { content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 80px; background: inherit; }
+
+        .corner span:nth-child(2) { top: 10px; left: 10px; width: 60px; height: 8px; }
+        .corner span:nth-child(2)::after { content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 60px; background: inherit; }
+
+        .corner span:nth-child(3) { top: 20px; left: 20px; width: 40px; height: 8px; }
+        .corner span:nth-child(3)::after { content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 40px; background: inherit; }
+
+        .corner span:nth-child(4) { top: 30px; left: 30px; width: 20px; height: 8px; }
+        .corner span:nth-child(4)::after { content: ''; position: absolute; top: 0; left: 0; width: 8px; height: 20px; background: inherit; }
+
+        .feature-card-e {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem;
+        }
+
+        /* ============================================
+           SHARED CARD CONTENT STYLES
+           ============================================ */
+        .feature-content {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .feature-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--color-yellow);
+            stroke: var(--color-heading);
+            stroke-width: 2;
+        }
+
+        .feature-number {
+            font-size: 0.75rem;
+            color: var(--color-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-heading);
+            line-height: 1.1;
+        }
+
+        .feature-tagline {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin: 0.25rem 0 0.75rem;
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+            line-height: 1.7;
+        }
+
+        /* Nav */
+        .feature-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            opacity: 0.3;
+        }
+        .nav-dot.active { transform: scale(1.4); opacity: 1; }
+        .nav-dot:nth-child(1) { background: var(--color-yellow); }
+        .nav-dot:nth-child(2) { background: var(--color-orange); }
+        .nav-dot:nth-child(3) { background: var(--color-red); }
+        .nav-dot:nth-child(4) { background: var(--color-violet); }
+        .nav-dot:nth-child(5) { background: var(--color-purple); }
+        .nav-dot:nth-child(6) { background: var(--color-purple-black); }
+        .nav-dot:nth-child(7) { background: var(--color-black); }
+
+        .spacer {
+            height: 2px;
+            background: #ddd;
+        }
+
+        /* Oversized number */
+        .bg-number {
+            position: absolute;
+            bottom: -30px;
+            right: 10px;
+            font-family: var(--font-heading);
+            font-size: 200px;
+            line-height: 0.7;
+            color: var(--color-black);
+            opacity: 0.04;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- OPTION A: Rainbow U-Frame -->
+    <div class="demo-label">Option A: Rainbow Gradient Frame (wraps the card)</div>
+    <section class="features-section-a">
+        <div class="frame-container-a">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+            </div>
+            <div class="rainbow-frame-a">
+                <div class="feature-card-a">
+                    <span class="bg-number">01</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48"><polygon points="16,8 40,24 16,40"/></svg>
+                        </div>
+                        <div>
+                            <div class="feature-number">01 / 07</div>
+                            <h3 class="feature-title">ginko start</h3>
+                            <p class="feature-tagline">Ready Player YOU</p>
+                            <p class="feature-description">Loads your session context with tasks, goals, and everything from your last session. Back to flow in 30 seconds.</p>
+                        </div>
+                    </div>
+                    <div class="feature-nav">
+                        <button class="nav-dot active"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <!-- OPTION B: Swooshes curve IN toward card -->
+    <div class="demo-label">Option B: Rainbow Swooshes Curve Toward Card</div>
+    <section class="features-section-b">
+        <div class="frame-container-b">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+            </div>
+            <div class="card-wrapper-b">
+                <!-- Left swoosh curving toward card -->
+                <svg class="swoosh-left-b" viewBox="0 0 250 500" preserveAspectRatio="none">
+                    <path d="M0,0 Q0,250 200,250 Q0,250 0,500" stroke="#FDC400" stroke-width="12" fill="none"/>
+                    <path d="M20,0 Q20,250 180,250 Q20,250 20,500" stroke="#FC9500" stroke-width="12" fill="none"/>
+                    <path d="M40,0 Q40,250 160,250 Q40,250 40,500" stroke="#FE4500" stroke-width="12" fill="none"/>
+                    <path d="M60,0 Q60,250 140,250 Q60,250 60,500" stroke="#E00256" stroke-width="12" fill="none"/>
+                    <path d="M80,0 Q80,250 120,250 Q80,250 80,500" stroke="#A70086" stroke-width="12" fill="none"/>
+                </svg>
+                <!-- Right swoosh (mirrored) -->
+                <svg class="swoosh-right-b" viewBox="0 0 250 500" preserveAspectRatio="none">
+                    <path d="M0,0 Q0,250 200,250 Q0,250 0,500" stroke="#FDC400" stroke-width="12" fill="none"/>
+                    <path d="M20,0 Q20,250 180,250 Q20,250 20,500" stroke="#FC9500" stroke-width="12" fill="none"/>
+                    <path d="M40,0 Q40,250 160,250 Q40,250 40,500" stroke="#FE4500" stroke-width="12" fill="none"/>
+                    <path d="M60,0 Q60,250 140,250 Q60,250 60,500" stroke="#E00256" stroke-width="12" fill="none"/>
+                    <path d="M80,0 Q80,250 120,250 Q80,250 80,500" stroke="#A70086" stroke-width="12" fill="none"/>
+                </svg>
+                <div class="feature-card-b">
+                    <span class="bg-number">01</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48"><polygon points="16,8 40,24 16,40"/></svg>
+                        </div>
+                        <div>
+                            <div class="feature-number">01 / 07</div>
+                            <h3 class="feature-title">ginko start</h3>
+                            <p class="feature-tagline">Ready Player YOU</p>
+                            <p class="feature-description">Loads your session context with tasks, goals, and everything from your last session. Back to flow in 30 seconds.</p>
+                        </div>
+                    </div>
+                    <div class="feature-nav">
+                        <button class="nav-dot active"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <!-- OPTION C: Horizontal rainbow bar behind card -->
+    <div class="demo-label">Option C: Rainbow Bar Flows Behind/Through Card</div>
+    <section class="features-section-c">
+        <div class="rainbow-bar-c">
+            <div class="stripe" style="background: var(--color-yellow);"></div>
+            <div class="stripe" style="background: var(--color-orange);"></div>
+            <div class="stripe" style="background: var(--color-red);"></div>
+            <div class="stripe" style="background: var(--color-violet);"></div>
+            <div class="stripe" style="background: var(--color-purple);"></div>
+            <div class="stripe" style="background: var(--color-purple-black);"></div>
+        </div>
+        <div class="frame-container-c">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+            </div>
+            <div class="feature-card-c">
+                <span class="bg-number">01</span>
+                <div class="feature-content">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 48 48"><polygon points="16,8 40,24 16,40"/></svg>
+                    </div>
+                    <div>
+                        <div class="feature-number">01 / 07</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">Loads your session context with tasks, goals, and everything from your last session. Back to flow in 30 seconds.</p>
+                    </div>
+                </div>
+                <div class="feature-nav">
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <!-- OPTION D: Rainbow gradient border on card -->
+    <div class="demo-label">Option D: Rainbow Gradient Border</div>
+    <section class="features-section-d">
+        <div class="frame-container-d">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+            </div>
+            <div class="rainbow-border-card">
+                <div class="feature-card-d">
+                    <span class="bg-number">01</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48"><polygon points="16,8 40,24 16,40"/></svg>
+                        </div>
+                        <div>
+                            <div class="feature-number">01 / 07</div>
+                            <h3 class="feature-title">ginko start</h3>
+                            <p class="feature-tagline">Ready Player YOU</p>
+                            <p class="feature-description">Loads your session context with tasks, goals, and everything from your last session. Back to flow in 30 seconds.</p>
+                        </div>
+                    </div>
+                    <div class="feature-nav">
+                        <button class="nav-dot active"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="spacer"></div>
+
+    <!-- OPTION E: Rainbow corner brackets -->
+    <div class="demo-label">Option E: Rainbow Corner Brackets</div>
+    <section class="features-section-e">
+        <div class="frame-container-e">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+            </div>
+            <div class="corner-frame">
+                <div class="corner corner-tl">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="corner corner-tr">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="corner corner-bl">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="corner corner-br">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="feature-card-e">
+                    <span class="bg-number">01</span>
+                    <div class="feature-content">
+                        <div class="feature-icon">
+                            <svg viewBox="0 0 48 48"><polygon points="16,8 40,24 16,40"/></svg>
+                        </div>
+                        <div>
+                            <div class="feature-number">01 / 07</div>
+                            <h3 class="feature-title">ginko start</h3>
+                            <p class="feature-tagline">Ready Player YOU</p>
+                            <p class="feature-description">Loads your session context with tasks, goals, and everything from your last session. Back to flow in 30 seconds.</p>
+                        </div>
+                    </div>
+                    <div class="feature-nav">
+                        <button class="nav-dot active"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

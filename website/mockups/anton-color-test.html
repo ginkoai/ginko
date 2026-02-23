@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anton Font - Color Comparison</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton:wght@400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: #FCFBF1;
+            padding: 3rem;
+        }
+
+        .page-title {
+            font-family: 'Anton', sans-serif;
+            font-weight: 400;
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 3rem;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5rem;
+        }
+
+        .color-column {
+            background: #FCFBF1;
+            padding: 2rem;
+            border: 1px solid #ddd;
+        }
+
+        .color-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .color-label .hex {
+            font-weight: 600;
+        }
+
+        .color-label .name {
+            opacity: 0.6;
+            margin-left: 0.5rem;
+        }
+
+        .size-sample {
+            margin-bottom: 1.5rem;
+        }
+
+        .size-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #999;
+            margin-bottom: 0.25rem;
+        }
+
+        .anton {
+            font-family: 'Anton', sans-serif;
+            font-weight: 400;
+            line-height: 1.1;
+        }
+
+        /* Shadow Grey #28282B */
+        .shadow-grey { color: #28282B; }
+
+        /* Graphite #333333 */
+        .graphite { color: #333333; }
+
+        /* Carbon Black #1C1C1C */
+        .carbon-black { color: #1C1C1C; }
+
+        /* Material Design Black #212121 */
+        .material-black { color: #212121; }
+
+        /* Deep Warm Black #100D08 */
+        .deep-warm-black { color: #100D08; }
+
+        /* Sizes we'd use */
+        .size-hero { font-size: 72px; }
+        .size-h1 { font-size: 48px; }
+        .size-h2 { font-size: 36px; }
+        .size-h3 { font-size: 28px; }
+        .size-h4 { font-size: 22px; }
+
+        @media (max-width: 1400px) {
+            .color-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .color-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="page-title">Anton Font - Color Comparison</h1>
+    <p class="page-subtitle">Against #FCFBF1 (Floral White / Cream) · <strong style="color: #FC9500;">SELECTED: #100D08 (Deep Warm Black)</strong></p>
+
+    <div class="color-grid">
+        <!-- Shadow Grey #28282B -->
+        <div class="color-column">
+            <div class="color-label">
+                <span class="hex">#28282B</span>
+                <span class="name">Shadow Grey</span>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">Hero · 72px</div>
+                <div class="anton shadow-grey size-hero">GINKO</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H1 · 48px</div>
+                <div class="anton shadow-grey size-h1">Stop Re-explaining</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H2 · 36px</div>
+                <div class="anton shadow-grey size-h2">How It Works</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H3 · 28px</div>
+                <div class="anton shadow-grey size-h3">ginko start</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H4 · 22px</div>
+                <div class="anton shadow-grey size-h4">Ready Player YOU</div>
+            </div>
+        </div>
+
+        <!-- Graphite #333333 -->
+        <div class="color-column">
+            <div class="color-label">
+                <span class="hex">#333333</span>
+                <span class="name">Graphite</span>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">Hero · 72px</div>
+                <div class="anton graphite size-hero">GINKO</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H1 · 48px</div>
+                <div class="anton graphite size-h1">Stop Re-explaining</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H2 · 36px</div>
+                <div class="anton graphite size-h2">How It Works</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H3 · 28px</div>
+                <div class="anton graphite size-h3">ginko start</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H4 · 22px</div>
+                <div class="anton graphite size-h4">Ready Player YOU</div>
+            </div>
+        </div>
+
+        <!-- Carbon Black #1C1C1C -->
+        <div class="color-column">
+            <div class="color-label">
+                <span class="hex">#1C1C1C</span>
+                <span class="name">Carbon Black</span>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">Hero · 72px</div>
+                <div class="anton carbon-black size-hero">GINKO</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H1 · 48px</div>
+                <div class="anton carbon-black size-h1">Stop Re-explaining</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H2 · 36px</div>
+                <div class="anton carbon-black size-h2">How It Works</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H3 · 28px</div>
+                <div class="anton carbon-black size-h3">ginko start</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H4 · 22px</div>
+                <div class="anton carbon-black size-h4">Ready Player YOU</div>
+            </div>
+        </div>
+
+        <!-- Material Design Black #212121 -->
+        <div class="color-column">
+            <div class="color-label">
+                <span class="hex">#212121</span>
+                <span class="name">Material Design</span>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">Hero · 72px</div>
+                <div class="anton material-black size-hero">GINKO</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H1 · 48px</div>
+                <div class="anton material-black size-h1">Stop Re-explaining</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H2 · 36px</div>
+                <div class="anton material-black size-h2">How It Works</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H3 · 28px</div>
+                <div class="anton material-black size-h3">ginko start</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H4 · 22px</div>
+                <div class="anton material-black size-h4">Ready Player YOU</div>
+            </div>
+        </div>
+
+        <!-- Deep Warm Black #100D08 (Recommended) -->
+        <div class="color-column" style="border: 2px solid #FC9500;">
+            <div class="color-label">
+                <span class="hex">#100D08</span>
+                <span class="name">Deep Warm ★</span>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">Hero · 72px</div>
+                <div class="anton deep-warm-black size-hero">GINKO</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H1 · 48px</div>
+                <div class="anton deep-warm-black size-h1">Stop Re-explaining</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H2 · 36px</div>
+                <div class="anton deep-warm-black size-h2">How It Works</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H3 · 28px</div>
+                <div class="anton deep-warm-black size-h3">ginko start</div>
+            </div>
+
+            <div class="size-sample">
+                <div class="size-label">H4 · 22px</div>
+                <div class="anton deep-warm-black size-h4">Ready Player YOU</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

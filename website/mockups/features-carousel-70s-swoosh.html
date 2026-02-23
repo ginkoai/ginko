@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Features Carousel (70s Swoosh)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08;
+            --color-gray: #615F61;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-heading);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ============================================
+           70s SWOOSH FRAMED SECTION
+           ============================================ */
+        .features-section {
+            position: relative;
+            min-height: 800px;
+            padding: 4rem 0;
+            background: var(--color-cream);
+            overflow: hidden;
+        }
+
+        /* Left swoosh - from top-left corner, curves down and right */
+        .swoosh-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 350px;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Right swoosh - mirrored */
+        .swoosh-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 350px;
+            height: 100%;
+            pointer-events: none;
+            transform: scaleX(-1);
+        }
+
+        .swoosh-left svg,
+        .swoosh-right svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Content */
+        .features-container {
+            position: relative;
+            z-index: 2;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--color-heading);
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+            margin-top: 0.25rem;
+        }
+
+        /* Large feature card */
+        .feature-card {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 3.5rem 4rem;
+            position: relative;
+            min-height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bg-number {
+            position: absolute;
+            bottom: -50px;
+            right: 20px;
+            font-family: var(--font-heading);
+            font-size: 320px;
+            line-height: 0.7;
+            color: var(--color-black);
+            opacity: 0.04;
+            pointer-events: none;
+        }
+
+        .feature-content {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 2.5rem;
+            align-items: start;
+            flex: 1;
+        }
+
+        .feature-icon {
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            position: relative;
+        }
+
+        .feature-icon::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: -5px;
+            bottom: -5px;
+            background: var(--color-yellow);
+            z-index: -1;
+        }
+
+        .feature-icon svg {
+            width: 50px;
+            height: 50px;
+            fill: var(--color-yellow);
+            stroke: var(--color-heading);
+            stroke-width: 2;
+        }
+
+        .feature-text {
+            padding-top: 0.5rem;
+        }
+
+        .feature-number {
+            font-size: 0.8rem;
+            color: var(--color-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--color-heading);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-tagline {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-description {
+            font-size: 1rem;
+            color: var(--color-gray);
+            line-height: 1.8;
+            max-width: 600px;
+        }
+
+        /* Navigation */
+        .feature-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+            padding-top: 2rem;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-arrow {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--color-black);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background: var(--color-black);
+            color: white;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .nav-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.2s;
+        }
+
+        .nav-dot:hover { opacity: 0.6; }
+        .nav-dot.active { transform: scale(1.4); opacity: 1; }
+
+        .nav-dot:nth-child(1) { background: var(--color-yellow); }
+        .nav-dot:nth-child(2) { background: var(--color-orange); }
+        .nav-dot:nth-child(3) { background: var(--color-red); }
+        .nav-dot:nth-child(4) { background: var(--color-violet); }
+        .nav-dot:nth-child(5) { background: var(--color-purple); }
+        .nav-dot:nth-child(6) { background: var(--color-purple-black); }
+        .nav-dot:nth-child(7) { background: var(--color-black); }
+
+        .nav-counter {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+        }
+
+        .nav-counter .current {
+            font-weight: 600;
+            color: var(--color-heading);
+            font-size: 1.1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .swoosh-left, .swoosh-right {
+                width: 200px;
+                opacity: 0.7;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .swoosh-left, .swoosh-right {
+                display: none;
+            }
+
+            .feature-content {
+                grid-template-columns: 1fr;
+            }
+
+            .feature-title {
+                font-size: 2.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="features-section">
+        <!-- Left swoosh - sunset colors, curves from top-left down and right -->
+        <div class="swoosh-left">
+            <svg viewBox="0 0 350 800" preserveAspectRatio="xMinYMin slice" fill="none">
+                <!-- Yellow (outermost) -->
+                <path d="M-60,0
+                         L-60,500
+                         Q-60,650 100,700
+                         Q260,750 350,750"
+                      stroke="#FDC400" stroke-width="22" stroke-linecap="round"/>
+                <!-- Orange -->
+                <path d="M-30,0
+                         L-30,480
+                         Q-30,620 110,670
+                         Q240,720 350,720"
+                      stroke="#FC9500" stroke-width="22" stroke-linecap="round"/>
+                <!-- Red -->
+                <path d="M0,0
+                         L0,460
+                         Q0,590 120,640
+                         Q220,690 350,690"
+                      stroke="#FE4500" stroke-width="22" stroke-linecap="round"/>
+                <!-- Violet -->
+                <path d="M30,0
+                         L30,440
+                         Q30,560 130,610
+                         Q200,660 350,660"
+                      stroke="#E00256" stroke-width="22" stroke-linecap="round"/>
+                <!-- Purple -->
+                <path d="M60,0
+                         L60,420
+                         Q60,530 140,580
+                         Q180,630 350,630"
+                      stroke="#A70086" stroke-width="22" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Right swoosh - mirrored via CSS -->
+        <div class="swoosh-right">
+            <svg viewBox="0 0 350 800" preserveAspectRatio="xMinYMin slice" fill="none">
+                <!-- Yellow (outermost) -->
+                <path d="M-60,0
+                         L-60,500
+                         Q-60,650 100,700
+                         Q260,750 350,750"
+                      stroke="#FDC400" stroke-width="22" stroke-linecap="round"/>
+                <!-- Orange -->
+                <path d="M-30,0
+                         L-30,480
+                         Q-30,620 110,670
+                         Q240,720 350,720"
+                      stroke="#FC9500" stroke-width="22" stroke-linecap="round"/>
+                <!-- Red -->
+                <path d="M0,0
+                         L0,460
+                         Q0,590 120,640
+                         Q220,690 350,690"
+                      stroke="#FE4500" stroke-width="22" stroke-linecap="round"/>
+                <!-- Violet -->
+                <path d="M30,0
+                         L30,440
+                         Q30,560 130,610
+                         Q200,660 350,660"
+                      stroke="#E00256" stroke-width="22" stroke-linecap="round"/>
+                <!-- Purple -->
+                <path d="M60,0
+                         L60,420
+                         Q60,530 140,580
+                         Q180,630 350,630"
+                      stroke="#A70086" stroke-width="22" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Content -->
+        <div class="features-container">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="bg-number">01</span>
+
+                <div class="feature-content">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 48 48">
+                            <polygon points="16,8 40,24 16,40"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <div class="feature-number">FEATURE 01 / 07</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics to your AI partner—just straight back to flow in 30 seconds or less.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="feature-nav">
+                    <div class="nav-arrows">
+                        <button class="nav-arrow">‹</button>
+                        <button class="nav-arrow">›</button>
+                    </div>
+
+                    <div class="nav-dots">
+                        <button class="nav-dot active"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                        <button class="nav-dot"></button>
+                    </div>
+
+                    <div class="nav-counter">
+                        <span class="current">01</span> / 07
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

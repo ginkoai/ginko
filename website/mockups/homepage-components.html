@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Homepage Component Mockups</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton:wght@400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Sunset Palette - Yellow → Orange → Red → Violet → Purple */
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08; /* Deep Warm Black */
+            --color-gray: #615F61;
+            --color-gray-light: #9A989A;
+
+            /* Fonts */
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            /* Sunset gradient */
+            --gradient-sunset-horizontal: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-orange) 20%,
+                var(--color-red) 40%,
+                var(--color-violet) 60%,
+                var(--color-purple) 80%,
+                var(--color-purple-black) 100%
+            );
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-black);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .mockup-page {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-heading);
+        }
+
+        .page-subtitle {
+            color: var(--color-gray);
+            margin-bottom: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            padding-bottom: 3rem;
+            border-bottom: 2px solid var(--color-black);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-heading);
+        }
+
+        .section-desc {
+            color: var(--color-gray);
+            margin-bottom: 2rem;
+            font-size: 0.85rem;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .option {
+            background: white;
+            border: 1px solid var(--color-black);
+            padding: 1.5rem;
+        }
+
+        .option-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .option-notes {
+            font-size: 0.8rem;
+            color: var(--color-gray);
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--color-gray-light);
+        }
+
+        /* ============================================
+           NPM INSTALL BUTTON MOCKUPS
+           ============================================ */
+
+        .nav-mockup {
+            background: var(--color-purple-black);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 4px;
+        }
+
+        .nav-logo {
+            color: var(--color-cream);
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--color-cream);
+            text-decoration: none;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* Option A: Compact terminal badge */
+        .npm-badge-a {
+            background: var(--color-black);
+            border: 1px solid var(--color-gray);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--color-yellow);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .npm-badge-a:hover {
+            border-color: var(--color-yellow);
+            background: #1a1a1a;
+        }
+
+        .npm-badge-a .prompt {
+            color: var(--color-orange);
+        }
+
+        .npm-badge-a .copy-icon {
+            color: var(--color-gray-light);
+            margin-left: 0.5rem;
+        }
+
+        .npm-badge-a:hover .copy-icon {
+            color: var(--color-cream);
+        }
+
+        /* Option B: Pill button with terminal prompt */
+        .npm-badge-b {
+            background: linear-gradient(135deg, var(--color-purple-black) 0%, var(--color-black) 100%);
+            border: 2px solid var(--color-yellow);
+            padding: 0.6rem 1rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--color-cream);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .npm-badge-b:hover {
+            background: var(--color-yellow);
+            color: var(--color-black);
+        }
+
+        .npm-badge-b .prompt {
+            color: var(--color-yellow);
+        }
+
+        .npm-badge-b:hover .prompt {
+            color: var(--color-black);
+        }
+
+        /* Option C: Two-part button */
+        .npm-badge-c {
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.8rem;
+        }
+
+        .npm-badge-c .text-part {
+            background: var(--color-black);
+            color: var(--color-cream);
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--color-gray);
+            border-right: none;
+        }
+
+        .npm-badge-c .copy-part {
+            background: var(--color-yellow);
+            color: var(--color-black);
+            padding: 0.5rem 0.75rem;
+            border: 1px solid var(--color-yellow);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .npm-badge-c .copy-part:hover {
+            background: var(--color-orange);
+            border-color: var(--color-orange);
+        }
+
+        /* ============================================
+           SOCIAL PROOF MOCKUPS
+           ============================================ */
+
+        /* Option A: Logo marquee */
+        .social-proof-marquee {
+            background: white;
+            border-top: 1px solid var(--color-black);
+            border-bottom: 1px solid var(--color-black);
+            padding: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .marquee-label {
+            text-align: center;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--color-gray);
+            margin-bottom: 1rem;
+        }
+
+        .marquee-logos {
+            display: flex;
+            gap: 3rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .marquee-logo {
+            font-size: 1.1rem;
+            color: var(--color-black);
+            opacity: 0.5;
+            font-weight: 600;
+        }
+
+        /* Option B: Stats bar */
+        .social-proof-stats {
+            background: var(--color-purple-black);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            color: var(--color-cream);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-number {
+            color: var(--color-yellow);
+            font-weight: 700;
+        }
+
+        .stat-divider {
+            color: var(--color-cream);
+            opacity: 0.3;
+        }
+
+        /* Option C: Testimonial strip */
+        .social-proof-testimonials {
+            background: var(--color-cream);
+            border-top: 1px solid var(--color-black);
+            border-bottom: 1px solid var(--color-black);
+            padding: 2rem;
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+        }
+
+        .testimonial-card {
+            background: white;
+            border: 1px solid var(--color-black);
+            padding: 1.25rem;
+            min-width: 280px;
+            flex-shrink: 0;
+        }
+
+        .testimonial-quote {
+            font-size: 0.9rem;
+            font-style: italic;
+            margin-bottom: 0.75rem;
+            color: var(--color-black);
+        }
+
+        .testimonial-author {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-violet);
+        }
+
+        /* ============================================
+           DISCORD SECTION MOCKUPS
+           ============================================ */
+
+        /* Option A: Community banner */
+        .discord-banner {
+            background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+            padding: 2.5rem;
+            border-radius: 8px;
+            color: white;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .discord-content h3 {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .discord-content p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .discord-cta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .discord-btn {
+            background: white;
+            color: #5865F2;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .discord-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .discord-members {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        /* Option B: Minimal inline - using sunset colors instead of Discord blue */
+        .discord-inline {
+            background: white;
+            border: 1px solid var(--color-black);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .discord-inline-text {
+            font-size: 0.95rem;
+            color: var(--color-black);
+        }
+
+        .discord-inline-btn {
+            background: var(--color-violet);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .discord-inline-btn:hover {
+            background: var(--color-purple);
+        }
+
+        /* ============================================
+           FEATURES CAROUSEL MOCKUPS
+           ============================================ */
+
+        .carousel-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .carousel-card {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2.5rem;
+            text-align: center;
+        }
+
+        .carousel-number {
+            font-size: 4rem;
+            font-family: var(--font-heading);
+            color: var(--color-yellow);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .carousel-title {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-purple-black);
+            margin-bottom: 0.25rem;
+        }
+
+        .carousel-tagline {
+            font-size: 0.9rem;
+            color: var(--color-orange);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .carousel-copy {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+            line-height: 1.7;
+        }
+
+        .carousel-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .carousel-arrow {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--color-black);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .carousel-arrow:hover {
+            background: var(--color-black);
+            color: var(--color-cream);
+        }
+
+        .carousel-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--color-black);
+            opacity: 0.2;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .carousel-dot.active {
+            opacity: 1;
+            background: var(--color-orange);
+        }
+
+        .carousel-dot:hover {
+            opacity: 0.6;
+        }
+
+        /* Sunset gradient dots */
+        .carousel-dots-sunset .carousel-dot:nth-child(1) { background: var(--color-yellow); }
+        .carousel-dots-sunset .carousel-dot:nth-child(2) { background: var(--color-orange); }
+        .carousel-dots-sunset .carousel-dot:nth-child(3) { background: var(--color-red); }
+        .carousel-dots-sunset .carousel-dot:nth-child(4) { background: var(--color-violet); }
+        .carousel-dots-sunset .carousel-dot:nth-child(5) { background: var(--color-purple); }
+        .carousel-dots-sunset .carousel-dot:nth-child(6) { background: var(--color-purple-black); }
+        .carousel-dots-sunset .carousel-dot:nth-child(7) { background: var(--color-black); }
+
+        .carousel-dots-sunset .carousel-dot {
+            opacity: 0.4;
+        }
+
+        .carousel-dots-sunset .carousel-dot.active {
+            opacity: 1;
+            transform: scale(1.3);
+        }
+
+        /* Alternative: Stacked cards effect */
+        .carousel-stacked {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .stacked-card {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 2rem;
+            position: relative;
+        }
+
+        .stacked-card::before,
+        .stacked-card::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border: 2px solid var(--color-black);
+            z-index: -1;
+        }
+
+        .stacked-card::before {
+            top: 8px;
+            left: 8px;
+            right: -8px;
+            bottom: -8px;
+        }
+
+        .stacked-card::after {
+            top: 16px;
+            left: 16px;
+            right: -16px;
+            bottom: -16px;
+            z-index: -2;
+        }
+
+        /* Rainbow separator preview - Updated to sunset colors */
+        .rainbow-separator {
+            height: 8px;
+            background: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-yellow) 16.66%,
+                var(--color-orange) 16.66%,
+                var(--color-orange) 33.33%,
+                var(--color-red) 33.33%,
+                var(--color-red) 50%,
+                var(--color-violet) 50%,
+                var(--color-violet) 66.66%,
+                var(--color-purple) 66.66%,
+                var(--color-purple) 83.33%,
+                var(--color-purple-black) 83.33%,
+                var(--color-purple-black) 100%
+            );
+            width: 100%;
+        }
+
+        .rainbow-label {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.8rem;
+            color: var(--color-gray);
+        }
+
+        /* Footer mockup */
+        .footer-mockup {
+            background: var(--color-purple-black);
+            padding: 2rem;
+            color: var(--color-cream);
+        }
+
+        .footer-simple {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .footer-logo-text {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+        }
+
+        .footer-tagline {
+            opacity: 0.6;
+            font-size: 0.85rem;
+        }
+
+        .footer-cta-section {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .footer-links-minimal {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-link {
+            color: var(--color-cream);
+            opacity: 0.7;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .footer-link:hover {
+            opacity: 1;
+        }
+
+        .footer-install-btn {
+            background: var(--color-yellow);
+            color: var(--color-black);
+            padding: 0.6rem 1rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .footer-install-btn:hover {
+            background: var(--color-orange);
+        }
+
+        @media (max-width: 768px) {
+            .nav-mockup {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .discord-banner {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .discord-cta {
+                align-items: center;
+            }
+
+            .footer-simple {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-page">
+        <h1>Homepage Component Mockups</h1>
+        <p class="page-subtitle">Updated with sunset rebrand colors (Yellow → Orange → Red → Violet → Purple). Created 2026-02-23.</p>
+
+        <!-- NPM INSTALL BUTTON -->
+        <div class="section">
+            <h2>1. NPM CLI Install Button (Nav)</h2>
+            <p class="section-desc">Replaces "GET STARTED" in the nav with an npm install command.</p>
+
+            <div class="options-grid">
+                <div class="option">
+                    <div class="option-label">Option A: Compact Terminal Badge</div>
+                    <div class="nav-mockup">
+                        <div class="nav-logo">ginko</div>
+                        <div class="nav-links">
+                            <a href="#" class="nav-link">Developers</a>
+                            <a href="#" class="nav-link">Teams</a>
+                            <a href="#" class="nav-link">How It Works</a>
+                            <a href="#" class="nav-link">Docs</a>
+                            <div class="npm-badge-a">
+                                <span class="prompt">$</span>
+                                <span>npm i -g @ginkoai/cli</span>
+                                <span class="copy-icon">⧉</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="option-notes">Dark terminal look, yellow text, subtle. Expands on hover. Most compact option.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option B: Pill Button with Terminal Prompt</div>
+                    <div class="nav-mockup">
+                        <div class="nav-logo">ginko</div>
+                        <div class="nav-links">
+                            <a href="#" class="nav-link">Developers</a>
+                            <a href="#" class="nav-link">Teams</a>
+                            <a href="#" class="nav-link">How It Works</a>
+                            <a href="#" class="nav-link">Docs</a>
+                            <div class="npm-badge-b">
+                                <span class="prompt">$</span>
+                                <span>npm install -g @ginkoai/cli</span>
+                                <span>⧉</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="option-notes">Yellow border, pill shape. More prominent CTA feel. Inverts on hover.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option C: Two-Part Button</div>
+                    <div class="nav-mockup">
+                        <div class="nav-logo">ginko</div>
+                        <div class="nav-links">
+                            <a href="#" class="nav-link">Developers</a>
+                            <a href="#" class="nav-link">Teams</a>
+                            <a href="#" class="nav-link">How It Works</a>
+                            <a href="#" class="nav-link">Docs</a>
+                            <div class="npm-badge-c">
+                                <span class="text-part">$ npm install</span>
+                                <span class="copy-part">⧉ Copy</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="option-notes">Abbreviated command, separate copy button. Clear affordance. Yellow accent.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SOCIAL PROOF -->
+        <div class="section">
+            <h2>3. Social Proof Section</h2>
+            <p class="section-desc">Builds credibility. Could go between hero and pain points, or elsewhere.</p>
+
+            <div class="options-grid">
+                <div class="option">
+                    <div class="option-label">Option A: Logo Marquee / Integration Strip</div>
+                    <div class="social-proof-marquee">
+                        <div class="marquee-label">Works with your favorite AI tools</div>
+                        <div class="marquee-logos">
+                            <span class="marquee-logo">Claude</span>
+                            <span class="marquee-logo">Cursor</span>
+                            <span class="marquee-logo">ChatGPT</span>
+                            <span class="marquee-logo">Copilot</span>
+                            <span class="marquee-logo">Windsurf</span>
+                            <span class="marquee-logo">Cline</span>
+                        </div>
+                    </div>
+                    <p class="option-notes">Shows compatibility. Could animate/scroll. Uses existing logo-marquee component.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option B: Stats Bar</div>
+                    <div class="social-proof-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span>beta users</span>
+                        </div>
+                        <span class="stat-divider">•</span>
+                        <div class="stat-item">
+                            <span class="stat-number">12k</span>
+                            <span>npm downloads</span>
+                        </div>
+                        <span class="stat-divider">•</span>
+                        <div class="stat-item">
+                            <span class="stat-number">4.9★</span>
+                            <span>avg rating</span>
+                        </div>
+                    </div>
+                    <p class="option-notes">Hard numbers build trust. Purple-black background matches brand. Update numbers as you grow.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option C: Testimonial Strip</div>
+                    <div class="social-proof-testimonials">
+                        <div class="testimonial-card">
+                            <p class="testimonial-quote">"The rapport is right there from the start. My frustrations are gone."</p>
+                            <p class="testimonial-author">Beta User</p>
+                        </div>
+                        <div class="testimonial-card">
+                            <p class="testimonial-quote">"Back in flow in 30 seconds. It actually works."</p>
+                            <p class="testimonial-author">Senior Dev @ Startup</p>
+                        </div>
+                        <div class="testimonial-card">
+                            <p class="testimonial-quote">"Finally, my AI remembers what we did yesterday."</p>
+                            <p class="testimonial-author">Solo Founder</p>
+                        </div>
+                    </div>
+                    <p class="option-notes">Horizontal scroll on mobile. Real quotes from real users. Powerful social proof.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- DISCORD SECTION -->
+        <div class="section">
+            <h2>4. Discord Promotion Section</h2>
+            <p class="section-desc">Drives community engagement. Place after pricing or before footer.</p>
+
+            <div class="options-grid">
+                <div class="option">
+                    <div class="option-label">Option A: Community Banner (Discord Brand Colors)</div>
+                    <div class="discord-banner">
+                        <div class="discord-content">
+                            <h3>
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                                Join the ginko community
+                            </h3>
+                            <p>Share patterns • Get help • Ship faster together</p>
+                        </div>
+                        <div class="discord-cta">
+                            <a href="#" class="discord-btn">
+                                JOIN DISCORD
+                                <span>→</span>
+                            </a>
+                            <span class="discord-members">1,200+ members</span>
+                        </div>
+                    </div>
+                    <p class="option-notes">Uses Discord's official purple (#5865F2). Prominent CTA. Shows member count for social proof.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option B: Minimal Inline Bar (Sunset Colors)</div>
+                    <div class="discord-inline">
+                        <span class="discord-inline-text">Join developers shipping with ginko →</span>
+                        <a href="#" class="discord-inline-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                            Discord
+                        </a>
+                    </div>
+                    <p class="option-notes">Uses sunset violet for button. Subtle, doesn't distract. Matches site style better.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FEATURES CAROUSEL -->
+        <div class="section">
+            <h2>7. Features Card Carousel</h2>
+            <p class="section-desc">Replaces the current vertical feature list with an interactive carousel. Will be built as a Framer component.</p>
+
+            <div class="options-grid">
+                <div class="option">
+                    <div class="option-label">Option A: Single Card with Dot Navigation</div>
+                    <div class="carousel-container">
+                        <div class="carousel-card">
+                            <div class="carousel-number">01</div>
+                            <h3 class="carousel-title">ginko start</h3>
+                            <p class="carousel-tagline">Ready Player YOU</p>
+                            <p class="carousel-copy">ginko start loads your session context with tasks, goals, knowledge, and everything important you did in your last session. No more re-explaining the basics to your AI partner.</p>
+                        </div>
+                        <div class="carousel-nav">
+                            <button class="carousel-arrow">‹</button>
+                            <div class="carousel-dots">
+                                <span class="carousel-dot active"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                            </div>
+                            <button class="carousel-arrow">›</button>
+                        </div>
+                    </div>
+                    <p class="option-notes">Clean, focused. One feature at a time. Arrows + dots for navigation. Swipeable on mobile.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option B: Single Card with Sunset Gradient Dots</div>
+                    <div class="carousel-container">
+                        <div class="carousel-card">
+                            <div class="carousel-number" style="color: var(--color-orange);">02</div>
+                            <h3 class="carousel-title">ginko charter</h3>
+                            <p class="carousel-tagline">Your Blueprint For Success</p>
+                            <p class="carousel-copy">ginko charter gives your AI partner the big picture: project goals, audiences, pain-points, architecture, scope, acceptance criteria and more.</p>
+                        </div>
+                        <div class="carousel-nav">
+                            <button class="carousel-arrow">‹</button>
+                            <div class="carousel-dots carousel-dots-sunset">
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot active"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                                <span class="carousel-dot"></span>
+                            </div>
+                            <button class="carousel-arrow">›</button>
+                        </div>
+                    </div>
+                    <p class="option-notes">Each dot uses a sunset gradient color. Card number matches current dot color. More playful.</p>
+                </div>
+
+                <div class="option">
+                    <div class="option-label">Option C: Stacked Cards Effect</div>
+                    <div class="carousel-stacked">
+                        <div class="stacked-card">
+                            <div class="carousel-number">01</div>
+                            <h3 class="carousel-title">ginko start</h3>
+                            <p class="carousel-tagline">Ready Player YOU</p>
+                            <p class="carousel-copy">ginko start loads your session context with tasks, goals, knowledge, and everything important you did in your last session.</p>
+                        </div>
+                    </div>
+                    <div class="carousel-nav" style="margin-top: 2rem;">
+                        <button class="carousel-arrow">‹</button>
+                        <div class="carousel-dots carousel-dots-sunset">
+                            <span class="carousel-dot active"></span>
+                            <span class="carousel-dot"></span>
+                            <span class="carousel-dot"></span>
+                            <span class="carousel-dot"></span>
+                            <span class="carousel-dot"></span>
+                            <span class="carousel-dot"></span>
+                            <span class="carousel-dot"></span>
+                        </div>
+                        <button class="carousel-arrow">›</button>
+                    </div>
+                    <p class="option-notes">Visual depth suggests more cards behind. Cards animate off the stack when navigating. More playful feel.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAINBOW SEPARATOR + SIMPLIFIED FOOTER -->
+        <div class="section">
+            <h2>5 & 6. Rainbow Separator + Simplified Footer</h2>
+            <p class="section-desc">Rainbow separator using sunset colors. Simplified footer with reduced links and final CTA.</p>
+
+            <div class="option">
+                <div class="option-label">Simplified Footer with Sunset Rainbow Separator</div>
+                <div class="rainbow-separator"></div>
+                <div class="footer-mockup">
+                    <div class="footer-simple">
+                        <div class="footer-logo-section">
+                            <span class="footer-logo-text">ginko</span>
+                            <span class="footer-tagline">// iykyg</span>
+                        </div>
+                        <div class="footer-cta-section">
+                            <div class="footer-links-minimal">
+                                <a href="#" class="footer-link">Docs</a>
+                                <a href="#" class="footer-link">GitHub</a>
+                                <a href="#" class="footer-link">Discord</a>
+                                <a href="#" class="footer-link">Privacy</a>
+                            </div>
+                            <div class="footer-install-btn">
+                                $ npm install
+                                <span>⧉</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="option-notes">Sunset rainbow: Yellow → Orange → Red → Violet → Purple → Purple-Black. Minimal links (4 max). npm install as final CTA.</p>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

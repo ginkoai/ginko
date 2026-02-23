@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Footer Iterations</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton:wght@400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Sunset Palette */
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08; /* Deep Warm Black */
+            --color-gray: #615F61;
+            --color-gray-light: #9A989A;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --gradient-sunset: linear-gradient(
+                to right,
+                var(--color-yellow) 0%,
+                var(--color-yellow) 16.66%,
+                var(--color-orange) 16.66%,
+                var(--color-orange) 33.33%,
+                var(--color-red) 33.33%,
+                var(--color-red) 50%,
+                var(--color-violet) 50%,
+                var(--color-violet) 66.66%,
+                var(--color-purple) 66.66%,
+                var(--color-purple) 83.33%,
+                var(--color-purple-black) 83.33%,
+                var(--color-purple-black) 100%
+            );
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-black);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .mockup-page {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-heading);
+        }
+
+        .page-subtitle {
+            color: var(--color-gray);
+            margin-bottom: 3rem;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            color: var(--color-heading);
+        }
+
+        .option-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+
+        .option-notes {
+            font-size: 0.8rem;
+            color: var(--color-gray);
+            margin-top: 1rem;
+            padding: 1rem;
+            background: white;
+            border: 1px dashed var(--color-gray-light);
+        }
+
+        /* Rainbow Separator - Horizontal bands stacked top to bottom (like logo) */
+        .rainbow-separator {
+            height: 30px;
+            width: 100%;
+            background: linear-gradient(
+                to bottom,
+                var(--color-yellow) 0%,
+                var(--color-yellow) 20%,
+                var(--color-orange) 20%,
+                var(--color-orange) 40%,
+                var(--color-red) 40%,
+                var(--color-red) 60%,
+                var(--color-violet) 60%,
+                var(--color-violet) 80%,
+                var(--color-purple) 80%,
+                var(--color-purple) 100%
+            );
+        }
+
+        /* ============================================
+           FOOTER STYLES
+           ============================================ */
+
+        .footer {
+            background: var(--color-cream);
+            padding: 3rem 2rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Watermark */
+        .footer-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-heading);
+            font-size: 20vw;
+            color: var(--color-black);
+            opacity: 0.03;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+            user-select: none;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-brand h3 {
+            font-family: var(--font-heading);
+            font-size: 2.5rem;
+            color: var(--color-purple-black);
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            color: var(--color-purple-black);
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-tagline {
+            font-size: 0.85rem;
+            color: var(--color-gray);
+            margin-bottom: 1.5rem;
+        }
+
+        /* NPM Install Button - Two-Part Style (Chris's Choice) */
+        .npm-install-btn {
+            display: inline-flex;
+            border-radius: 4px;
+            overflow: hidden;
+            font-size: 0.85rem;
+        }
+
+        .npm-install-btn .text-part {
+            background: var(--color-black);
+            color: var(--color-cream);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .npm-install-btn .text-part .prompt {
+            color: var(--color-gray-light);
+        }
+
+        .npm-install-btn .copy-part {
+            background: var(--color-yellow);
+            color: var(--color-black);
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            border: none;
+        }
+
+        .npm-install-btn .copy-part:hover {
+            background: var(--color-orange);
+        }
+
+        /* Footer Links */
+        .footer-links {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .footer-column h4 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-black);
+            margin-bottom: 1rem;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-column a {
+            color: var(--color-gray);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .footer-column a:hover {
+            color: var(--color-black);
+        }
+
+        /* Tree-style links */
+        .tree-link {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .tree-link .tree-char {
+            color: var(--color-gray-light);
+            font-family: monospace;
+        }
+
+        /* Footer Bottom */
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--color-gray-light);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-copyright {
+            font-size: 0.8rem;
+            color: var(--color-gray);
+        }
+
+        /* Social Links - Text Style */
+        .socials-text {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .social-text-link {
+            color: var(--color-gray);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: color 0.2s;
+        }
+
+        .social-text-link:hover {
+            color: var(--color-black);
+        }
+
+        .social-text-link .arrow {
+            font-size: 0.7rem;
+        }
+
+        /* Social Links - Box Style */
+        .socials-boxes {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .social-box {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-black);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .social-box:hover {
+            background: var(--color-black);
+            color: var(--color-cream);
+        }
+
+        /* Social Links - Icon Style */
+        .socials-icons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .social-icon {
+            color: var(--color-gray);
+            transition: color 0.2s;
+        }
+
+        .social-icon:hover {
+            color: var(--color-black);
+        }
+
+        /* Social Links - Grid Bar */
+        .socials-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            border: 1px solid var(--color-black);
+            border-bottom: none;
+        }
+
+        .social-bar-link {
+            padding: 1rem 1.5rem;
+            text-align: center;
+            color: var(--color-black);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-right: 1px solid var(--color-black);
+            border-bottom: 1px solid var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            background: var(--color-cream);
+        }
+
+        .social-bar-link:last-child {
+            border-right: none;
+        }
+
+        .social-bar-link:hover {
+            background: var(--color-black);
+            color: var(--color-cream);
+        }
+
+        .social-bar-link .arrow {
+            font-size: 0.7rem;
+        }
+
+        /* Iteration spacing */
+        .footer-iteration {
+            margin-bottom: 3rem;
+        }
+
+        .approved-badge {
+            background: var(--color-yellow);
+            color: var(--color-black);
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                grid-template-columns: 1fr;
+            }
+
+            .socials-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-page">
+        <h1>Footer Iterations</h1>
+        <p class="page-subtitle">Updated with correct socials (X, Instagram, LinkedIn, YouTube, GitHub) and two-part npm button. 2026-02-23.</p>
+
+        <!-- ITERATION 1: Full Footer with Watermark -->
+        <div class="section">
+            <h2>Iteration 1: Full Footer with iykyg Watermark <span class="approved-badge">NPM Button Approved</span></h2>
+            <div class="option-label">Two-Part NPM Button + Tree Links + Icon Socials + Subtle Watermark</div>
+
+            <div class="footer-iteration">
+                <div class="rainbow-separator"></div>
+                <div class="footer">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" class="footer-watermark" style="height: 300px; width: auto;">
+                    <div class="footer-content">
+                        <div class="footer-grid">
+                            <div class="footer-brand">
+                                <img src="../rebrand/assets/ginko-logo-rainbow-striped.svg" alt="ginko" style="height: 48px;">
+                                <p>Ready to stop re-explaining?</p>
+                                <p class="footer-tagline">Back in flow in 30 seconds.</p>
+                                <div class="npm-install-btn">
+                                    <span class="text-part">
+                                        <span class="prompt">$</span>
+                                        <span>npm install</span>
+                                    </span>
+                                    <button class="copy-part">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="footer-links">
+                                <div class="footer-column">
+                                    <h4>Product /</h4>
+                                    <ul>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">├─</span>Developers</a></li>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">├─</span>Teams</a></li>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">└─</span>Pricing</a></li>
+                                    </ul>
+                                </div>
+                                <div class="footer-column">
+                                    <h4>Resources /</h4>
+                                    <ul>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">├─</span>Documentation</a></li>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">├─</span>Blog</a></li>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">└─</span>Changelog</a></li>
+                                    </ul>
+                                </div>
+                                <div class="footer-column">
+                                    <h4>Company /</h4>
+                                    <ul>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">├─</span>About</a></li>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">├─</span>Privacy</a></li>
+                                        <li><a href="#" class="tree-link"><span class="tree-char">└─</span>Terms</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-bottom">
+                            <span class="footer-copyright">© 2026 ginko. All rights reserved.</span>
+                            <div class="socials-icons">
+                                <a href="#" class="social-icon" title="X (Twitter)">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon" title="Instagram">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon" title="LinkedIn">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon" title="YouTube">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                                    </svg>
+                                </a>
+                                <a href="#" class="social-icon" title="GitHub">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="option-notes">
+                <strong>Features:</strong> Two-part npm button (approved by Chris). Subtle "iykyg" watermark at 3% opacity. Tree-style links. Icon socials (X, Instagram, LinkedIn, YouTube, GitHub). Rainbow separator on top.
+            </p>
+        </div>
+
+        <!-- ITERATION 2: Social Bar Style -->
+        <div class="section">
+            <h2>Iteration 2: Social Grid Bar</h2>
+            <div class="option-label">Full-width social links with >> arrows</div>
+
+            <div class="footer-iteration">
+                <div class="rainbow-separator"></div>
+                <div class="footer" style="padding-top: 0;">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" class="footer-watermark" style="height: 300px; width: auto;">
+                    <div class="socials-bar" style="margin-bottom: 2rem;">
+                        <a href="#" class="social-bar-link">X <span class="arrow">>></span></a>
+                        <a href="#" class="social-bar-link">Instagram <span class="arrow">>></span></a>
+                        <a href="#" class="social-bar-link">LinkedIn <span class="arrow">>></span></a>
+                        <a href="#" class="social-bar-link">YouTube <span class="arrow">>></span></a>
+                        <a href="#" class="social-bar-link">GitHub <span class="arrow">>></span></a>
+                    </div>
+                    <div class="footer-content">
+                        <div class="footer-grid">
+                            <div class="footer-brand">
+                                <img src="../rebrand/assets/ginko-logo-rainbow-striped.svg" alt="ginko" style="height: 48px;">
+                                <p>Ready to stop re-explaining?</p>
+                                <p class="footer-tagline">Back in flow in 30 seconds.</p>
+                                <div class="npm-install-btn">
+                                    <span class="text-part">
+                                        <span class="prompt">$</span>
+                                        <span>npm install</span>
+                                    </span>
+                                    <button class="copy-part">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="footer-links">
+                                <div class="footer-column">
+                                    <h4>Product /</h4>
+                                    <ul>
+                                        <li><a href="#">Developers</a></li>
+                                        <li><a href="#">Teams</a></li>
+                                        <li><a href="#">Pricing</a></li>
+                                    </ul>
+                                </div>
+                                <div class="footer-column">
+                                    <h4>Resources /</h4>
+                                    <ul>
+                                        <li><a href="#">Documentation</a></li>
+                                        <li><a href="#">Blog</a></li>
+                                        <li><a href="#">Changelog</a></li>
+                                    </ul>
+                                </div>
+                                <div class="footer-column">
+                                    <h4>Company /</h4>
+                                    <ul>
+                                        <li><a href="#">About</a></li>
+                                        <li><a href="#">Privacy</a></li>
+                                        <li><a href="#">Terms</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-bottom">
+                            <span class="footer-copyright">© 2026 ginko. All rights reserved.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="option-notes">
+                <strong>Features:</strong> Grid bar for socials with >> arrows (5 columns for 5 platforms). Each cell hovers to black. Same iykyg watermark. Two-part npm button.
+            </p>
+        </div>
+
+        <!-- ITERATION 3: Box Socials -->
+        <div class="section">
+            <h2>Iteration 3: Box Socials (Minimal)</h2>
+            <div class="option-label">Abbreviated box buttons [X] [Ig] [Li] [Yt] [Gh]</div>
+
+            <div class="footer-iteration">
+                <div class="rainbow-separator"></div>
+                <div class="footer">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" class="footer-watermark" style="height: 300px; width: auto;">
+                    <div class="footer-content">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 2rem;">
+                            <div class="footer-brand" style="max-width: 400px;">
+                                <img src="../rebrand/assets/ginko-logo-rainbow-striped.svg" alt="ginko" style="height: 48px;">
+                                <p>Ready to stop re-explaining?</p>
+                                <p class="footer-tagline">Back in flow in 30 seconds.</p>
+                                <div class="npm-install-btn">
+                                    <span class="text-part">
+                                        <span class="prompt">$</span>
+                                        <span>npm install</span>
+                                    </span>
+                                    <button class="copy-part">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1.5rem;">
+                                <div class="socials-boxes">
+                                    <a href="#" class="social-box" title="X (Twitter)">X</a>
+                                    <a href="#" class="social-box" title="Instagram">Ig</a>
+                                    <a href="#" class="social-box" title="LinkedIn">Li</a>
+                                    <a href="#" class="social-box" title="YouTube">Yt</a>
+                                    <a href="#" class="social-box" title="GitHub">Gh</a>
+                                </div>
+                                <div style="display: flex; gap: 1.5rem; font-size: 0.8rem;">
+                                    <a href="#" style="color: var(--color-gray); text-decoration: none;">Docs</a>
+                                    <a href="#" style="color: var(--color-gray); text-decoration: none;">Blog</a>
+                                    <a href="#" style="color: var(--color-gray); text-decoration: none;">Privacy</a>
+                                    <a href="#" style="color: var(--color-gray); text-decoration: none;">Terms</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-bottom" style="margin-top: 2rem;">
+                            <span class="footer-copyright">© 2026 ginko. All rights reserved.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="option-notes">
+                <strong>Features:</strong> Super minimal. Box socials with abbreviations. Reduced links. Clean and compact.
+            </p>
+        </div>
+
+        <!-- ITERATION 4: Text Socials with Arrows -->
+        <div class="section">
+            <h2>Iteration 4: Centered Layout with Text Socials</h2>
+            <div class="option-label">X >> Instagram >> LinkedIn >> YouTube >> GitHub >></div>
+
+            <div class="footer-iteration">
+                <div class="rainbow-separator"></div>
+                <div class="footer">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" class="footer-watermark" style="height: 400px; width: auto; opacity: 0.04;">
+                    <div class="footer-content">
+                        <div style="text-align: center; margin-bottom: 2rem;">
+                            <img src="../rebrand/assets/ginko-logo-rainbow-striped.svg" alt="ginko" style="height: 40px; margin-bottom: 0.5rem;">
+                            <p style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--color-purple-black); margin-bottom: 1rem;">Ready to stop re-explaining?</p>
+                            <div class="npm-install-btn" style="margin: 0 auto; display: inline-flex;">
+                                <span class="text-part">
+                                    <span class="prompt">$</span>
+                                    <span>npm install</span>
+                                </span>
+                                <button class="copy-part">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                    </svg>
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
+                        <div class="footer-bottom" style="flex-direction: column; gap: 1rem; text-align: center;">
+                            <div class="socials-text">
+                                <a href="#" class="social-text-link">X <span class="arrow">>></span></a>
+                                <a href="#" class="social-text-link">Instagram <span class="arrow">>></span></a>
+                                <a href="#" class="social-text-link">LinkedIn <span class="arrow">>></span></a>
+                                <a href="#" class="social-text-link">YouTube <span class="arrow">>></span></a>
+                                <a href="#" class="social-text-link">GitHub <span class="arrow">>></span></a>
+                            </div>
+                            <div style="display: flex; gap: 1.5rem; font-size: 0.8rem; justify-content: center;">
+                                <a href="#" style="color: var(--color-gray); text-decoration: none;">Docs</a>
+                                <a href="#" style="color: var(--color-gray); text-decoration: none;">Blog</a>
+                                <a href="#" style="color: var(--color-gray); text-decoration: none;">Privacy</a>
+                                <a href="#" style="color: var(--color-gray); text-decoration: none;">Terms</a>
+                            </div>
+                            <span class="footer-copyright">© 2026 ginko. All rights reserved.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="option-notes">
+                <strong>Features:</strong> Centered layout. Text socials with >> arrows. Larger, more visible watermark (2.5% opacity, bigger font). Very clean.
+            </p>
+        </div>
+
+        <!-- COMPARISON: Watermark Opacity Levels -->
+        <div class="section">
+            <h2>Watermark Opacity Comparison</h2>
+            <div class="option-label">Testing different visibility levels for "iykyg"</div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                <div style="position: relative; background: var(--color-cream); padding: 2rem; text-align: center; height: 150px; overflow: hidden; border: 1px solid var(--color-gray-light);">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); height: 120px; opacity: 0.02; pointer-events: none;">
+                    <p style="position: relative; z-index: 2; font-size: 0.8rem; color: var(--color-gray);">2% opacity<br>(very subtle)</p>
+                </div>
+                <div style="position: relative; background: var(--color-cream); padding: 2rem; text-align: center; height: 150px; overflow: hidden; border: 1px solid var(--color-gray-light);">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); height: 120px; opacity: 0.04; pointer-events: none;">
+                    <p style="position: relative; z-index: 2; font-size: 0.8rem; color: var(--color-gray);">4% opacity<br>(noticeable)</p>
+                </div>
+                <div style="position: relative; background: var(--color-cream); padding: 2rem; text-align: center; height: 150px; overflow: hidden; border: 1px solid var(--color-gray-light);">
+                    <img src="../rebrand/assets/iykyg-footer-rainbow-striped.svg" alt="" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); height: 120px; opacity: 0.06; pointer-events: none;">
+                    <p style="position: relative; z-index: 2; font-size: 0.8rem; color: var(--color-gray);">6% opacity<br>(more visible)</p>
+                </div>
+            </div>
+            <p class="option-notes">
+                <strong>Recommendation:</strong> 3-4% opacity hits the sweet spot - visible if you look for it, but doesn't distract from content. Similar to Fast Company's approach.
+            </p>
+        </div>
+
+    </div>
+</body>
+</html>
