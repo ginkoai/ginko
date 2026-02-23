@@ -140,8 +140,19 @@ api/_lib/
 .ginko/state-cache.json
 .ginko/pending-updates.json
 
-# Ginko session archives (local-only, accumulate rapidly)
+# Ginko runtime state (local-only, changes frequently)
+.ginko/sync-state.json
+.ginko/user-progress.json
+.ginko/graph/config.json
+.ginko/dlq/
+.ginko/context/modules/
+.ginko/sprints/
+
+# Ginko session files (local-only, user-specific)
 .ginko/sessions/*/archive/
+.ginko/sessions/*/current*
+.ginko/sessions/*/insights-schedule.json
+.ginko/sessions/*/shown-tips.json
 
 # Claude Code local settings (user-specific permissions)
 .claude/settings.local.json
