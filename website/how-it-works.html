@@ -118,17 +118,17 @@
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 0 !important;
-            border: 1px solid var(--card-border-color) !important;
+            border: 1px solid var(--color-border) !important;
             position: relative !important;
             overflow: visible !important;
         }
 
         .features .features-grid .feature-card-large {
             border: none !important;
-            border-right: 1px solid var(--card-border-color) !important;
-            border-bottom: 1px solid var(--card-border-color) !important;
+            border-right: 1px solid var(--color-border) !important;
+            border-bottom: 1px solid var(--color-border) !important;
             border-radius: 0 !important;
-            background: #0C151C !important;
+            background: var(--color-surface) !important;
         }
 
         .features .features-grid .feature-card-large:nth-child(2n) {
@@ -255,7 +255,7 @@
             display: flex !important;
             flex-direction: column !important;
             gap: 0 !important;
-            border: 1px solid var(--card-border-color) !important;
+            border: 1px solid var(--color-border) !important;
             position: relative !important;
             overflow: visible !important;
             align-self: start !important;
@@ -265,9 +265,9 @@
         .graph-feature {
             position: relative !important;
             border: none !important;
-            border-bottom: 1px solid var(--card-border-color) !important;
+            border-bottom: 1px solid var(--color-border) !important;
             border-radius: 0 !important;
-            background: #0C151C !important;
+            background: var(--color-surface) !important;
             padding: var(--space-6) !important;
         }
 
@@ -348,7 +348,7 @@
             display: grid !important;
             grid-template-columns: repeat(3, 1fr) !important;
             gap: 0 !important;
-            border: 1px solid var(--card-border-color) !important;
+            border: 1px solid var(--color-border) !important;
             border-radius: 0 !important;
             position: relative !important;
             padding: 0 !important;
@@ -357,9 +357,9 @@
 
         section.features:has(.problem-grid) .problem-card {
             border: none !important;
-            border-right: 1px solid var(--card-border-color) !important;
+            border-right: 1px solid var(--color-border) !important;
             border-radius: 0 !important;
-            background: #0C151C !important;
+            background: var(--color-surface) !important;
             margin: 0 !important;
             box-shadow: none !important;
         }
@@ -532,7 +532,7 @@
 
             .features .features-grid .feature-card-large {
                 border-right: none !important;
-                border-bottom: 1px solid var(--card-border-color) !important;
+                border-bottom: 1px solid var(--color-border) !important;
             }
 
             .features .features-grid .feature-card-large:last-child {
@@ -541,7 +541,7 @@
 
             /* High specificity to override desktop "last 2 cards" rule */
             .features .features-grid .feature-card-large:nth-child(n):not(:last-child) {
-                border-bottom: 1px solid var(--card-border-color) !important;
+                border-bottom: 1px solid var(--color-border) !important;
             }
 
             /* Hide junction markers on mobile (no grid intersections) */
@@ -560,7 +560,7 @@
 
             section.features:has(.problem-grid) .problem-card {
                 border-right: none !important;
-                border-bottom: 1px solid var(--card-border-color) !important;
+                border-bottom: 1px solid var(--color-border) !important;
             }
 
             section.features:has(.problem-grid) .problem-card:last-child {

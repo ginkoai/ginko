@@ -1143,7 +1143,7 @@ body:has(.hero--with-image) .navbar {
 }
 
 .graph-node:hover .node-bg {
-    fill: #131F2A;
+    fill: var(--color-bg);
 }
 
 .graph-node:hover .node-label {
@@ -2255,8 +2255,8 @@ button:hover .btn-hero-arrow .arrow-hover {
 .transformation-card {
     position: relative;
     padding: var(--space-8);
-    background: #0C151C;
-    border: 1px solid transparent;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     transition: all var(--transition-base);
 }
@@ -2288,7 +2288,7 @@ button:hover .btn-hero-arrow .arrow-hover {
     line-height: 1.6;
     margin: 0;
     flex: 1;
-    color: #CCCCCC;
+    color: var(--color-text-secondary);
 }
 
 .transformation-after p {
@@ -2296,11 +2296,11 @@ button:hover .btn-hero-arrow .arrow-hover {
     line-height: 1.6;
     margin: 0;
     flex: 1;
-    color: #F4EEDD;
+    color: var(--color-text);
 }
 
 .transformation-before {
-    color: #CCCCCC;
+    color: var(--color-text-secondary);
 }
 
 .transformation-before .transformation-icon {
@@ -2309,7 +2309,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .transformation-after {
-    color: #F4EEDD;
+    color: var(--color-text);
 }
 
 .transformation-after .transformation-icon {
@@ -2395,8 +2395,8 @@ section.problem > .container { position: static; }
 .problem ~ * .corner-bracket.bottom-right { }
 section.hero .corner-bracket.bottom-left:not(.terminal-bracketed .corner-bracket),
 section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracket) { display: none !important; }
-.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 0; position: relative; border: 1px solid var(--card-border-color); }
-.problem-card { position: relative; text-align: center; padding: var(--space-8); background: var(--color-surface); border: none; border-radius: 0; border-right: 1px solid var(--card-border-color); }
+.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 0; position: relative; border: 1px solid var(--color-border); }
+.problem-card { position: relative; text-align: center; padding: var(--space-8); background: var(--color-surface); border: none; border-radius: 0; border-right: 1px solid var(--color-border); }
 .problem-card:last-child { border-right: none; }
 .problem-card:hover { box-shadow: none; }
 .problem-label { font-family: var(--font-mono); font-size: 24px; font-weight: var(--font-weight-bold); color: var(--color-accent); letter-spacing: 0.1em; margin-bottom: var(--space-4); }
@@ -2529,6 +2529,15 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     border-bottom: none;
 }
 
+.feature-row-number {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--font-size-xl); /* 20px */
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--space-2);
+    letter-spacing: 0.05em;
+}
+
 .feature-row-title {
     font-family: var(--font-display);
     font-size: var(--font-size-3xl); /* 32px - H3 */
@@ -2639,8 +2648,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .feature-cell {
     padding: var(--space-8);
     text-align: left;
-    background: #0C151C;
-    border: 1px solid transparent;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     transition: all var(--transition-base);
 }
@@ -2670,14 +2679,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-mono);
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
-    color: #F4EEDD;
+    color: var(--color-text);
     margin: 0 0 var(--space-3) 0;
     text-transform: uppercase;
 }
 
 .feature-benefit {
     font-size: var(--font-size-sm);
-    color: #AAAAAA;
+    color: var(--color-text-secondary);
     line-height: 1.7;
     margin: 0;
 }
@@ -2729,7 +2738,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     width: 100%;
     padding: var(--space-12);
     text-align: left;
-    background: #0C151C;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 16px;
 }
 
@@ -2753,7 +2763,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-mono);
     font-size: var(--font-size-4xl);
     font-style: normal;
-    color: #F4EEDD;
+    color: var(--color-text);
     margin: 0 0 var(--space-4) 0;
     line-height: 1.4;
 }
@@ -2772,7 +2782,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     display: block;
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
-    color: #999999;
+    color: var(--color-text-secondary);
     font-style: normal;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -2812,19 +2822,19 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     align-items: stretch;
     /* Connected card system */
     position: relative;
-    border: 1px solid var(--card-border-color);
+    border: 1px solid var(--color-border);
     border-radius: 0;
 }
 
 .faq-item {
-    background: #0C151C;
+    background: var(--color-surface);
     border: none;
     border-radius: 0;
     padding: var(--space-6);
     transition: all var(--transition-base);
     position: relative;
     /* Right border as divider between cards */
-    border-right: 1px solid var(--card-border-color);
+    border-right: 1px solid var(--color-border);
 }
 
 /* Remove right border from even cards (right column) */
@@ -2834,11 +2844,11 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 /* Add bottom border for cards not in last row (6 items = 3 rows, last 2 are row 3) */
 .faq-accordion > .faq-item:not(:nth-last-child(-n+2)) {
-    border-bottom: 1px solid var(--card-border-color);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .faq-item:hover {
-    background: rgba(208, 245, 73, 0.03);
+    background: rgba(254, 69, 0, 0.03);
 }
 
 .faq-question {
@@ -2854,14 +2864,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-mono);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
-    color: #F4EEDD;
+    color: var(--color-text);
     transition: color 0.2s ease;
     -webkit-tap-highlight-color: transparent;
     outline: none;
 }
 
 .faq-number {
-    color: #939da4;
+    color: var(--color-text-tertiary);
     margin-right: var(--space-2);
 }
 
@@ -2891,8 +2901,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     height: 36px;
     font-size: 1.5rem;
     font-weight: var(--font-weight-normal);
-    color: #F4EEDD;
-    background-color: #12202B;
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
     border-radius: 50%;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
@@ -2923,7 +2934,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .faq-answer p {
     font-size: var(--font-size-sm);
-    color: #939da4;
+    color: var(--color-text-secondary);
     line-height: 1.7;
     margin: 0;
 }
@@ -2952,7 +2963,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     width: 100%;
     margin: 0 auto;
     padding: var(--space-16) var(--space-8);
-    background: #0C151C;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 0;
     display: flex;
     flex-direction: column;
@@ -2976,7 +2988,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-display);
     font-size: var(--font-size-4xl);
     margin-bottom: 0;
-    color: #F4EEDD;
+    color: var(--color-text);
     text-transform: uppercase;
     line-height: 1.2;
 }
@@ -2985,7 +2997,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .iykyg-reveal {
     font-family: var(--font-mono);
     font-size: var(--font-size-lg);
-    color: #999999;
+    color: var(--color-text-secondary);
     letter-spacing: 0.15em;
     cursor: pointer;
     position: relative;
@@ -3099,34 +3111,34 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .cta .btn-secondary-large {
-    border-color: #F4EEDD;
-    color: #F4EEDD;
+    border-color: var(--color-text);
+    color: var(--color-text);
     background: transparent;
 }
 
 .cta .btn-secondary-large:hover {
-    background-color: #F4EEDD;
-    color: #0C151C;
+    background-color: var(--color-text);
+    color: var(--color-surface);
 }
 
 .cta .btn-primary {
-    background-color: white;
-    color: var(--color-accent-dark);
-    border-color: white;
+    background-color: var(--color-accent);
+    color: var(--color-text);
+    border-color: var(--color-accent);
 }
 
 .cta .btn-primary:hover {
-    background-color: var(--color-bg);
+    background-color: var(--color-accent-hover);
 }
 
 .cta .btn-secondary {
-    border-color: white;
-    color: white;
+    border-color: var(--color-text);
+    color: var(--color-text);
 }
 
 .cta .btn-secondary:hover {
-    background-color: white;
-    color: var(--color-accent-dark);
+    background-color: var(--color-text);
+    color: var(--color-surface);
 }
 
 /* CTA corner brackets - visible against dark terminal */
@@ -3159,8 +3171,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .pricing-card {
     position: relative;
-    background: #0C151C;
-    border: 1px solid transparent;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: var(--space-8);
     text-align: center;
@@ -3175,13 +3187,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .pricing-card-featured {
     border-color: var(--color-accent);
-    border-width: 1px;
-    box-shadow: 0 0 20px rgba(208, 245, 73, 0.3);
+    border-width: 2px;
+    box-shadow: 0 0 24px rgba(254, 69, 0, 0.2);
 }
 
 /* Add inset glow on left side of card AFTER featured card (creates Pro's right-side glow effect) */
 .pricing-card-featured + .pricing-card {
-    box-shadow: inset 15px 0 20px -15px rgba(208, 245, 73, 0.25);
+    box-shadow: inset 15px 0 20px -15px rgba(254, 69, 0, 0.15);
 }
 
 
@@ -3216,8 +3228,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-display);
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
-    color: #F4EEDD;
+    color: var(--color-text);
     margin-bottom: var(--space-4);
+    text-transform: uppercase;
 }
 
 .plan-price {
@@ -3233,7 +3246,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .period {
     font-size: var(--font-size-base);
-    color: #999999;
+    color: var(--color-text-secondary);
 }
 
 .plan-features {
@@ -3244,8 +3257,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .plan-features li {
     padding: var(--space-3) 0;
-    color: #CCCCCC;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .plan-features li:last-child {
@@ -4446,7 +4459,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     gap: 0;
     max-width: 900px;
     margin: 0 auto;
-    border: 1px solid var(--card-border-color);
+    border: 1px solid var(--color-border);
     position: relative;
 }
 
@@ -4485,9 +4498,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .quickstart-step {
     position: relative;
-    background-color: #0C151C;
+    background-color: var(--color-surface);
     border: none;
-    border-bottom: 1px solid var(--card-border-color);
+    border-bottom: 1px solid var(--color-border);
     padding: var(--space-8);
 }
 
@@ -4629,7 +4642,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0;
-    border: 1px solid var(--card-border-color);
+    border: 1px solid var(--color-border);
     position: relative;
 }
 
@@ -4672,8 +4685,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     position: relative;
     background-color: var(--color-surface);
     border: none;
-    border-right: 1px solid var(--card-border-color);
-    border-bottom: 1px solid var(--card-border-color);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
     padding: var(--space-6);
 }
 
@@ -4754,8 +4767,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .pro-card {
     position: relative;
-    background-color: #0C151C;
-    border: 1px solid var(--card-border-color) !important;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border) !important;
     padding: var(--space-10);
     text-align: center;
 }
@@ -4763,10 +4776,10 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 /* Pro card glow effect */
 .pro-card-glow {
     box-shadow:
-        0 0 30px rgba(208, 245, 73, 0.3),
-        0 0 60px rgba(208, 245, 73, 0.15),
-        0 0 90px rgba(208, 245, 73, 0.08);
-    border-color: var(--card-border-color);
+        0 0 30px rgba(254, 69, 0, 0.15),
+        0 0 60px rgba(254, 69, 0, 0.08),
+        0 0 90px rgba(254, 69, 0, 0.04);
+    border-color: var(--color-accent);
     z-index: 2;
 }
 
@@ -4858,7 +4871,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     color: var(--color-text);
     font-family: var(--font-mono);
     font-size: var(--font-size-base);
-    border-bottom: 1px solid var(--card-border-color);
+    border-bottom: 1px solid var(--color-border);
 }
 
 .pro-list li:last-child {
@@ -4879,8 +4892,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     display: flex;
     flex-direction: column;
     position: relative;
-    background-color: #0C151C;
-    border: 1px solid var(--card-border-color);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     padding: var(--space-8);
 }
 
@@ -4938,7 +4951,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0;
-    border: 1px solid var(--card-border-color);
+    border: 1px solid var(--color-border);
     position: relative;
     max-width: 900px;
     margin: 0 auto;
@@ -4946,11 +4959,11 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .next-step-card {
     display: block;
-    background-color: #0C151C !important;
+    background-color: var(--color-surface) !important;
     border-top: none !important;
     border-left: none !important;
-    border-right: 1px solid var(--card-border-color) !important;
-    border-bottom: 1px solid var(--card-border-color) !important;
+    border-right: 1px solid var(--color-border) !important;
+    border-bottom: 1px solid var(--color-border) !important;
     padding: var(--space-8);
     text-decoration: none;
     text-align: center;
@@ -5049,12 +5062,12 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .next-step-card:hover {
-    background-color: rgba(208, 245, 73, 0.05) !important;
+    background-color: rgba(254, 69, 0, 0.05) !important;
     transition: background-color 0.2s ease;
 }
 
 .next-step-card:hover .next-step-label {
-    color: #fff;
+    color: var(--color-accent);
 }
 
 .next-step-card:hover p {
@@ -5528,7 +5541,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .faq-accordion {
     position: relative !important;
     /* Outer border - faint connecting lines */
-    border: 1px solid var(--card-border-color) !important;
+    border: 1px solid var(--color-border) !important;
     border-radius: 0 !important;
     gap: 0 !important;
 }
@@ -5577,7 +5590,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 /* Steps-grid is always 1 column - remove right border, add bottom border */
 .steps-grid > .step-card {
     border-right: none !important;
-    border-bottom: 1px solid var(--card-border-color) !important;
+    border-bottom: 1px solid var(--color-border) !important;
 }
 
 .steps-grid > .step-card:last-child {
@@ -5661,7 +5674,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     /* Stacked steps-grid: remove right border, add bottom border */
     .steps-grid > .step-card {
         border-right: none !important;
-        border-bottom: 1px solid var(--card-border-color) !important;
+        border-bottom: 1px solid var(--color-border) !important;
     }
 
     .steps-grid > .step-card:last-child {
@@ -5702,14 +5715,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     /* Odd cards (left column) that aren't in last row need right + bottom border */
     .value-stats > .stat-card:nth-child(odd):not(:nth-last-child(-n+2)),
     .features-grid > .feature-card:nth-child(odd):not(:nth-last-child(-n+2)) {
-        border-right: 1px solid var(--card-border-color) !important;
-        border-bottom: 1px solid var(--card-border-color) !important;
+        border-right: 1px solid var(--color-border) !important;
+        border-bottom: 1px solid var(--color-border) !important;
     }
 
     /* Even cards (right column) that aren't in last row just need bottom border */
     .value-stats > .stat-card:nth-child(even):not(:nth-last-child(-n+2)),
     .features-grid > .feature-card:nth-child(even):not(:nth-last-child(-n+2)) {
-        border-bottom: 1px solid var(--card-border-color) !important;
+        border-bottom: 1px solid var(--color-border) !important;
     }
 
     /* Last row: no bottom borders */
@@ -5739,7 +5752,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     .steps-grid > .step-card,
     .pricing-grid > .pricing-card {
         border-right: none !important;
-        border-bottom: 1px solid var(--card-border-color) !important;
+        border-bottom: 1px solid var(--color-border) !important;
     }
 
     .transformation-grid > .transformation-card:last-child,
@@ -5864,9 +5877,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     position: relative;
     border-radius: 0 !important;
     border: none !important;
-    background: #0C151C !important;
+    background: var(--color-surface) !important;
     /* Right border as divider between cards */
-    border-right: 1px solid var(--card-border-color) !important;
+    border-right: 1px solid var(--color-border) !important;
 }
 
 /* Remove right border from last card */
@@ -6181,13 +6194,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .pricing-grid > .pricing-card:not(:nth-last-child(-n+3)),
 .steps-grid > .step-card:not(:last-child),
 .commands-grid > .command-card:not(:nth-last-child(-n+3)) {
-    border-bottom: 1px solid var(--card-border-color) !important;
+    border-bottom: 1px solid var(--color-border) !important;
 }
 
 /* 2-column grids: not in last 2 items */
 .features-grid-unified > .feature-cell:not(:nth-last-child(-n+2)),
 .faq-accordion > .faq-item:not(:nth-last-child(-n+2)) {
-    border-bottom: 1px solid var(--card-border-color) !important;
+    border-bottom: 1px solid var(--color-border) !important;
 }
 
 /* 2-column FAQ: Left-T (├) at left edge - use ::after to avoid conflicting with top-middle ┬ */
@@ -6213,7 +6226,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 /* 4-column grids: not in last 4 items */
 .value-stats > .stat-card:not(:nth-last-child(-n+2)),
 .features-grid > .feature-card:not(:nth-last-child(-n+3)) {
-    border-bottom: 1px solid var(--card-border-color) !important;
+    border-bottom: 1px solid var(--color-border) !important;
 }
 
 /* Horizontal row divider junctions - only on desktop (>= 1025px) */
@@ -6371,7 +6384,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     position: relative !important;
     display: grid !important;
     grid-template-columns: 1fr !important;
-    border: 1px solid var(--card-border-color) !important;
+    border: 1px solid var(--color-border) !important;
     border-radius: 0 !important;
     gap: 0 !important;
 }
@@ -6382,9 +6395,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     align-items: flex-start;
     gap: var(--space-6);
     padding: var(--space-6) var(--space-8);
-    background: #0C151C !important;
+    background: var(--color-surface) !important;
     border: none !important;
-    border-bottom: 1px solid var(--card-border-color) !important;
+    border-bottom: 1px solid var(--color-border) !important;
     border-radius: 0 !important;
 }
 
@@ -6496,7 +6509,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     grid-template-columns: repeat(3, 1fr);
     gap: 0;
     position: relative;
-    border: 1px solid var(--card-border-color);
+    border: 1px solid var(--color-border);
 }
 
 .day-grid-2col {
@@ -6506,8 +6519,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .day-card {
     position: relative;
     padding: var(--space-8);
-    background: #0C151C;
-    border-right: 1px solid var(--card-border-color);
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -6619,7 +6632,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
     .day-card {
         border-right: none;
-        border-bottom: 1px solid var(--card-border-color);
+        border-bottom: 1px solid var(--color-border);
     }
 
     .day-card:last-child {
@@ -6659,7 +6672,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .testimonial-content,
 .cta-content {
     position: relative !important;
-    border: 1px solid var(--card-border-color) !important;
+    border: 1px solid var(--color-border) !important;
     border-radius: 0 !important;
 }
 
@@ -6733,7 +6746,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     .pricing-grid > .pricing-card,
     .faq-accordion > .faq-item {
         border-right: none !important;
-        border-bottom: 1px solid var(--card-border-color) !important;
+        border-bottom: 1px solid var(--color-border) !important;
     }
 
     /* Remove last card's bottom border */
@@ -6754,7 +6767,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     /* High specificity to override .features-grid > .feature-card:nth-last-child(-n+2) */
     .features-grid > .feature-card:nth-child(n):not(:last-child),
     .value-stats > .stat-card:nth-child(n):not(:last-child) {
-        border-bottom: 1px solid var(--card-border-color) !important;
+        border-bottom: 1px solid var(--color-border) !important;
     }
 
     /* Mobile stacked: Left T (├) at left edge of horizontal dividers */
