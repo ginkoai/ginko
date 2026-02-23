@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features Carousel - Real SVG Swoosh Comp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #FDF9F1;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .features-section {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .section-header h2 {
+            font-family: 'Anton', sans-serif;
+            font-size: 56px;
+            font-weight: 400;
+            color: #100D08;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 18px;
+            color: #5C5C5C;
+            margin-bottom: 48px;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        /* The swoosh frame - positioned to center on the card */
+        .swoosh-frame {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 110%;
+            height: 120%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .feature-card {
+            position: relative;
+            z-index: 2;
+            background: #FFFDF9;
+            border: 2px solid #100D08;
+            padding: 48px 56px;
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .card-inner {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 32px;
+        }
+
+        .feature-icon {
+            width: 72px;
+            height: 72px;
+            border: 2px solid #100D08;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feature-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .feature-content {
+            padding-right: 120px;
+        }
+
+        .feature-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .feature-title {
+            font-family: 'Anton', sans-serif;
+            font-size: 42px;
+            font-weight: 400;
+            color: #100D08;
+            text-transform: lowercase;
+            margin-bottom: 4px;
+            letter-spacing: 0.01em;
+        }
+
+        .feature-tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #E85D04;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 16px;
+        }
+
+        .feature-description {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 17px;
+            line-height: 1.7;
+            color: #3D3D3D;
+            max-width: 540px;
+        }
+
+        .card-number {
+            position: absolute;
+            bottom: 20px;
+            right: 40px;
+            font-family: 'Anton', sans-serif;
+            font-size: 140px;
+            color: rgba(16, 13, 8, 0.06);
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .carousel-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 900px;
+            margin: 24px auto 0;
+            padding: 0 8px;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-arrow {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #100D08;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background: #100D08;
+            color: #FDF9F1;
+        }
+
+        .dots {
+            display: flex;
+            gap: 10px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        /* Sunset gradient dots */
+        .dot:nth-child(1) { background: #F9A825; }
+        .dot:nth-child(2) { background: #F97B22; opacity: 0.7; }
+        .dot:nth-child(3) { background: #E85D04; opacity: 0.6; }
+        .dot:nth-child(4) { background: #D62828; opacity: 0.5; }
+        .dot:nth-child(5) { background: #9D4EDD; opacity: 0.4; }
+        .dot:nth-child(6) { background: #5A189A; opacity: 0.35; }
+        .dot:nth-child(7) { background: #3C096C; opacity: 0.3; }
+
+        .page-indicator {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .page-indicator .current {
+            color: #100D08;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <section class="features-section">
+        <div class="section-header">
+            <h2>How Ginko Works</h2>
+            <p>Seven features that transform AI collaboration</p>
+        </div>
+
+        <div class="carousel-container">
+            <!-- SVG Swoosh Frame - Left Side -->
+            <svg class="swoosh-frame" viewBox="0 0 1200 500" preserveAspectRatio="none" style="position: absolute; left: -10%; top: 50%; transform: translateY(-50%); width: 55%; height: 140%;">
+                <!-- Multiple curved stripes - flowing from top-left, curving around -->
+                <!-- Stripe 1 - Warm Yellow -->
+                <path d="M -50 50
+                         Q 80 50, 120 100
+                         Q 160 150, 140 250
+                         Q 120 350, 60 400
+                         Q 0 450, -50 450"
+                      fill="none" stroke="#F9A825" stroke-width="12" stroke-linecap="round"/>
+
+                <!-- Stripe 2 - Orange -->
+                <path d="M -50 70
+                         Q 100 70, 145 125
+                         Q 190 180, 165 280
+                         Q 140 380, 75 435
+                         Q 10 490, -50 490"
+                      fill="none" stroke="#F97B22" stroke-width="12" stroke-linecap="round"/>
+
+                <!-- Stripe 3 - Deep Orange -->
+                <path d="M -50 90
+                         Q 120 90, 170 150
+                         Q 220 210, 190 310
+                         Q 160 410, 90 470
+                         Q 20 530, -50 530"
+                      fill="none" stroke="#E85D04" stroke-width="12" stroke-linecap="round"/>
+
+                <!-- Stripe 4 - Red -->
+                <path d="M -50 110
+                         Q 140 110, 195 175
+                         Q 250 240, 215 340
+                         Q 180 440, 105 505
+                         Q 30 570, -50 570"
+                      fill="none" stroke="#D62828" stroke-width="12" stroke-linecap="round"/>
+
+                <!-- Stripe 5 - Purple -->
+                <path d="M -50 130
+                         Q 160 130, 220 200
+                         Q 280 270, 240 370
+                         Q 200 470, 120 540
+                         Q 40 610, -50 610"
+                      fill="none" stroke="#9D4EDD" stroke-width="12" stroke-linecap="round"/>
+            </svg>
+
+            <!-- SVG Swoosh Frame - Right Side (mirrored) -->
+            <svg class="swoosh-frame" viewBox="0 0 1200 500" preserveAspectRatio="none" style="position: absolute; right: -10%; top: 50%; transform: translateY(-50%) scaleX(-1); width: 55%; height: 140%;">
+                <!-- Multiple curved stripes - mirrored -->
+                <path d="M -50 50
+                         Q 80 50, 120 100
+                         Q 160 150, 140 250
+                         Q 120 350, 60 400
+                         Q 0 450, -50 450"
+                      fill="none" stroke="#F9A825" stroke-width="12" stroke-linecap="round"/>
+
+                <path d="M -50 70
+                         Q 100 70, 145 125
+                         Q 190 180, 165 280
+                         Q 140 380, 75 435
+                         Q 10 490, -50 490"
+                      fill="none" stroke="#F97B22" stroke-width="12" stroke-linecap="round"/>
+
+                <path d="M -50 90
+                         Q 120 90, 170 150
+                         Q 220 210, 190 310
+                         Q 160 410, 90 470
+                         Q 20 530, -50 530"
+                      fill="none" stroke="#E85D04" stroke-width="12" stroke-linecap="round"/>
+
+                <path d="M -50 110
+                         Q 140 110, 195 175
+                         Q 250 240, 215 340
+                         Q 180 440, 105 505
+                         Q 30 570, -50 570"
+                      fill="none" stroke="#D62828" stroke-width="12" stroke-linecap="round"/>
+
+                <path d="M -50 130
+                         Q 160 130, 220 200
+                         Q 280 270, 240 370
+                         Q 200 470, 120 540
+                         Q 40 610, -50 610"
+                      fill="none" stroke="#9D4EDD" stroke-width="12" stroke-linecap="round"/>
+            </svg>
+
+            <div class="feature-card">
+                <div class="card-inner">
+                    <div class="feature-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#F9A825" stroke-width="2.5">
+                            <polygon points="5,3 19,12 5,21" fill="#F9A825" stroke="none"/>
+                        </svg>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-label">Feature 01 / 07</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <div class="feature-tagline">Ready Player You</div>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and
+                            everything important from your last session. No more re-explaining
+                            the basics to your AI partner—just straight back to flow in 30
+                            seconds or less.
+                        </p>
+                    </div>
+                </div>
+                <div class="card-number">01</div>
+            </div>
+        </div>
+
+        <div class="carousel-controls">
+            <div class="nav-arrows">
+                <button class="nav-arrow">&#8249;</button>
+                <button class="nav-arrow">&#8250;</button>
+            </div>
+            <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="page-indicator">
+                <span class="current">01</span> / 07
+            </div>
+        </div>
+    </section>
+</body>
+</html>
