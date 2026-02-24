@@ -1,0 +1,40 @@
+---
+description: Complete session handoff with cleanup, docs, and commit
+---
+
+Prepare a complete session handoff.
+
+**Consider these user comments**: $ARGUMENTS
+Seek clarification if necessary.
+
+**Safety check**: If the system appears to be in a broken state, incomplete work, or if the primary goal hasn't been achieved, call `/vibecheck` to assess whether a handoff is appropriate right now.
+
+1. **Clean up temporary files**:
+   - Remove any test files or temporary scripts
+   - Clean up debug outputs
+   - Check for and remove any .tmp, .log, or test-* files
+
+2. **Update documentation**:
+   - Update BACKLOG.md if features were completed
+   - Check if CLAUDE.md needs updates for new patterns
+   - Note any new architectural decisions
+
+3. **Commit all changes**:
+   - Review all modified files with git status
+   - Stage appropriate changes
+   - Create a descriptive commit message
+
+4. **Generate session handoff**:
+   - Run `ginko handoff "$ARGUMENTS"` to create handoff
+   - The handoff will be saved to `.ginko/sessions/*/current.md`
+   - Previous handoff automatically archived with date and description
+   - AI will self-identify model, version, and provider in frontmatter
+   - Include current branch state and next steps
+
+Make sure to:
+- Verify no secrets or API keys are being committed
+- Ensure all tests pass before committing
+- Leave the codebase in a working state
+- Document any environment changes needed
+
+This ensures a smooth transition for the next session.

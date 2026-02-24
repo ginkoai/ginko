@@ -842,8 +842,10 @@ export class StartReflectionCommand extends ReflectionCommand {
       // Check if user has structured work (Epic→Sprint→Task). If not, show guided planning menu.
       const structureStatus = checkWorkStructure(userSprint, sprintChecklist);
 
-      if (structureStatus.shouldShowPlanningMenu) {
-        // Show planning menu to guide user toward structured work
+      const isNonInteractive = options?.nonInteractive || !process.stdout.isTTY;
+
+      if (structureStatus.shouldShowPlanningMenu && !isNonInteractive) {
+        // Show planning menu to guide user toward structured work (only in interactive terminals)
         const menuResult = await showPlanningMenu(structureStatus);
 
         if (menuResult.cancelled) {
@@ -874,6 +876,12 @@ export class StartReflectionCommand extends ReflectionCommand {
         }
 
         console.log(''); // Spacing before normal output continues
+      } else if (structureStatus.shouldShowPlanningMenu && isNonInteractive) {
+        // Non-interactive mode: output status text instead of interactive menu
+        if (structureStatus.reason === 'all_tasks_complete') {
+          console.log(chalk.green('🎉 Sprint complete! All tasks finished.'));
+        }
+        console.log(chalk.dim('No active sprint. Use `ginko epic` to plan work or `ginko sprint quick-fix "description"` for a quick task.'));
       }
 
       // EPIC-016 Sprint 4: Check for unassigned tasks and prompt for bulk assignment (ADR-061)
