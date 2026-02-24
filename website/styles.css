@@ -53,11 +53,10 @@
     --font-weight-extrabold: 800;
 
     /* Colors - Light Mode (Sunset Rebrand) */
-    --color-bg: #f3f1e2;
-    --color-surface: #f9f8f1;
-    --color-surface-alt: #f3f1e2;
-
-    --color-surface-hover: #f9f8f1;
+    --color-bg: #FAF7F0;          /* Cream - primary background */
+    --color-surface: #FAF7F0;     /* Cream - card/section backgrounds */
+    --color-surface-alt: #FAF7F0; /* Cream */
+    --color-surface-hover: #F4EEDD; /* Eggshell - hover states */
     --color-text: #100D08; /* Deep Warm Black */
     --color-text-secondary: #333333;
     --color-text-tertiary: #666666;
@@ -131,7 +130,7 @@
     --color-btn-secondary-bg: #0d0d0d;
     --color-btn-secondary-text: #FAF7F0;
     --color-btn-cream-bg: #FAF7F0;
-    --color-btn-arrow-dark: #ffffff;
+    --color-btn-arrow-dark: #FAF7F0;
     --color-btn-arrow-surface: #FAF7F0;
 }
 
@@ -2717,7 +2716,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 /* Carousel Card */
 .carousel-card {
-    background: #FFFFFF;
+    background: var(--color-surface);
     border: 3px solid var(--color-text);
     display: flex;
     flex-direction: row;
@@ -4890,7 +4889,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .discord-channel {
-    background: white;
+    background: var(--color-surface);
     border: 2px solid var(--color-text);
     border-radius: 8px;
     padding: var(--space-4);

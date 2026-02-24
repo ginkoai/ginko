@@ -177,7 +177,7 @@ export default function FeaturesCarousel(props) {
                         {/* Card */}
                         <div
                             style={{
-                                background: "#FFFFFF",
+                                background: "#FAF7F0",
                                 border: "2px solid #0B0B0B",
                                 padding: "40px",
                                 height: "100%",
@@ -260,7 +260,7 @@ export default function FeaturesCarousel(props) {
                             width: "32px",
                             height: "32px",
                             border: "1px solid #0B0B0B",
-                            background: "#FFFFFF",
+                            background: "#FAF7F0",
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
@@ -273,7 +273,7 @@ export default function FeaturesCarousel(props) {
                             e.currentTarget.style.color = "#FCFBF1"
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "#FFFFFF"
+                            e.currentTarget.style.background = "#FAF7F0"
                             e.currentTarget.style.color = "#0B0B0B"
                         }}
                     >
@@ -320,7 +320,7 @@ export default function FeaturesCarousel(props) {
                             width: "32px",
                             height: "32px",
                             border: "1px solid #0B0B0B",
-                            background: "#FFFFFF",
+                            background: "#FAF7F0",
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
@@ -333,7 +333,7 @@ export default function FeaturesCarousel(props) {
                             e.currentTarget.style.color = "#FCFBF1"
                         }}
                         onMouseLeave={(e) => {
-                            e.currentTarget.style.background = "#FFFFFF"
+                            e.currentTarget.style.background = "#FAF7F0"
                             e.currentTarget.style.color = "#0B0B0B"
                         }}
                     >
