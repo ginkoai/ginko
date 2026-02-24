@@ -63,7 +63,10 @@
             <section id="home" class="hero hero--with-image">
                 <!-- Background Image: DUMBO Brooklyn -->
                 <div class="hero-bg">
-                    <img src="images/hero_iykyg_nyc_dumbo.png" alt="" aria-hidden="true" loading="eager">
+                    <picture>
+                        <source media="(max-width: 1024px) and (orientation: portrait)" srcset="images/hero_iykyg_nyc_dumbo_portrait.png">
+                        <img src="images/hero_iykyg_nyc_dumbo.png" alt="" aria-hidden="true" loading="eager">
+                    </picture>
                 </div>
                 <div class="container">
                     <div class="hero-grid">
@@ -71,7 +74,7 @@
                         <div class="hero-text">
                             <span class="hero-badge">NOW IN PUBLIC BETA</span>
                             <h1 class="hero-headline">
-                                If You Know, <strong>You Ginko</strong>
+                                If You Know,<br><strong>You Ginko</strong>
                             </h1>
                             <p class="hero-copy-full">
                                 ginko turns your AI model into a first-class partner. No more re-explaining every session. Just back to flow state in 30 seconds every time.

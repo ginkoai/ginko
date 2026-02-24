@@ -4154,9 +4154,39 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         padding-right: var(--space-4);
     }
 
+    /* Hide header npm button on mobile - redundant with hero CTA */
+    .npm-compact-btn--header {
+        display: none;
+    }
+
     .hero {
         padding-top: 100px;
         min-height: auto;
+    }
+
+    /* Hero with image - mobile/tablet portrait adjustments */
+    .hero--with-image {
+        max-height: none;
+        min-height: auto;
+        padding-bottom: 0;
+    }
+
+    /* Push image far right - maximize space for text, sticker stays visible at edge */
+    .hero--with-image .hero-bg img {
+        object-position: calc(100% + 160px) calc(55% - 20px);
+    }
+
+    /* Gradual extended fade - solid left, smoothly fading to transparent right */
+    .hero--with-image .hero-bg::after {
+        background: linear-gradient(
+            to right,
+            rgba(243, 241, 226, 0.97) 0%,
+            rgba(243, 241, 226, 0.9) 30%,
+            rgba(243, 241, 226, 0.65) 50%,
+            rgba(243, 241, 226, 0.35) 70%,
+            rgba(243, 241, 226, 0.1) 85%,
+            rgba(243, 241, 226, 0) 100%
+        );
     }
 
     .hero-grid {
@@ -4174,10 +4204,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         display: none !important;
     }
 
-    /* Prevent any graph overflow on mobile */
-    .hero,
+    /* Prevent graph overflow on mobile, but allow hero-with-image to scroll */
     .hero-grid {
         overflow: hidden;
+    }
+
+    .hero--with-image,
+    .hero--with-image .hero-grid {
+        overflow: visible;
     }
 
     .context-graph {
@@ -6107,6 +6141,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     position: relative;
     z-index: 5;
     margin-top: -80px; /* Pull up to be flush with hero bottom */
+    overflow: hidden; /* Contain the slash dividers */
 }
 
 .slash-divider {
@@ -6139,7 +6174,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     }
 
     .logo-marquee-section {
-        margin-top: -60px; /* Less overlap on mobile */
+        margin-top: -50px; /* Pull up to close gap with hero */
     }
 }
 
@@ -6197,7 +6232,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .logo-marquee {
-        margin-top: 2rem;
+        margin-top: 0; /* Flush with separator above */
     }
 
     .logo-marquee-fade {
