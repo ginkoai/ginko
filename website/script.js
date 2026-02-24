@@ -566,6 +566,55 @@ if (document.readyState === 'loading') {
   init();
 }
 
+// ============================================================================
+// FEATURES CAROUSEL
+// ============================================================================
+
+let currentCarouselSlide = 0;
+const totalCarouselSlides = 7;
+
+function updateCarouselSlide() {
+  const slides = document.querySelectorAll('.carousel-slide');
+  if (!slides.length) return;
+
+  slides.forEach((slide, index) => {
+    slide.classList.remove('active');
+    if (index === currentCarouselSlide) {
+      slide.classList.add('active');
+    }
+  });
+
+  // Update ALL dots across ALL slides (7 slides x 7 dots = 49 total)
+  const allDots = document.querySelectorAll('.carousel-dot');
+  allDots.forEach((dot, i) => {
+    const dotPosition = i % totalCarouselSlides;
+    dot.classList.remove('active');
+    if (dotPosition === currentCarouselSlide) {
+      dot.classList.add('active');
+    }
+  });
+}
+
+function nextCarouselSlide() {
+  currentCarouselSlide = (currentCarouselSlide + 1) % totalCarouselSlides;
+  updateCarouselSlide();
+}
+
+function prevCarouselSlide() {
+  currentCarouselSlide = (currentCarouselSlide - 1 + totalCarouselSlides) % totalCarouselSlides;
+  updateCarouselSlide();
+}
+
+function goToCarouselSlide(index) {
+  currentCarouselSlide = index;
+  updateCarouselSlide();
+}
+
+function initFeaturesCarousel() {
+  // Initialize dots on page load
+  updateCarouselSlide();
+}
+
 function init() {
   initTheme();
   initMobileMenu();
@@ -578,6 +627,7 @@ function init() {
   initCopyButtons();
   initCursorEasterEgg();
   initFaqAccordion();
+  initFeaturesCarousel();
 
   // Log initialization in development
   if (window.location.hostname === 'localhost' ||

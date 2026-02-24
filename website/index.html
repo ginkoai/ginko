@@ -254,58 +254,330 @@
                 </div>
             </section>
 
-            <!-- Features Section -->
-            <section class="features-list">
-                <div class="container">
-                    <h2 class="features-list-title">Features</h2>
+            <!-- Features Carousel -->
+            <section class="features-carousel">
+                <div class="section-header">
+                    <h2 class="section-title">HOW GINKO WORKS</h2>
+                    <p class="section-subtitle">Seven features that transform AI collaboration</p>
+                </div>
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">01</span>
-                        <h3 class="feature-row-title">ginko start</h3>
-                        <p class="feature-row-tagline">Ready Player YOU</p>
-                        <p class="feature-row-copy">ginko start loads your session context with tasks, goals, knowledge, and everything important you did in your last session. No more re-explaining the basics to your AI partner, just straight back to flow in 30 seconds or less.</p>
-                    </div>
+                <div class="features-carousel-wrapper">
+                    <div class="carousel-card">
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">02</span>
-                        <h3 class="feature-row-title">ginko charter</h3>
-                        <p class="feature-row-tagline">Your Blueprint For Success</p>
-                        <p class="feature-row-copy">ginko charter gives your AI partner the big picture: project goals, audiences, pain-points, architecture, scope, acceptance criteria and more, all using natural conversation.</p>
-                    </div>
+                        <!-- SLIDE 1: ginko start -->
+                        <div class="carousel-slide active" data-index="0">
+                            <div class="carousel-illustration" style="background: #FDC400;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="50" cy="50" r="42"/>
+                                    <circle cx="50" cy="50" r="30"/>
+                                    <circle cx="50" cy="50" r="18"/>
+                                    <circle cx="50" cy="50" r="6" fill="#615F61" stroke="none"/>
+                                    <circle cx="50" cy="8" r="5" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="86" cy="68" r="4" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="14" cy="68" r="4" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="80" cy="50" r="3.5" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="20" cy="50" r="3.5" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="50" cy="80" r="3" fill="#FCFBF1" stroke="none"/>
+                                    <line x1="50" y1="32" x2="50" y2="38" stroke-width="2"/>
+                                    <line x1="50" y1="62" x2="50" y2="68" stroke-width="2"/>
+                                    <line x1="62" y1="50" x2="68" y2="50" stroke-width="2"/>
+                                    <line x1="32" y1="50" x2="38" y2="50" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">01</span>
+                                <div class="carousel-label">FEATURE 01 / 07</div>
+                                <h3 class="carousel-title">ginko start</h3>
+                                <p class="carousel-tagline carousel-tagline-orange">Ready Player YOU</p>
+                                <p class="carousel-description">
+                                    ginko start loads your session context with tasks, goals, knowledge, and everything important you did in your last session. No more re-explaining the basics to your AI partner, just straight back to flow in 30 seconds or less.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">03</span>
-                        <h3 class="feature-row-title">ginko epic</h3>
-                        <p class="feature-row-tagline">WHY-WHAT-HOW</p>
-                        <p class="feature-row-copy">ginko epic creates your work breakdown structure from your charter, knowledge docs, and conversation with you. Epics are broken down into sprints and tasks to keep your work on track.</p>
-                    </div>
+                        <!-- SLIDE 2: ginko charter -->
+                        <div class="carousel-slide" data-index="1">
+                            <div class="carousel-illustration" style="background: #FC9500;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="25" y="15" width="50" height="70" rx="2"/>
+                                    <line x1="35" y1="30" x2="65" y2="30"/>
+                                    <line x1="35" y1="42" x2="65" y2="42"/>
+                                    <line x1="35" y1="54" x2="55" y2="54"/>
+                                    <line x1="35" y1="66" x2="60" y2="66"/>
+                                    <circle cx="70" cy="75" r="12" fill="#FCFBF1" stroke="none"/>
+                                    <path d="M66 75l3 3 6-6" stroke="#DC3B05" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">02</span>
+                                <div class="carousel-label">FEATURE 02 / 07</div>
+                                <h3 class="carousel-title">ginko charter</h3>
+                                <p class="carousel-tagline carousel-tagline-orange">Your Blueprint For Success</p>
+                                <p class="carousel-description">
+                                    ginko charter gives your AI partner the big picture: project goals, audiences, pain-points, architecture, scope, acceptance criteria and more, all using natural conversation.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">04</span>
-                        <h3 class="feature-row-title">ginko vibecheck</h3>
-                        <p class="feature-row-tagline">Take A Beat</p>
-                        <p class="feature-row-copy">ginko vibecheck is a built-in behavior that gives you and your AI partner a blame-free moment to challenge approach and pivot back to flow. Simply call "vibecheck" whenever things seem off, then have an open conversation. Any new discoveries will be automatically captured to help your whole team stay on track in the future.</p>
-                    </div>
+                        <!-- SLIDE 3: ginko epic -->
+                        <div class="carousel-slide" data-index="2">
+                            <div class="carousel-illustration" style="background: #FE4500;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="50" cy="20" r="8" fill="#FCFBF1" stroke="none"/>
+                                    <line x1="50" y1="28" x2="50" y2="38"/>
+                                    <line x1="50" y1="38" x2="30" y2="50"/>
+                                    <line x1="50" y1="38" x2="70" y2="50"/>
+                                    <circle cx="30" cy="55" r="6" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="70" cy="55" r="6" fill="#FCFBF1" stroke="none"/>
+                                    <line x1="30" y1="61" x2="30" y2="70"/>
+                                    <line x1="70" y1="61" x2="70" y2="70"/>
+                                    <line x1="30" y1="70" x2="20" y2="80"/>
+                                    <line x1="30" y1="70" x2="40" y2="80"/>
+                                    <line x1="70" y1="70" x2="60" y2="80"/>
+                                    <line x1="70" y1="70" x2="80" y2="80"/>
+                                    <circle cx="20" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="40" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="60" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="80" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">03</span>
+                                <div class="carousel-label">FEATURE 03 / 07</div>
+                                <h3 class="carousel-title">ginko epic</h3>
+                                <p class="carousel-tagline carousel-tagline-red">WHY-WHAT-HOW</p>
+                                <p class="carousel-description">
+                                    ginko epic creates your work breakdown structure from your charter, knowledge docs, and conversation with you. Epics are broken down into sprints and tasks to keep your work on track.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">05</span>
-                        <h3 class="feature-row-title">ginko insights</h3>
-                        <p class="feature-row-tagline">Level Up</p>
-                        <p class="feature-row-copy">ginko insights analyzes your session logs, commits, and other data to pinpoint exactly where you are effective and where you have opportunities to improve. Team leaders can use ginko insights to level-up their whole team with measurable results.</p>
-                    </div>
+                        <!-- SLIDE 4: ginko vibecheck -->
+                        <div class="carousel-slide" data-index="3">
+                            <div class="carousel-illustration" style="background: #E00256;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="50" cy="50" r="38"/>
+                                    <rect x="38" y="32" width="8" height="36" rx="2" fill="#FCFBF1" stroke="none"/>
+                                    <rect x="54" y="32" width="8" height="36" rx="2" fill="#FCFBF1" stroke="none"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">04</span>
+                                <div class="carousel-label">FEATURE 04 / 07</div>
+                                <h3 class="carousel-title">ginko vibecheck</h3>
+                                <p class="carousel-tagline carousel-tagline-pink">Take A Beat</p>
+                                <p class="carousel-description">
+                                    ginko vibecheck is a built-in behavior that gives you and your AI partner a blame-free moment to challenge approach and pivot back to flow. Simply call "vibecheck" whenever things seem off, then have an open conversation.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">06</span>
-                        <h3 class="feature-row-title">ginko handoff</h3>
-                        <p class="feature-row-tagline">We'll Take It From Here</p>
-                        <p class="feature-row-copy">ginko handoff handles all the end-of-session housekeeping in a single command. git commits, temp-file cleanup, doc updates and more are all taken care of so you can start your next session right where you left off.</p>
-                    </div>
+                        <!-- SLIDE 5: ginko insights -->
+                        <div class="carousel-slide" data-index="4">
+                            <div class="carousel-illustration" style="background: #A70086;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="20" y1="80" x2="80" y2="80"/>
+                                    <line x1="20" y1="80" x2="20" y2="20"/>
+                                    <polyline points="25,65 40,50 55,58 75,30" stroke-width="2.5"/>
+                                    <circle cx="75" cy="30" r="6" fill="#FCFBF1" stroke="none"/>
+                                    <path d="M70 25l5 5 8-8" stroke="#B03192" stroke-width="2" fill="none"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">05</span>
+                                <div class="carousel-label">FEATURE 05 / 07</div>
+                                <h3 class="carousel-title">ginko insights</h3>
+                                <p class="carousel-tagline carousel-tagline-purple">Level Up</p>
+                                <p class="carousel-description">
+                                    ginko insights analyzes your session logs, commits, and other data to pinpoint exactly where you are effective and where you have opportunities to improve. Team leaders can use ginko insights to level-up their whole team.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="feature-row">
-                        <span class="feature-row-number">07</span>
-                        <h3 class="feature-row-title">ginko collaboration graph</h3>
-                        <p class="feature-row-tagline">Get Real, In Real Time</p>
-                        <p class="feature-row-copy">AI-driven development takes days, not weeks. Fast-moving teams need real-time updates on task completion, issues, and insights. Ginko collaboration graph keeps all your project status updated automatically so human and AI partners all stay in sync.</p>
+                        <!-- SLIDE 6: ginko handoff -->
+                        <div class="carousel-slide" data-index="5">
+                            <div class="carousel-illustration" style="background: #5A5A5A;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="30" cy="50" r="15"/>
+                                    <circle cx="70" cy="50" r="15"/>
+                                    <line x1="45" y1="50" x2="55" y2="50" stroke-width="2"/>
+                                    <path d="M50 45l5 5-5 5" stroke-width="2"/>
+                                    <circle cx="30" cy="50" r="5" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="70" cy="50" r="5" fill="#FCFBF1" stroke="none"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">06</span>
+                                <div class="carousel-label">FEATURE 06 / 07</div>
+                                <h3 class="carousel-title">ginko handoff</h3>
+                                <p class="carousel-tagline carousel-tagline-dark">We'll Take It From Here</p>
+                                <p class="carousel-description">
+                                    ginko handoff handles all the end-of-session housekeeping in a single command. Git commits, temp-file cleanup, doc updates and more are all taken care of so you can start your next session right where you left off.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SLIDE 7: ginko graph -->
+                        <div class="carousel-slide" data-index="6">
+                            <div class="carousel-illustration" style="background: #0B0B0B;">
+                                <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="50" cy="50" r="10" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="25" cy="30" r="7" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="75" cy="30" r="7" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="25" cy="70" r="7" fill="#FCFBF1" stroke="none"/>
+                                    <circle cx="75" cy="70" r="7" fill="#FCFBF1" stroke="none"/>
+                                    <line x1="50" y1="40" x2="32" y2="30"/>
+                                    <line x1="50" y1="40" x2="68" y2="30"/>
+                                    <line x1="50" y1="60" x2="32" y2="70"/>
+                                    <line x1="50" y1="60" x2="68" y2="70"/>
+                                    <line x1="25" y1="37" x2="25" y2="63"/>
+                                    <line x1="75" y1="37" x2="75" y2="63"/>
+                                </svg>
+                            </div>
+                            <div class="carousel-content">
+                                <span class="carousel-bg-number">07</span>
+                                <div class="carousel-label">FEATURE 07 / 07</div>
+                                <h3 class="carousel-title">ginko graph</h3>
+                                <p class="carousel-tagline carousel-tagline-black">Get Real, In Real Time</p>
+                                <p class="carousel-description">
+                                    AI-driven development takes days, not weeks. Fast-moving teams need real-time updates on task completion, issues, and insights. Ginko collaboration graph keeps all your project status updated automatically so human and AI partners stay in sync.
+                                </p>
+                                <div class="carousel-nav">
+                                    <div class="carousel-arrows">
+                                        <button class="carousel-arrow" onclick="prevCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                        </button>
+                                        <button class="carousel-arrow" onclick="nextCarouselSlide()">
+                                            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        </button>
+                                    </div>
+                                    <div class="carousel-dots">
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(0)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(1)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(2)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(3)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(4)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(5)"></button>
+                                        <button class="carousel-dot" onclick="goToCarouselSlide(6)"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </section>

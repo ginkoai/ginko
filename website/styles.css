@@ -2672,6 +2672,273 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 /* ============================================================================
+   FEATURES CAROUSEL - Interactive slide-based feature showcase
+   ============================================================================ */
+
+.features-carousel {
+    background-color: var(--color-bg);
+    padding: var(--space-16) 0;
+}
+
+.features-carousel .section-header {
+    text-align: center;
+    margin-bottom: var(--space-10);
+    padding: 0 var(--space-8);
+}
+
+.features-carousel .section-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-6xl);
+    text-transform: uppercase;
+    color: var(--color-text);
+}
+
+.features-carousel .section-subtitle {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-4);
+    letter-spacing: 0.02em;
+}
+
+.features-carousel-wrapper {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+/* Carousel Card */
+.carousel-card {
+    background: #FFFFFF;
+    border: 3px solid var(--color-text);
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow: hidden;
+    height: 480px;
+}
+
+/* Slide mechanics */
+.carousel-slide {
+    display: none;
+    width: 100%;
+}
+
+.carousel-slide.active {
+    display: flex;
+}
+
+/* Left: Icon area */
+.carousel-illustration {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    transition: background-color 0.4s ease;
+}
+
+.carousel-illustration::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+    background-size: 16px 16px;
+    pointer-events: none;
+}
+
+.carousel-illustration svg {
+    width: 240px;
+    height: 240px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Right: Content area */
+.carousel-content {
+    flex: 1;
+    padding: var(--space-10) var(--space-12);
+    padding-top: var(--space-12);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    position: relative;
+}
+
+.carousel-bg-number {
+    position: absolute;
+    bottom: -40px;
+    right: -20px;
+    font-family: var(--font-display);
+    font-size: 280px;
+    line-height: 0.8;
+    color: var(--color-text);
+    opacity: 0.06;
+    pointer-events: none;
+}
+
+.carousel-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+    letter-spacing: 0.1em;
+}
+
+.carousel-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-5xl);
+    text-transform: uppercase;
+    color: var(--color-text);
+    line-height: 1;
+    margin-bottom: var(--space-3);
+}
+
+.carousel-tagline {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: var(--space-6);
+    font-weight: var(--font-weight-bold);
+}
+
+.carousel-description {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    line-height: 1.8;
+    max-width: 500px;
+    min-height: 85px;
+}
+
+/* Carousel tagline colors */
+.carousel-tagline-yellow { color: var(--color-accent); }
+.carousel-tagline-orange { color: #DC3B05; }
+.carousel-tagline-red { color: #FF7343; }
+.carousel-tagline-pink { color: #FF0084; }
+.carousel-tagline-purple { color: #B03192; }
+.carousel-tagline-dark { color: #271D26; }
+.carousel-tagline-black { color: var(--color-text); }
+
+/* Carousel Navigation - fixed at bottom */
+.carousel-nav {
+    position: absolute;
+    bottom: var(--space-10);
+    left: var(--space-12);
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+}
+
+.carousel-arrows {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.carousel-arrow {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.carousel-arrow svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--color-bg);
+    stroke-width: 2.5;
+    fill: none;
+}
+
+.carousel-arrow:hover {
+    background: var(--color-text-secondary);
+}
+
+.carousel-dots {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: all 0.2s;
+}
+
+.carousel-dot:hover { opacity: 0.6; }
+.carousel-dot.active { opacity: 1; transform: scale(1.2); }
+
+.carousel-dot:nth-child(1) { background: #FDC400; }
+.carousel-dot:nth-child(2) { background: #FC9500; }
+.carousel-dot:nth-child(3) { background: #FE4500; }
+.carousel-dot:nth-child(4) { background: #E00256; }
+.carousel-dot:nth-child(5) { background: #A70086; }
+.carousel-dot:nth-child(6) { background: #5A5A5A; }
+.carousel-dot:nth-child(7) { background: #0B0B0B; }
+
+/* Carousel Responsive */
+@media (max-width: 1024px) {
+    .features-carousel-wrapper {
+        padding: 0 24px;
+    }
+
+    .carousel-illustration {
+        width: 280px;
+    }
+
+    .carousel-content {
+        padding: var(--space-8) var(--space-10);
+    }
+
+    .carousel-nav {
+        left: var(--space-10);
+        bottom: var(--space-8);
+    }
+}
+
+@media (max-width: 900px) {
+    .carousel-card {
+        height: auto;
+        min-height: 600px;
+    }
+
+    .carousel-slide.active {
+        flex-direction: column;
+    }
+
+    .carousel-illustration {
+        width: 100%;
+        height: 240px;
+    }
+
+    .carousel-content {
+        padding: var(--space-8) var(--space-6) var(--space-20);
+    }
+
+    .carousel-title {
+        font-size: var(--font-size-3xl);
+    }
+
+    .carousel-nav {
+        left: var(--space-6);
+        bottom: var(--space-6);
+    }
+}
+
+/* ============================================================================
    FEATURES SECTION - Unified Grid Layout (Legacy)
    ============================================================================ */
 
