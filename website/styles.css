@@ -4543,6 +4543,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         font-size: 0.875rem;  /* Restore readable size */
     }
 
+    /* Move npm button up to sit within hero image area */
+    .hero-text .npm-compact-btn {
+        margin-bottom: 8px;
+        position: relative;
+        top: -8px;
+    }
+
     /* Close gap between hero and separator on small mobile */
     .logo-marquee-section {
         margin-top: -110px;
@@ -6189,7 +6196,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     }
 
     .logo-marquee-section {
-        margin-top: -105px; /* Pull up to close gap with hero */
+        margin-top: -100px; /* Pull up to close gap with hero */
     }
 }
 
