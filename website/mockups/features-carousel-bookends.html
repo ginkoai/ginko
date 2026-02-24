@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ginko - Features Carousel (Swoosh Bookends)</title>
+    <title>ginko - Features Carousel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -15,6 +15,7 @@
             --color-red: #FF7343;
             --color-pink: #FF0084;
             --color-purple: #B03192;
+            --color-dark: #271D26;
             --color-black: #0B0B0B;
             --color-heading: #100D08;
             --color-gray: #615F61;
@@ -33,7 +34,7 @@
         }
 
         /* ============================================
-           FEATURES SECTION - FULL WIDTH
+           FEATURES SECTION
            ============================================ */
         .features-section {
             padding: 5rem 0;
@@ -49,148 +50,139 @@
 
         .section-title {
             font-family: var(--font-heading);
-            font-size: 3.5rem;
+            font-size: 5rem;
             color: var(--color-heading);
         }
 
         .section-subtitle {
-            font-size: 1rem;
+            font-size: 1.25rem;
             color: var(--color-gray);
-            margin-top: 0.5rem;
+            margin-top: 1rem;
+            letter-spacing: 0.02em;
         }
 
         /* ============================================
-           FLEXBOX LAYOUT - SWOOSHES FROM TOP
+           CONTAINED LAYOUT
            ============================================ */
         .features-wrapper {
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 0;
-            width: 100%;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Swoosh bookends - fatter, from top, overlapping card */
-        .swoosh-bookend {
-            width: 220px;
-            height: 480px;
-            flex-shrink: 0;
-            background-size: 380px auto;
-            background-repeat: no-repeat;
-            margin: 0 -30px;
-            margin-top: 50px;
-        }
-
-        .swoosh-left {
-            background-image: url('../assets/swoosh/swoosh-left-transparent.png');
-            background-position: top left;
-        }
-
-        .swoosh-right {
-            background-image: url('../assets/swoosh/swoosh-right-transparent.png');
-            background-position: top right;
+            padding: 0 40px;
         }
 
         /* ============================================
-           FEATURE CARD - SPLIT LAYOUT (illustration top)
+           FEATURE CARD - SIDE BY SIDE
            ============================================ */
         .feature-card {
             background: #FFFFFF;
             border: 3px solid var(--color-black);
-            width: 100%;
-            max-width: 900px;
-            min-height: 580px;
             display: flex;
-            flex-direction: column;
-            position: relative;
-            z-index: 2;
+            flex-direction: row;
+            align-items: stretch;
             overflow: hidden;
-            box-shadow: 0 8px 30px rgba(11, 11, 11, 0.12);
+            height: 480px;
         }
 
-        /* Top: Illustration area with color background */
+        /* Left: Icon area */
         .card-illustration {
-            background: var(--color-yellow);
-            height: 300px;
+            width: 320px;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            background-image: url('../assets/bg-pattern.png');
-            background-repeat: repeat;
-            background-blend-mode: multiply;
+            overflow: hidden;
+            transition: background-color 0.4s ease;
+        }
+
+        /* Subtle dot pattern overlay */
+        .card-illustration::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px);
+            background-size: 16px 16px;
+            pointer-events: none;
         }
 
         .card-illustration svg {
             width: 240px;
             height: 240px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Bottom: Content area */
+        /* Feature slides */
+        .feature-slide {
+            display: none;
+        }
+        .feature-slide.active {
+            display: flex;
+            width: 100%;
+        }
+
+        /* Right: Content area */
         .card-content {
-            padding: 2.5rem 3rem;
             flex: 1;
+            padding: 2.5rem 4rem;
             display: flex;
             flex-direction: column;
+            justify-content: center;
             position: relative;
-            background-image: url('../assets/bg-pattern.png');
-            background-repeat: repeat;
-            opacity: 1;
         }
 
         /* Background number watermark */
         .bg-number {
             position: absolute;
-            bottom: -20px;
-            right: 20px;
+            bottom: -40px;
+            right: -20px;
             font-family: var(--font-heading);
-            font-size: 200px;
-            line-height: 0.7;
+            font-size: 280px;
+            line-height: 0.8;
             color: var(--color-black);
-            opacity: 0.04;
+            opacity: 0.06;
             pointer-events: none;
         }
 
         .feature-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--color-gray);
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.08em;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
         }
 
         .feature-title {
             font-family: var(--font-heading);
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: var(--color-heading);
             line-height: 1;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.75rem;
         }
 
         .feature-tagline {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--color-orange);
-            margin-bottom: 1.25rem;
+            letter-spacing: 0.12em;
+            margin-bottom: 1.5rem;
+            transition: color 0.4s ease;
         }
 
         .feature-description {
             font-size: 1rem;
             color: var(--color-gray);
             line-height: 1.8;
-            max-width: 600px;
+            max-width: 500px;
+            min-height: 85px;
         }
 
-        /* Navigation */
+        /* Navigation - fixed position at bottom of card */
         .feature-nav {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 4rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            margin-top: auto;
-            padding-top: 1.5rem;
+            gap: 2rem;
         }
 
         .nav-arrows {
@@ -199,95 +191,82 @@
         }
 
         .nav-arrow {
-            width: 50px;
-            height: 50px;
-            border: 2px solid var(--color-black);
-            background: #FFFFFF;
-            color: var(--color-black);
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: 6px;
+            background: var(--color-black);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             transition: all 0.2s;
         }
 
+        .nav-arrow svg {
+            width: 20px;
+            height: 20px;
+            stroke: #FFFFFF;
+            stroke-width: 2.5;
+            fill: none;
+        }
+
         .nav-arrow:hover {
-            background: var(--color-black);
-            color: #FFFFFF;
+            background: var(--color-gray);
         }
 
         .nav-dots {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .nav-dot {
-            width: 14px;
-            height: 14px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             border: none;
             cursor: pointer;
-            opacity: 0.35;
+            opacity: 0.3;
             transition: all 0.2s;
         }
 
         .nav-dot:hover { opacity: 0.6; }
-        .nav-dot.active { transform: scale(1.4); opacity: 1; }
+        .nav-dot.active { opacity: 1; transform: scale(1.2); }
 
         .nav-dot:nth-child(1) { background: var(--color-yellow); }
         .nav-dot:nth-child(2) { background: var(--color-orange); }
         .nav-dot:nth-child(3) { background: var(--color-red); }
         .nav-dot:nth-child(4) { background: var(--color-pink); }
         .nav-dot:nth-child(5) { background: var(--color-purple); }
-        .nav-dot:nth-child(6) { background: #271D26; }
+        .nav-dot:nth-child(6) { background: var(--color-dark); }
         .nav-dot:nth-child(7) { background: var(--color-black); }
 
-        .nav-counter {
-            font-size: 1rem;
-            color: var(--color-gray);
-        }
-
-        .nav-counter .current {
-            font-weight: 600;
-            color: var(--color-heading);
-            font-size: 1.2rem;
-        }
+        /* Color themes for tagline */
+        .tagline-yellow { color: var(--color-yellow); }
+        .tagline-orange { color: var(--color-orange); }
+        .tagline-red { color: var(--color-red); }
+        .tagline-pink { color: var(--color-pink); }
+        .tagline-purple { color: var(--color-purple); }
+        .tagline-dark { color: var(--color-dark); }
+        .tagline-black { color: var(--color-black); }
 
         /* ============================================
            RESPONSIVE
            ============================================ */
-        @media (max-width: 1200px) {
-            .swoosh-bookend {
-                width: 200px;
-            }
-        }
-
         @media (max-width: 900px) {
-            .swoosh-bookend {
-                display: none;
-            }
-
             .feature-card {
-                max-width: 100%;
-                margin: 0 1rem;
+                flex-direction: column;
             }
-        }
-
-        @media (max-width: 600px) {
+            .feature-slide.active {
+                flex-direction: column;
+            }
             .card-illustration {
-                height: 200px;
+                width: 100%;
+                height: 240px;
             }
-
-            .card-illustration svg {
-                width: 140px;
-                height: 140px;
-            }
-
             .card-content {
-                padding: 2rem;
+                padding: 2.5rem 2rem;
             }
-
             .feature-title {
                 font-size: 2.25rem;
             }
@@ -303,84 +282,373 @@
         </div>
 
         <div class="features-wrapper">
-            <!-- Left Swoosh Bookend (PNG) -->
-            <div class="swoosh-bookend swoosh-left"></div>
-
-            <!-- Feature Card -->
             <div class="feature-card">
-                <!-- Illustration Area -->
-                <div class="card-illustration">
-                    <!-- Abstract geometric: Concentric circles with orbital elements - "loading context" concept -->
-                    <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <!-- Outer orbital ring -->
-                        <circle cx="50" cy="50" r="42"/>
-                        <!-- Middle orbital ring -->
-                        <circle cx="50" cy="50" r="30"/>
-                        <!-- Inner orbital ring -->
-                        <circle cx="50" cy="50" r="18"/>
-                        <!-- Center dot -->
-                        <circle cx="50" cy="50" r="6" fill="#FCFBF1" stroke="none"/>
 
-                        <!-- Orbital dots on outer ring - representing context loading -->
-                        <circle cx="50" cy="8" r="5" fill="#FCFBF1" stroke="none"/>
-                        <circle cx="86" cy="68" r="4" fill="#FCFBF1" stroke="none"/>
-                        <circle cx="14" cy="68" r="4" fill="#FCFBF1" stroke="none"/>
-
-                        <!-- Orbital dots on middle ring -->
-                        <circle cx="80" cy="50" r="3.5" fill="#FCFBF1" stroke="none"/>
-                        <circle cx="20" cy="50" r="3.5" fill="#FCFBF1" stroke="none"/>
-                        <circle cx="50" cy="80" r="3" fill="#FCFBF1" stroke="none"/>
-
-                        <!-- Small accent dots on inner ring -->
-                        <circle cx="68" cy="50" r="2" fill="#FCFBF1" stroke="none"/>
-                        <circle cx="32" cy="50" r="2" fill="#FCFBF1" stroke="none"/>
-
-                        <!-- Radiating lines from center - energy/start -->
-                        <line x1="50" y1="32" x2="50" y2="38" stroke-width="2"/>
-                        <line x1="50" y1="62" x2="50" y2="68" stroke-width="2"/>
-                        <line x1="62" y1="50" x2="68" y2="50" stroke-width="2"/>
-                        <line x1="32" y1="50" x2="38" y2="50" stroke-width="2"/>
-                    </svg>
-                </div>
-
-                <!-- Content Area -->
-                <div class="card-content">
-                    <span class="bg-number">01</span>
-
-                    <div class="feature-label">FEATURE 01 / 07</div>
-                    <h3 class="feature-title">ginko start</h3>
-                    <p class="feature-tagline">Ready Player YOU</p>
-                    <p class="feature-description">
-                        Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics to your AI partner—just straight back to flow in 30 seconds or less.
-                    </p>
-
-                    <div class="feature-nav">
-                        <div class="nav-arrows">
-                            <button class="nav-arrow">‹</button>
-                            <button class="nav-arrow">›</button>
-                        </div>
-
-                        <div class="nav-dots">
-                            <button class="nav-dot active"></button>
-                            <button class="nav-dot"></button>
-                            <button class="nav-dot"></button>
-                            <button class="nav-dot"></button>
-                            <button class="nav-dot"></button>
-                            <button class="nav-dot"></button>
-                            <button class="nav-dot"></button>
-                        </div>
-
-                        <div class="nav-counter">
-                            <span class="current">01</span> / 07
+                <!-- SLIDE 1: ginko start -->
+                <div class="feature-slide active" data-color="var(--color-yellow)" data-tagline-class="tagline-orange">
+                    <div class="card-illustration" style="background: var(--color-yellow);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="50" cy="50" r="42"/>
+                            <circle cx="50" cy="50" r="30"/>
+                            <circle cx="50" cy="50" r="18"/>
+                            <circle cx="50" cy="50" r="6" fill="#615F61" stroke="none"/>
+                            <circle cx="50" cy="8" r="5" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="86" cy="68" r="4" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="14" cy="68" r="4" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="80" cy="50" r="3.5" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="20" cy="50" r="3.5" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="50" cy="80" r="3" fill="#FCFBF1" stroke="none"/>
+                            <line x1="50" y1="32" x2="50" y2="38" stroke-width="2"/>
+                            <line x1="50" y1="62" x2="50" y2="68" stroke-width="2"/>
+                            <line x1="62" y1="50" x2="68" y2="50" stroke-width="2"/>
+                            <line x1="32" y1="50" x2="38" y2="50" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">01</span>
+                        <div class="feature-label">FEATURE 01 / 07</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline tagline-orange">Ready Player YOU</p>
+                        <p class="feature-description">
+                            ginko start loads your session context with tasks, goals, knowledge, and everything important you did in your last session. No more re-explaining the basics to your AI partner, just straight back to flow in 30 seconds or less.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Right Swoosh Bookend (PNG) -->
-            <div class="swoosh-bookend swoosh-right"></div>
+                <!-- SLIDE 2: ginko charter -->
+                <div class="feature-slide" data-color="var(--color-orange)" data-tagline-class="tagline-orange">
+                    <div class="card-illustration" style="background: var(--color-orange);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="25" y="15" width="50" height="70" rx="2"/>
+                            <line x1="35" y1="30" x2="65" y2="30"/>
+                            <line x1="35" y1="42" x2="65" y2="42"/>
+                            <line x1="35" y1="54" x2="55" y2="54"/>
+                            <line x1="35" y1="66" x2="60" y2="66"/>
+                            <circle cx="70" cy="75" r="12" fill="#FCFBF1" stroke="none"/>
+                            <path d="M66 75l3 3 6-6" stroke="var(--color-orange)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">02</span>
+                        <div class="feature-label">FEATURE 02 / 07</div>
+                        <h3 class="feature-title">ginko charter</h3>
+                        <p class="feature-tagline tagline-orange">Your Blueprint For Success</p>
+                        <p class="feature-description">
+                            ginko charter gives your AI partner the big picture: project goals, audiences, pain-points, architecture, scope, acceptance criteria and more, all using natural conversation.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE 3: ginko epic -->
+                <div class="feature-slide" data-color="var(--color-red)" data-tagline-class="tagline-red">
+                    <div class="card-illustration" style="background: var(--color-red);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="50" cy="20" r="8" fill="#FCFBF1" stroke="none"/>
+                            <line x1="50" y1="28" x2="50" y2="38"/>
+                            <line x1="50" y1="38" x2="30" y2="50"/>
+                            <line x1="50" y1="38" x2="70" y2="50"/>
+                            <circle cx="30" cy="55" r="6" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="70" cy="55" r="6" fill="#FCFBF1" stroke="none"/>
+                            <line x1="30" y1="61" x2="30" y2="70"/>
+                            <line x1="70" y1="61" x2="70" y2="70"/>
+                            <line x1="30" y1="70" x2="20" y2="80"/>
+                            <line x1="30" y1="70" x2="40" y2="80"/>
+                            <line x1="70" y1="70" x2="60" y2="80"/>
+                            <line x1="70" y1="70" x2="80" y2="80"/>
+                            <circle cx="20" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="40" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="60" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="80" cy="84" r="4" fill="#FCFBF1" stroke="none"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">03</span>
+                        <div class="feature-label">FEATURE 03 / 07</div>
+                        <h3 class="feature-title">ginko epic</h3>
+                        <p class="feature-tagline tagline-red">WHY-WHAT-HOW</p>
+                        <p class="feature-description">
+                            ginko epic creates your work breakdown structure from your charter, knowledge docs, and conversation with you. Epics are broken down into sprints and tasks to keep your work on track.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE 4: ginko vibecheck -->
+                <div class="feature-slide" data-color="var(--color-pink)" data-tagline-class="tagline-pink">
+                    <div class="card-illustration" style="background: var(--color-pink);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Pause/Breath/Zen icon -->
+                            <circle cx="50" cy="50" r="38"/>
+                            <rect x="38" y="32" width="8" height="36" rx="2" fill="#FCFBF1" stroke="none"/>
+                            <rect x="54" y="32" width="8" height="36" rx="2" fill="#FCFBF1" stroke="none"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">04</span>
+                        <div class="feature-label">FEATURE 04 / 07</div>
+                        <h3 class="feature-title">ginko vibecheck</h3>
+                        <p class="feature-tagline tagline-pink">Take A Beat</p>
+                        <p class="feature-description">
+                            ginko vibecheck is a built-in behavior that gives you and your AI partner a blame-free moment to challenge approach and pivot back to flow. Simply call "vibecheck" whenever things seem off, then have an open conversation.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE 5: ginko insights -->
+                <div class="feature-slide" data-color="var(--color-purple)" data-tagline-class="tagline-purple">
+                    <div class="card-illustration" style="background: var(--color-purple);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Chart/Level up icon -->
+                            <line x1="20" y1="80" x2="80" y2="80"/>
+                            <line x1="20" y1="80" x2="20" y2="20"/>
+                            <polyline points="25,65 40,50 55,58 75,30" stroke-width="2.5"/>
+                            <circle cx="75" cy="30" r="6" fill="#FCFBF1" stroke="none"/>
+                            <path d="M70 25l5 5 8-8" stroke="var(--color-purple)" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">05</span>
+                        <div class="feature-label">FEATURE 05 / 07</div>
+                        <h3 class="feature-title">ginko insights</h3>
+                        <p class="feature-tagline tagline-purple">Level Up</p>
+                        <p class="feature-description">
+                            ginko insights analyzes your session logs, commits, and other data to pinpoint exactly where you are effective and where you have opportunities to improve. Team leaders can use ginko insights to level-up their whole team.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE 6: ginko handoff -->
+                <div class="feature-slide" data-color="var(--color-dark)" data-tagline-class="tagline-dark">
+                    <div class="card-illustration" style="background: var(--color-dark);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Handoff/Baton pass icon -->
+                            <circle cx="30" cy="50" r="15"/>
+                            <circle cx="70" cy="50" r="15"/>
+                            <line x1="45" y1="50" x2="55" y2="50" stroke-width="2"/>
+                            <path d="M50 45l5 5-5 5" stroke-width="2"/>
+                            <circle cx="30" cy="50" r="5" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="70" cy="50" r="5" fill="#FCFBF1" stroke="none"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">06</span>
+                        <div class="feature-label">FEATURE 06 / 07</div>
+                        <h3 class="feature-title">ginko handoff</h3>
+                        <p class="feature-tagline tagline-dark">We'll Take It From Here</p>
+                        <p class="feature-description">
+                            ginko handoff handles all the end-of-session housekeeping in a single command. Git commits, temp-file cleanup, doc updates and more are all taken care of so you can start your next session right where you left off.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SLIDE 7: ginko graph -->
+                <div class="feature-slide" data-color="var(--color-black)" data-tagline-class="tagline-black">
+                    <div class="card-illustration" style="background: var(--color-black);">
+                        <svg viewBox="0 0 100 100" fill="none" stroke="#FCFBF1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Connected nodes/Graph icon -->
+                            <circle cx="50" cy="50" r="10" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="25" cy="30" r="7" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="75" cy="30" r="7" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="25" cy="70" r="7" fill="#FCFBF1" stroke="none"/>
+                            <circle cx="75" cy="70" r="7" fill="#FCFBF1" stroke="none"/>
+                            <line x1="50" y1="40" x2="32" y2="30"/>
+                            <line x1="50" y1="40" x2="68" y2="30"/>
+                            <line x1="50" y1="60" x2="32" y2="70"/>
+                            <line x1="50" y1="60" x2="68" y2="70"/>
+                            <line x1="25" y1="37" x2="25" y2="63"/>
+                            <line x1="75" y1="37" x2="75" y2="63"/>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <span class="bg-number">07</span>
+                        <div class="feature-label">FEATURE 07 / 07</div>
+                        <h3 class="feature-title">ginko graph</h3>
+                        <p class="feature-tagline tagline-black">Get Real, In Real Time</p>
+                        <p class="feature-description">
+                            AI-driven development takes days, not weeks. Fast-moving teams need real-time updates on task completion, issues, and insights. Ginko collaboration graph keeps all your project status updated automatically so human and AI partners stay in sync.
+                        </p>
+                        <div class="feature-nav">
+                            <div class="nav-arrows">
+                                <button class="nav-arrow" onclick="prevSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button class="nav-arrow" onclick="nextSlide()">
+                                    <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                            <div class="nav-dots">
+                                <button class="nav-dot" onclick="goToSlide(0)"></button>
+                                <button class="nav-dot" onclick="goToSlide(1)"></button>
+                                <button class="nav-dot" onclick="goToSlide(2)"></button>
+                                <button class="nav-dot" onclick="goToSlide(3)"></button>
+                                <button class="nav-dot" onclick="goToSlide(4)"></button>
+                                <button class="nav-dot" onclick="goToSlide(5)"></button>
+                                <button class="nav-dot" onclick="goToSlide(6)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 7;
+
+        function updateSlide() {
+            const slides = document.querySelectorAll('.feature-slide');
+
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+
+            // Update ALL dots across ALL slides (7 slides x 7 dots = 49 total)
+            const allDots = document.querySelectorAll('.nav-dot');
+            allDots.forEach((dot, i) => {
+                const dotPosition = i % totalSlides;
+                dot.classList.remove('active');
+                if (dotPosition === currentSlide) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlide();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlide();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlide();
+        }
+
+        // Initialize dots on page load
+        updateSlide();
+    </script>
 
 </body>
 </html>
