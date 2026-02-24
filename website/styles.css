@@ -4533,6 +4533,21 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         margin-bottom: var(--space-8);
     }
 
+    /* npm button - show only package name on small screens */
+    .npm-compact-btn .npm-command {
+        font-size: 0;  /* Hide original text */
+    }
+
+    .npm-compact-btn .npm-command::after {
+        content: '@ginkoai/cli';
+        font-size: 0.875rem;  /* Restore readable size */
+    }
+
+    /* Close gap between hero and separator on small mobile */
+    .logo-marquee-section {
+        margin-top: -110px;
+    }
+
     /* Keep graph hidden on small mobile - reinforce the 768px rule */
     .context-graph {
         display: none !important;
@@ -6174,7 +6189,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     }
 
     .logo-marquee-section {
-        margin-top: -50px; /* Pull up to close gap with hero */
+        margin-top: -105px; /* Pull up to close gap with hero */
     }
 }
 
