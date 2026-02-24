@@ -913,10 +913,11 @@ pre {
 /* Hero with background image (DUMBO) */
 .hero--with-image {
     position: relative;
-    min-height: 80vh;
-    max-height: 90vh;
+    min-height: 70vh;
+    max-height: 80vh;
     background: none;
     isolation: isolate; /* Create new stacking context */
+    padding-bottom: 0;
 }
 
 .hero--with-image .hero-bg {
@@ -3861,6 +3862,34 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     color: var(--color-text);
 }
 
+.footer-social {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--color-text-secondary);
+    background: var(--color-surface);
+    transition: all var(--transition-fast);
+}
+
+.social-link:hover {
+    color: var(--color-text);
+    background: var(--color-border);
+    transform: translateY(-2px);
+}
+
+.social-link svg {
+    width: 18px;
+    height: 18px;
+}
+
 /* Footer IYKYG Logo */
 .footer-iykyg {
     margin-top: var(--space-16);
@@ -5850,19 +5879,51 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     }
 }
 
+/* ===== Logo Marquee Section with Slash Dividers ===== */
+.logo-marquee-section {
+    background: transparent;
+    position: relative;
+    z-index: 5;
+    margin-top: 0;
+}
+
+.slash-divider {
+    width: 100%;
+    height: 20px;
+    background: repeating-linear-gradient(
+        -45deg,
+        #FE4500,
+        #FE4500 2px,
+        transparent 2px,
+        transparent 10px
+    );
+}
+
+.slash-divider-bottom {
+    background:
+        repeating-linear-gradient(
+            -45deg,
+            #FE4500,
+            #FE4500 2px,
+            var(--color-bg) 2px,
+            var(--color-bg) 10px
+        );
+}
+
+/* Responsive slash dividers */
+@media (max-width: 768px) {
+    .slash-divider {
+        height: 16px;
+    }
+}
+
 /* ===== Logo Marquee ===== */
 .logo-marquee {
     position: relative;
     overflow: hidden;
-    margin-top: 1rem;
-    margin-bottom: 0;
-    padding: 1.5rem 0;
-    /* Transparent to let hero gradient show through */
-    background: transparent;
-    /* Full bleed - extend to screen edges */
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
-    width: 100vw;
+    margin: 0;
+    padding: 1rem 0;
+    background: var(--color-bg);
     /* Use mask to fade edges - works over any background */
     -webkit-mask-image: linear-gradient(to right, transparent, black 6rem, black calc(100% - 6rem), transparent);
     mask-image: linear-gradient(to right, transparent, black 6rem, black calc(100% - 6rem), transparent);
@@ -5903,7 +5964,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         transform: translateX(0);
     }
     100% {
-        transform: translateX(-16.666%);
+        transform: translateX(-25%);
     }
 }
 
