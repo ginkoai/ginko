@@ -53,10 +53,10 @@
     --font-weight-extrabold: 800;
 
     /* Colors - Light Mode (Sunset Rebrand) */
-    --color-bg: #FAF7F0;          /* Cream - primary background */
-    --color-surface: #FAF7F0;     /* Cream - card/section backgrounds */
-    --color-surface-alt: #FAF7F0; /* Cream */
-    --color-surface-hover: #F4EEDD; /* Eggshell - hover states */
+    --color-bg: #FAF8F0;          /* Cream - primary background */
+    --color-surface: #F4F0E0;     /* Eggshell - alternating sections/cards */
+    --color-surface-alt: #F4F0E0; /* Eggshell */
+    --color-surface-hover: #F4F0E0; /* Eggshell - hover states */
     --color-text: #100D08; /* Deep Warm Black */
     --color-text-secondary: #333333;
     --color-text-tertiary: #666666;
@@ -84,7 +84,7 @@
 
     /* Terminal/Code Colors */
     --color-terminal-bg: #0d0d0d;
-    --color-terminal-text: #FAF7F0;
+    --color-terminal-text: #FAF8F0;
     --color-terminal-prompt: #FE4500;
     --color-terminal-comment: #666666;
     --color-terminal-header: #1a1a1a;
@@ -128,10 +128,10 @@
     --color-btn-primary-bg: #FE4500;
     --color-btn-primary-text: #ffffff;
     --color-btn-secondary-bg: #0d0d0d;
-    --color-btn-secondary-text: #FAF7F0;
-    --color-btn-cream-bg: #FAF7F0;
-    --color-btn-arrow-dark: #FAF7F0;
-    --color-btn-arrow-surface: #FAF7F0;
+    --color-btn-secondary-text: #FAF8F0;
+    --color-btn-cream-bg: #FAF8F0;
+    --color-btn-arrow-dark: #FAF8F0;
+    --color-btn-arrow-surface: #FAF8F0;
 }
 
 /* ============================================================================
@@ -143,11 +143,11 @@
     --color-surface: #0d0d0d;
     --color-surface-alt: #1a1a1a;
     --color-surface-hover: #2a2a2a;
-    --color-text: #FAF7F0;
+    --color-text: #FAF8F0;
     --color-text-secondary: #e0ddd6;
     --color-text-tertiary: #999999;
     --color-border: #333333;
-    --color-border-strong: #FAF7F0;
+    --color-border-strong: #FAF8F0;
 
     --color-accent: #FE4500;
     --color-accent-hover: #FF5A1A;
@@ -165,9 +165,9 @@
     /* Button Colors - Dark Mode */
     --color-btn-primary-bg: #FE4500;
     --color-btn-primary-text: #000000;
-    --color-btn-secondary-bg: #FAF7F0;
+    --color-btn-secondary-bg: #FAF8F0;
     --color-btn-secondary-text: #050A0F;
-    --color-btn-cream-bg: #FAF7F0;
+    --color-btn-cream-bg: #FAF8F0;
     --color-btn-arrow-dark: #050A0F;
     --color-btn-arrow-surface: #050A0F;
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
@@ -743,7 +743,7 @@ html:not([data-theme="dark"]) .theme-icon-dark {
 }
 
 .terminal-command {
-    color: #FAF7F0;
+    color: #FAF8F0;
 }
 
 .terminal-output {
@@ -1446,7 +1446,7 @@ body:has(.hero--with-image) .navbar {
 }
 
 .terminal-inline .terminal-command {
-    color: #FAF7F0;
+    color: #FAF8F0;
 }
 
 .terminal-inline-cta {
@@ -1496,7 +1496,7 @@ body:has(.hero--with-image) .navbar {
     justify-content: center;
     background: transparent;
     border: none;
-    color: #FAF7F0;
+    color: #FAF8F0;
     cursor: pointer;
     padding: var(--space-2);
     margin-left: var(--space-4);
@@ -1796,7 +1796,7 @@ body:has(.hero--with-image) .navbar {
 
 /* Secondary CTA - Cream with dark text */
 .btn-cta-secondary {
-    background-color: #FAF7F0;
+    background-color: #FAF8F0;
     color: #050A0F;
     border: none;
 }
@@ -1810,11 +1810,11 @@ body:has(.hero--with-image) .navbar {
 }
 
 .btn-cta-secondary .arrow-icon {
-    stroke: #FAF7F0;
+    stroke: #FAF8F0;
 }
 
 .btn-cta-secondary:hover {
-    background-color: #FAF7F0;
+    background-color: #FAF8F0;
 }
 
 .btn-cta-secondary:hover .btn-cta-text {
@@ -1882,7 +1882,7 @@ body:has(.hero--with-image) .navbar {
 
 /* Secondary cream variant (for CTA section) - matches hero VIEW DOCS style */
 .btn-hero-secondary.btn-hero-cream {
-    background-color: #F4EEDD;
+    background-color: #F4F0E0;
     border: none;
 }
 
@@ -1895,7 +1895,7 @@ body:has(.hero--with-image) .navbar {
 }
 
 .btn-hero-secondary.btn-hero-cream .arrow-icon {
-    stroke: #F4EEDD;
+    stroke: #F4F0E0;
 }
 
 /* Outline button - transparent bg, accent border */
@@ -2068,16 +2068,16 @@ button:hover .btn-hero-arrow .arrow-hover {
 /* Primary Hero Button - Orange with cream text and arrow box */
 .hero-cta .btn-hero-primary {
     background-color: #FE4500 !important;
-    color: #F4EEDD !important;
+    color: #F4F0E0 !important;
     border: none;
 }
 
 .hero-cta .btn-hero-primary .btn-hero-text {
-    color: #F4EEDD !important;
+    color: #F4F0E0 !important;
 }
 
 .hero-cta .btn-hero-primary .btn-hero-arrow {
-    background-color: #F4EEDD !important;
+    background-color: #F4F0E0 !important;
 }
 
 .hero-cta .btn-hero-primary .arrow-icon {
@@ -2086,12 +2086,12 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .hero-cta .btn-hero-primary:hover {
     background-color: #E53D00 !important;
-    color: #F4EEDD !important;
+    color: #F4F0E0 !important;
 }
 
 /* Secondary Hero Button - White with green arrow box */
 .hero-cta .btn-hero-secondary {
-    background-color: #FAF7F0 !important;
+    background-color: #FAF8F0 !important;
     color: #050A0F !important;
     border: none;
 }
@@ -2105,11 +2105,11 @@ button:hover .btn-hero-arrow .arrow-hover {
 }
 
 .hero-cta .btn-hero-secondary .arrow-icon {
-    stroke: #FAF7F0 !important;
+    stroke: #FAF8F0 !important;
 }
 
 .hero-cta .btn-hero-secondary:hover {
-    background-color: #FAF7F0 !important;
+    background-color: #FAF8F0 !important;
 }
 
 .hero-cta .btn-hero-secondary:hover .btn-hero-text {
@@ -3831,13 +3831,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-description {
-    color: #F4EEDD;
+    color: #F4F0E0;
     font-size: var(--font-size-sm);
     line-height: 1.6;
 }
 
 .footer-tagline {
-    color: #F4EEDD;
+    color: #F4F0E0;
     font-size: var(--font-size-sm);
     font-family: var(--font-mono);
     margin-bottom: var(--space-1);
