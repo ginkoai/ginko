@@ -22,11 +22,14 @@ export interface ProjectContext {
   languages: string[];
 }
 
+export type TemplateMode = 'standard' | 'lean';
+
 export interface TemplateVariables extends ProjectContext {
   userEmail: string;
   userName: string;
   date: string;
   aiModel?: string; // Optional AI model name
+  mode?: TemplateMode; // 'lean' produces minimal context per arxiv 2602.11988 findings
 }
 
 export class AiInstructionsTemplate {
@@ -237,6 +240,26 @@ Create ad-hoc tasks for:
 - Tasks: 2 digits (max 99 per sprint)
 
 **Soft limits:** Warn if sprint > 20 tasks or epic > 10 sprints.
+
+## Work Planning Commands
+
+When the user wants to plan work, **always use ginko CLI commands** to create local files:
+
+| Action | Command | Creates |
+|--------|---------|---------|
+| Create epic | \`ginko epic\` | \`docs/epics/EPIC-NNN-name.md\` + sprint files |
+| Create sprint | \`ginko sprint create\` | \`docs/sprints/SPRINT-*.md\` |
+| Quick fix | \`ginko sprint quick-fix "description"\` | Ad-hoc sprint with single task |
+| View charter | \`ginko charter --view\` | — |
+| Create charter | \`ginko charter\` | \`docs/PROJECT-CHARTER.md\` |
+
+**IMPORTANT:** Do NOT use internal task management (like TodoWrite) as a substitute for ginko commands. Ginko creates persistent local markdown files that survive across sessions and sync to the knowledge graph. Internal tools create ephemeral state that disappears when the session ends.
+
+**Epic creation flow:**
+1. Run \`ginko epic\` — this outputs a template for AI-mediated conversation
+2. Guide the user through goal, scope, and sprint breakdown
+3. The CLI creates \`docs/epics/EPIC-NNN-name.md\` and sprint files in \`docs/sprints/\`
+4. Run \`ginko push epic\` to sync to graph (if cloud is configured)
 `;
 
   private static readonly CONTEXT_REFLEXES = `
@@ -350,7 +373,194 @@ ls docs/sprints/SPRINT-*.md | tail -1 | xargs grep -c "\\[x\\]"  # complete task
 → \`ginko graph query "topic" --type ADR\` OR: \`grep -l -i "topic" docs/adr/*.md\`
 `;
 
+  // ──────────────────────────────────────────────────────────────────────
+  // Lean template sections — minimal requirements only (arxiv 2602.11988)
+  // Only includes what the AI cannot infer from codebase exploration.
+  // ──────────────────────────────────────────────────────────────────────
+
+  private static readonly LEAN_CLI_SHORTCUTS = `## Ginko CLI — Command Shortcuts
+
+When the user types a single word matching a ginko command, execute it immediately without preamble:
+- \`start\` → \`ginko start\`
+- \`handoff\` → \`ginko handoff\`
+- \`status\` → \`ginko status\`
+- \`log\` → Ask for description, then execute
+
+Auto-run \`ginko pull\` when \`ginko start\` shows a staleness warning.
+
+When \`ginko start\` shows no active sprint, always present the planning menu:
+\`\`\`
+[a] New Epic    [b] Feature Sprint    [c] Quick fix    [d] Something else
+\`\`\`
+
+## Context Score
+
+After \`ginko start\`, score your readiness across four dimensions (0-10 each):
+- **Direction** (do I know what to do next?), **Intent** (do I understand why?), **Location** (do I know where to start?), **History** (do I know what was decided?)
+
+\`\`\`bash
+ginko context score 8,7,9,6 --notes "optional note"
+\`\`\``;
+
+  private static readonly LEAN_TASK_LIFECYCLE = `## Task Lifecycle
+
+After completing ANY sprint task: \`ginko task complete <task_id>\`
+
+| Command | Effect |
+|---------|--------|
+| \`ginko task start <id>\` | Mark as in_progress |
+| \`ginko task complete <id>\` | Mark as complete |
+| \`ginko task block <id> "reason"\` | Mark as blocked |
+| \`ginko task pause <id>\` | Return to not_started |
+
+Last task in a sprint: \`ginko task complete <id> --cascade --yes\`
+Manual sprint completion: \`ginko sprint complete <sprint_id>\``;
+
+  private static readonly LEAN_ENTITY_NAMING = `## Entity Naming Convention (ADR-052)
+
+| Entity | Format | Example |
+|--------|--------|---------|
+| Epic | \`e{NNN}\` | \`e005\` |
+| Sprint | \`e{NNN}_s{NN}\` | \`e005_s01\` |
+| Task | \`e{NNN}_s{NN}_t{NN}\` | \`e005_s01_t01\` |
+| Ad-hoc | \`adhoc_{YYMMDD}_s{NN}_t{NN}\` | \`adhoc_260224_s01_t01\` |
+
+When work falls outside the current sprint, ask: "Shall I create an ad-hoc task to track this?"`;
+
+  private static readonly LEAN_WORK_PLANNING = `## Work Planning Commands
+
+| Action | Command |
+|--------|---------|
+| Create epic | \`ginko epic\` |
+| Create sprint | \`ginko sprint create\` |
+| Quick fix | \`ginko sprint quick-fix "description"\` |
+| View charter | \`ginko charter --view\` |
+| Create charter | \`ginko charter\` |
+
+Use ginko CLI commands (not internal task management) — they create persistent files that sync to the knowledge graph.`;
+
+  private static readonly LEAN_SESSION_LOGGING = `## Session Logging
+
+Log decisions, insights, and achievements during work:
+
+| Moment | Command |
+|--------|---------|
+| Decision | \`ginko log "Chose X for Y" --category=decision\` |
+| Gotcha | \`ginko log "Found limitation" --category=insight --impact=high\` |
+| Task done | \`ginko log "Feature complete" --category=achievement\` |
+
+Quality bar: Would this help a successor avoid confusion?`;
+
+  private static readonly LEAN_GRAPH_AND_SYNC = `## Knowledge Graph Queries
+
+\`\`\`bash
+ginko graph query "search term"           # Semantic search
+ginko graph explore ADR-039               # Explore connections
+ginko graph status                        # Health and stats
+\`\`\`
+
+## Sync Protocol (ADR-077)
+
+| Command | Purpose |
+|---------|---------|
+| \`ginko push\` | Push all changes since last push |
+| \`ginko push epic\` | Push only changed epics |
+| \`ginko push --dry-run\` | Preview what would be pushed |
+| \`ginko pull\` | Pull changes from dashboard |
+| \`ginko diff epic/EPIC-001\` | Compare local vs graph |
+
+After creating/modifying content → \`ginko push\`. Before starting work → \`ginko pull\` (if stale).`;
+
+  private static readonly LEAN_FALLBACK_FILES = `## Fallback File Locations (when graph unavailable)
+
+| Content | Location |
+|---------|----------|
+| Sprint progress | \`docs/sprints/SPRINT-*.md\` |
+| Architecture decisions | \`docs/adr/ADR-*.md\` |
+| Project goals | \`docs/PROJECT-CHARTER.md\` |
+| Session logs | \`.ginko/sessions/[user]/current-session-log.md\` |`;
+
+  private static readonly LEAN_FRONTMATTER = `## Frontmatter for New Files
+
+When creating TypeScript/JavaScript files, add:
+
+\`\`\`typescript
+/**
+ * @fileType: [component|page|api-route|hook|utility|provider|model|config]
+ * @status: current
+ * @updated: YYYY-MM-DD
+ * @tags: [relevant, keywords]
+ * @related: [connected-file.ts]
+ * @complexity: [low|medium|high]
+ */
+\`\`\``;
+
+  static generateLean(variables: TemplateVariables, modelSpecificContent?: string): string {
+    const aiName = variables.aiModel || 'AI Assistant';
+    return `# ${variables.projectName} - ${aiName} Collaboration Guide
+
+## Project Context
+- **Type**: ${variables.projectType}
+- **Languages**: ${variables.languages.join(', ')}
+- **Package Manager**: ${variables.packageManager}
+- **Generated**: ${variables.date}
+
+## Quick Commands
+${this.generateQuickCommands(variables)}
+
+${this.LEAN_CLI_SHORTCUTS}
+
+${this.LEAN_TASK_LIFECYCLE}
+
+${this.LEAN_ENTITY_NAMING}
+
+${this.LEAN_WORK_PLANNING}
+
+${this.LEAN_SESSION_LOGGING}
+
+${this.LEAN_GRAPH_AND_SYNC}
+
+${this.LEAN_FALLBACK_FILES}
+
+${this.LEAN_FRONTMATTER}
+
+## Development Methodology
+
+**INVENTORY → CONTEXT → THINK → PLAN → PRE-MORTEM → VALIDATE → ACT → TEST**
+
+${this.generateProjectSpecificSection(variables)}
+
+${this.generateTestingSection(variables)}
+
+${this.generateGitSection(variables)}
+
+## Team
+- **Primary Developer**: ${variables.userName} (${variables.userEmail})
+- **AI Pair Programming**: Enabled via Ginko
+${modelSpecificContent || ''}
+
+## Confidence & Uncertainty
+- Confidence 80%+: proceed normally
+- Confidence 50-80%: state confidence explicitly
+- Confidence <50%: ask before proceeding
+
+## Session Management
+- \`ginko start\` — Begin session with context loading
+- \`ginko handoff\` — Save progress for continuation
+- \`ginko vibecheck\` — Realign when stuck
+- \`ginko ship\` — Create PR-ready branch
+
+## Privacy
+- All context stored locally in \`.ginko/\`
+- No data leaves your machine without explicit action
+- Config (\`.ginko/config.json\`) is gitignored
+`;
+  }
+
   static generate(variables: TemplateVariables, modelSpecificContent?: string): string {
+    if (variables.mode === 'lean') {
+      return this.generateLean(variables, modelSpecificContent);
+    }
     const aiName = variables.aiModel || 'AI Assistant';
     return `# ${variables.projectName} - ${aiName} Collaboration Guide
 

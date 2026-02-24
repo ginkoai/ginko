@@ -290,6 +290,31 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       console.warn(chalk.yellow('Skills error:', error instanceof Error ? error.message : String(error)));
     }
 
+    // Install Claude Code commands (slash commands like /handoff, /start, /vibecheck)
+    spinner.start('Installing AI commands...');
+    try {
+      const commandsDir = path.join(projectRoot, '.claude', 'commands');
+      await fs.ensureDir(commandsDir);
+
+      const templateCommandsDir = path.join(__dirname, '..', 'templates', 'commands');
+      const commandFiles = ['start.md', 'handoff.md', 'vibecheck.md', 'ship.md', 'quick.md'];
+
+      for (const file of commandFiles) {
+        const destPath = path.join(commandsDir, file);
+        if (!await fs.pathExists(destPath)) {
+          await fs.copy(
+            path.join(templateCommandsDir, file),
+            destPath
+          );
+        }
+      }
+
+      spinner.succeed('AI commands installed');
+    } catch (error) {
+      spinner.warn('AI commands installation failed');
+      console.warn(chalk.yellow('Commands error:', error instanceof Error ? error.message : String(error)));
+    }
+
     // Context rules
     spinner.start('Setting up context management...');
 
@@ -351,6 +376,20 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
 
     spinner.succeed('Context management configured');
 
+    // Scaffold docs/ directory structure
+    spinner.start('Setting up docs/ structure...');
+    try {
+      const docsResult = await scaffoldDocs(projectRoot);
+      if (docsResult.created.length > 0) {
+        spinner.succeed(`Docs structure created (${docsResult.created.length} new, ${docsResult.existed.length} existing)`);
+      } else {
+        spinner.succeed('Docs structure already in place');
+      }
+    } catch (error) {
+      spinner.warn('Docs scaffolding failed (non-fatal)');
+      console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+    }
+
     // Cloud graph initialization (automatic, with graceful degradation)
     spinner.start('Initializing cloud knowledge graph...');
 
@@ -385,9 +424,42 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     // Final setup
     spinner.text = 'Completing setup...';
 
-    // Create initial session marker
-    const sessionMarker = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug, '.session-start');
+    // Create initial session marker and bootstrap session files
+    const userSessionDir = pathManager.joinPaths(pathConfig.ginko.sessions, userSlug);
+    const sessionMarker = pathManager.joinPaths(userSessionDir, '.session-start');
     await fs.writeFile(sessionMarker, new Date().toISOString());
+
+    // Bootstrap empty session log so AI partners see active session infrastructure
+    const sessionLogPath = pathManager.joinPaths(userSessionDir, 'current-session-log.md');
+    if (!await fs.pathExists(sessionLogPath)) {
+      const sessionId = `session-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+      const branch = (() => { try { return execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf-8' }).trim(); } catch { return 'main'; } })();
+      await fs.writeFile(sessionLogPath, `---
+session_id: ${sessionId}
+started: ${new Date().toISOString()}
+user: ${userEmail}
+branch: ${branch}
+---
+
+# Session Log: ${sessionId}
+
+## Timeline
+
+## Key Decisions
+
+## Insights
+
+## Git Operations
+
+## Gotchas
+`);
+    }
+
+    // Bootstrap empty events file
+    const eventsPath = pathManager.joinPaths(userSessionDir, 'current-events.jsonl');
+    if (!await fs.pathExists(eventsPath)) {
+      await fs.writeFile(eventsPath, '');
+    }
 
     spinner.succeed('Ginko initialized successfully!');
 
@@ -415,6 +487,7 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
     console.log('  📄 ' + chalk.gray('.ginko/local.json (user-specific configuration)'));
     console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
     console.log('  📄 ' + chalk.gray('.claude/skills/ (AI skill definitions)'));
+    console.log('  📁 ' + chalk.gray('docs/ (adr, epics, sprints, PRD, architecture, patterns)'));
     console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
     console.log('\n' + chalk.blue('💡 Configuration:'));
     console.log('  • ginko.json is tracked in git (team-shared structure)');
@@ -501,6 +574,44 @@ async function upgradeProject(projectRoot: string, spinner: ReturnType<typeof or
     console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
   }
 
+  // 3. Install/overwrite commands (slash commands)
+  spinner.start('Updating AI commands...');
+  try {
+    const commandsDir = path.join(projectRoot, '.claude', 'commands');
+    await fs.ensureDir(commandsDir);
+
+    const templateCommandsDir = path.join(__dirname, '..', 'templates', 'commands');
+    const commandFiles = ['start.md', 'handoff.md', 'vibecheck.md', 'ship.md', 'quick.md'];
+
+    for (const file of commandFiles) {
+      await fs.copy(
+        path.join(templateCommandsDir, file),
+        path.join(commandsDir, file)
+      );
+      updated.push(`.claude/commands/${file}`);
+    }
+
+    spinner.succeed('AI commands updated');
+  } catch (error) {
+    spinner.warn('AI commands update failed');
+    console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+  }
+
+  // 4. Scaffold docs/ structure (only creates what's missing)
+  spinner.start('Checking docs/ structure...');
+  try {
+    const docsResult = await scaffoldDocs(projectRoot);
+    if (docsResult.created.length > 0) {
+      spinner.succeed(`Docs structure updated (${docsResult.created.length} new, ${docsResult.existed.length} existing)`);
+      updated.push(...docsResult.created.map(d => d.replace(projectRoot + '/', '')));
+    } else {
+      spinner.succeed('Docs structure already in place');
+    }
+  } catch (error) {
+    spinner.warn('Docs scaffolding failed (non-fatal)');
+    console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+  }
+
   // Summary
   console.log('\n' + chalk.green('Upgrade complete!'));
   if (updated.length > 0) {
@@ -509,4 +620,77 @@ async function upgradeProject(projectRoot: string, spinner: ReturnType<typeof or
       console.log('  ' + chalk.gray(file));
     }
   }
+}
+
+/**
+ * Scaffold the docs/ directory structure that ginko commands expect.
+ * Only creates what's missing — safe to call on existing projects.
+ */
+interface ScaffoldDocsResult {
+  created: string[];
+  existed: string[];
+}
+
+async function scaffoldDocs(projectRoot: string): Promise<ScaffoldDocsResult> {
+  const created: string[] = [];
+  const existed: string[] = [];
+
+  const docsRoot = path.join(projectRoot, 'docs');
+  const subdirs = ['adr', 'epics', 'sprints', 'PRD', 'architecture', 'patterns'];
+
+  // Ensure docs/ root exists
+  if (await fs.pathExists(docsRoot)) {
+    existed.push(docsRoot);
+  } else {
+    await fs.ensureDir(docsRoot);
+    created.push(docsRoot);
+  }
+
+  // Ensure each subdirectory with .gitkeep
+  for (const sub of subdirs) {
+    const dirPath = path.join(docsRoot, sub);
+    if (await fs.pathExists(dirPath)) {
+      existed.push(dirPath);
+    } else {
+      await fs.ensureDir(dirPath);
+      await fs.writeFile(path.join(dirPath, '.gitkeep'), '');
+      created.push(dirPath);
+    }
+  }
+
+  // Create PROJECT-CHARTER.md stub if it doesn't exist
+  const charterPath = path.join(docsRoot, 'PROJECT-CHARTER.md');
+  if (await fs.pathExists(charterPath)) {
+    existed.push(charterPath);
+  } else {
+    const charterStub = `---
+status: draft
+created: ${new Date().toISOString().split('T')[0]}
+---
+
+# Project Charter
+
+## Purpose
+<!-- What problem does this project solve? Who benefits? -->
+
+## Users
+<!-- Who are the primary users or stakeholders? -->
+
+## Success Criteria
+<!-- How will you measure success? -->
+
+## Scope
+<!-- What's in scope? What's explicitly out of scope? -->
+
+## Constraints
+<!-- Technical, timeline, or resource constraints -->
+
+---
+*Run \`ginko charter\` for a guided, conversational charter creation experience.*
+`;
+    await fs.writeFile(charterPath, charterStub);
+    created.push(charterPath);
+  }
+
+  return { created, existed };
 }
