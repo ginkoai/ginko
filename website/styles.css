@@ -921,7 +921,7 @@ pre {
     max-height: 88vh;
     background: none;
     isolation: isolate; /* Create new stacking context */
-    padding-bottom: 0;
+    padding-bottom: 100px; /* Space for separator overlap */
 }
 
 .hero--with-image .hero-bg {
@@ -4003,6 +4003,26 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     }
 }
 
+/* Tablet/foldable landscape - shift image to show sticker */
+@media (max-height: 850px) and (min-width: 700px) and (max-width: 1200px) {
+    .hero--with-image .hero-bg img {
+        object-position: 70% 55%;
+    }
+}
+
+/* Ultra-short viewport (e.g. Z Fold landscape 882x344) */
+@media (max-height: 400px) and (min-width: 700px) {
+    /* Hide description - not enough vertical space */
+    .hero-copy-full {
+        display: none;
+    }
+
+    .hero {
+        padding-top: 50px;
+        padding-bottom: 0;
+    }
+}
+
 @media (max-width: 1024px) {
     /* Tablet Typography Scale */
     .hero-headline {
@@ -4171,9 +4191,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         padding-bottom: 0;
     }
 
-    /* Push image far right - maximize space for text, sticker stays visible at edge */
+    /* Shift image to show sticker, balance position */
     .hero--with-image .hero-bg img {
-        object-position: calc(100% + 160px) calc(55% - 20px);
+        object-position: 65% 45%;
+    }
+
+    /* Pull separator up to be flush with hero image bottom */
+    .logo-marquee-section {
+        margin-top: -80px !important;
     }
 
     /* Gradual extended fade - solid left, smoothly fading to transparent right */
@@ -4533,16 +4558,6 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         margin-bottom: var(--space-8);
     }
 
-    /* npm button - show only package name on small screens */
-    .npm-compact-btn .npm-command {
-        font-size: 0;  /* Hide original text */
-    }
-
-    .npm-compact-btn .npm-command::after {
-        content: '@ginkoai/cli';
-        font-size: 0.875rem;  /* Restore readable size */
-    }
-
     /* Move npm button up to sit within hero image area */
     .hero-text .npm-compact-btn {
         margin-bottom: 8px;
@@ -4552,7 +4567,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
     /* Close gap between hero and separator on small mobile */
     .logo-marquee-section {
-        margin-top: -110px;
+        margin-top: -100px;
     }
 
     /* Keep graph hidden on small mobile - reinforce the 768px rule */
