@@ -2242,7 +2242,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 
 .pain-points {
     background-color: var(--color-bg);
-    padding: var(--space-16) 0;
+    padding: 0 0 85px 0; /* Bottom matches top spacing */
 }
 
 .pain-points-header {
@@ -2495,7 +2495,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    ============================================================================ */
 
 .solution {
-    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    background-color: var(--color-surface);
 }
 
 .solution-demo {
@@ -2857,7 +2857,18 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    padding: 0;
+    overflow: hidden;
+}
+
+.carousel-arrow-box {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .carousel-arrow svg {
@@ -2866,10 +2877,47 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     stroke: var(--color-bg);
     stroke-width: 2.5;
     fill: none;
+    position: absolute;
+    transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-.carousel-arrow:hover {
-    background: var(--color-text-secondary);
+.carousel-arrow .arrow-default {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.carousel-arrow .arrow-hover {
+    opacity: 0;
+}
+
+/* Next arrow: slides right */
+.carousel-arrow-next .arrow-hover {
+    transform: translateX(-20px);
+}
+
+.carousel-arrow-next:hover .arrow-default {
+    transform: translateX(20px);
+    opacity: 0;
+}
+
+.carousel-arrow-next:hover .arrow-hover {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Prev arrow: slides left */
+.carousel-arrow-prev .arrow-hover {
+    transform: translateX(20px);
+}
+
+.carousel-arrow-prev:hover .arrow-default {
+    transform: translateX(-20px);
+    opacity: 0;
+}
+
+.carousel-arrow-prev:hover .arrow-hover {
+    transform: translateX(0);
+    opacity: 1;
 }
 
 .carousel-dots {
@@ -3150,7 +3198,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    ============================================================================ */
 
 .faq {
-    background-color: var(--color-bg);
+    background-color: var(--color-surface);
     padding: var(--space-16) 0;
 }
 
@@ -3508,7 +3556,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    ============================================================================ */
 
 .pricing {
-    background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-surface) 100%);
+    background-color: var(--color-bg);
 }
 
 .pricing-grid {
@@ -4682,8 +4730,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .ascii-divider {
     overflow: hidden;
-    background: #F3F1E2;
-    padding: 16px 0 0 0;
+    background: linear-gradient(to bottom, var(--color-bg) 50%, var(--color-surface) 50%);
+    padding: 16px 0;
     position: relative;
     z-index: 1;
 }
@@ -4707,7 +4755,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .discord-section {
     padding: 32px 0 56px 0; /* Top: 32px, Bottom: 56px to balance with ASCII divider above */
-    background: var(--color-bg);
+    background-color: var(--color-surface);
 }
 
 .discord-header {
@@ -4819,9 +4867,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .discord-btn:hover {
-    background: #4752c4;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.4);
+    box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
 }
 
 .discord-members {

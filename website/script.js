@@ -471,6 +471,78 @@ const initTextScramble = () => {
 };
 
 // ============================================================================
+// DISCORD BUTTON HOVER SCRAMBLE
+// ============================================================================
+
+const initDiscordButtonScramble = () => {
+  const btn = document.querySelector('.discord-btn');
+  if (!btn) return;
+
+  const textEl = btn.querySelector('.discord-btn-text');
+  if (!textEl) return;
+
+  const originalText = btn.dataset.text || textEl.textContent;
+  const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let animationId = null;
+  let isAnimating = false;
+
+  // Respect reduced motion
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  const scramble = (targetText, onComplete) => {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const duration = 400;
+    const frameRate = 30;
+    const totalFrames = duration / frameRate;
+    let frame = 0;
+
+    const animate = () => {
+      frame++;
+      const progress = frame / totalFrames;
+
+      let result = '';
+      for (let i = 0; i < targetText.length; i++) {
+        const charProgress = i / targetText.length;
+
+        if (progress > charProgress + 0.2) {
+          result += targetText[i];
+        } else if (targetText[i] === ' ') {
+          result += ' ';
+        } else {
+          result += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+
+      textEl.textContent = result;
+
+      if (frame < totalFrames) {
+        animationId = setTimeout(animate, frameRate);
+      } else {
+        textEl.textContent = targetText;
+        isAnimating = false;
+        if (onComplete) onComplete();
+      }
+    };
+
+    animate();
+  };
+
+  btn.addEventListener('mouseenter', () => {
+    if (animationId) clearTimeout(animationId);
+    scramble(originalText);
+  });
+
+  btn.addEventListener('mouseleave', () => {
+    if (animationId) clearTimeout(animationId);
+    isAnimating = false;
+    textEl.textContent = originalText;
+  });
+};
+
+// ============================================================================
 // HERO BUTTON TYPEWRITER ANIMATION
 // ============================================================================
 
@@ -622,6 +694,7 @@ function init() {
   initScrollEffects();
   initScrollAnimations();
   initTextScramble();
+  initDiscordButtonScramble();
   initHeroButtonAnimation();
   initTerminalAnimation();
   initCopyButtons();
