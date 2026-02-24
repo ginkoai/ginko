@@ -194,6 +194,13 @@ body {
     background-color: var(--color-bg);
     transition: background-color var(--transition-base), color var(--transition-base);
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+}
+
+main {
+    overflow-x: hidden;
+    width: 100%;
 }
 
 /* Typography */
@@ -243,7 +250,7 @@ code {
 
 .container {
     width: 100%;
-    max-width: 1600px;
+    max-width: 1400px;
     margin: 0 auto;
     padding: 0 var(--space-8);
 }
@@ -278,7 +285,7 @@ section {
     align-items: center;
     justify-content: space-between;
     padding: var(--space-4) var(--space-8);
-    max-width: 1600px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -2688,7 +2695,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .features-carousel .section-title {
     font-family: var(--font-display);
-    font-size: var(--font-size-6xl);
+    font-size: var(--font-size-5xl);
+    font-weight: var(--font-weight-normal);
     text-transform: uppercase;
     color: var(--color-text);
 }
@@ -2704,7 +2712,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .features-carousel-wrapper {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 0 40px;
+    padding: 0 var(--space-8);
 }
 
 /* Carousel Card */
@@ -3069,6 +3077,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .testimonial {
     background-color: var(--color-bg);
     padding: var(--space-16) 0;
+    overflow: hidden;
 }
 
 .testimonial-content {
@@ -3076,11 +3085,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     align-items: flex-start;
     gap: var(--space-8);
     width: 100%;
+    max-width: 100%;
     padding: var(--space-12);
     text-align: left;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 16px;
+    box-sizing: border-box;
 }
 
 .testimonial-quote-icon {
@@ -3097,15 +3108,19 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .testimonial-text {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .testimonial-quote {
     font-family: var(--font-mono);
-    font-size: var(--font-size-4xl);
+    font-size: var(--font-size-3xl);
     font-style: normal;
     color: var(--color-text);
     margin: 0 0 var(--space-4) 0;
     line-height: 1.4;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
 }
 
 .testimonial-highlight {
@@ -3144,8 +3159,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .faq-title {
     font-family: var(--font-display);
-    font-size: var(--font-size-4xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-5xl);
+    font-weight: var(--font-weight-normal);
+    text-transform: uppercase;
     color: var(--color-text);
     margin: 0;
     text-align: center;
@@ -3708,9 +3724,22 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    FOOTER
    ============================================================================ */
 
+/* Rainbow stripe above footer - 5 solid color bands */
+.footer-rainbow {
+    height: 60px;
+    width: 100%;
+    background: linear-gradient(to bottom,
+        #FDC400 0%, #FDC400 20%,
+        #FC9500 20%, #FC9500 40%,
+        #FE4500 40%, #FE4500 60%,
+        #E00256 60%, #E00256 80%,
+        #A70086 80%, #A70086 100%
+    );
+}
+
 .footer {
-    background-color: var(--color-terminal-bg);
-    color: #F4EEDD;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     padding: var(--space-16) 0 0;
 }
 
@@ -3725,7 +3754,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-mono);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-bold);
-    color: #F4EEDD;
+    color: var(--color-text);
     margin-bottom: var(--space-4);
     text-transform: uppercase;
 }
@@ -3739,14 +3768,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-section ul li a {
-    color: #F4EEDD;
+    color: var(--color-text-secondary);
     text-decoration: none;
     font-size: var(--font-size-sm);
     transition: color var(--transition-fast);
 }
 
 .footer-section ul li a:hover {
-    color: var(--color-accent);
+    color: var(--color-text);
 }
 
 .footer-logo {
@@ -3781,6 +3810,26 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     opacity: 0.6;
 }
 
+.footer-section-cta {
+    max-width: 400px;
+}
+
+.footer-headline {
+    font-family: var(--font-display);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-normal);
+    color: var(--color-text);
+    margin: var(--space-4) 0 var(--space-2) 0;
+    line-height: 1.1;
+}
+
+.footer-subline {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--space-6) 0;
+}
+
 .footer-bottom {
     padding-top: var(--space-8);
     border-top: 1px solid var(--color-border);
@@ -3792,7 +3841,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .footer-bottom p {
     margin: 0;
     font-size: var(--font-size-sm);
-    color: #F4EEDD;
+    color: var(--color-text-secondary);
 }
 
 .footer-links {
@@ -3801,7 +3850,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-links a {
-    color: #F4EEDD;
+    color: var(--color-text-secondary);
     font-size: var(--font-size-sm);
     text-decoration: none;
     transition: color var(--transition-fast);
@@ -3809,7 +3858,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-links a:hover {
-    color: var(--color-accent);
+    color: var(--color-text);
 }
 
 /* Footer IYKYG Logo */
@@ -4206,6 +4255,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
     .faq-title {
         font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-normal);
     }
 
     .faq-question {
