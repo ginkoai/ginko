@@ -446,6 +446,10 @@ html:not([data-theme="dark"]) .theme-icon-dark {
     display: none;
 }
 
+[data-theme="dark"] .pricing-card-featured {
+    box-shadow: 0 0 24px rgba(254, 69, 0, 0.2);
+}
+
 /* ============================================================================
    BUTTONS
    ============================================================================ */
@@ -930,7 +934,7 @@ pre {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 78% right; /* Balance: show Apple logo + more laptop body */
+    object-position: center 55%; /* Balance: laptop visible, flotsam hidden */
     /* TODO: Remove Gemini watermark from image file */
 }
 
@@ -3347,8 +3351,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .faq-answer code {
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
-    background: var(--color-terminal-bg);
-    color: var(--color-accent);
+    background: var(--color-accent);
+    color: white;
     padding: 0.125em 0.375em;
     border-radius: var(--radius-sm);
 }
@@ -3593,13 +3597,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .pricing-card-featured {
     border-color: var(--color-accent);
     border-width: 2px;
-    box-shadow: 0 0 24px rgba(254, 69, 0, 0.2);
 }
 
-/* Add inset glow on left side of card AFTER featured card (creates Pro's right-side glow effect) */
-.pricing-card-featured + .pricing-card {
-    box-shadow: inset 15px 0 20px -15px rgba(254, 69, 0, 0.15);
-}
 
 
 .plan-header {
@@ -3793,9 +3792,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    gap: var(--space-8);
+    display: flex;
+    justify-content: space-between;
     margin-bottom: var(--space-12);
 }
 
@@ -3824,7 +3822,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-section ul li a:hover {
-    color: var(--color-text);
+    color: var(--color-accent);
 }
 
 .footer-logo {
@@ -3881,6 +3879,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .footer-bottom {
     padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
     border-top: 1px solid var(--color-border);
     display: flex;
     justify-content: space-between;
@@ -3907,7 +3906,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-links a:hover {
-    color: var(--color-text);
+    color: var(--color-accent);
 }
 
 .footer-social {
@@ -4869,6 +4868,11 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .discord-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+    color: white;
+}
+
+.discord-btn svg {
+    pointer-events: none;
 }
 
 .discord-members {
