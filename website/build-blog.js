@@ -216,7 +216,7 @@ function getDefaultTemplate(templateName) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{title}} - ${CONFIG.siteName}</title>
   <meta name="description" content="{{description}}">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=rebrand-2026">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
 </head>
 <body>
@@ -257,7 +257,7 @@ function getDefaultTemplate(templateName) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${CONFIG.siteName}</title>
   <meta name="description" content="${CONFIG.siteDescription}">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=rebrand-2026">
   <link rel="alternate" type="application/rss+xml" title="${CONFIG.siteName} RSS Feed" href="/blog/feed.xml">
 </head>
 <body>
