@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - For Developers | Homey, don't ya know me?</title>
+    <meta name="description" content="Stop re-explaining your codebase to AI. Ginko keeps context so you can stay in flow.">
+    <meta name="theme-color" content="#0A0A0A">
+
+    <!-- Fonts - JetBrains Mono + Instrument Serif for editorial contrast -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Base styles -->
+    <link rel="stylesheet" href="styles.css?v=rebrand-2026">
+
+    <!-- Google Analytics -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-6733RPZ8RN"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-6733RPZ8RN');
+        gtag('set', 'user_properties', {
+            hero_variant: 'F-dev',
+            hero_variant_name: 'homey-cinematic-developers'
+        });
+        gtag('event', 'hero_variant_assigned', {
+            variant_id: 'F-dev',
+            variant_name: 'homey-cinematic-developers',
+            is_new_assignment: true,
+            page_type: 'developers-experiment'
+        });
+    </script>
+
+    <style>
+        /* ============================================
+           CINEMATIC EDITORIAL HERO - DEVELOPERS
+           ============================================ */
+
+        :root {
+            --film-black: #0a0a0a;
+            --ginko-dark: #151e28;
+            --ginko-lime: #D0F549;
+            --ginko-cream: #f6ffd6;
+            --ginko-cream-dim: rgba(246, 255, 214, 0.7);
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        /* Cinematic container */
+        .cinematic-hero {
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: var(--film-black);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Letterbox bars for cinematic ratio */
+        .letterbox {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 8vh;
+            background: var(--film-black);
+            z-index: 10;
+        }
+        .letterbox--top { top: 0; }
+        .letterbox--bottom { bottom: 0; }
+
+        /* Main stage */
+        .hero-stage {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1.4fr;
+            grid-template-rows: 1fr;
+            min-height: 0;
+            padding: 10vh 0;
+        }
+
+        /* Left panel - typography */
+        .hero-copy {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem 3rem 4rem 5vw;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Badge */
+        .hero-badge {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 0.2em;
+            color: var(--ginko-lime);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s ease-out 0.2s forwards;
+        }
+        .hero-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--ginko-lime);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Headline - editorial serif */
+        .hero-headline {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            font-weight: 400;
+            line-height: 1.05;
+            color: var(--ginko-cream);
+            margin: 0 0 1.5rem 0;
+            letter-spacing: -0.02em;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s ease-out 0.4s forwards;
+        }
+        .hero-headline em {
+            font-style: italic;
+            color: var(--ginko-lime);
+        }
+
+        /* Subhead */
+        .hero-subhead {
+            font-family: var(--font-mono);
+            font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+            color: var(--ginko-cream-dim);
+            line-height: 1.7;
+            max-width: 420px;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s ease-out 0.6s forwards;
+        }
+        .hero-subhead strong {
+            color: var(--ginko-cream);
+            font-weight: 600;
+        }
+
+        /* Terminal block - receipt style */
+        .terminal-receipt {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(208, 245, 73, 0.3);
+            padding: 1rem 1.25rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--ginko-cream);
+            margin-bottom: 2rem;
+            position: relative;
+            max-width: 340px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s ease-out 0.8s forwards;
+        }
+        .terminal-receipt:hover {
+            border-color: var(--ginko-lime);
+            background: rgba(208, 245, 73, 0.05);
+        }
+        .terminal-receipt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--ginko-lime) 0px,
+                var(--ginko-lime) 4px,
+                transparent 4px,
+                transparent 8px
+            );
+        }
+        .terminal-receipt .prompt {
+            color: var(--ginko-lime);
+            margin-right: 0.5rem;
+        }
+        .terminal-receipt .copy-hint {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.7rem;
+            color: rgba(208, 245, 73, 0.5);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .terminal-receipt:hover .copy-hint {
+            opacity: 1;
+        }
+        .terminal-receipt.copied .copy-hint {
+            color: var(--ginko-lime);
+        }
+        .terminal-receipt.copied .copy-hint::after {
+            content: ' ✓';
+        }
+
+        /* CTAs */
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s ease-out 1s forwards;
+        }
+
+        .btn-cinematic {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.75rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-cinematic--primary {
+            background: var(--ginko-lime);
+            color: var(--film-black);
+        }
+        .btn-cinematic--primary:hover {
+            background: var(--ginko-cream);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(208, 245, 73, 0.3);
+        }
+
+        .btn-cinematic--secondary {
+            background: transparent;
+            color: var(--ginko-cream);
+            border: 1px solid rgba(246, 255, 214, 0.3);
+        }
+        .btn-cinematic--secondary:hover {
+            border-color: var(--ginko-lime);
+            color: var(--ginko-lime);
+        }
+
+        .btn-arrow {
+            transition: transform 0.3s;
+        }
+        .btn-cinematic:hover .btn-arrow {
+            transform: translateX(4px);
+        }
+
+        /* Right panel - image */
+        .hero-image-panel {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-image-frame {
+            position: absolute;
+            inset: 0;
+            left: -15%;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            opacity: 0;
+            animation: imageFadeIn 1.2s ease-out 0.3s forwards;
+        }
+
+        /* Cinematic overlays on image */
+        .hero-image-frame::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                var(--film-black) 0%,
+                rgba(10,10,10,0.7) 15%,
+                transparent 40%
+            );
+            z-index: 2;
+        }
+
+        .hero-image-frame::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                180deg,
+                rgba(10,10,10,0.3) 0%,
+                transparent 20%,
+                transparent 80%,
+                rgba(10,10,10,0.5) 100%
+            );
+            z-index: 2;
+        }
+
+        /* Scan lines overlay */
+        .scanlines {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent 0px,
+                transparent 2px,
+                rgba(0,0,0,0.1) 2px,
+                rgba(0,0,0,0.1) 4px
+            );
+            pointer-events: none;
+            z-index: 3;
+            opacity: 0.5;
+        }
+
+        /* Vignette */
+        .vignette {
+            position: absolute;
+            inset: 0;
+            box-shadow: inset 0 0 150px 50px rgba(0,0,0,0.5);
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        /* Film grain texture */
+        .grain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Floating context items - echoing the receipt/name tag */
+        .floating-context {
+            position: absolute;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: rgba(208, 245, 73, 0.4);
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .floating-context--1 {
+            bottom: 15%;
+            right: 5%;
+            animation: floatContext 8s ease-in-out infinite;
+        }
+        .floating-context--2 {
+            top: 20%;
+            right: 15%;
+            animation: floatContext 10s ease-in-out infinite reverse;
+            animation-delay: -3s;
+        }
+        .floating-context--3 {
+            bottom: 25%;
+            right: 25%;
+            animation: floatContext 12s ease-in-out infinite;
+            animation-delay: -6s;
+        }
+
+        /* Animations */
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes imageFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(1.05);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes floatContext {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-10px) rotate(1deg);
+                opacity: 0.5;
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+
+        @media (max-width: 1024px) {
+            .hero-stage {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+
+            .hero-copy {
+                padding: 2rem;
+                order: 2;
+                text-align: center;
+                align-items: center;
+            }
+
+            .hero-image-panel {
+                order: 1;
+                min-height: 45vh;
+            }
+
+            .hero-image-frame {
+                left: 0;
+            }
+
+            .hero-image-frame::before {
+                background: linear-gradient(
+                    180deg,
+                    transparent 50%,
+                    var(--film-black) 100%
+                );
+            }
+
+            .hero-actions {
+                justify-content: center;
+            }
+
+            .terminal-receipt {
+                max-width: 100%;
+            }
+
+            .floating-context {
+                display: none;
+            }
+
+            .letterbox {
+                height: 4vh;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero-copy {
+                padding: 1.5rem;
+            }
+
+            .hero-headline {
+                font-size: 2.5rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn-cinematic {
+                justify-content: center;
+                width: 100%;
+            }
+
+            .letterbox {
+                display: none;
+            }
+        }
+
+        /* ============================================
+           NAV OVERRIDE FOR THIS PAGE
+           ============================================ */
+
+        .navbar {
+            background: transparent !important;
+            backdrop-filter: none !important;
+        }
+
+        .cinematic-hero .navbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+        }
+
+        /* Active nav link */
+        .nav-link-active {
+            color: var(--ginko-lime) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+
+    <main id="main" class="cinematic-hero" data-variant="F-dev">
+        <!-- Letterbox bars -->
+        <div class="letterbox letterbox--top"></div>
+        <div class="letterbox letterbox--bottom"></div>
+
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <a href="/" class="nav-logo">
+                    <img src="ginko-logo.svg" alt="ginko" class="logo-image" width="120" height="40" loading="eager">
+                </a>
+                <div class="nav-menu">
+                    <a href="developers.html" class="nav-link nav-link-active">Developers</a>
+                    <a href="teams.html" class="nav-link">Teams</a>
+                    <a href="how-it-works.html" class="nav-link">How It Works</a>
+                    <a href="blog/index.html" class="nav-link">Blog</a>
+                    <a href="https://docs.ginko.ai" class="nav-link" data-track-docs data-link-location="nav">Docs</a>
+                </div>
+                <div class="nav-actions">
+                    <a href="get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
+                        <span class="btn-hero-text">GET STARTED</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Stage -->
+        <div class="hero-stage">
+            <!-- Copy Panel -->
+            <div class="hero-copy">
+                <span class="hero-badge">FOR DEVELOPERS</span>
+
+                <h1 class="hero-headline">"Homey, don't ya <em>know</em> me?"</h1>
+
+                <p class="hero-subhead">
+                    Stop re-explaining your codebase to AI. <strong>Ginko keeps context in the collaboration graph.</strong> Resume in 30 seconds with your project, decisions, and patterns intact.
+                </p>
+
+                <div class="terminal-receipt" data-copy="npm install -g @ginkoai/cli">
+                    <span class="prompt">$</span>npm install -g @ginkoai/cli
+                    <span class="copy-hint">click to copy</span>
+                </div>
+
+                <div class="hero-actions">
+                    <a href="get-started.html" class="btn-cinematic btn-cinematic--primary" data-track-cta data-cta-location="hero" data-variant="F-dev">
+                        INSTALL CLI
+                        <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </a>
+                    <a href="https://docs.ginko.ai" class="btn-cinematic btn-cinematic--secondary" data-track-docs data-link-location="hero" data-variant="F-dev">
+                        VIEW DOCS
+                        <svg class="btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Image Panel -->
+            <div class="hero-image-panel">
+                <div class="hero-image-frame">
+                    <img
+                        src="images/hero-homey-4am-dev.png"
+                        alt="Exhausted developer at 4am waving at their monitor, wearing an absurdly long name tag listing all their project context like a CVS receipt"
+                        class="hero-image"
+                        loading="eager"
+                    >
+                    <div class="scanlines"></div>
+                    <div class="vignette"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // Copy functionality for terminal
+        document.querySelector('.terminal-receipt')?.addEventListener('click', function() {
+            const text = this.dataset.copy;
+            navigator.clipboard.writeText(text).then(() => {
+                this.classList.add('copied');
+                setTimeout(() => this.classList.remove('copied'), 2000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6733RPZ8RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6733RPZ8RN');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patterns and Gotchas: Teaching Your AI Partner - ginko blog</title>
+    <meta name="description" content="Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Patterns and Gotchas: Teaching Your AI Partner">
+    <meta property="og:description" content="Your codebase has patterns that work and pitfalls to avoid. Here's how to teach them to your AI assistant so it stops making the same mistakes.">
+    <meta property="og:url" content="https://ginkoai.com/blog/patterns-and-gotchas/">
+    <meta property="article:published_time" content="2025-12-26T00:00:00.000Z">
+    <meta property="article:author" content="Chris Norton">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="../../styles.css?v=rebrand-2026">
+
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Theme color for mobile browsers -->
+    <meta name="theme-color" content="#FAF7F0">
+
+    <!-- Blog-specific styles -->
+    <style>
+        /* Active nav link */
+        .nav-link-active {
+            color: var(--color-accent) !important;
+        }
+
+        /* Blog Post Typography */
+        .blog-post-content {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 var(--space-6) var(--space-8);
+        }
+
+        .blog-post-content h1,
+        .blog-post-content h2,
+        .blog-post-content h3,
+        .blog-post-content h4 {
+            font-family: var(--font-mono);
+            margin-top: var(--space-10);
+            margin-bottom: var(--space-4);
+            line-height: 1.3;
+        }
+
+        .blog-post-content h1:first-child {
+            margin-top: 0;
+        }
+
+        .blog-post-content h1 { font-size: var(--font-size-4xl); }
+        .blog-post-content h2 { font-size: var(--font-size-3xl); }
+        .blog-post-content h3 { font-size: var(--font-size-2xl); }
+        .blog-post-content h4 { font-size: var(--font-size-xl); }
+
+        .blog-post-content p {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-normal);
+            line-height: 1.8;
+            margin-bottom: var(--space-6);
+            color: var(--color-text);
+        }
+
+        .blog-post-content ul,
+        .blog-post-content ol {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-normal);
+            line-height: 1.8;
+            margin-bottom: var(--space-6);
+            padding-left: var(--space-8);
+            color: var(--color-text);
+        }
+
+        .blog-post-content li {
+            font-family: var(--font-mono);
+            font-weight: var(--font-weight-normal);
+            margin-bottom: var(--space-3);
+        }
+
+        .blog-post-content blockquote {
+            font-family: var(--font-mono);
+            border-left: 4px solid var(--color-accent);
+            padding-left: var(--space-6);
+            margin: var(--space-8) 0;
+            font-style: italic;
+            color: var(--color-text-secondary);
+        }
+
+        .blog-post-content code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            background-color: var(--color-terminal-bg);
+            color: var(--color-accent);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+        }
+
+        .blog-post-content pre {
+            margin: var(--space-8) 0;
+            overflow-x: auto;
+        }
+
+        .blog-post-content pre code {
+            background-color: transparent;
+            color: var(--color-terminal-text);
+            padding: 0;
+        }
+
+        .blog-post-content img {
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-lg);
+            margin: var(--space-8) 0;
+            border: 1px solid var(--color-border);
+        }
+
+        .blog-post-content a {
+            color: var(--color-accent);
+            text-decoration: underline;
+            transition: color var(--transition-fast);
+        }
+
+        .blog-post-content a:hover {
+            color: var(--color-accent-hover);
+        }
+
+        /* Post Navigation */
+        .post-navigation {
+            position: relative;
+            max-width: 720px;
+            margin: var(--space-16) auto;
+            padding: 0 var(--space-6);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-6);
+        }
+
+        .nav-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-6);
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .nav-card:hover {
+            border-color: var(--color-accent);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-card.nav-prev {
+            text-align: left;
+        }
+
+        .nav-card.nav-next {
+            text-align: right;
+        }
+
+        .nav-card.nav-empty {
+            visibility: hidden;
+        }
+
+        .nav-label {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xs);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: var(--space-2);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+        }
+
+        .nav-arrow {
+            display: inline;
+        }
+
+        .nav-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text);
+        }
+
+        /* Back to Blog - positioned top left of article column */
+        .back-to-blog-top {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: calc(80px + var(--space-6)) var(--space-6) var(--space-4);
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        /* Green headline */
+        .blog-post-content h1:first-child {
+            color: var(--color-accent);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-family: var(--font-mono);
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        .back-link span:first-child {
+            display: inline;
+        }
+
+        .back-link:hover {
+            color: var(--color-accent);
+        }
+
+        /* Blog CTA + Navigation Table */
+        .blog-cta-table {
+            --card-bracket-size: 16px;
+            --card-bracket-thickness: 2px;
+            --card-bracket-color: var(--color-accent);
+            --card-border-color: rgba(255, 255, 255, 0.1);
+            --junction-size: 20px;
+
+            position: relative;
+            max-width: 720px;
+            margin: var(--space-12) auto var(--space-16);
+            padding: 0 var(--space-6);
+        }
+
+        .blog-cta-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            border: 1px solid var(--card-border-color);
+            position: relative;
+        }
+
+        /* Corner brackets for the table */
+        .blog-cta-table::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: -1px;
+            left: var(--space-6);
+            right: var(--space-6);
+            height: var(--card-bracket-size);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .blog-cta-table::after {
+            content: '';
+            display: block;
+            position: absolute;
+            bottom: -1px;
+            left: var(--space-6);
+            right: var(--space-6);
+            height: var(--card-bracket-size);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 100% / var(--card-bracket-size) var(--card-bracket-thickness) no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 0 / var(--card-bracket-thickness) 100% no-repeat;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Junction connectors */
+        .blog-cta-table .junction {
+            position: absolute;
+            width: var(--junction-size);
+            height: var(--junction-size);
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* T-junction pointing right (left edge) */
+        .blog-cta-table .junction-t-right::before,
+        .blog-cta-table .junction-t-right::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .blog-cta-table .junction-t-right::before {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .blog-cta-table .junction-t-right::after {
+            height: var(--card-bracket-thickness);
+            width: 50%;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* T-junction pointing left (right edge) */
+        .blog-cta-table .junction-t-left::before,
+        .blog-cta-table .junction-t-left::after {
+            content: '';
+            position: absolute;
+            background-color: var(--card-bracket-color);
+        }
+        .blog-cta-table .junction-t-left::before {
+            height: 100%;
+            width: var(--card-bracket-thickness);
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+        .blog-cta-table .junction-t-left::after {
+            height: var(--card-bracket-thickness);
+            width: 50%;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .blog-cta-table .junction-left {
+            left: var(--space-6);
+            transform: translate(-50%, -50%);
+        }
+
+        .blog-cta-table .junction-right {
+            right: var(--space-6);
+            transform: translate(50%, -50%);
+        }
+
+        /* CTA content cell (now below nav) */
+        .blog-cta-content {
+            position: relative;
+            background: linear-gradient(135deg, var(--color-surface) 0%, #0a0a0a 100%);
+            padding: var(--space-10);
+            text-align: center;
+        }
+
+        .blog-cta-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-accent);
+            margin-bottom: var(--space-4);
+        }
+
+        .blog-cta-subtitle {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-base);
+            font-style: italic;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-6);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .blog-cta-terminal {
+            margin-bottom: var(--space-6);
+        }
+
+        .blog-cta-buttons {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Navigation row - 2 columns */
+        .blog-nav-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            --junction-size: 20px;
+            --card-bracket-thickness: 2px;
+            --card-bracket-color: var(--color-accent);
+            --card-border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .blog-nav-cell {
+            position: relative;
+            background-color: var(--color-surface);
+            padding: var(--space-6);
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition-fast);
+        }
+
+        .blog-nav-cell:first-child {
+            border-right: 1px solid var(--card-border-color);
+        }
+
+        .blog-nav-cell:hover {
+            background-color: rgba(174, 255, 0, 0.03);
+        }
+
+        .blog-nav-cell.nav-prev {
+            text-align: left;
+        }
+
+        .blog-nav-cell.nav-next {
+            text-align: right;
+        }
+
+        .blog-nav-cell.nav-empty {
+            pointer-events: none;
+        }
+
+
+        /* Edge junctions via pseudo-elements on nav row (at bottom edge, pointing down) */
+        .blog-nav-row::before,
+        .blog-nav-row::after {
+            content: '';
+            position: absolute;
+            width: var(--junction-size);
+            height: var(--junction-size);
+            bottom: 0;
+            z-index: 20;
+            pointer-events: none;
+        }
+
+        /* Left edge T-junction (pointing right, at bottom) */
+        .blog-nav-row::before {
+            left: 0;
+            transform: translate(-50%, 50%);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 100% 50% / 50% var(--card-bracket-thickness) no-repeat;
+        }
+
+        /* Right edge T-junction (pointing left, at bottom) */
+        .blog-nav-row::after {
+            right: 0;
+            transform: translate(50%, 50%);
+            background:
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 50% 0 / var(--card-bracket-thickness) 100% no-repeat,
+                linear-gradient(var(--card-bracket-color), var(--card-bracket-color)) 0 50% / 50% var(--card-bracket-thickness) no-repeat;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .blog-post-content {
+                padding: var(--space-6) var(--space-4);
+            }
+
+            .blog-post-content p,
+            .blog-post-content ul,
+            .blog-post-content ol {
+                font-size: var(--font-size-base);
+            }
+
+            .blog-post-content h1 {
+                font-size: var(--font-size-3xl);
+            }
+
+            .back-to-blog-top {
+                padding-top: calc(70px + var(--space-4));
+            }
+
+            .blog-cta-table {
+                padding: 0 var(--space-4);
+            }
+
+            .blog-cta-table::before,
+            .blog-cta-table::after {
+                left: var(--space-4);
+                right: var(--space-4);
+            }
+
+            .blog-cta-table .junction-left {
+                left: var(--space-4);
+            }
+
+            .blog-cta-table .junction-right {
+                right: var(--space-4);
+            }
+
+            .blog-cta-content {
+                padding: var(--space-6);
+            }
+
+            .blog-cta-title {
+                font-size: var(--font-size-xl);
+            }
+
+            .blog-cta-buttons {
+                flex-direction: column;
+            }
+
+            .blog-cta-buttons .btn-hero {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .blog-nav-row {
+                grid-template-columns: 1fr;
+            }
+
+            .blog-nav-cell:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--card-border-color);
+            }
+
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="../../index.html" class="nav-logo">
+                <img src="../../ginko-logo.svg" alt="ginko" class="logo-image" width="120" height="40" loading="eager">
+            </a>
+            <div class="nav-menu">
+                <a href="../../developers.html" class="nav-link">Developers</a>
+                <a href="../../teams.html" class="nav-link">Teams</a>
+                <a href="../../how-it-works.html" class="nav-link">How It Works</a>
+                <a href="/blog/" class="nav-link nav-link-active">Blog</a>
+            </div>
+            <div class="nav-actions">
+                <a href="../../get-started.html" class="btn-hero btn-hero-primary btn-hero-sm" data-track-cta data-cta-location="nav">
+                    <span class="btn-hero-text">GET STARTED</span>
+                    <span class="btn-hero-arrow btn-hero-arrow-dark">
+                        <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                        <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                        </svg>
+                    </span>
+                </a>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Back to Blog (top right) -->
+    <div class="back-to-blog-top">
+        <a href="/blog/" class="back-link">
+            <span>&lt;</span>
+            <span>BACK TO BLOG</span>
+        </a>
+    </div>
+
+    <!-- Blog Content -->
+    <article class="blog-post-content" id="main" data-post-slug="patterns-and-gotchas" data-post-title="Patterns and Gotchas: Teaching Your AI Partner">
+        <h1>Patterns and Gotchas: Teaching Your AI Partner</h1>
+<p>Every codebase has tribal knowledge—the patterns that work, the approaches that don&#39;t, the weird edge cases that burned someone three sprints ago. This knowledge usually lives in developers&#39; heads, surfacing only when someone&#39;s about to make a mistake.</p>
+<p>&quot;Oh, don&#39;t use setTimeout there—it&#39;ll keep the process alive.&quot;</p>
+<p>&quot;We tried that approach last month. It doesn&#39;t scale.&quot;</p>
+<p>&quot;Make sure you call .unref() on that timer or the tests will hang.&quot;</p>
+<p>Your AI assistant doesn&#39;t have access to this tribal knowledge. It suggests the obvious solution, not knowing that your team learned the hard way why that doesn&#39;t work here. You catch the mistake, explain why, and move on. Next session? The AI suggests the same thing again.</p>
+<p>What if your AI could actually learn from your team&#39;s experience?</p>
+<h2>The Pattern Problem</h2>
+<p>Patterns are the solutions that work well in your specific context. They&#39;re not universal best practices—they&#39;re the approaches your team has validated through real usage.</p>
+<p>Some examples:</p>
+<p><strong>Retry Pattern</strong>: &quot;When calling external APIs, use exponential backoff with jitter. Start at 100ms, max 3 retries, cap at 2 seconds.&quot;</p>
+<p><strong>Output Formatter Pattern</strong>: &quot;All CLI output goes through the dual formatter—human-readable to console, structured JSON to the context file.&quot;</p>
+<p><strong>Event Queue Pattern</strong>: &quot;Background syncs use the event queue with a 5-minute interval and 5-event threshold for batching.&quot;</p>
+<p>These patterns emerge from your codebase. They&#39;re proven. They&#39;re consistent. And they should inform how your AI assistant suggests solutions.</p>
+<h2>The Gotcha Problem</h2>
+<p>Gotchas are the inverse—the mistakes that look reasonable but cause problems. Every team accumulates these through painful experience:</p>
+<p><strong>Timer Gotcha</strong>: &quot;Node.js timers (setInterval, setTimeout) keep the event loop alive. Always call .unref() on timers in CLI tools, or the process won&#39;t exit.&quot;</p>
+<p><strong>Verbose Output Gotcha</strong>: &quot;Don&#39;t dump full context to the console. Users get overwhelmed. Use the formatter&#39;s truncate function.&quot;</p>
+<p><strong>Async Cleanup Gotcha</strong>: &quot;In tests, always await cleanup functions. Unhandled promises cause flaky test failures that are nearly impossible to debug.&quot;</p>
+<p>These gotchas cost hours when you hit them. They cost more hours when someone else hits them later because the knowledge wasn&#39;t captured.</p>
+<h2>How Ginko Captures Patterns and Gotchas</h2>
+<p>When you&#39;re working with ginko, pattern and gotcha capture happens naturally:</p>
+<h3>During Development</h3>
+<p>You solve a tricky problem. Instead of just moving on, you log it:</p>
+<pre><code class="language-bash">ginko log &quot;Fixed EventQueue timer hanging process. Root cause: setInterval
+without .unref() keeps Node event loop alive. Solution: timer.unref()
+allows clean exit. Reduced startup from 90s to 2s.&quot; --category=fix
+</code></pre>
+<p>Ginko extracts the pattern or gotcha automatically. The timer gotcha is now documented with context, cause, and solution.</p>
+<h3>Through Sprint Tasks</h3>
+<p>When you define sprint tasks, you can reference patterns and gotchas:</p>
+<pre><code class="language-markdown">### TASK-7: Optimize Event Queue
+
+Use the retry-pattern from src/utils/api-client.ts for resilient calls.
+Apply the output-formatter-pattern for dual output.
+
+Avoid the timer-unref-gotcha that causes process hang.
+Watch out for verbose-output issues.
+</code></pre>
+<p>When someone starts this task, ginko surfaces the relevant context:</p>
+<pre><code>Next up: TASK-7 - Optimize Event Queue (start)
+
+Sprint: Performance Sprint 45%
+  Apply: retry-pattern ★, output-formatter-pattern ◐
+  Avoid: 💡 timer-unref-gotcha, 💡 verbose-output-gotcha
+</code></pre>
+<p>The patterns tell you <em>what to do</em>. The gotchas tell you <em>what not to do</em>. Both come from your team&#39;s real experience.</p>
+<h2>Confidence Levels</h2>
+<p>Not all patterns are equally proven. Ginko tracks confidence based on usage:</p>
+<ul>
+<li><strong>★ High confidence</strong>: Pattern used successfully in 3+ places</li>
+<li><strong>◐ Medium confidence</strong>: Pattern used in 1-2 places, promising</li>
+<li><strong>○ Low confidence</strong>: Newly documented, needs validation</li>
+</ul>
+<p>Similarly, gotchas have severity levels:</p>
+<ul>
+<li><strong>🚨 Critical</strong>: Causes data loss or security issues</li>
+<li><strong>⚠️ High</strong>: Causes significant bugs or outages</li>
+<li><strong>💡 Medium/Low</strong>: Causes inconvenience or minor issues</li>
+</ul>
+<p>This helps you prioritize. A high-confidence pattern is safe to apply widely. A critical gotcha demands immediate attention.</p>
+<h2>Building Your Pattern Library</h2>
+<p>Start simple. You don&#39;t need to document everything upfront. Capture patterns as they prove valuable:</p>
+<h3>When You Solve a Recurring Problem</h3>
+<p>If you&#39;ve solved the same type of problem twice, it&#39;s a pattern:</p>
+<pre><code class="language-bash">ginko log &quot;API retry pattern: exponential backoff starting at 100ms,
+max 3 attempts, jitter to prevent thundering herd. Used in auth-client
+and data-sync.&quot; --category=insight
+</code></pre>
+<h3>When You Hit a Non-Obvious Bug</h3>
+<p>If the fix wasn&#39;t obvious, document it:</p>
+<pre><code class="language-bash">ginko log &quot;Gotcha: Next.js App Router caches fetch() by default.
+Add { cache: &#39;no-store&#39; } for dynamic data. Cost us 2 hours debugging
+stale data issues.&quot; --category=insight
+</code></pre>
+<h3>When You Make an Architecture Decision</h3>
+<p>Decisions are patterns waiting to happen:</p>
+<pre><code class="language-bash">ginko log &quot;Decision: Using cursor-based pagination over offset-based.
+Scales better with large datasets, consistent results during updates.
+Trade-off: slightly more complex client code.&quot; --category=decision
+</code></pre>
+<h2>Team Knowledge Amplification</h2>
+<p>The magic happens when patterns and gotchas flow across your team:</p>
+<p><strong>Monday</strong>: Alice hits a weird timer bug. Spends 2 hours debugging. Documents the gotcha.</p>
+<p><strong>Wednesday</strong>: Bob starts a related task. Ginko shows: &quot;Avoid: 💡 timer-unref-gotcha&quot;</p>
+<p><strong>Wednesday</strong>: Bob avoids 2 hours of debugging. Ships feature on time.</p>
+<p><strong>Next Month</strong>: New hire Carol sees the same gotcha surfaced during onboarding. The tribal knowledge transfers without a meeting.</p>
+<p>This is compound interest on documentation. Every gotcha documented saves time for everyone who comes after.</p>
+<h2>Practical Tips</h2>
+<p><strong>Keep it specific</strong>: &quot;Use retry logic&quot; is too vague. &quot;Exponential backoff, 100ms start, 3 max attempts, jitter&quot; is actionable.</p>
+<p><strong>Include the why</strong>: Patterns without rationale get ignored. Explain the trade-offs.</p>
+<p><strong>Reference the code</strong>: &quot;See src/utils/retry.ts for implementation&quot; makes patterns concrete.</p>
+<p><strong>Update when wrong</strong>: Patterns evolve. If you find a better approach, update the documentation.</p>
+<p><strong>Don&#39;t over-document</strong>: Not everything is a pattern. Focus on recurring solutions and painful gotchas.</p>
+<h2>Getting Started</h2>
+<pre><code class="language-bash"># Log a pattern you just discovered
+ginko log &quot;Pattern: [description with context and rationale]&quot; --category=insight
+
+# Log a gotcha you just hit
+ginko log &quot;Gotcha: [what happened, why, and how to avoid]&quot; --category=fix
+
+# See patterns for your current task
+ginko start  # Shows Apply: and Avoid: sections
+</code></pre>
+<p>Your AI assistant will never have the intuition that comes from hitting bugs at 2 AM. But with captured patterns and gotchas, it can at least benefit from the lessons your team has learned.</p>
+<hr>
+<p><em>Stop re-teaching your AI the same lessons. <a href="https://ginkoai.com">Ginko</a> captures patterns and gotchas so your whole team—human and AI—can learn from experience.</em></p>
+
+    </article>
+
+    <!-- End-of-Post CTA + Navigation Table -->
+    <section class="blog-cta-table" aria-label="Call to action and post navigation">
+        <div class="blog-cta-grid">
+            <!-- Navigation Row (at top) -->
+            <nav class="blog-nav-row" aria-label="Post navigation">
+                
+                <a href="/blog/measuring-ai-collaboration-roi/" class="blog-nav-cell nav-prev" rel="prev">
+                    <span class="nav-label"><span class="nav-arrow">&lt;</span> PREVIOUS</span>
+                    <span class="nav-title">Measuring AI Collaboration ROI</span>
+                </a>
+                
+                <a href="/blog/ai-development-without-chaos/" class="blog-nav-cell nav-next" rel="next">
+                    <span class="nav-label">NEXT <span class="nav-arrow">&gt;</span></span>
+                    <span class="nav-title">AI-Assisted Development Without the Chaos</span>
+                </a>
+            </nav>
+
+            <!-- CTA Content Row -->
+            <div class="blog-cta-content">
+                <h3 class="blog-cta-title">STOP THE AMNESIA</h3>
+                <p class="blog-cta-subtitle"><span class="text-scramble" data-words='["iykyk", "you know the pain", "context is everything", "memory matters", "never forget again"]'>iykyk</span></p>
+                <div class="terminal-inline terminal-copyable blog-cta-terminal" data-copy="npm install -g @ginkoai/cli">
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard" data-track-install data-install-method="npm" data-cta-location="blog-post">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                </div>
+                <div class="blog-cta-buttons">
+                    <a href="../../get-started.html" class="btn-hero btn-hero-primary" data-track-cta data-cta-location="blog-post">
+                        <span class="btn-hero-text">GET STARTED</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-dark">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                    <a href="https://docs.ginko.ai" class="btn-hero btn-hero-outline" data-track-docs data-link-location="blog-post">
+                        <span class="btn-hero-text">READ THE DOCS</span>
+                        <span class="btn-hero-arrow btn-hero-arrow-accent">
+                            <svg class="arrow-icon arrow-default" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                            <svg class="arrow-icon arrow-hover" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+                            </svg>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <a href="/" class="footer-logo">
+                    <img src="/ginko-logo.svg" alt="ginko" class="logo-image" height="48">
+                </a>
+                <p class="footer-tagline">Context that flows with you</p>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/developers.html">For Developers</a></li>
+                    <li><a href="/index.html#pricing">Pricing</a></li>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                    <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/teams.html">For Teams</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                    <li><a href="/privacy.html">Privacy</a></li>
+                    <li><a href="/terms.html">Terms</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                    <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                    <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy;2026 ginko. All rights reserved.</p>
+            <div class="footer-links">
+                <a href="/privacy.html">Privacy Policy</a>
+                <a href="/terms.html">Terms of Service</a>
+            </div>
+        </div>
+    </div>
+    <div class="footer-iykyg">
+        <img src="/iykyg-footer.svg" alt="if you know, you ginko" class="footer-iykyg-logo">
+    </div>
+</footer>
+
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="../../script.js"></script>
+    <script src="../../js/analytics.js"></script>
+</body>
+</html>

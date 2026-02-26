@@ -37,3 +37,32 @@ coverage/
 # Logs
 *.log
 npm-debug.log*
+
+# Test directories
+test-projects/
+.env*.local
+api/_lib/
+
+# Ginko local config (contains user-specific paths - ADR-037)
+.ginko/config.json
+.ginko/local.json
+.ginko/.temp/
+.ginko/state-cache.json
+.ginko/pending-updates.json
+
+# Ginko runtime state (local-only, changes frequently)
+.ginko/sync-state.json
+.ginko/user-progress.json
+.ginko/graph/config.json
+.ginko/dlq/
+.ginko/context/modules/
+.ginko/sprints/
+
+# Ginko session files (local-only, user-specific)
+.ginko/sessions/*/archive/
+.ginko/sessions/*/current*
+.ginko/sessions/*/insights-schedule.json
+.ginko/sessions/*/shown-tips.json
+
+# Claude Code local settings (user-specific permissions)
+.claude/settings.local.json

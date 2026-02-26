@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - Features Carousel (Bookended Rainbow)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-cream: #FCFBF1;
+            --color-yellow: #FDC400;
+            --color-orange: #FC9500;
+            --color-red: #FE4500;
+            --color-violet: #E00256;
+            --color-purple: #A70086;
+            --color-purple-black: #271D26;
+            --color-black: #0B0B0B;
+            --color-heading: #100D08;
+            --color-gray: #615F61;
+            --color-gray-light: #9A989A;
+
+            --font-heading: 'Anton', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --max-width: 800px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background: var(--color-cream);
+            color: var(--color-heading);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ============================================
+           BOOKENDED RAINBOW SECTION
+           ============================================ */
+        .features-section {
+            position: relative;
+            padding: 5rem 0 6rem;
+            min-height: 700px;
+            overflow: hidden;
+            background: var(--color-cream);
+        }
+
+        /* Left rainbow swoosh */
+        .rainbow-swoosh-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Right rainbow swoosh (mirrored) */
+        .rainbow-swoosh-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            transform: scaleX(-1);
+        }
+
+        .rainbow-swoosh-left svg,
+        .rainbow-swoosh-right svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Content container */
+        .features-container {
+            position: relative;
+            z-index: 1;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            color: var(--color-heading);
+            margin-bottom: 0.25rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: var(--color-gray);
+        }
+
+        /* Feature card */
+        .feature-card {
+            background: white;
+            border: 2px solid var(--color-black);
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-bg-number {
+            position: absolute;
+            bottom: -40px;
+            right: -10px;
+            font-family: var(--font-heading);
+            font-size: 260px;
+            line-height: 0.7;
+            pointer-events: none;
+            z-index: 0;
+            /* Striped retro effect */
+            background: repeating-linear-gradient(
+                to bottom,
+                var(--color-heading) 0px,
+                var(--color-heading) 8px,
+                transparent 8px,
+                transparent 16px
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.12;
+        }
+
+        /* Rainbow striped version */
+        .feature-bg-number--rainbow {
+            background: repeating-linear-gradient(
+                to bottom,
+                var(--color-yellow) 0px,
+                var(--color-yellow) 12px,
+                var(--color-orange) 12px,
+                var(--color-orange) 24px,
+                var(--color-red) 24px,
+                var(--color-red) 36px,
+                var(--color-violet) 36px,
+                var(--color-violet) 48px,
+                var(--color-purple) 48px,
+                var(--color-purple) 60px,
+                var(--color-purple-black) 60px,
+                var(--color-purple-black) 72px
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.2;
+        }
+
+        .feature-content {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 2rem;
+            align-items: start;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-icon-box {
+            width: 90px;
+            height: 90px;
+            border: 2px solid var(--color-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            position: relative;
+        }
+
+        .feature-icon-box::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: -5px;
+            bottom: -5px;
+            z-index: -1;
+        }
+
+        .feature-icon-box svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .feature-number-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-title {
+            font-family: var(--font-heading);
+            font-size: 2.25rem;
+            color: var(--color-heading);
+            line-height: 1.1;
+            margin-bottom: 0.25rem;
+        }
+
+        .feature-tagline {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-orange);
+            margin-bottom: 1rem;
+        }
+
+        .feature-description {
+            font-size: 0.95rem;
+            color: var(--color-gray);
+            line-height: 1.75;
+        }
+
+        /* Navigation */
+        .feature-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-arrow {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--color-black);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background: var(--color-black);
+            color: white;
+        }
+
+        .nav-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            opacity: 0.3;
+        }
+
+        .nav-dot:hover { opacity: 0.6; }
+        .nav-dot.active { transform: scale(1.4); opacity: 1; }
+
+        .nav-dot:nth-child(1) { background: var(--color-yellow); }
+        .nav-dot:nth-child(2) { background: var(--color-orange); }
+        .nav-dot:nth-child(3) { background: var(--color-red); }
+        .nav-dot:nth-child(4) { background: var(--color-violet); }
+        .nav-dot:nth-child(5) { background: var(--color-purple); }
+        .nav-dot:nth-child(6) { background: var(--color-purple-black); }
+        .nav-dot:nth-child(7) { background: var(--color-black); }
+
+        .nav-counter {
+            font-size: 0.85rem;
+            color: var(--color-gray);
+        }
+        .nav-counter .current {
+            font-weight: 600;
+            color: var(--color-heading);
+        }
+
+        /* Feature colors */
+        [data-feature="1"] .feature-icon-box::before { background: var(--color-yellow); }
+        [data-feature="1"] .feature-icon-box svg { fill: var(--color-yellow); }
+
+        [data-feature="4"] .feature-icon-box::before { background: var(--color-violet); }
+        [data-feature="4"] .feature-icon-box svg { fill: var(--color-violet); }
+
+        /* Demo labels */
+        .demo-label {
+            position: absolute;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-black);
+            color: var(--color-cream);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 0.5rem 1rem;
+            z-index: 10;
+        }
+
+        .demo-spacer {
+            height: 2rem;
+            background: white;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .rainbow-swoosh-left,
+            .rainbow-swoosh-right {
+                width: 150px;
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .rainbow-swoosh-left,
+            .rainbow-swoosh-right {
+                display: none;
+            }
+
+            .feature-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================
+         FEATURE 1 WITH BOOKENDED RAINBOWS
+         ============================================ -->
+    <section class="features-section" data-feature="1">
+        <span class="demo-label">Monochrome Striped Number</span>
+
+        <!-- Left Rainbow Swoosh -->
+        <div class="rainbow-swoosh-left">
+            <svg viewBox="0 0 300 700" preserveAspectRatio="xMinYMin slice" fill="none">
+                <!-- Yellow (outermost) -->
+                <path d="M-20,0 L-20,350 Q-20,500 80,550 Q180,600 180,700"
+                      stroke="#FDC400" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Orange -->
+                <path d="M0,0 L0,340 Q0,480 90,530 Q160,570 160,700"
+                      stroke="#FC9500" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Red -->
+                <path d="M20,0 L20,330 Q20,460 100,510 Q140,540 140,700"
+                      stroke="#FE4500" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Violet -->
+                <path d="M40,0 L40,320 Q40,440 110,490 Q120,510 120,700"
+                      stroke="#E00256" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Purple -->
+                <path d="M60,0 L60,310 Q60,420 100,470 Q100,490 100,700"
+                      stroke="#A70086" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Purple-black (innermost) -->
+                <path d="M80,0 L80,300 Q80,400 80,450 Q80,470 80,700"
+                      stroke="#271D26" stroke-width="18" stroke-linecap="round" fill="none"/>
+            </svg>
+        </div>
+
+        <!-- Right Rainbow Swoosh (mirrored via CSS) -->
+        <div class="rainbow-swoosh-right">
+            <svg viewBox="0 0 300 700" preserveAspectRatio="xMinYMin slice" fill="none">
+                <!-- Yellow (outermost) -->
+                <path d="M-20,0 L-20,350 Q-20,500 80,550 Q180,600 180,700"
+                      stroke="#FDC400" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Orange -->
+                <path d="M0,0 L0,340 Q0,480 90,530 Q160,570 160,700"
+                      stroke="#FC9500" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Red -->
+                <path d="M20,0 L20,330 Q20,460 100,510 Q140,540 140,700"
+                      stroke="#FE4500" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Violet -->
+                <path d="M40,0 L40,320 Q40,440 110,490 Q120,510 120,700"
+                      stroke="#E00256" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Purple -->
+                <path d="M60,0 L60,310 Q60,420 100,470 Q100,490 100,700"
+                      stroke="#A70086" stroke-width="18" stroke-linecap="round" fill="none"/>
+                <!-- Purple-black (innermost) -->
+                <path d="M80,0 L80,300 Q80,400 80,450 Q80,470 80,700"
+                      stroke="#271D26" stroke-width="18" stroke-linecap="round" fill="none"/>
+            </svg>
+        </div>
+
+        <!-- Content -->
+        <div class="features-container">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-bg-number">01</span>
+                <div class="feature-content">
+                    <div class="feature-icon-box">
+                        <svg viewBox="0 0 48 48" stroke="#100D08" stroke-width="2.5" stroke-linejoin="round">
+                            <polygon points="16,8 40,24 16,40"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-number-badge">Feature 01 / 07</span>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics to your AI partner—just straight back to flow in 30 seconds or less.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow">‹</button>
+                    <button class="nav-arrow">›</button>
+                </div>
+                <div class="nav-dots">
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+                <div class="nav-counter">
+                    <span class="current">01</span> / 07
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="demo-spacer"></div>
+
+    <!-- ============================================
+         ALTERNATE: Tighter curves, more dramatic
+         ============================================ -->
+    <section class="features-section" data-feature="4" style="background: var(--color-cream);">
+        <span class="demo-label">Rainbow Striped Number</span>
+
+        <!-- Left Rainbow - tighter curl -->
+        <div class="rainbow-swoosh-left">
+            <svg viewBox="0 0 300 700" preserveAspectRatio="xMinYMin slice" fill="none">
+                <!-- More dramatic J-curve -->
+                <path d="M-30,0 L-30,280 Q-30,450 120,520 Q220,570 220,700"
+                      stroke="#FDC400" stroke-width="16" stroke-linecap="round"/>
+                <path d="M-10,0 L-10,290 Q-10,440 110,500 Q190,545 190,700"
+                      stroke="#FC9500" stroke-width="16" stroke-linecap="round"/>
+                <path d="M10,0 L10,300 Q10,430 100,480 Q160,520 160,700"
+                      stroke="#FE4500" stroke-width="16" stroke-linecap="round"/>
+                <path d="M30,0 L30,310 Q30,420 90,460 Q130,495 130,700"
+                      stroke="#E00256" stroke-width="16" stroke-linecap="round"/>
+                <path d="M50,0 L50,320 Q50,410 80,440 Q100,470 100,700"
+                      stroke="#A70086" stroke-width="16" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Right Rainbow (mirrored) -->
+        <div class="rainbow-swoosh-right">
+            <svg viewBox="0 0 300 700" preserveAspectRatio="xMinYMin slice" fill="none">
+                <path d="M-30,0 L-30,280 Q-30,450 120,520 Q220,570 220,700"
+                      stroke="#FDC400" stroke-width="16" stroke-linecap="round"/>
+                <path d="M-10,0 L-10,290 Q-10,440 110,500 Q190,545 190,700"
+                      stroke="#FC9500" stroke-width="16" stroke-linecap="round"/>
+                <path d="M10,0 L10,300 Q10,430 100,480 Q160,520 160,700"
+                      stroke="#FE4500" stroke-width="16" stroke-linecap="round"/>
+                <path d="M30,0 L30,310 Q30,420 90,460 Q130,495 130,700"
+                      stroke="#E00256" stroke-width="16" stroke-linecap="round"/>
+                <path d="M50,0 L50,320 Q50,410 80,440 Q100,470 100,700"
+                      stroke="#A70086" stroke-width="16" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div class="features-container">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-bg-number feature-bg-number--rainbow">04</span>
+                <div class="feature-content">
+                    <div class="feature-icon-box">
+                        <svg viewBox="0 0 48 48" fill="none" stroke="#100D08" stroke-width="2.5" stroke-linecap="round">
+                            <path d="M6,24 Q14,8 24,24 Q34,40 42,24"/>
+                            <circle cx="24" cy="24" r="4" fill="#E00256"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-number-badge">Feature 04 / 07</span>
+                        <h3 class="feature-title">ginko vibecheck</h3>
+                        <p class="feature-tagline">Take A Beat</p>
+                        <p class="feature-description">
+                            A built-in behavior that gives you and your AI partner a blame-free moment to challenge approach and pivot back to flow. Simply call "vibecheck" whenever things seem off.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow">‹</button>
+                    <button class="nav-arrow">›</button>
+                </div>
+                <div class="nav-dots">
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+                <div class="nav-counter">
+                    <span class="current">04</span> / 07
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="demo-spacer"></div>
+
+    <!-- ============================================
+         ALTERNATE: S-curve flowing through
+         ============================================ -->
+    <section class="features-section" style="background: var(--color-cream); min-height: 750px;">
+        <span class="demo-label">Alternate: S-Curve Flow-Through</span>
+
+        <!-- Left side S-curve coming from top -->
+        <div class="rainbow-swoosh-left" style="width: 400px;">
+            <svg viewBox="0 0 400 750" preserveAspectRatio="xMinYMin slice" fill="none">
+                <!-- S-curve pattern -->
+                <path d="M-40,0 C-40,200 200,250 200,375 C200,500 -40,550 -40,750"
+                      stroke="#FDC400" stroke-width="14" stroke-linecap="round"/>
+                <path d="M-20,0 C-20,200 180,250 180,375 C180,500 -20,550 -20,750"
+                      stroke="#FC9500" stroke-width="14" stroke-linecap="round"/>
+                <path d="M0,0 C0,200 160,250 160,375 C160,500 0,550 0,750"
+                      stroke="#FE4500" stroke-width="14" stroke-linecap="round"/>
+                <path d="M20,0 C20,200 140,250 140,375 C140,500 20,550 20,750"
+                      stroke="#E00256" stroke-width="14" stroke-linecap="round"/>
+                <path d="M40,0 C40,200 120,250 120,375 C120,500 40,550 40,750"
+                      stroke="#A70086" stroke-width="14" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <!-- Right side S-curve (mirrored) -->
+        <div class="rainbow-swoosh-right" style="width: 400px;">
+            <svg viewBox="0 0 400 750" preserveAspectRatio="xMinYMin slice" fill="none">
+                <path d="M-40,0 C-40,200 200,250 200,375 C200,500 -40,550 -40,750"
+                      stroke="#FDC400" stroke-width="14" stroke-linecap="round"/>
+                <path d="M-20,0 C-20,200 180,250 180,375 C180,500 -20,550 -20,750"
+                      stroke="#FC9500" stroke-width="14" stroke-linecap="round"/>
+                <path d="M0,0 C0,200 160,250 160,375 C160,500 0,550 0,750"
+                      stroke="#FE4500" stroke-width="14" stroke-linecap="round"/>
+                <path d="M20,0 C20,200 140,250 140,375 C140,500 20,550 20,750"
+                      stroke="#E00256" stroke-width="14" stroke-linecap="round"/>
+                <path d="M40,0 C40,200 120,250 120,375 C120,500 40,550 40,750"
+                      stroke="#A70086" stroke-width="14" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div class="features-container">
+            <div class="section-header">
+                <h2 class="section-title">HOW GINKO WORKS</h2>
+                <p class="section-subtitle">Seven features that transform AI collaboration</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-bg-number">01</span>
+                <div class="feature-content">
+                    <div class="feature-icon-box" style="--shadow-color: var(--color-yellow);">
+                        <svg viewBox="0 0 48 48" stroke="#100D08" stroke-width="2.5" stroke-linejoin="round" fill="#FDC400">
+                            <polygon points="16,8 40,24 16,40"/>
+                        </svg>
+                    </div>
+                    <div class="feature-text">
+                        <span class="feature-number-badge">Feature 01 / 07</span>
+                        <h3 class="feature-title">ginko start</h3>
+                        <p class="feature-tagline">Ready Player YOU</p>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and everything important from your last session. No more re-explaining the basics to your AI partner—just straight back to flow in 30 seconds or less.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-nav">
+                <div class="nav-arrows">
+                    <button class="nav-arrow">‹</button>
+                    <button class="nav-arrow">›</button>
+                </div>
+                <div class="nav-dots">
+                    <button class="nav-dot active"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                    <button class="nav-dot"></button>
+                </div>
+                <div class="nav-counter">
+                    <span class="current">01</span> / 07
+                </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

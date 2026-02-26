@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NPM Button Options - Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cream: #FAF8F0;
+            --charcoal: #0B0B0B;
+            --yellow: #FDC400;
+            --orange: #FC9500;
+            --gray-border: #615F61;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--cream);
+            padding: 2rem;
+        }
+
+        h1 {
+            font-family: 'Anton', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--charcoal);
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .option-section {
+            margin-bottom: 3rem;
+        }
+
+        .option-label {
+            font-family: 'Anton', sans-serif;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--charcoal);
+        }
+
+        .option-desc {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        /* Simulated Nav Bar */
+        .mock-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--cream);
+            padding: 1rem 1.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .mock-logo {
+            font-family: 'Anton', sans-serif;
+            font-size: 1.5rem;
+            color: var(--charcoal);
+        }
+
+        .mock-links {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--charcoal);
+        }
+
+        .mock-links span {
+            opacity: 0.7;
+        }
+
+        /* Current (clipped) */
+        .npm-current {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            background: var(--charcoal);
+            border: 1px solid var(--gray-border);
+            padding: 0.625rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .npm-current .prompt { color: var(--orange); }
+        .npm-current .cmd { color: var(--yellow); }
+        .npm-current .copy { color: #888; }
+
+        /* Option A: Full command inline */
+        .npm-option-a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: var(--charcoal);
+            border: 1px solid var(--gray-border);
+            padding: 0.625rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .npm-option-a .prompt { color: var(--orange); }
+        .npm-option-a .cmd { color: var(--yellow); }
+        .npm-option-a .copy { color: #888; }
+
+        /* Option B: Two-line stacked */
+        .npm-option-b {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: var(--charcoal);
+            border: 1px solid var(--gray-border);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            line-height: 1.4;
+            position: relative;
+        }
+
+        .npm-option-b .line1 {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .npm-option-b .line2 {
+            padding-left: 1rem;
+        }
+
+        .npm-option-b .prompt { color: var(--orange); }
+        .npm-option-b .cmd { color: var(--yellow); }
+        .npm-option-b .pkg { color: var(--yellow); }
+        .npm-option-b .copy {
+            color: #888;
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Comparison grid */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid #ddd;
+        }
+
+        .comparison-item {
+            text-align: center;
+        }
+
+        .comparison-item h3 {
+            font-family: 'Anton', sans-serif;
+            margin-bottom: 1rem;
+        }
+
+        .pros-cons {
+            text-align: left;
+            font-size: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .pros-cons dt {
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .pros-cons dd {
+            color: #666;
+            margin-left: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+        .badge-current { background: #eee; color: #666; }
+        .badge-new { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>NPM Button Options</h1>
+    <p class="subtitle">Comparing full command visibility in the nav</p>
+
+    <!-- Current (for reference) -->
+    <div class="option-section">
+        <div class="option-label">Current <span class="badge badge-current">Clipped</span></div>
+        <p class="option-desc">Shows package name only - doesn't indicate it's an npm install command</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-current">
+                <span class="prompt">$</span>
+                <span class="cmd">@ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option A -->
+    <div class="option-section">
+        <div class="option-label">Option A: Full Command Inline <span class="badge badge-new">Recommended</span></div>
+        <p class="option-desc">Complete npm command visible - slightly smaller font (13px vs 14px)</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-option-a">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option B -->
+    <div class="option-section">
+        <div class="option-label">Option B: Two-Line Stack</div>
+        <p class="option-desc">Stacked layout - more vertical space, distinctive terminal look</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-option-b">
+                <div class="line1">
+                    <span class="prompt">$</span>
+                    <span class="cmd">npm i -g</span>
+                </div>
+                <div class="line2">
+                    <span class="pkg">@ginkoai/cli</span>
+                </div>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side by side comparison -->
+    <div class="comparison">
+        <div class="comparison-item">
+            <h3>Option A</h3>
+            <div class="npm-option-a">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+            <dl class="pros-cons">
+                <dt>Pros</dt>
+                <dd>+ Clean single line</dd>
+                <dd>+ Familiar terminal pattern</dd>
+                <dd>+ Minimal height change</dd>
+                <dt>Cons</dt>
+                <dd>- Slightly smaller text</dd>
+                <dd>- Wider button</dd>
+            </dl>
+        </div>
+        <div class="comparison-item">
+            <h3>Option B</h3>
+            <div class="npm-option-b">
+                <div class="line1">
+                    <span class="prompt">$</span>
+                    <span class="cmd">npm i -g</span>
+                </div>
+                <div class="line2">
+                    <span class="pkg">@ginkoai/cli</span>
+                </div>
+                <span class="copy">⧉</span>
+            </div>
+            <dl class="pros-cons">
+                <dt>Pros</dt>
+                <dd>+ Distinctive look</dd>
+                <dd>+ Emphasizes package name</dd>
+                <dd>+ More compact width</dd>
+                <dt>Cons</dt>
+                <dd>- Taller button</dd>
+                <dd>- Less conventional</dd>
+            </dl>
+        </div>
+    </div>
+</body>
+</html>

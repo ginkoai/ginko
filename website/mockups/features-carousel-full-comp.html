@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features Carousel - Full Comp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Ready Player One font */
+        @font-face {
+            font-family: 'Ready Player One';
+            src: url('../fonts/ReadyPlayerOne-rwzx.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Sunset palette */
+            --sunset-yellow: #FDC400;
+            --sunset-orange: #FC9500;
+            --sunset-red: #FE4500;
+            --sunset-magenta: #E00256;
+            --sunset-purple: #A70086;
+            --sunset-dark: #271D26;
+
+            --color-bg: #FDF9F1;
+            --color-text: #100D08;
+            --color-text-secondary: #5C5C5C;
+        }
+
+        body {
+            background: var(--color-bg);
+            min-height: 100vh;
+            padding: 40px 20px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        /* Subtle dot/grain pattern overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.4;
+            background-image: radial-gradient(circle, #c9c4b8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .features-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section-header h2 {
+            font-family: 'Anton', sans-serif;
+            font-size: 56px;
+            font-weight: 400;
+            color: var(--color-text);
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 18px;
+            color: var(--color-text-secondary);
+            margin-bottom: 56px;
+        }
+
+        .carousel-wrapper {
+            position: relative;
+            padding: 80px 0;
+            overflow: hidden; /* Contain the swooshes */
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Left swoosh - diagonal entry, smooth curve */
+        .swoosh-left {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            height: 450px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Right swoosh - mirrored */
+        .swoosh-right {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%) scaleX(-1);
+            width: 280px;
+            height: 450px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .feature-card {
+            position: relative;
+            z-index: 2;
+            background: #FFFDF9;
+            border: 2px solid var(--color-text);
+            padding: 56px 64px;
+            max-width: 880px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .card-layout {
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            gap: 36px;
+            align-items: start;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--color-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFFDF9;
+        }
+
+        .feature-content {
+            padding-right: 100px;
+        }
+
+        .feature-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+        }
+
+        .feature-title {
+            font-family: 'Anton', sans-serif;
+            font-size: 48px;
+            font-weight: 400;
+            color: var(--color-text);
+            text-transform: lowercase;
+            margin-bottom: 6px;
+            letter-spacing: 0.01em;
+            line-height: 1;
+        }
+
+        .feature-tagline {
+            font-family: 'Ready Player One', 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: normal;
+            color: var(--sunset-red);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 20px;
+        }
+
+        .feature-description {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--color-text-secondary);
+            max-width: 520px;
+        }
+
+        .card-number {
+            position: absolute;
+            bottom: 16px;
+            right: 32px;
+            font-family: 'Anton', sans-serif;
+            font-size: 160px;
+            color: rgba(16, 13, 8, 0.04);
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .carousel-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 880px;
+            margin: 32px auto 0;
+            padding: 0;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-arrow {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--color-text);
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-family: system-ui;
+            transition: all 0.15s ease;
+            color: var(--color-text);
+        }
+
+        .nav-arrow:hover {
+            background: var(--color-text);
+            color: var(--color-bg);
+        }
+
+        .dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .dot:hover {
+            transform: scale(1.2);
+        }
+
+        .dot:nth-child(1) { background: var(--sunset-yellow); }
+        .dot:nth-child(2) { background: var(--sunset-orange); }
+        .dot:nth-child(3) { background: var(--sunset-red); }
+        .dot:nth-child(4) { background: var(--sunset-magenta); }
+        .dot:nth-child(5) { background: var(--sunset-purple); }
+        .dot:nth-child(6) { background: var(--sunset-dark); opacity: 0.7; }
+        .dot:nth-child(7) { background: var(--sunset-dark); opacity: 0.4; }
+
+        .page-indicator {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .page-indicator .current {
+            color: var(--color-text);
+            font-weight: 700;
+        }
+
+        .rainbow-divider {
+            height: 8px;
+            margin-top: 80px;
+            background: linear-gradient(
+                to right,
+                var(--sunset-yellow) 0%,
+                var(--sunset-yellow) 16.66%,
+                var(--sunset-orange) 16.66%,
+                var(--sunset-orange) 33.33%,
+                var(--sunset-red) 33.33%,
+                var(--sunset-red) 50%,
+                var(--sunset-magenta) 50%,
+                var(--sunset-magenta) 66.66%,
+                var(--sunset-purple) 66.66%,
+                var(--sunset-purple) 83.33%,
+                var(--sunset-dark) 83.33%,
+                var(--sunset-dark) 100%
+            );
+        }
+    </style>
+</head>
+<body>
+    <section class="features-section">
+        <div class="section-header">
+            <h2>How Ginko Works</h2>
+            <p>Seven features that transform AI collaboration</p>
+        </div>
+
+        <div class="carousel-wrapper">
+            <!-- Left Swoosh: 70s style - diagonal entry, smooth curve to horizontal -->
+            <svg class="swoosh-left" viewBox="0 0 280 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Stripe 1 - Yellow (innermost) -->
+                <path d="M 20 0 C 20 120, 80 200, 280 260" stroke="#FDC400" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <!-- Stripe 2 - Orange -->
+                <path d="M 40 0 C 40 130, 100 215, 280 280" stroke="#FC9500" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <!-- Stripe 3 - Red -->
+                <path d="M 60 0 C 60 140, 120 230, 280 300" stroke="#FE4500" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <!-- Stripe 4 - Magenta -->
+                <path d="M 80 0 C 80 150, 140 245, 280 320" stroke="#E00256" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <!-- Stripe 5 - Purple -->
+                <path d="M 100 0 C 100 160, 160 260, 280 340" stroke="#A70086" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <!-- Stripe 6 - Dark (outermost) -->
+                <path d="M 120 0 C 120 170, 180 275, 280 360" stroke="#271D26" stroke-width="12" stroke-linecap="round" fill="none"/>
+            </svg>
+
+            <!-- Right Swoosh (CSS handles the mirror) -->
+            <svg class="swoosh-right" viewBox="0 0 280 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 20 0 C 20 120, 80 200, 280 260" stroke="#FDC400" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <path d="M 40 0 C 40 130, 100 215, 280 280" stroke="#FC9500" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <path d="M 60 0 C 60 140, 120 230, 280 300" stroke="#FE4500" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <path d="M 80 0 C 80 150, 140 245, 280 320" stroke="#E00256" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <path d="M 100 0 C 100 160, 160 260, 280 340" stroke="#A70086" stroke-width="12" stroke-linecap="round" fill="none"/>
+                <path d="M 120 0 C 120 170, 180 275, 280 360" stroke="#271D26" stroke-width="12" stroke-linecap="round" fill="none"/>
+            </svg>
+
+            <div class="feature-card">
+                <div class="card-layout">
+                    <div class="feature-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                            <path d="M8 6 L26 16 L8 26 Z" fill="#FDC400"/>
+                        </svg>
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-label">Feature 01 / 07</div>
+                        <h3 class="feature-title">ginko start</h3>
+                        <div class="feature-tagline">Ready Player You</div>
+                        <p class="feature-description">
+                            Loads your session context with tasks, goals, knowledge, and
+                            everything important from your last session. No more re-explaining
+                            the basics to your AI partner—just straight back to flow in 30
+                            seconds or less.
+                        </p>
+                    </div>
+                </div>
+                <div class="card-number">01</div>
+            </div>
+        </div>
+
+        <div class="carousel-controls">
+            <div class="nav-arrows">
+                <button class="nav-arrow">&#8249;</button>
+                <button class="nav-arrow">&#8250;</button>
+            </div>
+            <div class="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="page-indicator">
+                <span class="current">01</span> / 07
+            </div>
+        </div>
+
+        <div class="rainbow-divider"></div>
+    </section>
+</body>
+</html>

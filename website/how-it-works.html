@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ginko - How It Works</title>
+    <meta name="description" content="Learn how ginko preserves AI context using git-native session management. Event-based loading, session handoffs, and pattern capture.">
+    <meta name="theme-color" content="#FAF7F0">
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://www.googletagmanager.com">
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="ginko-logo.svg" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" as="style">
+
+    <!-- Critical CSS -->
+    <link rel="stylesheet" href="styles.css?v=rebrand-2026">
+
+    <!-- Optimized font loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Google Analytics - deferred to not block rendering -->
+    <script defer src="https://www.googletagmanager.com/gtag/js?id=G-6733RPZ8RN"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-6733RPZ8RN');
+    </script>
+
+    <!-- Page-specific styles -->
+    <style>
+        /* Graph section overrides */
+        .graph-overview {
+            align-items: start !important;
+        }
+        .graph-overview .graph-visual {
+            border: none !important;
+            padding: 0 !important;
+            background: transparent !important;
+        }
+        .graph-overview .context-graph {
+            width: 100% !important;
+            max-width: 700px !important;
+            margin: -120px 0 0 0 !important;
+        }
+
+        /* Workflow steps - horizontal layout with number on left */
+        .workflow-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .workflow-step {
+            position: relative;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: var(--space-6);
+            padding: var(--space-6);
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+        }
+
+        .workflow-step .step-number {
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-bold);
+            background-color: var(--color-accent);
+            color: #0A0A0A;
+            border-radius: 50%;
+        }
+
+        .workflow-step .step-content {
+            flex: 1;
+        }
+
+        .workflow-step .step-title {
+            font-family: var(--font-mono);
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--space-2);
+        }
+
+        .workflow-step .step-description {
+            color: var(--color-text-secondary);
+            margin: 0;
+        }
+
+        @media (max-width: 480px) {
+            .workflow-step {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+
+        /* Core Concepts - 2x2 grid layout */
+        .features,
+        .features .container {
+            overflow: visible !important;
+        }
+
+        .features .features-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 0 !important;
+            border: 1px solid var(--color-border) !important;
+            position: relative !important;
+            overflow: visible !important;
+        }
+
+        .features .features-grid .feature-card-large {
+            border: none !important;
+            border-right: 1px solid var(--color-border) !important;
+            border-bottom: 1px solid var(--color-border) !important;
+            border-radius: 0 !important;
+            background: var(--color-surface) !important;
+        }
+
+        .features .features-grid .feature-card-large:nth-child(2n) {
+            border-right: none !important;
+        }
+
+        .features .features-grid .feature-card-large:nth-child(n+3) {
+            border-bottom: none !important;
+        }
+
+        .features .features-grid .feature-card-large .corner-bracket {
+            display: none !important;
+        }
+
+        /* Disable ALL global bracket styling for this section */
+        .features .features-grid::before,
+        .features .features-grid::after,
+        .features .features-grid > *::before,
+        .features .features-grid > *::after {
+            display: none !important;
+        }
+
+        /* Simple wrapper */
+        .concepts-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        /* All bracket/junction markers - simple positioned elements */
+        .concepts-marker {
+            position: absolute !important;
+            width: var(--bracket-size) !important;
+            height: var(--bracket-size) !important;
+            pointer-events: none !important;
+            z-index: 100 !important;
+        }
+
+        .concepts-marker::before,
+        .concepts-marker::after {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            background: var(--color-accent) !important;
+        }
+
+        /* Corners - position and draw both lines */
+        .concepts-marker-tl { top: 0 !important; left: 0 !important; }
+        .concepts-marker-tl::before { top: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-tl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: var(--bracket-size) !important; }
+
+        .concepts-marker-tr { top: 0 !important; right: 0 !important; }
+        .concepts-marker-tr::before { top: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-tr::after { top: 0 !important; left: calc(var(--bracket-size) - 1px) !important; width: 1px !important; height: var(--bracket-size) !important; }
+
+        .concepts-marker-bl { bottom: 0 !important; left: 0 !important; }
+        .concepts-marker-bl::before { bottom: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-bl::after { top: 0 !important; left: 0 !important; width: 1px !important; height: var(--bracket-size) !important; }
+
+        .concepts-marker-br { bottom: 0 !important; right: 0 !important; }
+        .concepts-marker-br::before { bottom: 0 !important; left: 0 !important; width: var(--bracket-size) !important; height: 1px !important; }
+        .concepts-marker-br::after { top: 0 !important; left: calc(var(--bracket-size) - 1px) !important; width: 1px !important; height: var(--bracket-size) !important; }
+
+        /* Edge junctions - double width for proper T-junction shape */
+        /* Top ┬ - horizontal line with vertical going down */
+        .concepts-marker-top {
+            top: 0 !important;
+            left: calc(50% - var(--bracket-size)) !important;
+            width: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 100% 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 50% 0 / 1px 100% no-repeat !important;
+        }
+        .concepts-marker-top::before, .concepts-marker-top::after { display: none !important; }
+
+        /* Bottom ┴ - horizontal line with vertical going up */
+        .concepts-marker-bottom {
+            bottom: 0 !important;
+            left: calc(50% - var(--bracket-size)) !important;
+            width: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / 100% 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 50% 0 / 1px 100% no-repeat !important;
+        }
+        .concepts-marker-bottom::before, .concepts-marker-bottom::after { display: none !important; }
+
+        /* Left ├ - vertical line with horizontal going right */
+        .concepts-marker-left {
+            top: calc(50% - var(--bracket-size)) !important;
+            left: 0 !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
+        }
+        .concepts-marker-left::before, .concepts-marker-left::after { display: none !important; }
+
+        /* Right ┤ - vertical line with horizontal going left */
+        .concepts-marker-right {
+            top: calc(50% - var(--bracket-size)) !important;
+            right: 0 !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
+        }
+        .concepts-marker-right::before, .concepts-marker-right::after { display: none !important; }
+
+        /* Center ┼ - cross junction, double size both directions */
+        .concepts-marker-center {
+            top: calc(50% - var(--bracket-size)) !important;
+            left: calc(50% - var(--bracket-size)) !important;
+            width: calc(var(--bracket-size) * 2) !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 50% 0 / 1px 100% no-repeat !important;
+        }
+        .concepts-marker-center::before, .concepts-marker-center::after { display: none !important; }
+
+        /* ============================================
+           Graph Features - Clean rebuild
+           ============================================ */
+        .graph-features {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0 !important;
+            border: 1px solid var(--color-border) !important;
+            position: relative !important;
+            overflow: visible !important;
+            align-self: start !important;
+            height: fit-content !important;
+        }
+
+        .graph-feature {
+            position: relative !important;
+            border: none !important;
+            border-bottom: 1px solid var(--color-border) !important;
+            border-radius: 0 !important;
+            background: var(--color-surface) !important;
+            padding: var(--space-6) !important;
+        }
+
+        .graph-feature:last-child {
+            border-bottom: none !important;
+        }
+
+        .graph-feature .corner-bracket {
+            display: none !important;
+        }
+
+        /* Disable all pseudo-elements */
+        .graph-features::before, .graph-features::after,
+        .graph-feature::before, .graph-feature::after {
+            display: none !important;
+        }
+
+        /* Corner markers for container */
+        .graph-marker {
+            position: absolute !important;
+            width: var(--bracket-size) !important;
+            height: var(--bracket-size) !important;
+            pointer-events: none !important;
+            z-index: 100 !important;
+        }
+
+        .graph-marker::before, .graph-marker::after {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            background: var(--color-accent) !important;
+        }
+
+        .graph-marker-tl { top: -1px !important; left: -1px !important; }
+        .graph-marker-tl::before { top: 0; left: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-tl::after { top: 0; left: 0; width: 1px; height: var(--bracket-size); }
+
+        .graph-marker-tr { top: -1px !important; right: -1px !important; }
+        .graph-marker-tr::before { top: 0; right: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-tr::after { top: 0; right: 0; width: 1px; height: var(--bracket-size); }
+
+        .graph-marker-bl { bottom: -1px !important; left: -1px !important; }
+        .graph-marker-bl::before { bottom: 0; left: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-bl::after { bottom: 0; left: 0; width: 1px; height: var(--bracket-size); }
+
+        .graph-marker-br { bottom: -1px !important; right: -1px !important; }
+        .graph-marker-br::before { bottom: 0; right: 0; width: var(--bracket-size); height: 1px; }
+        .graph-marker-br::after { bottom: 0; right: 0; width: 1px; height: var(--bracket-size); }
+
+        /* Row junction markers - double height so vertical extends up and down */
+        .graph-junction {
+            position: absolute !important;
+            bottom: calc(-1 * var(--bracket-size)) !important;
+            width: var(--bracket-size) !important;
+            height: calc(var(--bracket-size) * 2) !important;
+            pointer-events: none !important;
+            z-index: 100 !important;
+        }
+
+        /* Left T-junction (├) - vertical line on left, horizontal extends right */
+        .graph-junction-left {
+            left: 0 !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
+        }
+
+        /* Right T-junction (┤) - vertical line on right, horizontal extends left */
+        .graph-junction-right {
+            right: 0 !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 50% / 100% 1px no-repeat !important;
+        }
+
+        /* Integrations - connected card system with outer brackets */
+        section.features:has(.problem-grid) .problem-grid {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 0 !important;
+            border: 1px solid var(--color-border) !important;
+            border-radius: 0 !important;
+            position: relative !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+
+        section.features:has(.problem-grid) .problem-card {
+            border: none !important;
+            border-right: 1px solid var(--color-border) !important;
+            border-radius: 0 !important;
+            background: var(--color-surface) !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
+
+        section.features:has(.problem-grid) .problem-card:last-child {
+            border-right: none !important;
+        }
+
+        section.features:has(.problem-grid) .problem-card .corner-bracket {
+            display: none !important;
+        }
+
+        /* Outer corner brackets for Integrations */
+        section.features:has(.problem-grid) .problem-grid::before {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            top: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        section.features:has(.problem-grid) .problem-grid::after {
+            content: '' !important;
+            display: block !important;
+            position: absolute !important;
+            bottom: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            background:
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 0 0 / 1px 100% no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 100% / var(--card-bracket-size, 12px) 1px no-repeat,
+                linear-gradient(var(--color-accent), var(--color-accent)) 100% 0 / 1px 100% no-repeat !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        /* Graph example terminal - fix corner brackets */
+        .graph-example .terminal-window {
+            border-radius: 0 !important;
+            overflow: visible !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket {
+            display: block !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.top-left {
+            top: -1px !important;
+            left: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.top-right {
+            top: -1px !important;
+            right: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.bottom-left {
+            bottom: -1px !important;
+            left: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        .graph-example .terminal-window .corner-bracket.bottom-right {
+            bottom: -1px !important;
+            right: -1px !important;
+            border-radius: 0 !important;
+        }
+
+        /* CTA Section - centered stacked layout */
+        .cta .cta-content {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            text-align: center !important;
+        }
+
+        .cta .cta-title {
+            text-align: center !important;
+            width: 100% !important;
+        }
+
+        .cta .cta-subtitle {
+            text-align: center !important;
+            white-space: nowrap !important;
+            margin-bottom: var(--space-4) !important;
+        }
+
+        .cta .terminal-inline-cta {
+            margin: var(--space-4) auto !important;
+        }
+
+        .cta .cta-buttons {
+            justify-content: center !important;
+            width: 100% !important;
+        }
+
+        /* Architecture section - enable corner brackets on arch-card */
+        .arch-card {
+            position: relative !important;
+            overflow: visible !important;
+            border-radius: 0 !important;
+        }
+
+        .arch-card .corner-bracket {
+            display: block !important;
+            position: absolute !important;
+            width: var(--card-bracket-size, 12px) !important;
+            height: var(--card-bracket-size, 12px) !important;
+            pointer-events: none !important;
+            z-index: 10 !important;
+        }
+
+        .arch-card .corner-bracket.top-left {
+            top: -1px !important;
+            left: -1px !important;
+            border-top: 1px solid var(--color-accent) !important;
+            border-left: 1px solid var(--color-accent) !important;
+        }
+
+        .arch-card .corner-bracket.top-right {
+            top: -1px !important;
+            right: -1px !important;
+            border-top: 1px solid var(--color-accent) !important;
+            border-right: 1px solid var(--color-accent) !important;
+        }
+
+        .arch-card .corner-bracket.bottom-left {
+            bottom: -1px !important;
+            left: -1px !important;
+            border-bottom: 1px solid var(--color-accent) !important;
+            border-left: 1px solid var(--color-accent) !important;
+        }
+
+        .arch-card .corner-bracket.bottom-right {
+            bottom: -1px !important;
+            right: -1px !important;
+            border-bottom: 1px solid var(--color-accent) !important;
+            border-right: 1px solid var(--color-accent) !important;
+        }
+
+        /* Tablet: hide internal junctions at 2-column breakpoint (corners remain) */
+        @media (max-width: 1024px) {
+            .concepts-marker-top,
+            .concepts-marker-bottom,
+            .concepts-marker-left,
+            .concepts-marker-right,
+            .concepts-marker-center {
+                display: none !important;
+            }
+        }
+
+        /* Mobile responsive: stack Core Concepts to single column */
+        @media (max-width: 768px) {
+            .features .features-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .features .features-grid .feature-card-large {
+                border-right: none !important;
+                border-bottom: 1px solid var(--color-border) !important;
+            }
+
+            .features .features-grid .feature-card-large:last-child {
+                border-bottom: none !important;
+            }
+
+            /* High specificity to override desktop "last 2 cards" rule */
+            .features .features-grid .feature-card-large:nth-child(n):not(:last-child) {
+                border-bottom: 1px solid var(--color-border) !important;
+            }
+
+            /* Hide junction markers on mobile (no grid intersections) */
+            .concepts-marker-top,
+            .concepts-marker-bottom,
+            .concepts-marker-left,
+            .concepts-marker-right,
+            .concepts-marker-center {
+                display: none !important;
+            }
+
+            /* Integrations section: collapse to single column on mobile/tablet */
+            section.features:has(.problem-grid) .problem-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            section.features:has(.problem-grid) .problem-card {
+                border-right: none !important;
+                border-bottom: 1px solid var(--color-border) !important;
+            }
+
+            section.features:has(.problem-grid) .problem-card:last-child {
+                border-bottom: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo">
+                <img src="ginko-logo.svg" alt="ginko" class="logo-image" width="120" height="40" loading="eager">
+            </a>
+            <div class="nav-menu">
+                <a href="developers.html" class="nav-link">Developers</a>
+                <a href="teams.html" class="nav-link">Teams</a>
+                <a href="how-it-works.html" class="nav-link nav-link-active">How It Works</a>
+                <a href="blog/index.html" class="nav-link">Blog</a>
+                <a href="get-started.html" class="nav-link nav-link-cta">Get Started</a>
+            </div>
+            <div class="nav-actions">
+                <button class="npm-compact-btn npm-compact-btn--header" data-copy="npm i -g @ginkoai/cli" data-track-install data-install-method="npm" data-cta-location="nav" aria-label="Copy npm install command">
+                    <span class="npm-prompt">$</span>
+                    <span class="npm-command">@ginkoai/cli</span>
+                    <span class="npm-copy-icon">⧉</span>
+                    <span class="npm-copy-success">✓</span>
+                </button>
+                <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main id="main">
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content" style="text-align: center;">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h1 class="hero-title" style="text-align: center;">
+                    How ginko works.
+                </h1>
+                <p class="hero-subtitle" style="text-align: center; margin-left: auto; margin-right: auto;">
+                    Git-native context management that captures what matters and surfaces it exactly when you need it.
+                </p>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Architecture Overview -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">The architecture</h2>
+
+            <div class="architecture-diagram">
+                <div class="arch-layer">
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">YOUR_PROJECT</div>
+                        <div class="arch-content">
+                            <code>.ginko/</code>
+                            <p class="arch-description">All context lives in your repo. Versioned with git. Works offline.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="arch-arrow">↓</div>
+
+                <div class="arch-layer arch-layer-wide">
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">SESSION_CONTEXT</div>
+                        <div class="arch-content">
+                            <div class="arch-items">
+                                <span class="arch-item">events.jsonl</span>
+                                <span class="arch-item">session-log.md</span>
+                                <span class="arch-item">cursors.json</span>
+                            </div>
+                            <p class="arch-description">Chronological event stream. Every insight, decision, and achievement captured.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">PROJECT_DOCS</div>
+                        <div class="arch-content">
+                            <div class="arch-items">
+                                <span class="arch-item">CLAUDE.md</span>
+                                <span class="arch-item">ADRs</span>
+                                <span class="arch-item">Sprints</span>
+                            </div>
+                            <p class="arch-description">AI instructions, architecture decisions, and sprint context.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="arch-arrow">↓</div>
+
+                <div class="arch-layer">
+                    <div class="arch-card arch-card-highlight">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">GINKO_CLI</div>
+                        <div class="arch-content">
+                            <code>ginko start</code>
+                            <p class="arch-description">Sub-second context loading. Event-based, cursor-tracked, zero re-parsing.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+
+                <div class="arch-arrow">↓</div>
+
+                <div class="arch-layer">
+                    <div class="arch-card">
+                        <div class="corner-bracket top-left"></div>
+                        <div class="corner-bracket top-right"></div>
+                        <div class="arch-label">AI_ASSISTANT</div>
+                        <div class="arch-content">
+                            <p class="arch-description">Claude Code, Cursor, or any AI that reads CLAUDE.md. Full context, zero re-explaining.</p>
+                        </div>
+                        <div class="corner-bracket bottom-left"></div>
+                        <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Core Concepts -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Core concepts</h2>
+            <div class="concepts-wrapper">
+                <!-- All 9 bracket/junction markers as explicit elements -->
+                <div class="concepts-marker concepts-marker-tl"></div>
+                <div class="concepts-marker concepts-marker-top"></div>
+                <div class="concepts-marker concepts-marker-tr"></div>
+                <div class="concepts-marker concepts-marker-left"></div>
+                <div class="concepts-marker concepts-marker-center"></div>
+                <div class="concepts-marker concepts-marker-right"></div>
+                <div class="concepts-marker concepts-marker-bl"></div>
+                <div class="concepts-marker concepts-marker-bottom"></div>
+                <div class="concepts-marker concepts-marker-br"></div>
+                <div class="features-grid">
+                    <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">EVENT_STREAM</div>
+                    <p class="feature-description">
+                        Every session captures events: insights, fixes, decisions, achievements. Stored as append-only JSONL.
+                        Fast to write, fast to read.
+                    </p>
+                    <div class="feature-detail">
+                        <code>ginko log "Fixed auth flow"</code> → captured instantly, surfaced on next session.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">CURSOR_TRACKING</div>
+                    <p class="feature-description">
+                        Ginko remembers where you left off. On start, it loads only new events since your last session.
+                        No re-processing, no stale context.
+                    </p>
+                    <div class="feature-detail">
+                        Session 1: 147 events → Session 2: loads only new events since cursor.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">SESSION_HANDOFFS</div>
+                    <p class="feature-description">
+                        When you end a session, ginko creates a handoff summary. When you start fresh, your AI knows exactly
+                        what was happening.
+                    </p>
+                    <div class="feature-detail">
+                        <code>ginko handoff "Completed auth, starting payments"</code> → next session resumes smoothly.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="feature-card feature-card-large">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="feature-label">PATTERN_CAPTURE</div>
+                    <p class="feature-description">
+                        Patterns that work get recorded. Gotchas that bite get flagged. Your AI learns from your codebase,
+                        not just documentation.
+                    </p>
+                    <div class="feature-detail">
+                        "Always use <code>.unref()</code> on timers" → surfaced automatically when relevant.
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- The Flow -->
+    <section class="workflow">
+        <div class="container">
+            <h2 class="section-title">The daily flow</h2>
+
+            <div class="workflow-timeline">
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="step-title">START</h3>
+                        <p class="step-description">Run <code>ginko start</code>.<br>Context loads in under 2 seconds.<br>Your AI knows where you left off.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="step-title">WORK</h3>
+                        <p class="step-description">Code as normal.<br>Log insights with <code>ginko log</code>.<br>Context captures automatically.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="step-title">COMMIT</h3>
+                        <p class="step-description">Commit your code.<br>Context is versioned alongside.<br>Session logs included if you want.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="workflow-step">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3 class="step-title">HANDOFF</h3>
+                        <p class="step-description">Optional: <code>ginko handoff</code> creates a summary.<br>Tomorrow's session starts instantly.</p>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- File Structure -->
+    <section class="solution">
+        <div class="container">
+            <h2 class="section-title">What's in .ginko/</h2>
+
+            <div class="solution-demo">
+                <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="terminal-title">project/.ginko/</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="terminal-folder">sessions/</span>
+                            <span class="terminal-comment"># Per-user session data</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">└── </span><span class="terminal-file">chris/</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    ├── </span><span class="terminal-file">current-events.jsonl</span>
+                            <span class="terminal-comment"># Event stream</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    ├── </span><span class="terminal-file">current-session-log.md</span>
+                            <span class="terminal-comment"># Human-readable log</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    ├── </span><span class="terminal-file">cursors.json</span>
+                            <span class="terminal-comment"># Session position tracker</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">    └── </span><span class="terminal-folder">archive/</span>
+                            <span class="terminal-comment"># Past sessions</span>
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line">
+                            <span class="terminal-folder">context/</span>
+                            <span class="terminal-comment"># Shared project context</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">├── </span><span class="terminal-file">patterns.json</span>
+                            <span class="terminal-comment"># Reusable patterns</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">└── </span><span class="terminal-file">gotchas.json</span>
+                            <span class="terminal-comment"># Known pitfalls</span>
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line">
+                            <span class="terminal-folder">graph/</span>
+                            <span class="terminal-comment"># Cloud sync config (Pro)</span>
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">└── </span><span class="terminal-file">config.json</span>
+                            <span class="terminal-comment"># Graph connection</span>
+                        </div>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Knowledge Graph Section -->
+    <section class="graph-section">
+        <div class="container">
+            <h2 class="section-title">The ginko collaboration graph</h2>
+            <p class="section-subtitle">
+                Local context is powerful.<br>Cloud-synced context is transformative. <span class="pro-badge">Pro</span>
+            </p>
+
+            <div class="graph-overview" style="align-items: start;">
+                <div class="graph-visual" style="border: none; padding: 0; background: none;">
+                    <div class="context-graph" style="width: 100%; max-width: 650px; margin: 0;">
+                        <svg viewBox="0 0 400 400" class="graph-svg">
+                            <!-- Connection lines -->
+                            <g class="graph-connections">
+                                <line x1="200" y1="200" x2="120" y2="100" class="graph-line graph-line-1"/>
+                                <line x1="200" y1="200" x2="300" y2="120" class="graph-line graph-line-2"/>
+                                <line x1="200" y1="200" x2="320" y2="220" class="graph-line graph-line-3"/>
+                                <line x1="200" y1="200" x2="280" y2="320" class="graph-line graph-line-4"/>
+                                <line x1="200" y1="200" x2="100" y2="280" class="graph-line graph-line-5"/>
+                                <line x1="200" y1="200" x2="80" y2="180" class="graph-line graph-line-6"/>
+                                <!-- Cross connections -->
+                                <line x1="120" y1="100" x2="300" y2="120" class="graph-line graph-line-cross-1"/>
+                                <line x1="300" y1="120" x2="320" y2="220" class="graph-line graph-line-cross-2"/>
+                                <line x1="280" y1="320" x2="100" y2="280" class="graph-line graph-line-cross-3"/>
+                                <line x1="80" y1="180" x2="120" y2="100" class="graph-line graph-line-cross-4"/>
+                            </g>
+                            <!-- Outer nodes -->
+                            <g class="graph-nodes">
+                                <g class="graph-node graph-node-1">
+                                    <circle cx="120" cy="100" r="28" class="node-bg"/>
+                                    <circle cx="120" cy="100" r="28" class="node-ring"/>
+                                    <text x="120" y="105" class="node-label">ADRs</text>
+                                </g>
+                                <g class="graph-node graph-node-2">
+                                    <circle cx="300" cy="120" r="38" class="node-bg"/>
+                                    <circle cx="300" cy="120" r="38" class="node-ring"/>
+                                    <text x="300" y="125" class="node-label">patterns</text>
+                                </g>
+                                <g class="graph-node graph-node-3">
+                                    <circle cx="320" cy="220" r="26" class="node-bg"/>
+                                    <circle cx="320" cy="220" r="26" class="node-ring"/>
+                                    <text x="320" y="225" class="node-label">tasks</text>
+                                </g>
+                                <g class="graph-node graph-node-4">
+                                    <circle cx="280" cy="320" r="38" class="node-bg"/>
+                                    <circle cx="280" cy="320" r="38" class="node-ring"/>
+                                    <text x="280" y="325" class="node-label">sessions</text>
+                                </g>
+                                <g class="graph-node graph-node-5">
+                                    <circle cx="100" cy="280" r="24" class="node-bg"/>
+                                    <circle cx="100" cy="280" r="24" class="node-ring"/>
+                                    <text x="100" y="285" class="node-label">files</text>
+                                </g>
+                                <g class="graph-node graph-node-6">
+                                    <circle cx="80" cy="180" r="36" class="node-bg"/>
+                                    <circle cx="80" cy="180" r="36" class="node-ring"/>
+                                    <text x="80" y="185" class="node-label">gotchas</text>
+                                </g>
+                            </g>
+                            <!-- Center node (ginko) -->
+                            <g class="graph-node graph-node-center">
+                                <circle cx="200" cy="200" r="50" class="node-bg node-bg-center"/>
+                                <circle cx="200" cy="200" r="50" class="node-ring node-ring-center"/>
+                                <circle cx="200" cy="200" r="56" class="node-glow"/>
+                                <text x="200" y="195" class="node-label node-label-center">context</text>
+                                <text x="200" y="215" class="node-sublabel">graph</text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="graph-features">
+                    <!-- Corner markers only - row junctions use ::before/::after on .graph-feature -->
+                    <div class="graph-marker graph-marker-tl"></div>
+                    <div class="graph-marker graph-marker-tr"></div>
+                    <div class="graph-marker graph-marker-bl"></div>
+                    <div class="graph-marker graph-marker-br"></div>
+                    <div class="graph-feature">
+                        <div class="feature-label">REAL_TIME_SYNC</div>
+                        <p class="feature-description">
+                            Events sync to the cloud as you work. Team members see updates instantly.
+                            No manual exports, no stale context.
+                        </p>
+                        <div class="graph-junction graph-junction-left"></div>
+                        <div class="graph-junction graph-junction-right"></div>
+                    </div>
+
+                    <div class="graph-feature">
+                        <div class="feature-label">SEMANTIC_SEARCH</div>
+                        <p class="feature-description">
+                            Ask questions in natural language. "How do we handle authentication?" returns
+                            relevant ADRs, patterns, and recent decisions.
+                        </p>
+                        <div class="graph-junction graph-junction-left"></div>
+                        <div class="graph-junction graph-junction-right"></div>
+                    </div>
+
+                    <div class="graph-feature">
+                        <div class="feature-label">KNOWLEDGE_TRAVERSAL</div>
+                        <p class="feature-description">
+                            AI navigates relationships: Pattern → related ADR → implementing sprint →
+                            relevant gotchas. Context arrives pre-connected.
+                        </p>
+                        <div class="graph-junction graph-junction-left"></div>
+                        <div class="graph-junction graph-junction-right"></div>
+                    </div>
+
+                    <div class="graph-feature">
+                        <div class="feature-label">TEAM_CONTEXT</div>
+                        <p class="feature-description">
+                            See what teammates discovered. Patterns from Sarah's session surface in yours
+                            when relevant. Knowledge compounds across the team.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-how-it-works">
+                <h3>How it works</h3>
+                <div class="graph-flow">
+                    <div class="graph-flow-step">
+                        <div class="flow-number">1</div>
+                        <div class="flow-content">
+                            <strong>Local capture</strong>
+                            <p>Events logged locally in JSONL format. Works offline, zero latency.</p>
+                        </div>
+                    </div>
+                    <div class="graph-flow-arrow">→</div>
+                    <div class="graph-flow-step">
+                        <div class="flow-number">2</div>
+                        <div class="flow-content">
+                            <strong>Background sync</strong>
+                            <p>Events batch-sync to cloud graph every 5 minutes or on threshold.</p>
+                        </div>
+                    </div>
+                    <div class="graph-flow-arrow">→</div>
+                    <div class="graph-flow-step">
+                        <div class="flow-number">3</div>
+                        <div class="flow-content">
+                            <strong>Vector embedding</strong>
+                            <p>Each event embedded for semantic similarity. Relationships auto-detected.</p>
+                        </div>
+                    </div>
+                    <div class="graph-flow-arrow">→</div>
+                    <div class="graph-flow-step">
+                        <div class="flow-number">4</div>
+                        <div class="flow-content">
+                            <strong>AI retrieval</strong>
+                            <p>Queries traverse graph + vectors. Most relevant context surfaces first.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="graph-example">
+                <div class="terminal-window">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="terminal-header">
+                        <div class="terminal-controls">
+                            <span class="control red"></span>
+                            <span class="control yellow"></span>
+                            <span class="control green"></span>
+                        </div>
+                        <span class="terminal-title">semantic query</span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span> curl -X POST https://app.ginkoai.com/api/v1/graph/query \
+                        </div>
+                        <div class="terminal-line">
+                            <span class="terminal-indent">  </span>-d '{"query": "How do we handle rate limiting?"}'
+                        </div>
+                        <div class="terminal-line response blank"></div>
+                        <div class="terminal-line response">
+                            <span class="terminal-comment"># Returns: ADR-012, retry-pattern, rate-limit-gotcha,</span>
+                        </div>
+                        <div class="terminal-line response">
+                            <span class="terminal-comment"># Sprint-2025-11 task, and 3 related events</span>
+                        </div>
+                    </div>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Integration -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Integrations</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">CLAUDE_CODE</div>
+                    <p class="problem-description">
+                        Reads CLAUDE.md automatically. Full context on every session. First-class support.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">CURSOR</div>
+                    <p class="problem-description">
+                        Works via .cursor rules. Same context, different editor. Seamless switching.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+
+                <div class="problem-card">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <div class="problem-label">GIT</div>
+                    <p class="problem-description">
+                        Native integration. Context versions with code. Branching, merging, diffing all work.
+                    </p>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <div class="corner-bracket top-left"></div>
+                <div class="corner-bracket top-right"></div>
+                <h2 class="cta-title">Ready to try it?</h2>
+                <p class="cta-subtitle">Install in 30 seconds.<br>No account required for local use.</p>
+                <div class="terminal-inline terminal-inline-cta terminal-copyable terminal-bracketed" data-copy="npm install -g @ginkoai/cli">
+                    <div class="corner-bracket top-left"></div>
+                    <div class="corner-bracket top-right"></div>
+                    <span class="terminal-prompt">$</span>
+                    <span class="terminal-command">npm install -g @ginkoai/cli</span>
+                    <button class="copy-btn" aria-label="Copy to clipboard">
+                        <span class="copy-icon">⧉</span>
+                        <span class="copy-success">✓</span>
+                    </button>
+                    <div class="corner-bracket bottom-left"></div>
+                    <div class="corner-bracket bottom-right"></div>
+                </div>
+                <div class="corner-bracket bottom-left"></div>
+                <div class="corner-bracket bottom-right"></div>
+            </div>
+        </div>
+    </section>
+
+    </main>
+
+<div class="footer-rainbow"></div>
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section footer-section-cta">
+                <a href="/" class="footer-logo">
+                    <img src="/ginko-logo.svg" alt="ginko" class="logo-image" height="48">
+                </a>
+                <h3 class="footer-headline">Ready to stop re-explaining?</h3>
+                <p class="footer-subline">Back in flow in 30 seconds.</p>
+                <button class="npm-compact-btn" data-copy="npm install -g @ginkoai/cli" data-track-install data-install-method="npm" data-cta-location="footer" aria-label="Copy npm install command">
+                    <span class="npm-prompt">$</span>
+                    <span class="npm-command">@ginkoai/cli</span>
+                    <span class="npm-copy-icon">⧉</span>
+                    <span class="npm-copy-success">✓</span>
+                </button>
+            </div>
+            <div class="footer-section">
+                <h4>Product</h4>
+                <ul>
+                    <li><a href="/developers.html">For Developers</a></li>
+                    <li><a href="/index.html#pricing">Pricing</a></li>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Documentation</a></li>
+                    <li><a href="https://github.com/ginkoai" data-track-github data-link-location="footer">GitHub</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="/teams.html">For Teams</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Contact</a></li>
+                    <li><a href="/privacy.html">Privacy</a></li>
+                    <li><a href="/terms.html">Terms</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="https://docs.ginko.ai" data-track-docs data-link-location="footer">Getting Started</a></li>
+                    <li><a href="https://docs.ginko.ai/api" data-track-docs data-link-location="footer">API Reference</a></li>
+                    <li><a href="https://github.com/ginkoai/examples" data-track-github data-link-location="footer">Examples</a></li>
+                    <li><a href="mailto:chris@watchhill.ai">Support</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy;2026 ginko. All rights reserved.</p>
+            <div class="footer-social">
+                <a href="https://x.com/ginkoai" aria-label="Follow us on X" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+                <a href="https://linkedin.com/company/ginkoai" aria-label="Follow us on LinkedIn" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+                <a href="https://github.com/ginkoai" aria-label="View our GitHub" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+                <a href="https://discord.gg/ginko" aria-label="Join our Discord" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                </a>
+                <a href="https://instagram.com/ginkoai" aria-label="Follow us on Instagram" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                </a>
+                <a href="https://youtube.com/@ginkoai" aria-label="Subscribe on YouTube" class="social-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="script.js"></script>
+</body>
+</html>
