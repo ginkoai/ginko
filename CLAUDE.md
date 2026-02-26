@@ -309,6 +309,8 @@ ginko team status                      # Team-wide status
 - Run tests before committing
 
 ## Git Workflow
+- **Use feature branches** when sprint plan indicates changes to multiple files
+- Stay on main for single-file fixes (typos, copy changes, quick tweaks)
 - Create feature branches: `feature/description`
 - Use conventional commits: `feat:`, `fix:`, `docs:`, etc.
 - Run `ginko handoff` before switching context
