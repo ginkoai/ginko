@@ -7633,9 +7633,10 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    ========================================================================== */
 
 .faq-wiggly {
-    padding: 6rem 2rem;
+    padding: 6rem 0;
     background: var(--bg-cream);
-    width: 100%;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
 }
 
 .faq-wiggly__title {
@@ -7661,7 +7662,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     align-items: center;
     gap: 1rem;
     width: 100%;
-    padding: 2rem 0;
+    padding: 2rem 4rem;
     background: none;
     border: none;
     cursor: pointer;
@@ -7690,11 +7691,12 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .faq-wiggly__icon {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     font-weight: 300;
     transition: transform 0.3s ease;
     color: var(--sunset-orange);
     margin-left: auto;
+    line-height: 1;
 }
 
 .faq-wiggly__item.active .faq-wiggly__icon {
@@ -7704,24 +7706,24 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 /* The wiggly line container */
 .faq-wiggly__line-wrap {
     width: 100%;
-    height: 10px;
+    height: 20px;
     overflow: hidden;
     position: relative;
+    padding: 0 4rem;
 }
 
 .faq-wiggly__line {
     width: 100%;
-    height: 10px;
+    height: 20px;
     display: block;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faq-wiggly__wave {
     fill: none;
-    stroke: var(--text-primary);
-    stroke-width: 1;
+    stroke: #1a1a1a;
+    stroke-width: 2;
     stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
 }
 
 /* Wiggle animation on hover */
