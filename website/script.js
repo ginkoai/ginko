@@ -750,7 +750,6 @@ const initWigglyFaq = () => {
 // Guitar String Physics for FAQ lines
 const initGuitarStrings = () => {
   const strings = document.querySelectorAll('[data-guitar-string]');
-  console.log('Guitar strings init:', strings.length, 'strings found');
   if (!strings.length) return;
 
   // Physics constants
@@ -783,28 +782,24 @@ const initGuitarStrings = () => {
       // Initialize audio context on first use
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        console.log('AudioContext created, state:', audioCtx.state);
       }
 
       // Resume if suspended (browser autoplay policy)
       if (audioCtx.state === 'suspended') {
         audioCtx.resume().then(() => {
-          console.log('AudioContext resumed');
           actuallyPlaySound(stringIndex, intensity);
         });
       } else {
         actuallyPlaySound(stringIndex, intensity);
       }
     } catch (e) {
-      console.error('Audio error:', e);
+      // Audio failed silently - not critical
     }
   };
 
   const actuallyPlaySound = (stringIndex, intensity) => {
     const freq = stringFrequencies[stringIndex % stringFrequencies.length];
     const volume = Math.min(0.5, Math.abs(intensity) * 0.6 + 0.1);
-
-    console.log('Playing sound:', { freq, volume, state: audioCtx.state });
 
     // Create oscillator for the fundamental
     const osc = audioCtx.createOscillator();
@@ -955,16 +950,9 @@ const initGuitarStrings = () => {
       }
     });
 
-    // Also play on click for testing
-    wrapper.addEventListener('click', () => {
-      console.log('Click pluck test!', index);
-      playPluck(index, 1.0);
-    });
-
     wrapper.addEventListener('mouseleave', () => {
       // Play pluck sound based on peak deflection reached
       const intensity = peakDeflection / MAX_DEFLECTION;
-      console.log('Pluck!', { index, intensity, peakDeflection });
       playPluck(index, intensity);
 
       // Reset peak for next interaction
