@@ -723,21 +723,21 @@ document.querySelectorAll('a[href^="http"]').forEach(link => {
 // Wiggly FAQ Accordion
 const initWigglyFaq = () => {
   const faqItems = document.querySelectorAll('.faq-wiggly__item');
-  
+
   if (!faqItems.length) return;
-  
+
   faqItems.forEach(item => {
     const question = item.querySelector('.faq-wiggly__question');
-    
+
     question.addEventListener('click', () => {
       const isActive = item.classList.contains('active');
-      
+
       // Close all other items
       faqItems.forEach(otherItem => {
         otherItem.classList.remove('active');
         otherItem.querySelector('.faq-wiggly__question').setAttribute('aria-expanded', 'false');
       });
-      
+
       // Toggle current item
       if (!isActive) {
         item.classList.add('active');
@@ -747,5 +747,237 @@ const initWigglyFaq = () => {
   });
 };
 
-// Initialize wiggly FAQ
-document.addEventListener('DOMContentLoaded', initWigglyFaq);
+// Guitar String Physics for FAQ lines
+const initGuitarStrings = () => {
+  const strings = document.querySelectorAll('[data-guitar-string]');
+  console.log('Guitar strings init:', strings.length, 'strings found');
+  if (!strings.length) return;
+
+  // Physics constants
+  const TENSION = 0.25;        // How quickly string returns (higher = faster snap)
+  const DAMPING = 0.88;        // Energy loss per frame (higher = more oscillation)
+  const MAX_DEFLECTION = 30;   // Maximum pixels the string can deflect
+  const INFLUENCE_RADIUS = 60; // How close cursor needs to be to affect string
+
+  // Audio context for pluck sounds (lazy init on first interaction)
+  let audioCtx = null;
+
+  // Different frequencies for each string (like guitar strings)
+  const stringFrequencies = [196, 247, 330, 392, 494, 659]; // G3, B3, E4, G4, B4, E5
+
+  // Ginko rainbow colors
+  const stringColors = [
+    '#FDC400', // 01: yellow
+    '#FC9500', // 02: orange
+    '#FE4500', // 03: dark orange
+    '#E50000', // 04: true red
+    '#E00256', // 05: magenta
+    '#A70086', // 06: purple
+  ];
+
+  const playPluck = (stringIndex, intensity) => {
+    // Skip if intensity too low
+    if (Math.abs(intensity) < 0.1) return;
+
+    try {
+      // Initialize audio context on first use
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        console.log('AudioContext created, state:', audioCtx.state);
+      }
+
+      // Resume if suspended (browser autoplay policy)
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().then(() => {
+          console.log('AudioContext resumed');
+          actuallyPlaySound(stringIndex, intensity);
+        });
+      } else {
+        actuallyPlaySound(stringIndex, intensity);
+      }
+    } catch (e) {
+      console.error('Audio error:', e);
+    }
+  };
+
+  const actuallyPlaySound = (stringIndex, intensity) => {
+    const freq = stringFrequencies[stringIndex % stringFrequencies.length];
+    const volume = Math.min(0.5, Math.abs(intensity) * 0.6 + 0.1);
+
+    console.log('Playing sound:', { freq, volume, state: audioCtx.state });
+
+    // Create oscillator for the fundamental
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    // Use triangle wave for softer guitar-like tone
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+    // Quick pluck envelope - fast attack, quick decay
+    gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+
+    // Add slight pitch bend down (like a real string)
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.98, audioCtx.currentTime + 0.15);
+
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    osc.start(audioCtx.currentTime);
+    osc.stop(audioCtx.currentTime + 0.5);
+  };
+
+  strings.forEach((wrapper, index) => {
+    const svg = wrapper.querySelector('svg');
+    const path = wrapper.querySelector('path');
+    if (!svg || !path) return;
+
+    // This string's color
+    const stringColor = stringColors[index % stringColors.length];
+
+    // State for this string
+    let currentDeflection = 0;
+    let velocity = 0;
+    let targetDeflection = 0;
+    let mouseX = 0.5; // Normalized position along string (0-1)
+    let isHovering = false;
+    let animationId = null;
+    let colorIntensity = 0; // 0 = black, 1 = full color
+    let peakColor = 0; // Tracks the max color reached, fades slowly
+
+    // Generate path with deflection at a specific point
+    const generatePath = (deflection, xPos) => {
+      // xPos is 0-1, deflection is in viewBox units
+      const x = xPos * 1000;
+      const y = 20 + deflection;
+      // Quadratic bezier: start -> control point at cursor -> end
+      return `M0,20 Q${x},${y} 1000,20`;
+    };
+
+    // Interpolate between black and the string's color
+    const getStrokeColor = (intensity) => {
+      const t = Math.min(1, Math.abs(intensity));
+      // Parse the hex color
+      const r = parseInt(stringColor.slice(1, 3), 16);
+      const g = parseInt(stringColor.slice(3, 5), 16);
+      const b = parseInt(stringColor.slice(5, 7), 16);
+      // Interpolate from dark gray (26, 26, 26) to the color
+      const nr = Math.round(26 + (r - 26) * t);
+      const ng = Math.round(26 + (g - 26) * t);
+      const nb = Math.round(26 + (b - 26) * t);
+      return `rgb(${nr}, ${ng}, ${nb})`;
+    };
+
+    // Animation loop with spring physics
+    const animate = () => {
+      if (!isHovering) {
+        targetDeflection = 0;
+      }
+
+      // Spring physics
+      const force = (targetDeflection - currentDeflection) * TENSION;
+      velocity += force;
+      velocity *= DAMPING;
+      currentDeflection += velocity;
+
+      // Color intensity based on current deflection
+      const instantColor = Math.abs(currentDeflection) / MAX_DEFLECTION;
+
+      // Track peak color and fade it slowly
+      if (instantColor > peakColor) {
+        peakColor = instantColor;
+      } else {
+        peakColor *= 0.95; // Slow fade (keeps color visible longer)
+      }
+
+      // Use the higher of instant or lingering color
+      colorIntensity = Math.max(instantColor, peakColor);
+      const strokeColor = getStrokeColor(colorIntensity);
+
+      // Update path, color, and stroke width (thicker when deflected)
+      path.setAttribute('d', generatePath(currentDeflection, mouseX));
+      path.style.stroke = strokeColor;
+      path.style.strokeWidth = 1 + colorIntensity * 2; // 1px to 3px
+
+      // Continue animation if there's still movement OR color is still fading
+      if (Math.abs(velocity) > 0.01 || Math.abs(targetDeflection - currentDeflection) > 0.01 || peakColor > 0.02) {
+        animationId = requestAnimationFrame(animate);
+      } else {
+        // Snap to rest
+        currentDeflection = 0;
+        colorIntensity = 0;
+        peakColor = 0;
+        path.setAttribute('d', 'M0,20 L1000,20');
+        path.style.stroke = '#1a1a1a';
+        path.style.strokeWidth = 1;
+        animationId = null;
+      }
+    };
+
+    // Start animation if not running
+    const startAnimation = () => {
+      if (!animationId) {
+        animationId = requestAnimationFrame(animate);
+      }
+    };
+
+    // Mouse move handler
+    wrapper.addEventListener('mousemove', (e) => {
+      const rect = wrapper.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Normalized x position (0-1)
+      mouseX = Math.max(0.05, Math.min(0.95, x / rect.width));
+
+      // Calculate distance from center line (string is at vertical center)
+      const centerY = rect.height / 2;
+      const distanceFromString = y - centerY;
+
+      // Deflection based on cursor position relative to string
+      // Closer to string = more deflection, direction based on which side
+      const proximity = Math.max(0, 1 - Math.abs(distanceFromString) / INFLUENCE_RADIUS);
+      const direction = distanceFromString > 0 ? 1 : -1;
+
+      targetDeflection = direction * proximity * MAX_DEFLECTION;
+      isHovering = true;
+      startAnimation();
+    });
+
+    // Mouse leave - let string snap back and play pluck sound
+    let peakDeflection = 0; // Track the maximum deflection reached
+
+    // Update peak tracking in mousemove
+    wrapper.addEventListener('mousemove', () => {
+      if (Math.abs(targetDeflection) > Math.abs(peakDeflection)) {
+        peakDeflection = targetDeflection;
+      }
+    });
+
+    // Also play on click for testing
+    wrapper.addEventListener('click', () => {
+      console.log('Click pluck test!', index);
+      playPluck(index, 1.0);
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+      // Play pluck sound based on peak deflection reached
+      const intensity = peakDeflection / MAX_DEFLECTION;
+      console.log('Pluck!', { index, intensity, peakDeflection });
+      playPluck(index, intensity);
+
+      // Reset peak for next interaction
+      peakDeflection = 0;
+      isHovering = false;
+      targetDeflection = 0;
+      startAnimation();
+    });
+  });
+};
+
+// Initialize wiggly FAQ and guitar strings
+document.addEventListener('DOMContentLoaded', () => {
+  initWigglyFaq();
+  initGuitarStrings();
+});
