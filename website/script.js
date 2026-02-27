@@ -719,3 +719,33 @@ document.querySelectorAll('a[href^="http"]').forEach(link => {
     link.setAttribute('rel', 'noopener noreferrer');
   }
 });
+
+// Wiggly FAQ Accordion
+const initWigglyFaq = () => {
+  const faqItems = document.querySelectorAll('.faq-wiggly__item');
+  
+  if (!faqItems.length) return;
+  
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-wiggly__question');
+    
+    question.addEventListener('click', () => {
+      const isActive = item.classList.contains('active');
+      
+      // Close all other items
+      faqItems.forEach(otherItem => {
+        otherItem.classList.remove('active');
+        otherItem.querySelector('.faq-wiggly__question').setAttribute('aria-expanded', 'false');
+      });
+      
+      // Toggle current item
+      if (!isActive) {
+        item.classList.add('active');
+        question.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+};
+
+// Initialize wiggly FAQ
+document.addEventListener('DOMContentLoaded', initWigglyFaq);

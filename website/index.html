@@ -901,79 +901,101 @@
 
             <div class="section-divider"></div>
 
-            <!-- FAQ Section -->
-            <section class="faq">
+            <!-- FAQ Section - Wiggly Line Experiment -->
+            <section class="faq-wiggly">
                 <div class="container">
-                    <div class="faq-header">
-                        <h2 class="faq-title">Common questions</h2>
-                    </div>
-                    <div class="faq-grid-wrapper">
-                        <div class="faq-accordion">
-                        <div class="faq-item">
-                            <button class="faq-question" aria-expanded="false">
-                                <span><span class="faq-number">01/</span> What is ginko and how does it work?</span>
-                                <span class="faq-icon">+</span>
+                    <h2 class="faq-wiggly__title">COMMON QUESTIONS</h2>
+
+                    <div class="faq-wiggly__list">
+                        <div class="faq-wiggly__item" data-faq-item>
+                            <button class="faq-wiggly__question" aria-expanded="false">
+                                <span class="faq-wiggly__text">What is ginko and how does it work?</span>
+                                <span class="faq-wiggly__icon">+</span>
                             </button>
-                            <div class="faq-answer">
-                                <p>
-                                    Ginko is a git-native CLI that captures and restores AI development context. It stores session logs, sprint progress, patterns, and gotchas alongside your code. When you run <code>ginko start</code>
-                                    , your AI assistant has immediate access to your project history, decisions, and current state—no re-explaining needed.
-                                </p>
+                            <div class="faq-wiggly__line">
+                                <svg class="faq-wiggly__svg" viewBox="0 0 1200 8" preserveAspectRatio="none">
+                                    <path class="faq-wiggly__wave" d="M0,4 Q25,0 50,4 T100,4 T150,4 T200,4 T250,4 T300,4 T350,4 T400,4 T450,4 T500,4 T550,4 T600,4 T650,4 T700,4 T750,4 T800,4 T850,4 T900,4 T950,4 T1000,4 T1050,4 T1100,4 T1150,4 T1200,4"/>
+                                </svg>
+                            </div>
+                            <div class="faq-wiggly__answer">
+                                <p>Ginko is a git-native CLI that captures and restores AI development context. It stores session logs, sprint progress, patterns, and gotchas alongside your code. When you run <code>ginko start</code>, your AI assistant has immediate access to your project history, decisions, and current state—no re-explaining needed.</p>
                             </div>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-question" aria-expanded="false">
-                                <span><span class="faq-number">02/</span> Does ginko work with my existing AI tools?</span>
-                                <span class="faq-icon">+</span>
+
+                        <div class="faq-wiggly__item" data-faq-item>
+                            <button class="faq-wiggly__question" aria-expanded="false">
+                                <span class="faq-wiggly__text">Does ginko work with my existing AI tools?</span>
+                                <span class="faq-wiggly__icon">+</span>
                             </button>
-                            <div class="faq-answer">
+                            <div class="faq-wiggly__line">
+                                <svg class="faq-wiggly__svg" viewBox="0 0 1200 8" preserveAspectRatio="none">
+                                    <path class="faq-wiggly__wave" d="M0,4 Q25,0 50,4 T100,4 T150,4 T200,4 T250,4 T300,4 T350,4 T400,4 T450,4 T500,4 T550,4 T600,4 T650,4 T700,4 T750,4 T800,4 T850,4 T900,4 T950,4 T1000,4 T1050,4 T1100,4 T1150,4 T1200,4"/>
+                                </svg>
+                            </div>
+                            <div class="faq-wiggly__answer">
                                 <p>Yes. Ginko works with Claude, ChatGPT, Cursor, Copilot, and any AI assistant that accepts context. It outputs structured markdown that any LLM can understand. Your context travels with your code, not locked into any specific tool.</p>
                             </div>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-question" aria-expanded="false">
-                                <span><span class="faq-number">03/</span> Is my code sent to ginko's servers?</span>
-                                <span class="faq-icon">+</span>
+
+                        <div class="faq-wiggly__item" data-faq-item>
+                            <button class="faq-wiggly__question" aria-expanded="false">
+                                <span class="faq-wiggly__text">Is my code sent to ginko's servers?</span>
+                                <span class="faq-wiggly__icon">+</span>
                             </button>
-                            <div class="faq-answer">
-                                <p>
-                                    No. Ginko is git-native and works entirely offline by default. Your context files live in your repo's <code>.ginko/</code>
-                                    directory. The Pro plan offers optional cloud sync for team collaboration, but your actual code never leaves your machine.
-                                </p>
+                            <div class="faq-wiggly__line">
+                                <svg class="faq-wiggly__svg" viewBox="0 0 1200 8" preserveAspectRatio="none">
+                                    <path class="faq-wiggly__wave" d="M0,4 Q25,0 50,4 T100,4 T150,4 T200,4 T250,4 T300,4 T350,4 T400,4 T450,4 T500,4 T550,4 T600,4 T650,4 T700,4 T750,4 T800,4 T850,4 T900,4 T950,4 T1000,4 T1050,4 T1100,4 T1150,4 T1200,4"/>
+                                </svg>
+                            </div>
+                            <div class="faq-wiggly__answer">
+                                <p>No. Ginko is git-native and works entirely offline by default. Your context files live in your repo's <code>.ginko/</code> directory. The Pro plan offers optional cloud sync for team collaboration, but your actual code never leaves your machine.</p>
                             </div>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-question" aria-expanded="false">
-                                <span><span class="faq-number">04/</span> How is this different from just using a README?</span>
-                                <span class="faq-icon">+</span>
+
+                        <div class="faq-wiggly__item" data-faq-item>
+                            <button class="faq-wiggly__question" aria-expanded="false">
+                                <span class="faq-wiggly__text">How is this different from just using a README?</span>
+                                <span class="faq-wiggly__icon">+</span>
                             </button>
-                            <div class="faq-answer">
+                            <div class="faq-wiggly__line">
+                                <svg class="faq-wiggly__svg" viewBox="0 0 1200 8" preserveAspectRatio="none">
+                                    <path class="faq-wiggly__wave" d="M0,4 Q25,0 50,4 T100,4 T150,4 T200,4 T250,4 T300,4 T350,4 T400,4 T450,4 T500,4 T550,4 T600,4 T650,4 T700,4 T750,4 T800,4 T850,4 T900,4 T950,4 T1000,4 T1050,4 T1100,4 T1150,4 T1200,4"/>
+                                </svg>
+                            </div>
+                            <div class="faq-wiggly__answer">
                                 <p>A README is static documentation. Ginko captures dynamic context—what you're working on now, decisions made this week, patterns discovered yesterday, gotchas hit today. It's living knowledge that updates as you work and is structured for AI consumption, not just human reading.</p>
                             </div>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-question" aria-expanded="false">
-                                <span><span class="faq-number">05/</span> What's the difference between Free and Pro?</span>
-                                <span class="faq-icon">+</span>
+
+                        <div class="faq-wiggly__item" data-faq-item>
+                            <button class="faq-wiggly__question" aria-expanded="false">
+                                <span class="faq-wiggly__text">What's the difference between Free and Pro?</span>
+                                <span class="faq-wiggly__icon">+</span>
                             </button>
-                            <div class="faq-answer">
+                            <div class="faq-wiggly__line">
+                                <svg class="faq-wiggly__svg" viewBox="0 0 1200 8" preserveAspectRatio="none">
+                                    <path class="faq-wiggly__wave" d="M0,4 Q25,0 50,4 T100,4 T150,4 T200,4 T250,4 T300,4 T350,4 T400,4 T450,4 T500,4 T550,4 T600,4 T650,4 T700,4 T750,4 T800,4 T850,4 T900,4 T950,4 T1000,4 T1050,4 T1100,4 T1150,4 T1200,4"/>
+                                </svg>
+                            </div>
+                            <div class="faq-wiggly__answer">
                                 <p>Free gives you full local functionality—session handoff, pattern capture, gotcha alerts, and git-native storage for one user. Pro adds team sync, so patterns and context flow across your whole team. When one dev discovers a gotcha, everyone benefits.</p>
                             </div>
                         </div>
-                        <div class="faq-item">
-                            <button class="faq-question" aria-expanded="false">
-                                <span><span class="faq-number">06/</span> How long does it take to set up?</span>
-                                <span class="faq-icon">+</span>
+
+                        <div class="faq-wiggly__item" data-faq-item>
+                            <button class="faq-wiggly__question" aria-expanded="false">
+                                <span class="faq-wiggly__text">How long does it take to set up?</span>
+                                <span class="faq-wiggly__icon">+</span>
                             </button>
-                            <div class="faq-answer">
-                                <p>
-                                    Under 2 minutes. Run <code>npm install -g @ginkoai/cli</code>
-                                    , then <code>ginko init</code>
-                                    in your project. That's it. Ginko starts capturing context immediately. No configuration files, no accounts required for local use.
-                                </p>
+                            <div class="faq-wiggly__line">
+                                <svg class="faq-wiggly__svg" viewBox="0 0 1200 8" preserveAspectRatio="none">
+                                    <path class="faq-wiggly__wave" d="M0,4 Q25,0 50,4 T100,4 T150,4 T200,4 T250,4 T300,4 T350,4 T400,4 T450,4 T500,4 T550,4 T600,4 T650,4 T700,4 T750,4 T800,4 T850,4 T900,4 T950,4 T1000,4 T1050,4 T1100,4 T1150,4 T1200,4"/>
+                                </svg>
+                            </div>
+                            <div class="faq-wiggly__answer">
+                                <p>Under 2 minutes. Run <code>npm install -g @ginkoai/cli</code>, then <code>ginko init</code> in your project. That's it. Ginko starts capturing context immediately. No configuration files, no accounts required for local use.</p>
                             </div>
                         </div>
-                    </div>
                     </div>
                 </div>
             </section>
