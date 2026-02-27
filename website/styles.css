@@ -28,23 +28,43 @@
     --font-mono: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     --font-sans: 'JetBrains Mono', 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 
-    /* Typography Scale (based on best practices guide)
-       H1: 80px → 64px → 44px (desktop → tablet → mobile)
-       H2: 56px → 56px → 32px
-       H3: 32px → 32px → 28px
-       H4: 20px → 20px → 18px
-       Body-lg: 18px, Body: 16px, Body-sm: 14px */
+    /* =======================================================================
+       TYPOGRAPHY SCALE - Ginko Brand Guidelines
+       Based on 1.25 ratio (Major Third) with 16px base
+       See: docs/BRAND-GUIDELINES.md
+       ======================================================================= */
+
+    /* Base font sizes */
     --font-size-xs: 0.75rem;      /* 12px */
     --font-size-sm: 0.875rem;     /* 14px */
     --font-size-base: 1rem;       /* 16px */
-    --font-size-lg: 1.125rem;     /* 18px - body-lg */
-    --font-size-xl: 1.25rem;      /* 20px - H4 */
+    --font-size-lg: 1.125rem;     /* 18px */
+    --font-size-xl: 1.25rem;      /* 20px */
     --font-size-2xl: 1.5rem;      /* 24px */
-    --font-size-3xl: 2rem;        /* 32px - H3 */
+    --font-size-3xl: 2rem;        /* 32px */
     --font-size-4xl: 2.5rem;      /* 40px */
-    --font-size-5xl: 3.5rem;      /* 56px - H2 */
-    --font-size-6xl: 4rem;        /* 64px - H1 tablet */
-    --font-size-7xl: 5rem;        /* 80px - H1 desktop */
+    --font-size-5xl: 3.5rem;      /* 56px */
+    --font-size-6xl: 4rem;        /* 64px */
+    --font-size-7xl: 5rem;        /* 80px */
+
+    /* Semantic text size aliases (USE THESE in components) */
+    --text-display: var(--font-size-7xl);  /* 80px - Hero headlines only */
+    --text-h1: var(--font-size-5xl);       /* 56px - Page/section titles */
+    --text-h2: var(--font-size-4xl);       /* 40px - Section headers */
+    --text-h3: var(--font-size-3xl);       /* 32px - Subsection headers */
+    --text-h4: var(--font-size-2xl);       /* 24px - Card titles */
+    --text-lg: var(--font-size-lg);        /* 18px - Lead paragraphs */
+    --text-base: var(--font-size-base);    /* 16px - Body text */
+    --text-sm: var(--font-size-sm);        /* 14px - Captions, metadata */
+    --text-xs: var(--font-size-xs);        /* 12px - Fine print */
+
+    /* Line heights */
+    --leading-none: 1;
+    --leading-tight: 1.1;
+    --leading-snug: 1.2;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.6;
+    --leading-loose: 1.8;
 
     --font-weight-normal: 400;
     --font-weight-medium: 500;
@@ -212,12 +232,13 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: 0.02em;
 }
 
-h1 { font-size: var(--font-size-6xl); }
-h2 { font-size: var(--font-size-4xl); }
-h3 { font-size: var(--font-size-2xl); }
-h4 { font-size: var(--font-size-xl); }
-h5 { font-size: var(--font-size-lg); }
-h6 { font-size: var(--font-size-base); }
+/* Heading defaults using semantic scale */
+h1 { font-size: var(--text-h1); line-height: var(--leading-tight); }      /* 56px */
+h2 { font-size: var(--text-h2); line-height: var(--leading-snug); }       /* 40px */
+h3 { font-size: var(--text-h3); line-height: var(--leading-snug); }       /* 32px */
+h4 { font-size: var(--text-h4); line-height: var(--leading-snug); }       /* 24px */
+h5 { font-size: var(--text-lg); line-height: var(--leading-normal); }     /* 18px */
+h6 { font-size: var(--text-base); line-height: var(--leading-normal); }   /* 16px */
 
 p {
     margin-bottom: var(--space-4);
@@ -3822,9 +3843,13 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .footer-section ul li a {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
     color: var(--color-text-secondary);
     text-decoration: none;
-    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
     transition: color var(--transition-fast);
 }
 
