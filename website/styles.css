@@ -7633,13 +7633,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    ========================================================================== */
 
 .faq-wiggly {
-    padding: 6rem 0;
+    padding: 6rem 2rem;
     background: var(--bg-cream);
+    width: 100%;
 }
 
 .faq-wiggly__title {
     font-family: 'Anton', sans-serif;
-    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-size: clamp(2.5rem, 6vw, 5rem);
     text-align: center;
     margin-bottom: 4rem;
     letter-spacing: 0.02em;
@@ -7647,8 +7648,8 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .faq-wiggly__list {
-    max-width: 900px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 100%;
 }
 
 .faq-wiggly__item {
@@ -7657,28 +7658,35 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .faq-wiggly__question {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 1rem;
     width: 100%;
-    padding: 1.5rem 0;
+    padding: 2rem 0;
     background: none;
     border: none;
     cursor: pointer;
     text-align: left;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.1rem;
-    font-weight: 500;
+    font-family: 'Anton', sans-serif;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    font-weight: 400;
     color: var(--text-primary);
     transition: color 0.3s ease;
+    letter-spacing: 0.02em;
 }
 
 .faq-wiggly__question:hover {
     color: var(--sunset-orange);
 }
 
+.faq-wiggly__number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8em;
+    opacity: 0.5;
+    min-width: 3rem;
+}
+
 .faq-wiggly__text {
     flex: 1;
-    padding-right: 2rem;
 }
 
 .faq-wiggly__icon {
@@ -7686,45 +7694,47 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-weight: 300;
     transition: transform 0.3s ease;
     color: var(--sunset-orange);
+    margin-left: auto;
 }
 
 .faq-wiggly__item.active .faq-wiggly__icon {
     transform: rotate(45deg);
 }
 
-/* The wiggly line SVG */
-.faq-wiggly__line {
+/* The wiggly line container */
+.faq-wiggly__line-wrap {
     width: 100%;
-    height: 8px;
+    height: 10px;
     overflow: hidden;
     position: relative;
 }
 
-.faq-wiggly__svg {
-    width: 200%;
-    height: 100%;
-    position: absolute;
-    left: 0;
-    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+.faq-wiggly__line {
+    width: 100%;
+    height: 10px;
+    display: block;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .faq-wiggly__wave {
     fill: none;
     stroke: var(--text-primary);
-    stroke-width: 1.5;
+    stroke-width: 1;
     stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
 }
 
 /* Wiggle animation on hover */
-.faq-wiggly__item:hover .faq-wiggly__svg {
-    animation: wiggle 0.6s ease-in-out;
+.faq-wiggly__item:hover .faq-wiggly__line {
+    animation: wiggle 0.5s ease-in-out;
 }
 
 @keyframes wiggle {
     0% { transform: translateX(0); }
-    25% { transform: translateX(-2%); }
-    50% { transform: translateX(0); }
-    75% { transform: translateX(-1%); }
+    20% { transform: translateX(-1%); }
+    40% { transform: translateX(1%); }
+    60% { transform: translateX(-0.5%); }
+    80% { transform: translateX(0.5%); }
     100% { transform: translateX(0); }
 }
 
@@ -7733,20 +7743,21 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease, padding 0.4s ease;
-    padding: 0;
+    padding: 0 0 0 4rem;
 }
 
 .faq-wiggly__item.active .faq-wiggly__answer {
     max-height: 500px;
-    padding: 1.5rem 0 2rem;
+    padding: 1.5rem 0 2rem 4rem;
 }
 
 .faq-wiggly__answer p {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95rem;
-    line-height: 1.7;
+    font-size: 1rem;
+    line-height: 1.8;
     color: var(--text-secondary);
     margin: 0;
+    max-width: 800px;
 }
 
 .faq-wiggly__answer code {
@@ -7760,18 +7771,30 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .faq-wiggly {
-        padding: 4rem 0;
+        padding: 4rem 1rem;
     }
-    
+
     .faq-wiggly__title {
         margin-bottom: 2.5rem;
     }
-    
+
     .faq-wiggly__question {
-        font-size: 1rem;
-        padding: 1.25rem 0;
+        padding: 1.5rem 0;
+        gap: 0.5rem;
     }
-    
+
+    .faq-wiggly__number {
+        min-width: 2.5rem;
+    }
+
+    .faq-wiggly__answer {
+        padding-left: 2.5rem;
+    }
+
+    .faq-wiggly__item.active .faq-wiggly__answer {
+        padding-left: 2.5rem;
+    }
+
     .faq-wiggly__answer p {
         font-size: 0.9rem;
     }
