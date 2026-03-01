@@ -307,6 +307,7 @@ section {
     padding: var(--space-4) var(--space-8);
     max-width: 1400px;
     margin: 0 auto;
+    position: relative;
 }
 
 .nav-logo {
@@ -348,8 +349,11 @@ section {
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: var(--space-8);
+    justify-content: space-between;
     list-style: none;
+    width: calc(33.333% - 36px);
+    position: absolute;
+    left: calc(33.333% + 18px);
 }
 
 .nav-link {
@@ -1561,7 +1565,6 @@ body:has(.hero--with-image) .navbar {
 .npm-compact-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.8125rem; /* 13px - slightly smaller for full command */
     background: var(--color-bg);
@@ -1570,16 +1573,16 @@ body:has(.hero--with-image) .navbar {
                       linear-gradient(90deg, #FDC400, #FC9500, #FE4500, #E00256, #A70086);
     background-origin: border-box;
     background-clip: padding-box, border-box;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    padding: 8px 6px 8px 24px;
+    gap: 12px;
+    border-radius: 8px;
+    height: 56px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .npm-compact-btn:hover {
-    background-image: linear-gradient(#F4F0E0, #F4F0E0),
-                      linear-gradient(90deg, #FDC400, #FC9500, #FE4500, #E00256, #A70086);
-    transform: translateY(-1px);
+    /* Only the copy icon changes on hover */
 }
 
 .npm-prompt {
@@ -1594,18 +1597,19 @@ body:has(.hero--with-image) .navbar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.75rem;
-    height: 1.75rem;
-    margin-left: 0.5rem;
-    background: var(--color-text);
-    color: var(--color-bg);
-    border-radius: 4px;
+    width: 40px;
+    height: 40px;
+    background: #F4F0E0;
+    color: #FE4500;
+    border: none;
+    border-radius: 6px;
     transition: all 0.2s ease;
-    opacity: 0.3;
+    flex-shrink: 0;
 }
 
 .npm-compact-btn:hover .npm-copy-icon {
-    opacity: 0.6;
+    background: #FE4500;
+    color: white;
 }
 
 .npm-copy-success {
@@ -1631,14 +1635,12 @@ body:has(.hero--with-image) .navbar {
 /* CTA variant - slightly larger for footer */
 .npm-compact-btn--cta {
     font-size: 1rem;
-    padding: 0.75rem 1.25rem;
     margin-bottom: 1.5rem;
 }
 
 /* Header variant - normal size for nav */
 .npm-compact-btn--header {
     font-size: 0.875rem;
-    padding: 0.625rem 1rem;
 }
 
 /* Toast notification */

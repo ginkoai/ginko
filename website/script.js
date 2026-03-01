@@ -969,3 +969,73 @@ document.addEventListener('DOMContentLoaded', () => {
   initWigglyFaq();
   initGuitarStrings();
 });
+
+// ============================================================================
+// SCRAMBLE TEXT HOVER EFFECT
+// ============================================================================
+
+const initScrambleText = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const scrambleSpeed = 30; // ms between iterations
+  const maxIterations = 8; // iterations before revealing each character
+
+  // Select header nav links and footer links
+  const links = document.querySelectorAll('.nav-link:not(.nav-link-cta), .footer-section ul a');
+
+  links.forEach(link => {
+    const originalText = link.textContent;
+    let isAnimating = false;
+    let animationFrame;
+
+    link.addEventListener('mouseenter', () => {
+      if (isAnimating) return;
+      isAnimating = true;
+
+      let iteration = 0;
+      const textLength = originalText.length;
+
+      const scramble = () => {
+        link.textContent = originalText
+          .split('')
+          .map((char, index) => {
+            // Preserve spaces
+            if (char === ' ') return ' ';
+
+            // Calculate how many iterations needed to reveal this character
+            const revealAt = index * (maxIterations / textLength);
+
+            // If we've iterated enough, show the original character
+            if (iteration > revealAt) {
+              return originalText[index];
+            }
+
+            // Otherwise show a random character
+            return chars[Math.floor(Math.random() * chars.length)];
+          })
+          .join('');
+
+        iteration += 1;
+
+        // Continue until all characters are revealed
+        if (iteration < maxIterations + textLength) {
+          animationFrame = setTimeout(scramble, scrambleSpeed);
+        } else {
+          link.textContent = originalText;
+          isAnimating = false;
+        }
+      };
+
+      scramble();
+    });
+
+    link.addEventListener('mouseleave', () => {
+      // Reset to original text immediately on mouse leave
+      clearTimeout(animationFrame);
+      link.textContent = originalText;
+      isAnimating = false;
+    });
+  });
+};
+
+// Initialize scramble text
+document.addEventListener('DOMContentLoaded', initScrambleText);

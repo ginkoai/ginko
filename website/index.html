@@ -43,7 +43,7 @@
                 <div class="nav-menu">
                     <a href="developers.html" class="nav-link">Developers</a>
                     <a href="teams.html" class="nav-link">Teams</a>
-                    <a href="how-it-works.html" class="nav-link">How It Works</a>
+                    <a href="how-it-works.html" class="nav-link">The How</a>
                     <a href="blog/index.html" class="nav-link">Blog</a>
                     <button class="npm-compact-btn npm-compact-btn--mobile-nav" data-copy="npm i -g @ginkoai/cli" data-track-install data-install-method="npm" data-cta-location="mobile-nav" aria-label="Copy npm install command">
                         <span class="npm-prompt">$</span>
@@ -1131,7 +1131,10 @@
                                 zIndex: 9999
                             });
                         }
-                        setTimeout(function() { window.location.href = '/'; }, 600);
+                        // Only navigate if not already on homepage
+                        if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
+                            setTimeout(function() { window.location.href = '/'; }, 600);
+                        }
                     });
                 }
 
