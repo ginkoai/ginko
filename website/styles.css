@@ -1556,7 +1556,7 @@ body:has(.hero--with-image) .navbar {
 }
 
 /* ============================================
-   NPM COMPACT BUTTON (Option A - Chris's pick)
+   NPM COMPACT BUTTON (Option E - Rainbow Border)
    ============================================ */
 .npm-compact-btn {
     display: inline-flex;
@@ -1564,17 +1564,22 @@ body:has(.hero--with-image) .navbar {
     gap: 0.5rem;
     font-family: var(--font-mono);
     font-size: 0.8125rem; /* 13px - slightly smaller for full command */
-    background: #0B0B0B;
-    border: 1px solid #615F61;
-    padding: 0.625rem 1rem;
+    background: var(--color-bg);
+    border: 2px solid transparent;
+    background-image: linear-gradient(var(--color-bg), var(--color-bg)),
+                      linear-gradient(90deg, #FDC400, #FC9500, #FE4500, #E00256, #A70086);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    padding: 0.5rem 1rem;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
 .npm-compact-btn:hover {
-    border-color: #FDC400;
-    background: #1a1a1a;
+    background-image: linear-gradient(#F4F0E0, #F4F0E0),
+                      linear-gradient(90deg, #FDC400, #FC9500, #FE4500, #E00256, #A70086);
+    transform: translateY(-1px);
 }
 
 .npm-prompt {
@@ -1582,7 +1587,7 @@ body:has(.hero--with-image) .navbar {
 }
 
 .npm-command {
-    color: #FDC400;
+    color: var(--color-text);
 }
 
 .npm-copy-icon {
@@ -1592,14 +1597,15 @@ body:has(.hero--with-image) .navbar {
     width: 1.75rem;
     height: 1.75rem;
     margin-left: 0.5rem;
-    background: #FDC400;
-    color: #0B0B0B;
+    background: var(--color-text);
+    color: var(--color-bg);
     border-radius: 4px;
-    transition: background 0.2s ease;
+    transition: all 0.2s ease;
+    opacity: 0.3;
 }
 
 .npm-compact-btn:hover .npm-copy-icon {
-    background: #FC9500;
+    opacity: 0.6;
 }
 
 .npm-copy-success {
