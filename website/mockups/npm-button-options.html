@@ -205,11 +205,98 @@
         }
         .badge-current { background: #eee; color: #666; }
         .badge-new { background: #d4edda; color: #155724; }
+
+        /* ===== LIGHTER OPTIONS ===== */
+
+        /* Option C: Outline/Ghost */
+        .npm-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: transparent;
+            border: 1.5px solid var(--charcoal);
+            padding: 0.625rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .npm-outline .prompt { color: var(--orange); }
+        .npm-outline .cmd { color: var(--charcoal); }
+        .npm-outline .copy {
+            color: var(--charcoal);
+            opacity: 0.5;
+        }
+
+        /* Option D: Light background */
+        .npm-light {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: #F4F0E0;
+            border: 1px solid #d0ccc0;
+            padding: 0.625rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .npm-light .prompt { color: var(--orange); }
+        .npm-light .cmd { color: var(--charcoal); }
+        .npm-light .copy {
+            color: var(--charcoal);
+            opacity: 0.4;
+        }
+
+        /* Option E: Accent border (rainbow gradient) */
+        .npm-accent {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: var(--cream);
+            border: 2px solid transparent;
+            background-image: linear-gradient(var(--cream), var(--cream)),
+                              linear-gradient(90deg, #FDC400, #FC9500, #FE4500, #E00256, #A70086);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .npm-accent .prompt { color: var(--orange); }
+        .npm-accent .cmd { color: var(--charcoal); }
+        .npm-accent .copy {
+            color: var(--charcoal);
+            opacity: 0.4;
+        }
+
+        /* Option F: Subtle with left accent */
+        .npm-left-accent {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            background: #F4F0E0;
+            border: 1px solid #d0ccc0;
+            border-left: 3px solid var(--orange);
+            padding: 0.625rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .npm-left-accent .prompt { color: var(--orange); }
+        .npm-left-accent .cmd { color: var(--charcoal); }
+        .npm-left-accent .copy {
+            color: var(--charcoal);
+            opacity: 0.4;
+        }
     </style>
 </head>
 <body>
     <h1>NPM Button Options</h1>
-    <p class="subtitle">Comparing full command visibility in the nav</p>
+    <p class="subtitle">Exploring lighter alternatives - "black looks heavy on page"</p>
 
     <!-- Current (for reference) -->
     <div class="option-section">
@@ -276,6 +363,90 @@
         </div>
     </div>
 
+    <!-- LIGHTER OPTIONS -->
+    <h1 style="margin-top: 3rem; padding-top: 2rem; border-top: 3px solid #ddd;">Lighter Options</h1>
+    <p class="subtitle">Alternatives to reduce visual weight of black button</p>
+
+    <!-- Option C: Outline -->
+    <div class="option-section">
+        <div class="option-label">Option C: Outline/Ghost <span class="badge badge-new">Light</span></div>
+        <p class="option-desc">Transparent background with dark border - blends with page</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-outline">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option D: Light background -->
+    <div class="option-section">
+        <div class="option-label">Option D: Light Background <span class="badge badge-new">Light</span></div>
+        <p class="option-desc">Eggshell background matches alternating sections</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-light">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option E: Rainbow border -->
+    <div class="option-section">
+        <div class="option-label">Option E: Rainbow Gradient Border <span class="badge badge-new">Brand</span></div>
+        <p class="option-desc">Uses Ginko rainbow colors as accent border</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-accent">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Option F: Left accent -->
+    <div class="option-section">
+        <div class="option-label">Option F: Left Accent Bar <span class="badge badge-new">Light</span></div>
+        <p class="option-desc">Subtle terminal-style with orange left border</p>
+        <div class="mock-nav">
+            <div class="mock-logo">ginko</div>
+            <div class="mock-links">
+                <span>Developers</span>
+                <span>Teams</span>
+                <span>How It Works</span>
+                <span>Blog</span>
+            </div>
+            <div class="npm-left-accent">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Side by side comparison -->
     <div class="comparison">
         <div class="comparison-item">
@@ -315,6 +486,71 @@
                 <dt>Cons</dt>
                 <dd>- Taller button</dd>
                 <dd>- Less conventional</dd>
+            </dl>
+        </div>
+    </div>
+
+    <!-- Lighter options comparison -->
+    <h2 style="margin-top: 3rem;">Lighter Options Comparison</h2>
+    <div class="comparison" style="grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+        <div class="comparison-item">
+            <h3>C: Outline</h3>
+            <div class="npm-outline">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+            <dl class="pros-cons">
+                <dt>Pros</dt>
+                <dd>+ Very light weight</dd>
+                <dd>+ Clean, minimal</dd>
+                <dt>Cons</dt>
+                <dd>- Less prominent CTA</dd>
+            </dl>
+        </div>
+        <div class="comparison-item">
+            <h3>D: Light BG</h3>
+            <div class="npm-light">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+            <dl class="pros-cons">
+                <dt>Pros</dt>
+                <dd>+ Soft, approachable</dd>
+                <dd>+ On-brand colors</dd>
+                <dt>Cons</dt>
+                <dd>- Subtle CTA</dd>
+            </dl>
+        </div>
+        <div class="comparison-item">
+            <h3>E: Rainbow</h3>
+            <div class="npm-accent">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+            <dl class="pros-cons">
+                <dt>Pros</dt>
+                <dd>+ Brand identity</dd>
+                <dd>+ Eye-catching</dd>
+                <dt>Cons</dt>
+                <dd>- May be too flashy</dd>
+            </dl>
+        </div>
+        <div class="comparison-item">
+            <h3>F: Left Accent</h3>
+            <div class="npm-left-accent">
+                <span class="prompt">$</span>
+                <span class="cmd">npm i -g @ginkoai/cli</span>
+                <span class="copy">⧉</span>
+            </div>
+            <dl class="pros-cons">
+                <dt>Pros</dt>
+                <dd>+ Terminal feel</dd>
+                <dd>+ Balanced weight</dd>
+                <dt>Cons</dt>
+                <dd>- Asymmetric look</dd>
             </dl>
         </div>
     </div>
