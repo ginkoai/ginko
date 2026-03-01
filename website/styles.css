@@ -6288,7 +6288,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     flex-wrap: nowrap;
     align-items: center;
     gap: 3rem;
-    animation: marquee 30s linear infinite;
+    animation: marquee 40s linear infinite;
     width: max-content;
     background: transparent;
 }
