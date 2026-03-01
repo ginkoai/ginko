@@ -1083,6 +1083,29 @@
         <script src="js/analytics.js"></script>
         <script src="js/hero-ab-test.js"></script>
         <script>
+            // Fix marquee seamless loop - calculate exact pixel width
+            document.addEventListener('DOMContentLoaded', function() {
+                var track = document.querySelector('.logo-marquee-track');
+                if (track) {
+                    var items = track.querySelectorAll('.logo-marquee-item');
+                    var itemsPerSet = 12; // 11 integrations + Ginko
+                    var totalItems = items.length;
+                    var sets = totalItems / itemsPerSet;
+
+                    // Get computed gap
+                    var gap = parseFloat(getComputedStyle(track).gap) || 48;
+
+                    // Calculate width of one set: items + gaps between them
+                    var itemWidth = items[0].offsetWidth;
+                    var setWidth = (itemWidth * itemsPerSet) + (gap * itemsPerSet); // gap after each item
+
+                    // Create dynamic keyframes with exact pixel value
+                    var style = document.createElement('style');
+                    style.textContent = '@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-' + setWidth + 'px); } }';
+                    document.head.appendChild(style);
+                }
+            });
+
             // Confetti on logo click - Ginko rainbow colors!
             document.addEventListener('DOMContentLoaded', function() {
                 var colors = ['#FDC400', '#FC9500', '#FE4500', '#E00256', '#A70086'];
