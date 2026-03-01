@@ -6302,7 +6302,36 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     opacity: 0.4;
     transition: opacity 0.2s ease;
     background: transparent;
+    animation: kart-bounce 0.5s ease-in-out infinite;
+    position: relative;
 }
+
+/* Ground shadow that squishes with bounce */
+.logo-marquee-item::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 6px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: shadow-squish 0.35s ease-in-out infinite;
+}
+
+@keyframes shadow-squish {
+    0%, 100% {
+        transform: translateX(-50%) scaleX(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translateX(-50%) scaleX(0.6);
+        opacity: 0.5;
+    }
+}
+
+/* All icons bounce together - no stagger for seamless loop */
 
 .logo-marquee-item:hover {
     opacity: 0.7;
@@ -6311,6 +6340,36 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .logo-marquee-item svg {
     width: 28px;
     height: 28px;
+}
+
+/* Ginko logo - gentle bounce, 30% reduced per Chris */
+.logo-marquee-item--ginko {
+    opacity: 1;
+    animation: kart-bounce-gentle 0.5s ease-in-out infinite;
+}
+
+.logo-marquee-item--ginko img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+}
+
+@keyframes kart-bounce-gentle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-1.5px);
+    }
+}
+
+@keyframes kart-bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
 }
 
 @keyframes marquee {
