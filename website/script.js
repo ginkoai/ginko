@@ -475,13 +475,16 @@ const initTextScramble = () => {
 // ============================================================================
 
 const initDiscordButtonScramble = () => {
-  const btn = document.querySelector('.discord-btn');
+  // Disabled - using CSS icon animation instead
+  return;
+
+  const btn = document.querySelector('.btn-hero-discord');
   if (!btn) return;
 
-  const textEl = btn.querySelector('.discord-btn-text');
+  const textEl = btn.querySelector('.btn-hero-text');
   if (!textEl) return;
 
-  const originalText = btn.dataset.text || textEl.textContent;
+  const originalText = textEl.textContent;
   const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let animationId = null;
   let isAnimating = false;

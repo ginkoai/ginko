@@ -1573,7 +1573,7 @@ body:has(.hero--with-image) .navbar {
                       linear-gradient(90deg, #FDC400, #FC9500, #FE4500, #E00256, #A70086);
     background-origin: border-box;
     background-clip: padding-box, border-box;
-    padding: 8px 6px 8px 24px;
+    padding: 8px 6px 8px 8px;
     gap: 12px;
     border-radius: 8px;
     height: 56px;
@@ -1632,15 +1632,15 @@ body:has(.hero--with-image) .navbar {
     display: none;
 }
 
-/* CTA variant - slightly larger for footer */
+/* CTA variant - footer placement */
 .npm-compact-btn--cta {
-    font-size: 1rem;
+    /* Same size as base - just positioning */
     margin-bottom: 1.5rem;
 }
 
-/* Header variant - normal size for nav */
+/* Header variant - match base button size */
 .npm-compact-btn--header {
-    font-size: 0.875rem;
+    /* Same as base - no overrides needed */
 }
 
 /* Toast notification */
@@ -1702,6 +1702,7 @@ body:has(.hero--with-image) .navbar {
     text-decoration: none;
     transition: all var(--transition-fast);
     cursor: pointer;
+    height: 56px; /* Match npm button height */
 }
 
 .btn-primary-large:hover {
@@ -1727,6 +1728,7 @@ body:has(.hero--with-image) .navbar {
     text-decoration: none;
     transition: all var(--transition-fast);
     cursor: pointer;
+    height: 56px; /* Match npm button height */
 }
 
 .btn-secondary-large:hover {
@@ -1955,6 +1957,37 @@ body:has(.hero--with-image) .navbar {
     background-color: rgba(174, 255, 0, 0.1);
 }
 
+/* Discord button variant */
+.btn-hero-discord {
+    background-color: #5865F2;
+    color: white;
+    border: none;
+}
+
+.btn-hero-discord .btn-hero-text {
+    color: white;
+}
+
+.btn-hero-discord:hover {
+    background-color: #5865F2;
+}
+
+.btn-hero-arrow-discord {
+    background-color: white;
+    border-radius: var(--radius-sm);
+    perspective: 200px;
+}
+
+.btn-hero-arrow-discord .discord-icon {
+    color: #5865F2;
+    transition: transform 0.6s ease;
+}
+
+/* 3D flip on hover */
+.btn-hero-discord:hover .discord-icon {
+    transform: rotateY(360deg);
+}
+
 /* Small button variant (for nav) */
 .btn-hero-sm {
     gap: var(--space-3);
@@ -1979,11 +2012,6 @@ body:has(.hero--with-image) .navbar {
     transition: transform 0.3s ease-out;
 }
 
-/* Text hover animation - subtle slide from left */
-a:hover .btn-hero-text,
-button:hover .btn-hero-text {
-    transform: translateX(4px);
-}
 
 /* Arrow box base */
 .btn-hero-arrow {
@@ -2293,13 +2321,14 @@ button:hover .btn-hero-arrow .arrow-hover {
 .pain-points-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
+    gap: 0; /* No gap - use borders for dividers */
+    position: relative; /* For corner brackets */
 }
 
 .pain-card {
     padding: var(--space-8);
     background-color: var(--color-bg);
-    border: 1px solid var(--color-border);
+    border: none;
     text-align: left;
 }
 
@@ -2334,7 +2363,7 @@ button:hover .btn-hero-arrow .arrow-hover {
 @media (max-width: 900px) {
     .pain-points-grid {
         grid-template-columns: 1fr;
-        gap: var(--space-6);
+        /* gap handled by bracket system */
     }
 }
 
@@ -3166,39 +3195,50 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .testimonial {
     background-color: var(--color-bg);
     padding: var(--space-16) 0;
-    overflow: hidden;
 }
 
 .testimonial-content {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-8);
+    position: relative;
+    display: block;
     width: 100%;
     max-width: 100%;
     padding: var(--space-12);
+    padding-left: calc(33.333% + var(--space-4)); /* Align text to second column */
     text-align: left;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: 16px;
+    border-radius: 0; /* Square corners for brackets */
     box-sizing: border-box;
 }
 
 .testimonial-quote-icon {
-    flex-shrink: 0;
-    width: 72px;
-    height: 72px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 33.333%; /* Fill first column */
+    height: 100%;
+    z-index: 0;
+    opacity: 0.08;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.testimonial-quote-icon svg {
+    width: 300px;
+    height: 300px;
+    fill: var(--color-text);
 }
 
 .testimonial-quote-icon svg {
     width: 100%;
     height: 100%;
-    fill: #FE4500;
+    fill: var(--color-text);
 }
 
 .testimonial-text {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
+    position: relative;
+    z-index: 1;
 }
 
 .testimonial-quote {
@@ -4148,14 +4188,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     }
 }
 
-@media (max-width: 768px) {
-    :root {
-        --font-size-6xl: 2.5rem;
-        --font-size-5xl: 2rem;
-        --font-size-4xl: 1.75rem;
-    }
-
-    /* Mobile Navigation */
+/* Tablet portrait breakpoint (iPad portrait ~768-820px) - switch to mobile nav */
+@media (max-width: 900px) {
+    /* Mobile Navigation - trigger earlier for tablet portrait */
     .hamburger {
         display: flex;
     }
@@ -4212,7 +4247,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         gap: var(--space-3);
     }
 
-    /* Hide GET STARTED button on mobile - accessible via hamburger menu */
+    /* Hide GET STARTED button on tablet/mobile - accessible via hamburger menu */
     .nav-actions .btn-hero {
         display: none;
     }
@@ -4223,7 +4258,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         padding-right: var(--space-4);
     }
 
-    /* Hide header npm button on mobile - redundant with hero CTA */
+    /* Hide header npm button on tablet/mobile - redundant with hero CTA */
     .npm-compact-btn--header {
         display: none;
     }
@@ -4234,6 +4269,14 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
         margin-top: var(--space-8);
         font-size: 1rem;
         padding: var(--space-3) var(--space-6);
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --font-size-6xl: 2.5rem;
+        --font-size-5xl: 2rem;
+        --font-size-4xl: 1.75rem;
     }
 
     .hero {
@@ -4513,13 +4556,15 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
     /* Testimonial mobile */
     .testimonial-content {
-        flex-direction: column;
         padding: var(--space-6);
-        gap: var(--space-4);
+        padding-left: var(--space-6);
     }
 
     .testimonial-quote-icon {
-        font-size: 4rem;
+        width: 280px;
+        height: 280px;
+        top: -60px;
+        left: -60px;
     }
 
     .testimonial-quote {
@@ -4889,88 +4934,61 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .discord-section {
     padding: 32px 0 56px 0; /* Top: 32px, Bottom: 56px to balance with ASCII divider above */
-    background-color: var(--color-surface);
+    background-color: var(--color-bg); /* Match pain-points section */
 }
 
 .discord-header {
     text-align: center;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-12);
 }
 
-.discord-logo {
-    color: #5865F2;
-    margin-bottom: var(--space-4);
-}
-
-.discord-logo svg {
-    display: inline-block;
-}
-
-.discord-title {
-    font-family: var(--font-headline);
-    font-size: var(--text-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text);
-    margin: 0 0 var(--space-3) 0;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-}
-
-.discord-subtitle {
-    font-size: var(--text-lg);
-    color: var(--color-text-muted);
-    margin: 0;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Channel cards */
+/* Channel cards - styled to match pain-points grid */
 .discord-channels {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-4);
-    max-width: 900px;
-    margin: 0 auto var(--space-8) auto;
+    gap: 0; /* No gap - use borders for dividers */
+    position: relative; /* For corner brackets */
 }
 
 .discord-channel {
-    background: var(--color-surface);
-    border: 2px solid var(--color-text);
-    border-radius: 8px;
-    padding: var(--space-4);
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    background: var(--color-bg);
+    border: none;
+    border-radius: 0;
+    padding: var(--space-8);
+    text-align: left;
 }
 
-.discord-channel:hover {
-    transform: translateY(-2px);
-    box-shadow: 4px 4px 0 var(--color-text);
-}
-
+/* Channel header - styled like pain-statement */
 .channel-header {
     display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    margin-bottom: var(--space-2);
+    align-items: baseline;
+    gap: 0;
+    margin: 0 0 var(--space-4) 0;
 }
 
 .channel-hash {
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
-    font-size: var(--text-lg);
-    font-weight: var(--font-weight-bold);
+    font-family: var(--font-display);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-normal);
+    color: #5865F2; /* Discord blue */
+    line-height: 1.2;
+    text-transform: uppercase;
 }
 
 .channel-name {
-    font-family: var(--font-mono);
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-normal);
+    color: #5865F2; /* Discord blue */
+    line-height: 1.2;
+    text-transform: uppercase;
 }
 
+/* Channel preview - styled like pain-statement */
 .channel-preview {
-    font-size: var(--text-sm);
-    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
     margin: 0;
     font-style: italic;
     line-height: 1.5;
@@ -4983,6 +5001,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     flex-direction: column;
     align-items: center;
     gap: var(--space-3);
+    margin-top: var(--space-8);
 }
 
 .discord-btn {
@@ -5016,22 +5035,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     color: var(--color-text-muted);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .discord-channels {
-        grid-template-columns: 1fr;
-        padding: 0 var(--space-4);
-    }
-
-    .discord-title {
-        font-size: var(--text-2xl);
-    }
-
-    .discord-subtitle {
-        font-size: var(--text-base);
-        padding: 0 var(--space-4);
-    }
-}
+/* Responsive - handled by bracket system grid stacking */
 
 /* ============================================================================
    UTILITY CLASSES
@@ -6636,7 +6640,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     /* transformation-grid, steps-grid, pricing-grid stack to 1 column at 1024px */
     .transformation-grid,
     .steps-grid,
-    .pricing-grid {
+    .pricing-grid,
+    .pain-points-grid,
+    .discord-channels {
         grid-template-columns: 1fr !important;
     }
 
@@ -6644,21 +6650,27 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     /* Use grid > card selector for higher specificity to override desktop rules */
     .transformation-grid > .transformation-card,
     .steps-grid > .step-card,
-    .pricing-grid > .pricing-card {
+    .pricing-grid > .pricing-card,
+    .pain-points-grid > .pain-card,
+    .discord-channels > .discord-channel {
         border-right: none !important;
         border-bottom: 1px solid var(--color-border) !important;
     }
 
     .transformation-grid > .transformation-card:last-child,
     .steps-grid > .step-card:last-child,
-    .pricing-grid > .pricing-card:last-child {
+    .pricing-grid > .pricing-card:last-child,
+    .pain-points-grid > .pain-card:last-child,
+    .discord-channels > .discord-channel:last-child {
         border-bottom: none !important;
     }
 
     /* Stacked 1-column: Left T (├) at left edge of horizontal dividers */
     .transformation-grid > .transformation-card:not(:last-child)::before,
     .steps-grid > .step-card:not(:last-child)::before,
-    .pricing-grid > .pricing-card:not(:last-child)::before {
+    .pricing-grid > .pricing-card:not(:last-child)::before,
+    .pain-points-grid > .pain-card:not(:last-child)::before,
+    .discord-channels > .discord-channel:not(:last-child)::before {
         content: '' !important;
         display: block !important;
         position: absolute !important;
@@ -6677,7 +6689,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     /* Stacked 1-column: Right T (┤) at right edge of horizontal dividers */
     .transformation-grid > .transformation-card:not(:last-child)::after,
     .steps-grid > .step-card:not(:last-child)::after,
-    .pricing-grid > .pricing-card:not(:last-child)::after {
+    .pricing-grid > .pricing-card:not(:last-child)::after,
+    .pain-points-grid > .pain-card:not(:last-child)::after,
+    .discord-channels > .discord-channel:not(:last-child)::after {
         content: '' !important;
         display: block !important;
         position: absolute !important;
@@ -6705,7 +6719,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .problem-grid::before,
 .commands-grid::before,
 .next-steps-grid::before,
-.faq-accordion::before {
+.faq-accordion::before,
+.pain-points-grid::before,
+.discord-channels::before {
     content: '' !important;
     display: block !important;
     position: absolute !important;
@@ -6737,7 +6753,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .problem-grid::after,
 .commands-grid::after,
 .next-steps-grid::after,
-.faq-accordion::after {
+.faq-accordion::after,
+.pain-points-grid::after,
+.discord-channels::after {
     content: '' !important;
     display: block !important;
     position: absolute !important;
@@ -6767,7 +6785,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .pricing-card,
 .problem-card,
 .command-card,
-.faq-item {
+.faq-item,
+.pain-card,
+.discord-channel {
     position: relative;
     border-radius: 0 !important;
     border: none !important;
@@ -6785,7 +6805,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .pricing-card:last-child,
 .problem-card:last-child,
 .command-card:last-child,
-.faq-item:last-child {
+.faq-item:last-child,
+.pain-card:last-child,
+.discord-channel:last-child {
     border-right: none !important;
 }
 
@@ -6794,7 +6816,9 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .problem-grid > .problem-card:nth-child(3n),
 .pricing-grid > .pricing-card:nth-child(3n),
 .steps-grid > .step-card,
-.commands-grid > .command-card:nth-child(3n) {
+.commands-grid > .command-card:nth-child(3n),
+.pain-points-grid > .pain-card:nth-child(3n),
+.discord-channels > .discord-channel:nth-child(3n) {
     border-right: none !important;
 }
 
