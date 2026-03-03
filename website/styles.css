@@ -1671,19 +1671,23 @@ body:has(.hero--with-image) .navbar {
 @keyframes toastPop {
     0% {
         opacity: 0;
+        transform: translateX(-50%) translateY(50%);
+    }
+    5% {
+        opacity: 0.3;
         transform: translateX(-50%) translateY(0);
     }
-    10% {
+    12% {
         opacity: 1;
         transform: translateX(-50%) translateY(-130%);
     }
-    18% {
+    20% {
         transform: translateX(-50%) translateY(-95%);
     }
-    25% {
+    27% {
         transform: translateX(-50%) translateY(-110%);
     }
-    30% {
+    32% {
         transform: translateX(-50%) translateY(-100%);
     }
     80% {
