@@ -1703,7 +1703,7 @@ body:has(.hero--with-image) .navbar {
 
 /* Header toast - pops up then lands back inside button */
 .toast.toast-header {
-    animation: toastPopReturn 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: toastPopReturn 2.2s ease-out forwards;
 }
 
 @keyframes toastPopReturn {
@@ -1711,38 +1711,42 @@ body:has(.hero--with-image) .navbar {
         opacity: 0;
         transform: translateX(-50%) translateY(50%);
     }
-    5% {
+    4% {
         opacity: 0.3;
         transform: translateX(-50%) translateY(0);
     }
-    12% {
+    10% {
         opacity: 1;
         transform: translateX(-50%) translateY(-130%);
     }
-    20% {
+    16% {
         transform: translateX(-50%) translateY(-95%);
     }
-    27% {
+    22% {
         transform: translateX(-50%) translateY(-110%);
     }
-    35% {
+    28% {
         transform: translateX(-50%) translateY(-100%);
     }
-    55% {
+    45% {
         opacity: 1;
         transform: translateX(-50%) translateY(-100%);
+    }
+    60% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-60%);
     }
     75% {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateX(-50%) translateY(-20%);
     }
-    90% {
-        opacity: 0.8;
-        transform: translateX(-50%) translateY(20%);
+    88% {
+        opacity: 0.9;
+        transform: translateX(-50%) translateY(10%);
     }
     100% {
         opacity: 0;
-        transform: translateX(-50%) translateY(30%);
+        transform: translateX(-50%) translateY(25%);
     }
 }
 
