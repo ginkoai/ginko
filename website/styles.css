@@ -1648,14 +1648,14 @@ body:has(.hero--with-image) .navbar {
     position: fixed;
     top: -100px;
     left: -100px;
-    background-color: var(--color-surface);
-    color: var(--color-accent);
+    background-color: #FE4500;
+    color: #ffffff;
     font-family: var(--font-mono);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-accent);
+    border: none;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     opacity: 0;
     z-index: 10001;
@@ -1665,25 +1665,25 @@ body:has(.hero--with-image) .navbar {
 }
 
 .toast.show {
-    animation: toastSlideUp 2s ease-out forwards;
+    animation: toastFade 2s ease-out forwards;
 }
 
-@keyframes toastSlideUp {
+@keyframes toastFade {
     0% {
         opacity: 0;
-        transform: translateX(-50%) translateY(10px);
+        transform: translateY(-50%) scale(0.9);
     }
     15% {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(-50%) scale(1);
     }
     85% {
         opacity: 1;
-        transform: translateX(-50%) translateY(0);
+        transform: translateY(-50%) scale(1);
     }
     100% {
         opacity: 0;
-        transform: translateX(-50%) translateY(-10px);
+        transform: translateY(-50%) scale(0.9);
     }
 }
 

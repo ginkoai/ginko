@@ -246,14 +246,26 @@ const initCopyButtons = () => {
     // Force reflow to restart animation
     void toast.offsetWidth;
 
-    // Position toast above the element
+    // Position toast to right of element (or left if not enough room)
     if (element) {
       var rect = element.getBoundingClientRect();
-      var centerX = Math.round(rect.left + (rect.width / 2));
-      var topPos = Math.round(rect.top - 44);
+      var toastWidth = 80; // approximate width of "COPIED!" toast
+      var gap = 12; // gap between button and toast
+      var viewportWidth = window.innerWidth;
 
-      toast.style.left = centerX + 'px';
+      // Vertically center with the element
+      var topPos = Math.round(rect.top + (rect.height / 2));
       toast.style.top = topPos + 'px';
+
+      // Try right side first
+      var rightPos = rect.right + gap;
+      if (rightPos + toastWidth < viewportWidth - 20) {
+        // Enough room on right
+        toast.style.left = rightPos + 'px';
+      } else {
+        // Place on left
+        toast.style.left = (rect.left - gap - toastWidth) + 'px';
+      }
     }
 
     // Trigger slide-up animation
