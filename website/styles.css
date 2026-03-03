@@ -3975,7 +3975,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     font-family: var(--font-mono);
     font-size: 0.875rem;
     color: var(--color-text-secondary);
-    margin: 20px 0 0 0;
+    margin: 8px 0 0 0;
 }
 
 .footer-cta .npm-compact-btn {
