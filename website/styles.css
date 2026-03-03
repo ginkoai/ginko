@@ -3194,83 +3194,67 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .testimonial {
     background-color: var(--color-bg);
-    padding: var(--space-16) 0;
+    padding: var(--space-12) 0 var(--space-8);
 }
 
 .testimonial-content {
     position: relative;
-    display: block;
     width: 100%;
-    max-width: 100%;
-    padding: var(--space-12);
-    padding-left: calc(33.333% + var(--space-4)); /* Align text to second column */
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-12) var(--space-8);
     text-align: left;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 0; /* Square corners for brackets */
-    box-sizing: border-box;
 }
 
-.testimonial-quote-icon {
+.testimonial-quote-mark {
     position: absolute;
     top: 0;
-    left: 0;
-    width: 33.333%; /* Fill first column */
-    height: 100%;
-    z-index: 0;
-    opacity: 0.08;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.testimonial-quote-icon svg {
-    width: 300px;
-    height: 300px;
-    fill: var(--color-text);
-}
-
-.testimonial-quote-icon svg {
-    width: 100%;
-    height: 100%;
-    fill: var(--color-text);
-}
-
-.testimonial-text {
-    position: relative;
-    z-index: 1;
+    left: 12px;
+    font-family: Georgia, serif;
+    font-size: 280px;
+    line-height: 0.8;
+    color: var(--color-border);
+    opacity: 0.5;
+    pointer-events: none;
+    user-select: none;
 }
 
 .testimonial-quote {
-    font-family: var(--font-mono);
-    font-size: var(--font-size-3xl);
+    font-family: var(--font-body);
+    font-size: clamp(1.5rem, 2.8vw, 2.1rem);
+    font-weight: 500;
     font-style: normal;
     color: var(--color-text);
-    margin: 0 0 var(--space-4) 0;
-    line-height: 1.4;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
+    margin: 0 0 var(--space-6) 0;
+    margin-left: 8.33%; /* Start at column 2 (1/12) */
+    line-height: 1.5;
+    position: relative;
+    z-index: 1;
 }
 
 .testimonial-highlight {
     color: var(--color-accent);
 }
 
-.testimonial-comment-open,
-.testimonial-comment-close {
-    color: #8a8c7d;
-    font-style: normal;
+.testimonial-attribution {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+    margin-left: 8.33%; /* Start at column 2 (1/12) */
 }
 
-.testimonial-cite {
-    display: block;
-    font-family: var(--font-mono);
+.testimonial-name {
+    font-family: var(--font-body);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.testimonial-title {
+    font-family: var(--font-body);
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    font-style: normal;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-top: var(--space-4);
 }
 
 /* ============================================================================
@@ -4556,19 +4540,17 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
     /* Testimonial mobile */
     .testimonial-content {
-        padding: var(--space-6);
-        padding-left: var(--space-6);
+        padding: var(--space-8) var(--space-4);
     }
 
-    .testimonial-quote-icon {
-        width: 280px;
-        height: 280px;
-        top: -60px;
-        left: -60px;
+    .testimonial-quote-mark {
+        font-size: 120px;
+        top: -10px;
+        left: -10px;
     }
 
     .testimonial-quote {
-        font-size: var(--font-size-2xl);
+        font-size: var(--font-size-xl);
     }
 
     /* Button adjustments */
@@ -4934,7 +4916,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 
 .discord-section {
     padding: 32px 0 56px 0; /* Top: 32px, Bottom: 56px to balance with ASCII divider above */
-    background-color: var(--color-bg); /* Match pain-points section */
+    background-color: var(--color-surface); /* Match common questions section */
 }
 
 .discord-header {
@@ -4951,7 +4933,7 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 .discord-channel {
-    background: var(--color-bg);
+    background: var(--color-bg); /* Cream #FAF8F0 */
     border: none;
     border-radius: 0;
     padding: var(--space-8);
@@ -6782,7 +6764,6 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 .feature-cell,
 .stat-card,
 .step-card,
-.pricing-card,
 .problem-card,
 .command-card,
 .faq-item,
@@ -6791,8 +6772,17 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     position: relative;
     border-radius: 0 !important;
     border: none !important;
-    background: var(--color-surface) !important;
+    background: var(--color-bg) !important; /* Cream #FAF8F0 */
     /* Right border as divider between cards */
+    border-right: 1px solid var(--color-border) !important;
+}
+
+/* Pricing cards use eggshell background */
+.pricing-card {
+    position: relative;
+    border-radius: 0 !important;
+    border: none !important;
+    background: var(--color-surface) !important; /* Eggshell */
     border-right: 1px solid var(--color-border) !important;
 }
 
@@ -7587,7 +7577,6 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
    SINGLE ELEMENT CORNER BRACKETS (testimonial, CTA)
    ============================================================================ */
 
-.testimonial-content,
 .cta-content {
     position: relative !important;
     border: 1px solid var(--color-border) !important;
@@ -7595,7 +7584,6 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 /* Corner brackets for single elements using ::before (top corners) */
-.testimonial-content::before,
 .cta-content::before {
     content: '' !important;
     display: block !important;
@@ -7614,7 +7602,6 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
 }
 
 /* Corner brackets for single elements using ::after (bottom corners) */
-.testimonial-content::after,
 .cta-content::after {
     content: '' !important;
     display: block !important;
