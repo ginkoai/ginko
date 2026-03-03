@@ -323,9 +323,11 @@ const initCopyButtons = () => {
         // Show success state on element
         element.classList.add('copied');
 
-        // Show toast positioned above the element
-        console.log('Calling showToast');
-        showToast(element);
+        // Show toast for non-header buttons only
+        var isHeader = element.classList.contains('npm-compact-btn--header');
+        if (!isHeader) {
+          showToast(element);
+        }
 
         // Reset element after 2 seconds
         setTimeout(function() {
