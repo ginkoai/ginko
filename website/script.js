@@ -995,7 +995,7 @@ const initScrambleText = () => {
   const maxIterations = 8; // iterations before revealing each character
 
   // Select header nav links and footer links
-  const links = document.querySelectorAll('.nav-link:not(.nav-link-cta), .footer-section ul a');
+  const links = document.querySelectorAll('.nav-link:not(.nav-link-cta), .footer-nav ul a');
 
   links.forEach(link => {
     const originalText = link.textContent;
