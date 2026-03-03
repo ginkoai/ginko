@@ -66,3 +66,9 @@ api/_lib/
 
 # Claude Code local settings (user-specific permissions)
 .claude/settings.local.json
+
+# Vercel CLI local config
+.vercel/
+
+# Separate projects (not part of main repo)
+dashboard/
