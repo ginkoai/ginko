@@ -751,15 +751,18 @@ const initWigglyFaq = () => {
 };
 
 // Guitar String Physics for FAQ lines
+// Inspired by fancycomponents.dev elastic line
 const initGuitarStrings = () => {
   const strings = document.querySelectorAll('[data-guitar-string]');
   if (!strings.length) return;
 
-  // Physics constants
-  const TENSION = 0.25;        // How quickly string returns (higher = faster snap)
-  const DAMPING = 0.88;        // Energy loss per frame (higher = more oscillation)
-  const MAX_DEFLECTION = 30;   // Maximum pixels the string can deflect
-  const INFLUENCE_RADIUS = 60; // How close cursor needs to be to affect string
+  // Physics constants (translated from Framer Motion spring: stiffness=400, damping=5)
+  // grabThreshold=5, releaseThreshold=100
+  const TENSION = 0.45;        // Higher = faster snap (from stiffness: 400)
+  const DAMPING = 0.97;        // Very high = lots of oscillation (from damping: 5)
+  const MAX_DEFLECTION = 50;   // Increased for more dramatic effect (releaseThreshold inspired)
+  const INFLUENCE_RADIUS = 80; // Wider grab area
+  const GRAB_THRESHOLD = 5;    // Min pixels before string responds
 
   // Audio context for pluck sounds (lazy init on first interaction)
   let audioCtx = null;
@@ -932,10 +935,19 @@ const initGuitarStrings = () => {
       // Calculate distance from center line (string is at vertical center)
       const centerY = rect.height / 2;
       const distanceFromString = y - centerY;
+      const absDistance = Math.abs(distanceFromString);
+
+      // Only respond if past grab threshold (grabThreshold: 5)
+      if (absDistance < GRAB_THRESHOLD) {
+        targetDeflection = 0;
+        isHovering = true;
+        startAnimation();
+        return;
+      }
 
       // Deflection based on cursor position relative to string
       // Closer to string = more deflection, direction based on which side
-      const proximity = Math.max(0, 1 - Math.abs(distanceFromString) / INFLUENCE_RADIUS);
+      const proximity = Math.max(0, 1 - absDistance / INFLUENCE_RADIUS);
       const direction = distanceFromString > 0 ? 1 : -1;
 
       targetDeflection = direction * proximity * MAX_DEFLECTION;
