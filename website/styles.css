@@ -1619,8 +1619,8 @@ body:has(.hero--with-image) .navbar {
     width: 1.75rem;
     height: 1.75rem;
     margin-left: 0.5rem;
-    background: #22C55E;
-    color: #0B0B0B;
+    background: #FAF8F0;
+    color: #FE4500;
     border-radius: 4px;
 }
 
@@ -1697,6 +1697,51 @@ body:has(.hero--with-image) .navbar {
     100% {
         opacity: 0;
         transform: translateX(-50%) translateY(-100%);
+    }
+}
+
+/* Header toast - pops up then lands back inside button */
+.toast.toast-header {
+    animation: toastPopReturn 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes toastPopReturn {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(50%);
+    }
+    5% {
+        opacity: 0.3;
+        transform: translateX(-50%) translateY(0);
+    }
+    12% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-130%);
+    }
+    20% {
+        transform: translateX(-50%) translateY(-95%);
+    }
+    27% {
+        transform: translateX(-50%) translateY(-110%);
+    }
+    35% {
+        transform: translateX(-50%) translateY(-100%);
+    }
+    55% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-100%);
+    }
+    75% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    90% {
+        opacity: 0.8;
+        transform: translateX(-50%) translateY(20%);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(30%);
     }
 }
 

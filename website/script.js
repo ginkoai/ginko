@@ -240,8 +240,8 @@ const initCopyButtons = () => {
       return;
     }
 
-    // Clear any existing animation
-    toast.classList.remove('show');
+    // Clear any existing animation and variant classes
+    toast.classList.remove('show', 'toast-header');
 
     // Force reflow to restart animation
     void toast.offsetWidth;
@@ -256,8 +256,14 @@ const initCopyButtons = () => {
       toast.style.top = topPos + 'px';
     }
 
-    // Trigger slide-up animation
+    // Check if this is a header button - use different animation
+    var isHeader = element && element.classList.contains('npm-compact-btn--header');
+
+    // Trigger animation
     toast.classList.add('show');
+    if (isHeader) {
+      toast.classList.add('toast-header');
+    }
   };
 
   // Fallback copy method for Safari/non-HTTPS contexts
