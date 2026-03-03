@@ -4924,6 +4924,59 @@ section.hero .corner-bracket.bottom-right:not(.terminal-bracketed .corner-bracke
     margin-bottom: var(--space-12);
 }
 
+.discord-logo-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    margin: 0 0 var(--space-4) 0;
+}
+
+.discord-title-link {
+    display: inline-flex;
+    align-items: center;
+    perspective: 200px;
+}
+
+.discord-title-ginko {
+    height: 56px;
+    width: auto;
+}
+
+.discord-title-on {
+    font-family: var(--font-display);
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-normal);
+    color: var(--text-primary);
+    text-transform: uppercase;
+}
+
+.discord-title-icon {
+    width: 56px;
+    height: 56px;
+    color: #5865F2; /* Discord blurple */
+    transition: transform 0.6s ease;
+}
+
+.discord-title-link:hover .discord-title-icon {
+    transform: rotateY(360deg);
+}
+
+@media (max-width: 768px) {
+    .discord-title-ginko {
+        height: 40px;
+    }
+
+    .discord-title-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .discord-title-on {
+        font-size: var(--font-size-xl);
+    }
+}
+
 /* Channel cards - styled to match pain-points grid */
 .discord-channels {
     display: grid;
