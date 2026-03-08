@@ -60,7 +60,7 @@
     "gray-matter": "^4.0.3",
     "marked": "^15.0.12",
     "marked-terminal": "^7.3.0",
-    "open": "^10.2.0",
+    "open": "^11.0.0",
     "ora": "^8.2.0",
     "prompts": "^2.4.2",
     "simple-git": "^3.28.0",
