@@ -24,14 +24,11 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import glob from 'glob';
-import { promisify } from 'util';
+import { glob } from 'glob';
 import chalk from 'chalk';
 import { GraphApiClient, TaskStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
 import { getProjectRoot } from '../../utils/helpers.js';
-
-const globAsync = promisify(glob);
 
 // =============================================================================
 // Types
@@ -108,7 +105,7 @@ function checkboxDisplay(checkbox: string): string {
  */
 export async function findSprintFiles(projectRoot: string): Promise<string[]> {
   const pattern = path.join(projectRoot, 'docs/sprints/SPRINT-*.md');
-  const files = await globAsync(pattern);
+  const files = await glob(pattern);
 
   // Filter out CURRENT-SPRINT.md as it's a symlink/copy
   return files.filter(f => !f.includes('CURRENT-SPRINT.md'));

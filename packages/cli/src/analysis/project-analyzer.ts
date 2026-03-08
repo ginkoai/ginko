@@ -11,7 +11,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { ProjectContext } from '../templates/ai-instructions-template.js';
 
 export class ProjectAnalyzer {
@@ -332,7 +332,7 @@ export class ProjectAnalyzer {
 
     // Check for test files
     try {
-      const testFiles = glob.sync('**/*.{test,spec}.{js,jsx,ts,tsx}', {
+      const testFiles = globSync('**/*.{test,spec}.{js,jsx,ts,tsx}', {
         cwd: this.projectRoot,
         ignore: ['node_modules/**'],
       });

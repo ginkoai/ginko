@@ -1,6 +1,6 @@
 {
   "name": "@ginkoai/cli",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "Git-native session management and cloud context for AI-mediated development. AI Collaboration for Vibe Tribes.",
   "main": "dist/index.js",
   "bin": {
@@ -56,7 +56,7 @@
     "commander": "^14.0.0",
     "dotenv": "^16.6.1",
     "fs-extra": "^11.3.1",
-    "glob": "^7.2.3",
+    "glob": "^12.0.0",
     "gray-matter": "^4.0.3",
     "marked": "^15.0.12",
     "marked-terminal": "^7.3.0",
@@ -70,7 +70,6 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/glob": "^8.1.0",
     "@types/jest": "^30.0.0",
     "@types/prompts": "^2.4.9",
     "@types/yaml-front-matter": "^4.1.3",

@@ -22,14 +22,11 @@
 import fs from 'fs-extra';
 import path from 'path';
 import simpleGit from 'simple-git';
-import glob from 'glob';
-import { promisify } from 'util';
+import { glob } from 'glob';
 import { getUserEmail, getGinkoDir, getProjectRoot, formatTimeAgo } from '../utils/helpers.js';
 import { readSyncState } from './sync-state.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 import { getUnpushedCount } from './git-change-detector.js';
-
-const globAsync = promisify(glob);
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -129,9 +126,9 @@ async function checkTracking(
   // Check for epic file
   const epicId = currentSprint.epicId;
   if (epicId) {
-    const epicFiles = await globAsync(path.join(projectRoot, `docs/epics/EPIC-*${epicId}*.md`));
+    const epicFiles = await glob(path.join(projectRoot, `docs/epics/EPIC-*${epicId}*.md`));
     const epicNum = epicId.replace(/^e0*/, '').replace(/^EPIC-0*/, '');
-    const epicFilesAlt = await globAsync(path.join(projectRoot, `docs/epics/EPIC-${epicNum.padStart(3, '0')}*.md`));
+    const epicFilesAlt = await glob(path.join(projectRoot, `docs/epics/EPIC-${epicNum.padStart(3, '0')}*.md`));
     const allEpicFiles = [...new Set([...epicFiles, ...epicFilesAlt])];
 
     if (allEpicFiles.length > 0) {
@@ -152,7 +149,7 @@ async function checkTracking(
 
   // Check for sprint file
   const sprintId = currentSprint.sprintId;
-  const sprintFiles = await globAsync(path.join(projectRoot, 'docs/sprints/SPRINT-*.md'));
+  const sprintFiles = await glob(path.join(projectRoot, 'docs/sprints/SPRINT-*.md'));
   const matchingSprint = sprintFiles.find((f: string) => {
     const basename = path.basename(f).toLowerCase();
     const normalizedId = sprintId.replace(/_/g, '-').toLowerCase();
@@ -204,7 +201,7 @@ async function checkCompletion(projectRoot: string, sessionDir: string): Promise
   }
 
   // Find sprint files for the current epic (scoped, not all history)
-  const allSprintFiles = await globAsync(path.join(projectRoot, 'docs/sprints/SPRINT-*.md'));
+  const allSprintFiles = await glob(path.join(projectRoot, 'docs/sprints/SPRINT-*.md'));
   const activeSprintFiles = allSprintFiles.filter((f: string) => {
     if (f.includes('archive')) return false;
     // If we have a current epic, scope to its sprints

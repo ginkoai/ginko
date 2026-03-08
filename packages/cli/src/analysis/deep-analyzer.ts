@@ -11,7 +11,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import glob from 'glob';
+import { globSync } from 'glob';
 import { ProjectContext } from '../templates/ai-instructions-template.js';
 
 export interface DeepAnalysisResult extends ProjectContext {
@@ -90,7 +90,7 @@ export class DeepAnalyzer {
     const patterns: PatternMatch[] = [];
     
     // Check for React patterns
-    const reactFiles = glob.sync('**/*.{jsx,tsx}', {
+    const reactFiles = globSync('**/*.{jsx,tsx}', {
       cwd: this.projectRoot,
       ignore: ['node_modules/**', 'dist/**', 'build/**'],
     });
@@ -128,7 +128,7 @@ export class DeepAnalyzer {
     ];
     
     for (const { glob: globPattern, pattern, description } of apiPatterns) {
-      const files = glob.sync(globPattern, {
+      const files = globSync(globPattern, {
         cwd: this.projectRoot,
         ignore: ['node_modules/**', 'dist/**', 'build/**'],
       });
@@ -144,7 +144,7 @@ export class DeepAnalyzer {
     }
     
     // Check for testing patterns
-    const testFiles = glob.sync('**/*.{test,spec}.{js,jsx,ts,tsx}', {
+    const testFiles = globSync('**/*.{test,spec}.{js,jsx,ts,tsx}', {
       cwd: this.projectRoot,
       ignore: ['node_modules/**'],
     });
@@ -232,7 +232,7 @@ export class DeepAnalyzer {
     const extensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.go', '.rs', '.java', '.css', '.scss'];
     
     for (const ext of extensions) {
-      const files = glob.sync(`**/*${ext}`, {
+      const files = globSync(`**/*${ext}`, {
         cwd: this.projectRoot,
         ignore: ['node_modules/**', 'dist/**', 'build/**', '.git/**'],
       });
@@ -262,7 +262,7 @@ export class DeepAnalyzer {
     }
     
     // Count React components
-    const componentFiles = glob.sync('**/*.{jsx,tsx}', {
+    const componentFiles = globSync('**/*.{jsx,tsx}', {
       cwd: this.projectRoot,
       ignore: ['node_modules/**', 'dist/**', 'build/**', '*.test.*', '*.spec.*'],
     });
@@ -272,7 +272,7 @@ export class DeepAnalyzer {
     }
     
     // Count API endpoints (heuristic)
-    const apiFiles = glob.sync('**/api/**/*.{js,ts}', {
+    const apiFiles = globSync('**/api/**/*.{js,ts}', {
       cwd: this.projectRoot,
       ignore: ['node_modules/**', 'dist/**', 'build/**'],
     });

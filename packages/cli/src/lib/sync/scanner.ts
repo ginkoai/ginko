@@ -20,12 +20,9 @@
  * Returns structured LocalNode objects with metadata and relationships
  */
 
-import glob from 'glob';
+import { glob } from 'glob';
 import path from 'path';
-import { promisify } from 'util';
 import { parseMarkdownFile, ParsedNode } from './parser.js';
-
-const globAsync = promisify(glob);
 
 export interface LocalNode {
   type: 'ADR' | 'PRD' | 'ContextModule';
@@ -52,7 +49,7 @@ export async function scanLocalKnowledge(basePath: string): Promise<LocalNode[]>
   try {
     // Scan ADRs
     const adrPattern = path.join(basePath, 'docs/adr/ADR-*.md');
-    const adrFiles = await globAsync(adrPattern);
+    const adrFiles = await glob(adrPattern);
 
     for (const filePath of adrFiles) {
       try {
@@ -66,7 +63,7 @@ export async function scanLocalKnowledge(basePath: string): Promise<LocalNode[]>
 
     // Scan PRDs
     const prdPattern = path.join(basePath, 'docs/PRD/PRD-*.md');
-    const prdFiles = await globAsync(prdPattern);
+    const prdFiles = await glob(prdPattern);
 
     for (const filePath of prdFiles) {
       try {

@@ -20,12 +20,8 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import { promisify } from 'util';
-import glob from 'glob';
+import { glob } from 'glob';
 import { resolveProjectPath, loadProjectConfig } from './config-loader.js';
-
-// Promisify glob for async/await usage
-const globAsync = promisify(glob);
 
 /**
  * Reference types supported by the system
@@ -190,7 +186,7 @@ export async function resolveReference(reference: Reference): Promise<ResolvedRe
     }
 
     // Use glob to find matching files (paths are already absolute)
-    const matches = await globAsync(searchPath);
+    const matches = await glob(searchPath);
 
     if (matches.length > 0) {
       // Take first match (should be unique per reference ID)
@@ -396,7 +392,7 @@ export async function getBacklinks(
     // Search all markdown files in search paths
     for (const searchPath of searchPaths) {
       const pattern = path.join(searchPath, '**', '*.md');
-      const files = await globAsync(pattern);
+      const files = await glob(pattern);
 
       for (const file of files) {
         try {

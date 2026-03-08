@@ -16,10 +16,7 @@ import path from 'path';
 import { GraphApiClient } from './api-client.js';
 import { createDefaultConfig, saveGraphConfig, isGraphInitialized } from './config.js';
 import { getCurrentUser } from '../../utils/auth-storage.js';
-import glob from 'glob';
-import { promisify } from 'util';
-
-const globAsync = promisify(glob);
+import { glob } from 'glob';
 
 interface InitOptions {
   quick?: boolean;
@@ -32,7 +29,7 @@ interface InitOptions {
  */
 async function countDocuments(pattern: string): Promise<number> {
   try {
-    const files = await globAsync(pattern, { ignore: ['**/node_modules/**', '**/.git/**'] });
+    const files = await glob(pattern, { ignore: ['**/node_modules/**', '**/.git/**'] });
     return files.length;
   } catch {
     return 0;

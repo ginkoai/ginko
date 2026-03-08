@@ -21,11 +21,8 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import glob from 'glob';
-import { promisify } from 'util';
+import { glob } from 'glob';
 import type { SprintSyncResult, TaskStatusUpdate, SprintFile } from './types.js';
-
-const globAsync = promisify(glob);
 
 // EPIC-015 Sprint 3: Status mapping functions removed
 // Status lives in graph only - no longer synced to/from markdown
@@ -36,7 +33,7 @@ const globAsync = promisify(glob);
  */
 export async function findSprintFiles(projectRoot: string): Promise<SprintFile[]> {
   const pattern = path.join(projectRoot, 'docs/sprints/SPRINT-*.md');
-  const files = await globAsync(pattern);
+  const files = await glob(pattern);
 
   const sprintFiles: SprintFile[] = [];
 

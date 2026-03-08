@@ -11,7 +11,7 @@
 
 import fs from 'fs-extra';
 import path from 'path';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import { getProjectRoot } from '../utils/config-loader.js';
 
 /**

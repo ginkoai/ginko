@@ -45,6 +45,11 @@ export function getFilePath(projectRoot: string, node: UnsyncedNode): string {
       return path.join(projectRoot, 'docs', 'gotchas', `GOTCHA-${slug}.md`);
     case 'Charter':
       return path.join(projectRoot, 'docs', 'PROJECT-CHARTER.md');
+    case 'Epic': {
+      // node.id is 'e023' format → extract number → 'EPIC-023-slug.md'
+      const epicNum = node.id.replace(/^e0*/, '').padStart(3, '0');
+      return path.join(projectRoot, 'docs', 'epics', `EPIC-${epicNum}-${slug}.md`);
+    }
     default:
       throw new Error(`Unknown node type: ${type}`);
   }
@@ -97,12 +102,19 @@ export async function writeFileContent(filePath: string, content: string): Promi
 }
 
 /**
- * Format node content as markdown file
+ * Format node content as markdown file.
+ * If content already includes frontmatter (starts with '---'), use it as-is
+ * to avoid double-wrapping dashboard-created content.
  */
 export function formatNodeAsMarkdown(node: UnsyncedNode): string {
-  const frontmatter = generateFrontmatter(node);
   const body = node.content || '';
 
+  // Content from dashboard already includes frontmatter and title
+  if (body.trimStart().startsWith('---')) {
+    return body;
+  }
+
+  const frontmatter = generateFrontmatter(node);
   return `---\n${frontmatter}---\n\n# ${node.title}\n\n${body}`;
 }
 

@@ -45,7 +45,7 @@ function mapEntityType(entityType?: string): NodeType | undefined {
   if (!entityType) return undefined;
 
   const mapping: Record<string, NodeType> = {
-    'epic': 'Charter', // Epics don't have a direct NodeType in sync, we'll handle specially
+    'epic': 'Epic',
     'sprint': 'Sprint',
     'adr': 'ADR',
     'prd': 'PRD',

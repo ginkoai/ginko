@@ -15,7 +15,7 @@
  * Types for the cloud→local sync command that pulls dashboard edits to git.
  */
 
-export type NodeType = 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Charter' | 'Sprint' | 'Task';
+export type NodeType = 'ADR' | 'PRD' | 'Pattern' | 'Gotcha' | 'Charter' | 'Epic' | 'Sprint' | 'Task';
 
 export interface NodeSyncStatus {
   nodeId: string;
