@@ -91,9 +91,9 @@ export function getRealtimeCursorConfig(): RealtimeCursorConfig {
     };
   }
 
-  // Default to enabled for EPIC-004 multi-agent coordination
-  // Can be disabled via GINKO_REALTIME_CURSOR=false
-  const enabled = process.env.GINKO_REALTIME_CURSOR !== 'false';
+  // Disabled by default — no dashboard consumers yet.
+  // Enable with GINKO_REALTIME_CURSOR=true when team cursor features ship.
+  const enabled = process.env.GINKO_REALTIME_CURSOR === 'true';
 
   return {
     enabled,

@@ -315,6 +315,28 @@ export async function initCommand(options: { quick?: boolean; analyze?: boolean;
       console.warn(chalk.yellow('Commands error:', error instanceof Error ? error.message : String(error)));
     }
 
+    // Create PROTECTED manifest (tracked file — protects local-only state)
+    spinner.start('Creating file protection manifest...');
+    const { generateManifest } = await import('../lib/protected-manifest.js');
+    const protectedPath = pathManager.joinPaths(pathConfig.ginko.root, 'PROTECTED');
+    await fs.writeFile(protectedPath, generateManifest());
+    spinner.succeed('File protection manifest created');
+
+    // Install pre-commit protection hook
+    spinner.start('Installing file protection hook...');
+    try {
+      const { installPreCommitHook } = await import('../lib/protection-hook.js');
+      const hookResult = await installPreCommitHook(projectRoot);
+      if (hookResult.installed) {
+        spinner.succeed(hookResult.message);
+      } else {
+        spinner.warn(hookResult.message);
+      }
+    } catch (error) {
+      spinner.warn('Protection hook installation failed (non-fatal)');
+      console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+    }
+
     // Context rules
     spinner.start('Setting up context management...');
 
@@ -488,6 +510,7 @@ branch: ${branch}
     console.log('  📄 ' + chalk.gray('CLAUDE.md (AI instructions)'));
     console.log('  📄 ' + chalk.gray('.claude/skills/ (AI skill definitions)'));
     console.log('  📁 ' + chalk.gray('docs/ (adr, epics, sprints, PRD, architecture, patterns)'));
+    console.log('  🛡️  ' + chalk.gray('.ginko/PROTECTED (file protection manifest)'));
     console.log('  🔒 ' + chalk.gray('.gitignore (updated)'));
     console.log('\n' + chalk.blue('💡 Configuration:'));
     console.log('  • ginko.json is tracked in git (team-shared structure)');
@@ -597,7 +620,26 @@ async function upgradeProject(projectRoot: string, spinner: ReturnType<typeof or
     console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
   }
 
-  // 4. Scaffold docs/ structure (only creates what's missing)
+  // 4. Create/update PROTECTED manifest and pre-commit hook
+  spinner.start('Updating file protection...');
+  try {
+    const { generateManifest } = await import('../lib/protected-manifest.js');
+    const protectedPath = path.join(projectRoot, '.ginko', 'PROTECTED');
+    await fs.writeFile(protectedPath, generateManifest());
+    updated.push('.ginko/PROTECTED');
+
+    const { installPreCommitHook } = await import('../lib/protection-hook.js');
+    const hookResult = await installPreCommitHook(projectRoot);
+    spinner.succeed(hookResult.message);
+    if (hookResult.installed) {
+      updated.push('.git/hooks/pre-commit');
+    }
+  } catch (error) {
+    spinner.warn('File protection update failed (non-fatal)');
+    console.warn(chalk.yellow('  ' + (error instanceof Error ? error.message : String(error))));
+  }
+
+  // 5. Scaffold docs/ structure (only creates what's missing)
   spinner.start('Checking docs/ structure...');
   try {
     const docsResult = await scaffoldDocs(projectRoot);

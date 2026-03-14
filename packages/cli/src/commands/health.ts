@@ -176,6 +176,7 @@ async function executeFix(gap: HealthCheckItem): Promise<boolean> {
     'ginko push',
     'ginko pull',
     'ginko start',
+    'ginko init --upgrade',
   ];
 
   const isSafe = safeCommands.some(safe => cmd.startsWith(safe));

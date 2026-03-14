@@ -11,6 +11,8 @@
 
 import chalk from 'chalk';
 import ora from 'ora';
+import fs from 'fs-extra';
+import { execSync } from 'child_process';
 import { pauseCurrentCursor, SessionCursor } from '../lib/session-cursor.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 import { getGinkoDir, getUserEmail } from '../utils/helpers.js';
@@ -28,6 +30,7 @@ import { getGraphId } from './graph/config.js';
 interface HandoffOptions {
   message?: string;
   verbose?: boolean;
+  commit?: boolean;
 }
 
 /**
@@ -85,7 +88,22 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       console.warn(chalk.dim('No event ID found in session log'));
     }
 
-    // 2. Flush event queue (legacy, deprecated by ADR-077)
+    // 2. Clean up tmp files
+    spinner.text = 'Cleaning up temp files...';
+    try {
+      const tempDir = path.join(ginkoDir, '.temp');
+      if (await fs.pathExists(tempDir)) {
+        const tempFiles = await fs.readdir(tempDir);
+        if (tempFiles.length > 0) {
+          await fs.emptyDir(tempDir);
+          spinner.info(chalk.dim(`Cleaned ${tempFiles.length} temp file(s)`));
+        }
+      }
+    } catch {
+      // Non-critical: temp cleanup failure doesn't block handoff
+    }
+
+    // 3. Flush event queue (legacy, deprecated by ADR-077)
     spinner.text = 'Flushing event queue...';
     if (isQueueInitialized()) {
       try {
@@ -97,7 +115,7 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       }
     }
 
-    // 2b. ADR-077: Push changes to graph (incremental, git-based change detection)
+    // 4. ADR-077: Push changes to graph (incremental, git-based change detection)
     spinner.text = 'Pushing changes to graph...';
     try {
       await autoPush();
@@ -106,7 +124,33 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       // Non-critical: push failure doesn't block handoff
     }
 
-    // 2c. EPIC-022: Health adherence summary before completing handoff
+    // 5. Git commit (unless --no-commit)
+    if (options.commit !== false) {
+      spinner.text = 'Committing changes...';
+      try {
+        // Check if there are changes to commit
+        const status = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
+        if (status) {
+          // Stage tracked files only (don't add untracked files — user controls what's tracked)
+          execSync('git add -u', { stdio: 'pipe' });
+
+          // Check if anything is staged after add -u
+          const staged = execSync('git diff --cached --name-only', { encoding: 'utf8' }).trim();
+          if (staged) {
+            const commitMsg = options.message
+              ? `chore: session handoff — ${options.message}`
+              : 'chore: session handoff';
+            execSync(`git commit -m "${commitMsg}"`, { stdio: 'pipe' });
+            const stagedCount = staged.split('\n').length;
+            spinner.info(chalk.dim(`Committed ${stagedCount} file(s)`));
+          }
+        }
+      } catch {
+        // Non-critical: commit failure doesn't block handoff
+      }
+    }
+
+    // 6. EPIC-022: Health adherence summary before completing handoff
     try {
       spinner.stop();
       const { runHealthChecks } = await import('../lib/health-checker.js');
@@ -140,7 +184,7 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       // Health check failure never blocks handoff
     }
 
-    // 3. Pause cursor and update position
+    // 7. Pause cursor and update position
     spinner.text = 'Updating cursor position...';
     const cursor = await pauseCurrentCursor({ finalEventId });
 
@@ -151,7 +195,7 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       return;
     }
 
-    // 4. Archive session log
+    // 8. Archive session log
     spinner.text = 'Archiving session log...';
     try {
       const hasLog = await SessionLogManager.hasSessionLog(sessionDir);
@@ -163,15 +207,19 @@ export async function handoffCommand(options: HandoffOptions = {}) {
       console.warn(chalk.dim('Failed to archive session log:'), error);
     }
 
-    // 5. EPIC-004: Push real-time cursor update on handoff
+    // 9. EPIC-004: Real-time cursor update on handoff
+    // Disabled by default — no dashboard consumers yet.
+    // Enable with GINKO_REALTIME_CURSOR=true when team cursors ship.
     try {
-      const { onHandoff } = await import('../lib/realtime-cursor.js');
-      await onHandoff(finalEventId);
+      const { isRealtimeCursorEnabled, onHandoff } = await import('../lib/realtime-cursor.js');
+      if (isRealtimeCursorEnabled()) {
+        await onHandoff(finalEventId);
+      }
     } catch {
       // Cursor update is non-critical - don't block handoff
     }
 
-    // 6. Display success message
+    // 10. Display success message
     spinner.succeed('Work paused!');
     console.log('');
     console.log(chalk.green(`✓ Work paused on ${chalk.bold(cursor.branch)}`));

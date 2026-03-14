@@ -187,6 +187,7 @@ program
   .command('handoff [message]')
   .description('Pause current session and update cursor (ADR-043). Optionally provide a handoff summary message.')
   .option('-v, --verbose', 'Show detailed cursor and sync information')
+  .option('--no-commit', 'Skip git commit during handoff')
   .action((message, options) => handoffCommand({ message, ...options }));
 
 program

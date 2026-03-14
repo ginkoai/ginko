@@ -18,6 +18,7 @@ import ora from 'ora';
 import readline from 'readline';
 import { getUserEmail, getGinkoDir, detectWorkMode, getProjectRoot } from '../../utils/helpers.js';
 import { checkForUpdatesAsync } from '../../utils/version-check.js';
+import { ensureStructuralSafeguards, formatSafeguardMessage } from '../../lib/structural-safeguards.js';
 import { ActiveContextManager, WorkMode, ContextLevel } from '../../services/active-context-manager.js';
 import { SessionLogManager } from '../../core/session-log-manager.js';
 import { SessionSynthesizer, SynthesisOutput } from '../../utils/synthesis.js';
@@ -504,8 +505,9 @@ export class StartReflectionCommand extends ReflectionCommand {
     }
 
     try {
-      // 0. Start version check in background (non-blocking)
+      // 0. Start version check + structural safeguards in background (non-blocking)
       const versionCheckPromise = checkForUpdatesAsync();
+      const safeguardsPromise = ensureStructuralSafeguards();
 
       // 1. Parse intent
       const parsedIntent = this.parseIntent(intent);
@@ -954,8 +956,17 @@ export class StartReflectionCommand extends ReflectionCommand {
         });
       }
 
-      // 15. Show update notification if available (non-blocking check completed)
-      const updateMessage = await versionCheckPromise;
+      // 15. Show update notification and safeguard status (non-blocking checks completed)
+      const [updateMessage, safeguardResult] = await Promise.all([
+        versionCheckPromise,
+        safeguardsPromise,
+      ]);
+
+      const safeguardMessage = formatSafeguardMessage(safeguardResult);
+      if (safeguardMessage) {
+        console.log(safeguardMessage);
+      }
+
       if (updateMessage) {
         console.log(updateMessage);
       }
@@ -2072,16 +2083,15 @@ Example output structure:
   ): void {
     console.log('');
 
-    // --clean-slate: New simplified label:value format (EPIC-018 Sprint 1 t07)
-    if (options.cleanSlate) {
-      console.log(formatCleanSlateOutput(aiContext));
-    }
-    // --compact or --no-table: Previous concise format without borders
-    else if (options.compact || options.table === false) {
+    // Default: clean-slate label:value format (EPIC-018 Sprint 1 t07)
+    // --compact: Previous concise format without borders
+    // --full: Table format with task list
+    if (options.full) {
+      console.log(formatTableOutput(aiContext));
+    } else if (options.compact || options.table === false) {
       console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
     } else {
-      // Default: full table with task list
-      console.log(formatTableOutput(aiContext));
+      console.log(formatCleanSlateOutput(aiContext));
     }
 
     console.log('');

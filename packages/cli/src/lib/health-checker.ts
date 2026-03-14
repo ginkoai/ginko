@@ -27,6 +27,8 @@ import { getUserEmail, getGinkoDir, getProjectRoot, formatTimeAgo } from '../uti
 import { readSyncState } from './sync-state.js';
 import { SessionLogManager } from '../core/session-log-manager.js';
 import { getUnpushedCount } from './git-change-detector.js';
+import { parseManifest } from './protected-manifest.js';
+import { isHookInstalled } from './protection-hook.js';
 
 // ── Types ────────────────────────────────────────────────────────
 
@@ -67,6 +69,7 @@ export async function runHealthChecks(): Promise<HealthResult> {
 
   const categories: HealthCategory[] = [];
 
+  categories.push(await checkProtection(ginkoDir, projectRoot));
   categories.push(await checkTracking(ginkoDir, projectRoot, sessionDir));
   categories.push(await checkCompletion(projectRoot, sessionDir));
   categories.push(await checkSync());
@@ -91,6 +94,87 @@ export async function runHealthChecks(): Promise<HealthResult> {
   const adherence = totalChecks > 0 ? Math.round((passCount / totalChecks) * 100) : 0;
 
   return { categories, adherence, passCount, warnCount, failCount, totalChecks };
+}
+
+// ── File Protection Checks ───────────────────────────────────────
+
+async function checkProtection(
+  ginkoDir: string,
+  projectRoot: string,
+): Promise<HealthCategory> {
+  const items: HealthCheckItem[] = [];
+
+  // Check PROTECTED manifest exists
+  const protectedPath = path.join(ginkoDir, 'PROTECTED');
+  if (!(await fs.pathExists(protectedPath))) {
+    items.push({
+      label: 'Protection manifest',
+      status: 'fail',
+      detail: '.ginko/PROTECTED file missing',
+      fix: 'Run `ginko init --upgrade` to create protection manifest',
+    });
+    return { name: 'File Protection', icon: '🛡️', items };
+  }
+
+  items.push({
+    label: 'Protection manifest',
+    status: 'pass',
+    detail: '.ginko/PROTECTED exists',
+  });
+
+  // Check all protected files exist
+  const content = await fs.readFile(protectedPath, 'utf8');
+  const entries = parseManifest(content);
+  const missing: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(ginkoDir, entry.path);
+    if (!(await fs.pathExists(fullPath))) {
+      missing.push(entry.path);
+    }
+  }
+
+  if (missing.length > 0) {
+    items.push({
+      label: 'Protected files',
+      status: 'fail',
+      detail: `${missing.length} missing: ${missing.join(', ')}`,
+      fix: 'These files have no backup. Restore from git history or recreate with `ginko graph init`',
+    });
+  } else {
+    items.push({
+      label: 'Protected files',
+      status: 'pass',
+      detail: `All ${entries.length} protected files present`,
+    });
+  }
+
+  // Check pre-commit hook is installed
+  try {
+    const hookPresent = await isHookInstalled(projectRoot);
+    if (hookPresent) {
+      items.push({
+        label: 'Pre-commit hook',
+        status: 'pass',
+        detail: 'Protection hook installed',
+      });
+    } else {
+      const hookPath = path.join(projectRoot, '.git', 'hooks', 'pre-commit');
+      const hookExists = await fs.pathExists(hookPath);
+      items.push({
+        label: 'Pre-commit hook',
+        status: 'warn',
+        detail: hookExists
+          ? 'Pre-commit hook exists but missing protection check'
+          : 'No pre-commit hook installed',
+        fix: 'Run `ginko init --upgrade` to install protection hook',
+      });
+    }
+  } catch {
+    // Not a git repo or other issue — skip
+  }
+
+  return { name: 'File Protection', icon: '🛡️', items };
 }
 
 // ── Tracking Checks ──────────────────────────────────────────────
