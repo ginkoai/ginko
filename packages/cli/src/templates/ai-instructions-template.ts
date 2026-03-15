@@ -414,7 +414,14 @@ After completing ANY sprint task: \`ginko task complete <task_id>\`
 | \`ginko task pause <id>\` | Return to not_started |
 
 Last task in a sprint: \`ginko task complete <id> --cascade --yes\`
-Manual sprint completion: \`ginko sprint complete <sprint_id>\``;
+Manual sprint completion: \`ginko sprint complete <sprint_id>\`
+
+### Verification Discipline (EPIC-025)
+Before running \`ginko task complete\`, execute all Verification steps in the sprint file:
+- **API tasks**: Call deployed endpoints, confirm response shape and status codes
+- **UI tasks**: Use \`/browse\` to navigate to the deployed page, take a screenshot, check console for errors
+- **CLI tasks**: Run the command, confirm expected output
+The CLI will display the verification checklist and prompt for confirmation. Skipping logs a warning.`;
 
   private static readonly LEAN_ENTITY_NAMING = `## Entity Naming Convention (ADR-052)
 

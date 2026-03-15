@@ -17,6 +17,7 @@ import { createSprintStatusCommands, addSprintStatusShortcuts } from './status.j
 // EPIC-016 Sprint 4: Conversational sprint creation
 import { createSprintCommand as createSprintAction } from './create.js';
 import { createQuickFixTask } from './quick-fix.js';
+import { planCheckCommand } from './plan-check.js';
 
 /**
  * Sprint command router
@@ -81,6 +82,20 @@ export function sprintCommand(): Command {
         ...options,
         noAi: !options.ai, // Commander handles --no-ai as options.ai = false
       });
+    });
+
+  // EPIC-025 Sprint 3: Plan check command
+  sprint
+    .command('plan')
+    .description('Sprint planning utilities')
+    .option('--check <sprintId>', 'Re-evaluate integration warnings for a sprint')
+    .option('--update', 'Update sprint file in place with new warnings')
+    .action(async (options) => {
+      if (options.check) {
+        await planCheckCommand(options.check, { update: !!options.update });
+      } else {
+        console.log('Usage: ginko sprint plan --check <sprintId>');
+      }
     });
 
   // EPIC-016 Sprint 4: Quick-fix fast path (t04)

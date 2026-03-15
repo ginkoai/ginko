@@ -19,6 +19,12 @@ import { findSprintFileById } from '../../lib/sprint-loader.js';
 import { parseSprintFile, assessTaskContentQuality, type ParsedTask } from '../../lib/task-parser.js';
 import { getProjectRoot } from '../../utils/helpers.js';
 import { requireCloud } from '../../utils/cloud-guard.js';
+import {
+  readSprintState,
+  materializeSprintState,
+  formatSprintState,
+  isCacheStale,
+} from '../../lib/sprint-state.js';
 
 // =============================================================================
 // Helpers
@@ -340,12 +346,34 @@ async function pauseSprintCommand(
 }
 
 /**
- * Show sprint status
+ * Show sprint status (EPIC-025: prefers local cache for zero-latency reads)
  */
 async function showSprintCommand(
   sprintId: string,
   options: SprintStatusOptions = {}
 ): Promise<void> {
+  // Try local cache first (zero network calls)
+  const cached = await readSprintState();
+  if (cached && cached.sprint === sprintId) {
+    console.log(formatSprintState(cached));
+    if (isCacheStale(cached)) {
+      console.log(chalk.yellow('\n⚠ Sprint state may be stale — run `ginko pull` to refresh'));
+    }
+    return;
+  }
+
+  // Cache miss or different sprint — try to materialize from graph
+  try {
+    const state = await materializeSprintState();
+    if (state && state.sprint === sprintId) {
+      console.log(formatSprintState(state));
+      return;
+    }
+  } catch {
+    // Materialization failed — fall through to legacy API
+  }
+
+  // Fallback: basic graph API query
   await requireCloud('sprint show');
   const graphId = await requireGraphId();
   const client = new GraphApiClient();

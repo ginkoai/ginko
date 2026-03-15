@@ -657,5 +657,15 @@ export async function pushCommand(options: PushOptions): Promise<PushResult> {
     }
   }
 
+  // EPIC-025: Refresh sprint state cache after push
+  if (!options.dryRun && result.pushed.length > 0) {
+    try {
+      const { materializeSprintState } = await import('../../lib/sprint-state.js');
+      await materializeSprintState();
+    } catch {
+      // Cache refresh failure never blocks push
+    }
+  }
+
   return result;
 }

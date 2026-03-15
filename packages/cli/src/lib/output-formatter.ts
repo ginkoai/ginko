@@ -665,10 +665,10 @@ export interface CleanSlateOutputConfig {
  *
  * Branch: 6 uncommitted | Tests: passing
  */
-export function formatCleanSlateOutput(
+export async function formatCleanSlateOutput(
   context: AISessionContext,
   config: CleanSlateOutputConfig = {}
-): string {
+): Promise<string> {
   const { width = 75 } = config;
   const lines: string[] = [];
 
@@ -687,6 +687,17 @@ export function formatCleanSlateOutput(
       ? GINKO_BRAND.error
       : GINKO_BRAND.warning;
     headerParts.splice(1, 0, offlineColor('OFFLINE'));
+  }
+
+  // EPIC-025 Sprint 4: Add health tier to header
+  try {
+    const { getCurrentHealthTier, formatHealthForStatusLine } = await import('./session-health.js');
+    const healthInfo = await getCurrentHealthTier();
+    if (healthInfo.messageCount > 0) {
+      headerParts.push(formatHealthForStatusLine(healthInfo));
+    }
+  } catch {
+    // Health tier failure is non-fatal
   }
 
   lines.push(headerParts.join(GINKO_BRAND.dim(' | ')));
@@ -760,6 +771,29 @@ export function formatCleanSlateOutput(
       (progress >= 100 ? GINKO_BRAND.success(`${progress}%`) : `${progress}%`) +
       GINKO_BRAND.dim(` | ${taskCount} tasks`)
     );
+
+    // EPIC-025: Sprint checkpoint from local cache
+    try {
+      const { readSprintState, isCacheStale: checkStale } = await import('./sprint-state.js');
+      const sprintState = await readSprintState();
+      if (sprintState && sprintState.knownIssues.length > 0) {
+        lines.push(
+          GINKO_BRAND.dim('  Issues: ') +
+          chalk.yellow(sprintState.knownIssues.slice(0, 2).join('; '))
+        );
+      }
+      if (sprintState && sprintState.blockers.length > 0) {
+        lines.push(
+          GINKO_BRAND.dim('  Blockers: ') +
+          chalk.red(sprintState.blockers.slice(0, 2).join('; '))
+        );
+      }
+      if (sprintState && checkStale(sprintState)) {
+        lines.push(GINKO_BRAND.dim('  ⚠ State may be stale — `ginko pull` to refresh'));
+      }
+    } catch {
+      // Sprint state read failure is non-fatal
+    }
 
     // Next task line
     if (context.sprint.currentTask) {

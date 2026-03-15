@@ -89,6 +89,9 @@ export interface ParsedTask {
   confidence: number | null;
   /** Assessed content quality */
   content_quality: TaskContentQuality;
+
+  /** Verification steps (EPIC-025) */
+  verification_steps: string[];
 }
 
 /**
@@ -349,6 +352,39 @@ function extractAcceptanceCriteria(blockText: string): string[] {
 }
 
 /**
+ * Extract verification steps from task block (EPIC-025)
+ *
+ * Parses the **Verification:** section — concrete check steps
+ * distinct from acceptance criteria.
+ */
+function extractVerificationSteps(blockText: string): string[] {
+  const steps: string[] = [];
+
+  // Find verification section — must not match "Verification Gate" or similar
+  const sectionMatch = blockText.match(
+    /\*\*Verification(?:\s*\([^)]*\))?:\*\*\s*([\s\S]*?)(?=\n\*\*(?!Verification)|\n###|\n---|\n##|$)/i
+  );
+
+  if (!sectionMatch) return steps;
+
+  // Extract checkbox items: - [ ] or - [x]
+  const checkboxMatches = sectionMatch[1].matchAll(/^-\s+\[.\]\s+(.+?)$/gm);
+  for (const match of checkboxMatches) {
+    steps.push(match[1].trim());
+  }
+
+  // Also extract plain bullets if no checkboxes found
+  if (steps.length === 0) {
+    const bulletMatches = sectionMatch[1].matchAll(/^-\s+(.+?)$/gm);
+    for (const match of bulletMatches) {
+      steps.push(match[1].trim());
+    }
+  }
+
+  return steps;
+}
+
+/**
  * Extract file paths from task block
  */
 function extractFiles(blockText: string): string[] {
@@ -490,6 +526,9 @@ export function parseTaskBlock(
   // Extract acceptance criteria
   const acceptanceCriteria = extractAcceptanceCriteria(blockText);
 
+  // Extract verification steps (EPIC-025)
+  const verificationSteps = extractVerificationSteps(blockText);
+
   // Extract files
   const files = extractFiles(blockText);
 
@@ -520,6 +559,8 @@ export function parseTaskBlock(
     // Quality metadata
     confidence,
     content_quality: 'thin', // Will be assessed below
+    // Verification (EPIC-025)
+    verification_steps: verificationSteps,
   };
 
   // Assess content quality

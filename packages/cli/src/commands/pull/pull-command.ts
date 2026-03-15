@@ -96,6 +96,16 @@ export async function pullCommand(options: PullOptions): Promise<void> {
       await recordPull();
     }
 
+    // EPIC-025: Refresh sprint state cache after pull
+    if (!options.dryRun) {
+      try {
+        const { materializeSprintState } = await import('../../lib/sprint-state.js');
+        await materializeSprintState();
+      } catch {
+        // Cache refresh failure never blocks pull
+      }
+    }
+
     // Summary with reinforcement
     if (!quiet && !options.dryRun) {
       if (result.synced.length > 0) {

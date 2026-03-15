@@ -75,7 +75,29 @@ For each task, generate the full structure:
 - [ ] {Specific, testable criterion 1}
 - [ ] {Specific, testable criterion 2}
 - [ ] {Tests pass}
+
+**Verification:**
+- [ ] {Concrete check derived from AC — specify method: endpoint call, browser nav, or CLI command}
+- [ ] {For API tasks: Deploy → call [endpoint] → confirm [expected response]}
+- [ ] {For UI tasks: Deploy → navigate to [page] → screenshot → confirm [element] visible}
+- [ ] {For CLI tasks: Run [command] → confirm [expected output]}
 ```
+
+### Verification Step Generation (EPIC-025)
+
+For each acceptance criterion, generate a corresponding **verification step** that specifies the concrete check method:
+
+| Task Type | Verification Pattern |
+|-----------|---------------------|
+| **API** | Deploy → `curl [endpoint]` → confirm response shape/status |
+| **UI** | Deploy → navigate to [page] via `/browse` → screenshot → confirm [element] visible → check console |
+| **CLI** | Run `[command]` → confirm [expected output] |
+
+**Rules:**
+- Every AC gets a verification step — no "confirm it works" generics
+- UI tasks MUST include browser console check (catches hydration errors, missing props)
+- Verification steps are editable — present them for human review before finalizing
+- If task type is ambiguous, include both API and browser verification
 
 ### Confidence Scoring (Critical)
 
@@ -153,6 +175,36 @@ Example: `docs/sprints/SPRINT-2026-02-adhoc_260205_s01-dashboard-fixes.md`
 ## Sprint Tasks
 
 {For each task, use the WHY-WHAT-HOW format from Step 3}
+
+---
+
+## Task Dependencies (EPIC-025)
+
+{After defining all tasks, derive dependencies from task descriptions and file overlaps.
+Render as ASCII tree. Mark independent tasks explicitly.}
+
+```
+t01 ─── t02 (needs t01's types)
+  └──── t03 (needs t01's output)
+t04 ──── (independent)
+t05 ──── (independent)
+```
+
+{Omit this section if all tasks are independent.}
+
+---
+
+## Integration Warnings (EPIC-025)
+
+{Auto-generate from task Scope/Files sections. Identify files referenced by 2+ tasks.}
+
+```
+⚠️ t01, t03 both modify `component.tsx` — t03 depends on t01's changes
+⚠️ t02, t04 both modify `api-route.ts` — review recommended
+✅ t05, t06 both modify `utils.ts` — independent changes, safe to parallelize
+```
+
+{Omit this section if no file overlaps detected.}
 
 ---
 

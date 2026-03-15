@@ -11,10 +11,18 @@
 
 import chalk from 'chalk';
 import readline from 'readline';
+import path from 'path';
 import { GraphApiClient, TaskStatus } from '../graph/api-client.js';
 import { getGraphId } from '../graph/config.js';
 import { getCurrentUser } from '../../utils/auth-storage.js';
 import { autoPush } from '../../lib/auto-push.js';
+import { parseTaskHierarchy } from '../../lib/task-parser.js';
+import { findSprintFileById } from '../../lib/sprint-loader.js';
+import {
+  pushCheckpointToGraph,
+  getModifiedFiles,
+  materializeSprintState,
+} from '../../lib/sprint-state.js';
 
 // =============================================================================
 // Types
@@ -81,6 +89,224 @@ async function prompt(message: string): Promise<string> {
       resolve(answer.trim());
     });
   });
+}
+
+/**
+ * Find and display verification steps for a task (EPIC-025)
+ *
+ * Parses the sprint file to find the task's Verification section,
+ * displays the checklist, and prompts for confirmation.
+ *
+ * @returns 'verified' | 'skipped' | 'no-steps'
+ */
+async function checkVerificationSteps(taskId: string): Promise<'verified' | 'skipped' | 'no-steps'> {
+  try {
+    const hierarchy = parseTaskHierarchy(taskId);
+    if (!hierarchy) return 'no-steps';
+
+    // Find project root via git
+    const { execSync } = await import('child_process');
+    const projectRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf-8' }).trim();
+
+    // Find the sprint file
+    const sprintFile = await findSprintFileById(hierarchy.sprint_id, projectRoot);
+    if (!sprintFile) return 'no-steps';
+
+    // Read and parse the sprint file for this task's verification section
+    const fs = await import('fs-extra');
+    const content = await fs.default.readFile(sprintFile, 'utf-8');
+
+    // Find the task block in the sprint file
+    const taskPattern = new RegExp(
+      `###\\s+${taskId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[:\\s-]([\\s\\S]*?)(?=\\n###\\s|\\n---\\s*$|$)`,
+      'i'
+    );
+    const taskBlock = content.match(taskPattern);
+    if (!taskBlock) return 'no-steps';
+
+    // Extract verification section
+    const verificationMatch = taskBlock[0].match(
+      /\*\*Verification(?:\s*\([^)]*\))?:\*\*\s*([\s\S]*?)(?=\n\*\*(?!Verification)|\n###|\n---|\n##|$)/i
+    );
+    if (!verificationMatch) return 'no-steps';
+
+    // Extract steps
+    const steps: string[] = [];
+    const checkboxMatches = verificationMatch[1].matchAll(/^-\s+\[.\]\s+(.+?)$/gm);
+    for (const match of checkboxMatches) {
+      steps.push(match[1].trim());
+    }
+    if (steps.length === 0) {
+      const bulletMatches = verificationMatch[1].matchAll(/^-\s+(.+?)$/gm);
+      for (const match of bulletMatches) {
+        steps.push(match[1].trim());
+      }
+    }
+
+    if (steps.length === 0) return 'no-steps';
+
+    // Display verification checklist
+    console.log(chalk.cyan('\n📋 Verification Steps:'));
+    for (let i = 0; i < steps.length; i++) {
+      console.log(chalk.dim(`  ${i + 1}. ${steps[i]}`));
+    }
+    console.log('');
+
+    const answer = await confirm('Have all verification steps been completed?');
+    return answer ? 'verified' : 'skipped';
+  } catch {
+    // Verification check failure never blocks task completion
+    return 'no-steps';
+  }
+}
+
+/**
+ * Log a session event for verification skipping (EPIC-025)
+ */
+async function logVerificationSkipped(taskId: string): Promise<void> {
+  try {
+    const { execSync } = await import('child_process');
+    const projectRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf-8' }).trim();
+    const fs = await import('fs-extra');
+
+    // Find session events file
+    const sessionsDir = path.join(projectRoot, '.ginko', 'sessions');
+    if (!await fs.default.pathExists(sessionsDir)) return;
+
+    // Find current user's session dir
+    const dirs = await fs.default.readdir(sessionsDir);
+    for (const dir of dirs) {
+      const eventsFile = path.join(sessionsDir, dir, 'current-events.jsonl');
+      if (await fs.default.pathExists(eventsFile)) {
+        const event = JSON.stringify({
+          type: 'verification_skipped',
+          taskId,
+          timestamp: new Date().toISOString(),
+          message: `Verification steps skipped for ${taskId}`,
+        });
+        await fs.default.appendFile(eventsFile, event + '\n');
+        break;
+      }
+    }
+  } catch {
+    // Silent failure — logging should never block
+  }
+}
+
+/**
+ * Check for file overlap warnings when starting a task (EPIC-025 Sprint 3)
+ *
+ * Reads the sprint file, detects overlaps, and warns if the task
+ * shares file targets with any in-progress tasks.
+ */
+async function checkFileOverlapWarning(taskId: string): Promise<void> {
+  try {
+    const hierarchy = parseTaskHierarchy(taskId);
+    if (!hierarchy) return;
+
+    const { execSync } = await import('child_process');
+    const projectRoot = execSync('git rev-parse --show-toplevel', { encoding: 'utf-8' }).trim();
+
+    const sprintFile = await findSprintFileById(hierarchy.sprint_id, projectRoot);
+    if (!sprintFile) return;
+
+    const { parseSprintFile: parseSprint } = await import('../../lib/task-parser.js');
+    const result = await parseSprint(sprintFile);
+    if (!result || result.tasks.length < 2) return;
+
+    const { detectOverlaps, formatTaskStartWarning } = await import('../../lib/integration-warnings.js');
+    const { readSprintState } = await import('../../lib/sprint-state.js');
+
+    const overlaps = detectOverlaps(result.tasks);
+    if (overlaps.length === 0) return;
+
+    // Find in-progress tasks from sprint state cache
+    const state = await readSprintState();
+    const inProgressTasks: string[] = [];
+    if (state) {
+      for (const [id, task] of Object.entries(state.tasks)) {
+        if (task.status === 'in_progress' && id !== taskId) {
+          inProgressTasks.push(id);
+        }
+      }
+    }
+
+    if (inProgressTasks.length === 0) return;
+
+    const warning = formatTaskStartWarning(taskId, overlaps, inProgressTasks);
+    if (warning) {
+      console.log(chalk.yellow(`\n${warning}`));
+
+      // Log to session events
+      try {
+        const fs = await import('fs-extra');
+        const sessionsDir = path.join(projectRoot, '.ginko', 'sessions');
+        if (await fs.default.pathExists(sessionsDir)) {
+          const dirs = await fs.default.readdir(sessionsDir);
+          for (const dir of dirs) {
+            const eventsFile = path.join(sessionsDir, dir, 'current-events.jsonl');
+            if (await fs.default.pathExists(eventsFile)) {
+              const event = JSON.stringify({
+                type: 'file_overlap_warning',
+                taskId,
+                inProgressTasks,
+                timestamp: new Date().toISOString(),
+                message: warning,
+              });
+              await fs.default.appendFile(eventsFile, event + '\n');
+              break;
+            }
+          }
+        }
+      } catch {
+        // Event logging failure is non-fatal
+      }
+    }
+  } catch {
+    // Overlap check failure never blocks task start
+  }
+}
+
+/**
+ * Capture checkpoint data at task completion (EPIC-025 Sprint 2)
+ *
+ * Prompts for known issues and blockers, auto-captures git changes,
+ * and pushes checkpoint to graph.
+ */
+async function captureCheckpoint(taskId: string): Promise<void> {
+  try {
+    // Auto-capture modified files from git (no prompt needed)
+    const modifiedFiles = getModifiedFiles();
+
+    // Lightweight checkpoint prompts (all optional — empty string skips)
+    let knownIssues: string[] = [];
+    let blockers: string[] = [];
+
+    if (process.stdin.isTTY) {
+      const issuesInput = await prompt('Known issues (optional, comma-separated)');
+      if (issuesInput) {
+        knownIssues = issuesInput.split(',').map(s => s.trim()).filter(Boolean);
+      }
+
+      const blockersInput = await prompt('Blockers for next task (optional, comma-separated)');
+      if (blockersInput) {
+        blockers = blockersInput.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+
+    // Push checkpoint to graph
+    await pushCheckpointToGraph(taskId, {
+      knownIssues,
+      blockers,
+      modifiedFiles,
+    });
+
+    if (knownIssues.length > 0 || blockers.length > 0 || modifiedFiles.length > 0) {
+      console.log(chalk.dim(`  Checkpoint: ${modifiedFiles.length} files, ${knownIssues.length} issues, ${blockers.length} blockers`));
+    }
+  } catch {
+    // Checkpoint capture failure never blocks task completion
+  }
 }
 
 /**
@@ -208,6 +434,16 @@ export async function completeCommand(
       return;
     }
 
+    // EPIC-025: Verification gate — check verification steps before completing
+    const verificationResult = await checkVerificationSteps(taskId);
+    if (verificationResult === 'skipped') {
+      console.log(chalk.yellow('⚠ Verification skipped — logged to session events'));
+      await logVerificationSkipped(taskId);
+    }
+
+    // EPIC-025 Sprint 2: Checkpoint capture
+    const checkpoint = await captureCheckpoint(taskId);
+
     // Update status
     const response = await client.updateTaskStatus(graphId, taskId, 'complete');
     console.log(chalk.green(`✓ Task ${taskId} marked complete`));
@@ -225,6 +461,13 @@ export async function completeCommand(
 
     // ADR-077: Auto-push after status change
     await autoPush();
+
+    // EPIC-025: Refresh sprint state cache after task completion
+    try {
+      await materializeSprintState();
+    } catch {
+      // Cache refresh failure never blocks task completion
+    }
 
     // EPIC-022: Health nudge at task completion
     try {
@@ -327,6 +570,9 @@ export async function startCommand(
       }
     }
 
+    // EPIC-025 Sprint 3: Check for file overlap with in-progress tasks
+    await checkFileOverlapWarning(taskId);
+
     // Update status to in_progress
     const response = await client.updateTaskStatus(graphId, taskId, 'in_progress');
     console.log(chalk.cyan(`▶ Task ${taskId} started`));
@@ -336,6 +582,13 @@ export async function startCommand(
 
     // ADR-077: Auto-push after status change
     await autoPush();
+
+    // EPIC-025: Refresh sprint state cache after task start
+    try {
+      await materializeSprintState();
+    } catch {
+      // Cache refresh failure never blocks task start
+    }
   } catch (error) {
     handleError('start', taskId, error);
   }

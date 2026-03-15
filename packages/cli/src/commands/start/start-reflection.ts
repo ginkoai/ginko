@@ -937,6 +937,14 @@ export class StartReflectionCommand extends ReflectionCommand {
         }
       }
 
+      // 13.5 EPIC-025: Materialize sprint state cache at session start
+      try {
+        const { materializeSprintState } = await import('../../lib/sprint-state.js');
+        await materializeSprintState();
+      } catch {
+        // Sprint state materialization is non-critical
+      }
+
       // 14. Display output LAST (after all async operations complete)
       // Table view is the FINAL output - nothing should print after it
       if (options.verbose) {
@@ -948,7 +956,7 @@ export class StartReflectionCommand extends ReflectionCommand {
       } else {
         // Default mode: Compact table (use --full for task list)
         // --clean-slate: New simplified format (EPIC-018 Sprint 1 t07)
-        this.displayConciseOutput(aiContext, {
+        await this.displayConciseOutput(aiContext, {
           compact: options.compact,
           table: options.table,
           full: options.full,
@@ -2077,10 +2085,10 @@ Example output structure:
    * - --compact: Previous concise format without borders
    * - --no-table: Plain text format for piping
    */
-  private displayConciseOutput(
+  private async displayConciseOutput(
     aiContext: AISessionContext,
     options: { compact?: boolean; table?: boolean; full?: boolean; cleanSlate?: boolean } = {}
-  ): void {
+  ): Promise<void> {
     console.log('');
 
     // Default: clean-slate label:value format (EPIC-018 Sprint 1 t07)
@@ -2091,7 +2099,7 @@ Example output structure:
     } else if (options.compact || options.table === false) {
       console.log(formatHumanOutput(aiContext, { workMode: aiContext.session.workMode as any }));
     } else {
-      console.log(formatCleanSlateOutput(aiContext));
+      console.log(await formatCleanSlateOutput(aiContext));
     }
 
     console.log('');
