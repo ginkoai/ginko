@@ -886,6 +886,22 @@ export async function formatCleanSlateOutput(
     lines.push(stalenessMsg);
   }
 
+  // Trial expiry warning (EPIC-026 Sprint 5)
+  try {
+    const { getTier, showTrialWarning } = await import('../utils/tier.js');
+    const tier = await getTier();
+    if (tier) {
+      if (tier.isTrial && tier.trialDaysLeft !== null && tier.trialDaysLeft <= 3) {
+        const trialMsg = tier.trialDaysLeft <= 0
+          ? GINKO_BRAND.warning('⏰ Your Pro trial has ended. Upgrade: https://app.ginkoai.com/pricing')
+          : GINKO_BRAND.warning(`⏰ Pro trial ends in ${tier.trialDaysLeft} day${tier.trialDaysLeft === 1 ? '' : 's'} — Upgrade: https://app.ginkoai.com/pricing`);
+        lines.push(trialMsg);
+      }
+    }
+  } catch {
+    // Trial check failure is non-fatal
+  }
+
   return lines.join('\n');
 }
 
